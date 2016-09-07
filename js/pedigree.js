@@ -113,13 +113,14 @@
 		       "L" + (d.father.x) + "," + (d.father.y + symbol_size);
 	}
 	
+	// convert the partner names into corresponding tree nodes
 	pedigree_util.linkNodes = function(flattenNodes, partners) {
-		var linkNodes = [];
+		var links = [];
 		for(var i=0; i< partners.length; i++){
-			linkNodes.push({'mother': pedigree_util.getNodeByName(flattenNodes, partners[i].mother.name),
-						    'father': pedigree_util.getNodeByName(flattenNodes, partners[i].father.name)});
+			links.push({'mother': pedigree_util.getNodeByName(flattenNodes, partners[i].mother.name),
+						'father': pedigree_util.getNodeByName(flattenNodes, partners[i].father.name)});
 		}
-		return linkNodes;
+		return links;
 	}
 
 	pedigree_util.flatten = function(root) {
