@@ -1,61 +1,67 @@
+
+//Self-Executing Anonymous Func
+(function(pedigree_util, $, undefined) {
+
+	pedigree_util.isProband = function(obj) {
+		var proband = $(obj).attr('proband');
+		return typeof proband !== typeof undefined && proband !== false;
+	}
+
+	pedigree_util.getProbandIndex = function(dataset) {
+		var proband;
+		jQuery.each(dataset, function(i, val) {
+			if (pedigree_util.isProband(val)) {
+				return proband = i;
+			}
+		});
+		return proband;
+	}
+
+	pedigree_util.getChildren = function(dataset, person) {
+		var children = [];
+		jQuery.each(dataset, function(i, p) {
+			if (person.name === p.mother) {
+				children.push(p);
+			}
+		});
+		return children;
+	}
+
+	pedigree_util.getIdxByName = function(arr, name) {
+		var idx = -1;
+		jQuery.each(arr, function(i, p) {
+			if (name === p.name) {
+				return idx = i;
+			}
+		});
+		return idx;
+	}
+
+	pedigree_util.getPersonByName = function(dataset, name) {
+		var person = undefined;
+		jQuery.each(dataset, function(i, p) {
+			if (name === p.name) {
+				return person = p;
+			}
+		});
+		return person;
+	}
+
+}(window.pedigree_util = window.pedigree_util || {}, jQuery));
+
+
 var dataset = [
-    { "name": "f11", "sex": "female", "lifeStatus": "deceased" },
-    { "name": "m11", "sex": "male" },
-    { "name": "f12", "sex": "female", "disorders": [603235, "custom disorder"] },
-    { "name": "m12", "sex": "male" },
-    { "name": "m22", "sex": "male", "mother": "f11", "father": "m11" },
-    { "name": "m21", "sex": "male", "mother": "f11", "father": "m11" },
-    { "name": "f21", "sex": "female", "mother": "f12", "father": "m12" },
-    { "name": "ch1", "sex": "female", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true },
-     { "name": "ch2", "sex": "male", "mother": "f21", "father": "m21" }
+	{"name": "f11", "sex": "F", "lifeStatus": "deceased"},
+	{"name": "m11", "sex": "M"},
+	{"name": "f12", "sex": "F", "disorders": [603235, "custom disorder"]},
+	{"name": "m12", "sex": "M"},
+	{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
+	{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
+	{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
+	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
+	{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 ];
- 
-function isProband(obj) {
-    var proband = $(obj).attr('proband');
-    return typeof proband !== typeof undefined && proband !== false;
-}
-
-function getProbandIndex() {
-    var proband;
-    jQuery.each(dataset, function(i, val) {
-      if (isProband(val)) {
-        return proband = i;
-      }
-    });
-    return proband;
-}
-
-function getChildren(person) {
-	var children = [];
-  jQuery.each(dataset, function(i, p) {
-      if (person.name === p.mother) {
-         children.push(p);     
-      }
-  });
-  return children;
-}
-
-function getIdxByName(arr, name) {
-	var idx = -1;
-  jQuery.each(arr, function(i, p) {
-      if (name === p.name) {
-         return idx = i;     
-      }
-  });
-  return idx;
-}
-
-function getPersonByName(name) {
-	var person = undefined;
-  jQuery.each(dataset, function(i, p) {
-      if (name === p.name) {
-         return person = p;     
-      }
-  });
-  return person;
-}
-
-var proband_index = getProbandIndex();
+var proband_index = pedigree_util.getProbandIndex(dataset);
 
 var symbol_size = 35;
 var width = 400;
@@ -63,160 +69,156 @@ var height = 400;
 
 /////////////////
 
-var ped2 = d3.select("#pedigree2")
-  	.append("svg:svg")
-  	.attr("width", width)
-  	.attr("height", height);
+var ped2 = d3.select("#pedigree2").append("svg:svg").attr("width", width).attr(
+		"height", height);
 
-ped2.append("rect")
-    .attr("width", "100%")
-    .attr("height", "100%")
-    .attr("fill", "pink");
+ped2.append("rect").attr("width", "100%").attr("height", "100%").attr("fill",
+		"pink");
 
-var top_level = [dataset[0], dataset[1], dataset[2], dataset[3]];
+var top_level = [ dataset[0], dataset[1], dataset[2], dataset[3] ];
 var hidden_root = {
-   name: '',
-   id: 0,
-   hidden: true,
-   children: top_level
+	name : '',
+	id : 0,
+	hidden : true,
+	children : top_level
 };
 
-var partnerLinks =  [];
+var partnerLinks = [];
 var buildTree = function buildTree(person) {
-		if ( typeof person.children === typeof undefined ) {
-      person.children = getChildren(person);
-    }
-     
-     var partners = [];
-     var partnerNames = [];
-     jQuery.each(person.children, function(i, child) {
-     	jQuery.each(dataset, function(i, p) {
-          if (child.name === p.mother) {
-          	if($.inArray(p.father, partnerNames) == -1) {
-              partnerNames.push(p.father);
-              partners.push({'mother': child, 'father': getPersonByName(p.father)});
-            }
-          }
-       });
-    });
-    $.merge(partnerLinks, partners);
-    
-    jQuery.each(partners, function(i, ptr) {
-    	var mother = ptr.mother;
-      var father = ptr.father;
-      mother.children = [];
-    	var parent = {
-           name: '',
-           hidden: true,
-           parent: null,
-           children: getChildren(mother)
-       };
-       var motherIdx = $.inArray(mother, person.children);
-       var fatherIdx = $.inArray(father, person.children);
-       var idx = motherIdx;
-       if (fatherIdx < motherIdx) {
-          idx = fatherIdx;
-       }
-       person.children.splice(idx + 1, 0, parent);
-    });
+	if (typeof person.children === typeof undefined) {
+		person.children = pedigree_util.getChildren(dataset, person);
+	}
 
-    jQuery.each(person.children, function(i, p) {
-				buildTree(p);
+	var partners = [];
+	var partnerNames = [];
+	jQuery.each(person.children, function(i, child) {
+		jQuery.each(dataset, function(i, p) {
+			if (child.name === p.mother) {
+				if ($.inArray(p.father, partnerNames) == -1) {
+					partnerNames.push(p.father);
+					partners.push({
+						'mother' : child,
+						'father' : pedigree_util.getPersonByName(dataset,
+								p.father)
+					});
+				}
+			}
 		});
+	});
+	$.merge(partnerLinks, partners);
+
+	jQuery.each(partners, function(i, ptr) {
+		var mother = ptr.mother;
+		var father = ptr.father;
+		mother.children = [];
+		var parent = {
+			name : '',
+			hidden : true,
+			parent : null,
+			children : pedigree_util.getChildren(dataset, mother)
+		};
+		var motherIdx = $.inArray(mother, person.children);
+		var fatherIdx = $.inArray(father, person.children);
+		var idx = motherIdx;
+		if (fatherIdx < motherIdx) {
+			idx = fatherIdx;
+		}
+		person.children.splice(idx + 1, 0, parent);
+	});
+
+	jQuery.each(person.children, function(i, p) {
+		buildTree(p);
+	});
 };
 
 buildTree(hidden_root);
-   
+
 var root = d3.hierarchy(hidden_root);
-treemap = d3.tree()
-					.separation(function(a, b) { return a.parent === b.parent ? 1 : 1.2; })
-          .size([width, height-symbol_size-symbol_size]);
+treemap = d3.tree().separation(function(a, b) {
+				return a.parent === b.parent ? 1 : 1.2;
+			})
+			.size([ width, height - symbol_size - symbol_size ]);
 var nodes = treemap(root);
 
 var node = ped2.selectAll(".node")
-    .data(nodes.descendants())
-   	.enter()
-    .append("g");
-    
-node.append("path")
-    .attr("transform", function(d, i) {
-        	return "translate(" + (d.x) + "," + (d.y + symbol_size) + ")";
-        })
-    .attr("d", d3.symbol().size(function(d) {
-    		if ( d.data.hidden ){
-        		return symbol_size*symbol_size/3;
-        }
-        return symbol_size * symbol_size;
-      })
-      .type(function(d) {
-        return d.data.sex == "male" ? d3.symbolSquare : d3.symbolCircle;
-      }))
-    .style("fill", function(d) {
-    	if( isProband(d.data) ){
-      	return "yellow";
-      } else if ( d.data.hidden ){
-      	return "lightgrey";
-      }
-    	return d.data.sex == "male" ? "#69d3bf" : "red"
-    })
-    .style("stroke", "#253544")
-    .style("stroke-width", ".8px");
+			   .data(nodes.descendants())
+			   .enter()
+			   	.append("g");
 
+node.append("path")
+	.attr("transform", function(d, i) {
+		return "translate(" + (d.x) + "," + (d.y + symbol_size) + ")";
+	})
+	.attr("d", d3.symbol().size(function(d) {
+		if (d.data.hidden) {
+			return symbol_size * symbol_size / 3;
+		}
+		return symbol_size * symbol_size;
+	})
+	.type(function(d) {
+		return d.data.sex == "M" ? d3.symbolSquare : d3.symbolCircle;
+	}))
+	.style("fill", function(d) {
+		if (pedigree_util.isProband(d.data)) {
+			return "yellow";
+		} else if (d.data.hidden) {
+			return "lightgrey";
+		}
+		return d.data.sex == "M" ? "#69d3bf" : "red"
+	})
+	.style("stroke", "#253544").style("stroke-width", ".8px");
 
 var partnerLink = ped2.selectAll(".partner")
-				.data(partnerLinks)
-       .enter()
-       	.insert("path", "g")
-				.attr("fill", "none")
-   			.attr("stroke", "grey")
-    		.attr("shape-rendering", "crispEdges")
-        .attr('d', connectPartners);
+            	 	  .data(partnerLinks)
+            	 	  .enter()
+            	 	  	.insert("path", "g")
+            	 	  	.attr("fill", "none")
+            	 	  	.attr("stroke", "grey")
+            	 	  	.attr("shape-rendering", "crispEdges")
+            	 	  	.attr('d', connectPartners);
 
 var link = ped2.selectAll(".link")
-    .data(root.links(nodes.descendants()))
-   .enter()
-    .insert("path", "g")
-    .attr("fill", "none")
-    .attr("stroke", "#000")
-    .attr("shape-rendering", "crispEdges")
-    .attr("d", connect2);
+			   .data(root.links(nodes.descendants()))
+			   .enter()
+			   	.insert("path", "g").attr("fill", "none")
+			   	.attr("stroke", "#000")
+			   	.attr("shape-rendering", "crispEdges")
+			   	.attr("d", connect);
 
-function connect2(d, i) {
-    if(d.source.parent == null) {
-    	return;
-    }
-    return "M" + (d.source.x) + "," + (d.source.y + symbol_size)
-         + "V" + ((3*d.source.y + 4*d.target.y)/7)
-         + "H" + d.target.x
-         + "V" + (d.target.y + symbol_size);
+function connect(d, i) {
+	if (d.source.parent == null) {
+		return;
+	}
+	return "M" + (d.source.x) + "," + (d.source.y + symbol_size) +
+	       "V" + ((3 * d.source.y + 4 * d.target.y) / 7) +
+	       "H" + d.target.x +
+	       "V" + (d.target.y + symbol_size);
 };
 
 function flatten(root) {
-  var flat = [];
+	var flat = [];
 	function recurse(node) {
-  	if (node.children) {
-    	node.children.forEach(recurse);
-    }
-    flat.push(node);
+		if (node.children) {
+			node.children.forEach(recurse);
+		}
+		flat.push(node);
 	}
 	recurse(root);
 	return flat;
 }
 
 function getNodeByName(nodes, name) {
-  for(i=0; i<nodes.length; i++) {
-  	if(name === nodes[i].data.name) {
-    	return nodes[i];
-    }
-  }
+	for (i = 0; i < nodes.length; i++) {
+		if (name === nodes[i].data.name) {
+			return nodes[i];
+		}
+	}
 }
 
 function connectPartners(d, i) {
-  var flattenNodes = flatten(nodes);
-  var mother = getNodeByName(flattenNodes, d.mother.name);
-  var father = getNodeByName(flattenNodes, d.father.name);
-	return "M" + (mother.x) + "," + (mother.y + symbol_size)
-  		 + "L" + (father.x) + "," + (father.y + symbol_size);
+	var flattenNodes = flatten(nodes);
+	var mother = getNodeByName(flattenNodes, d.mother.name);
+	var father = getNodeByName(flattenNodes, d.father.name);
+	return "M" + (mother.x) + "," + (mother.y + symbol_size) +
+	       "L" + (father.x) + "," + (father.y + symbol_size);
 }
-
-
