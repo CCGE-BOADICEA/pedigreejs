@@ -123,6 +123,7 @@
 		return links;
 	}
 
+	// return a flattened representation of the tree
 	pedigree_util.flatten = function(root) {
 		var flat = [];
 		function recurse(node) {
@@ -144,7 +145,7 @@
 	}
 }(window.pedigree_util = window.pedigree_util || {}, jQuery));
 
-
+var DEBUG = true;
 var dataset = [
 	{"name": "f11", "sex": "F", "lifeStatus": "deceased"},
 	{"name": "m11", "sex": "M"},
@@ -152,13 +153,14 @@ var dataset = [
 	{"name": "m12", "sex": "M"},
 	{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
 	{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
+	{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
 	{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
 	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
 	{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 ];
 var proband_index = pedigree_util.getProbandIndex(dataset);
 var symbol_size = 35;
-var width = 400;
+var width = 600;
 var height = 400;
 
 /////////////////
@@ -198,12 +200,15 @@ var node = ped2.selectAll(".node")
 			   	.append("g");
 
 node.append("path")
+	.filter(function (d) {
+    	return d.data.hidden && !DEBUG ? false : true;
+	})
 	.attr("transform", function(d, i) {
 		return "translate(" + (d.x) + "," + (d.y + symbol_size) + ")";
 	})
 	.attr("d", d3.symbol().size(function(d) {
 		if (d.data.hidden) {
-			return symbol_size * symbol_size / 3;
+			return symbol_size * symbol_size / 5;
 		}
 		return symbol_size * symbol_size;
 	})
@@ -219,6 +224,15 @@ node.append("path")
 		return d.data.sex == "M" ? "#69d3bf" : "red"
 	})
 	.style("stroke", "#253544").style("stroke-width", ".8px");
+
+
+
+node.append("text")
+	.attr("x", function(d) { return d.x - symbol_size/2; })
+	.attr("y", function(d) { return d.y + symbol_size; })
+	.attr("dy", ".25em")
+	.text(function(d) { return d.data.name; });
+
 
 var partnerLink = ped2.selectAll(".partner")
             	 	  .data(partnerLinkNodes)
