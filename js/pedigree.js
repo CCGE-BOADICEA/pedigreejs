@@ -247,6 +247,23 @@
 				return d.data.sex == "M" ? "#69d3bf" : "red"
 			})
 			.style("stroke", "#253544").style("stroke-width", ".8px");
+		
+		node.on("click", function(d, i) {
+			console.log(d.data.name);
+			d3.event.stopPropagation();
+			$('#node_properties').dialog({
+			    autoOpen: false,
+			    title: d.data.name
+			});
+			$('#node_properties').html("<ul>");
+			$.each(d.data, function(k, v) {
+				if(k !== "children") {
+					$('#node_properties').append("<li>"+k+": "+v+"</li>");
+				}
+		    });
+			$('#node_properties').append("</ul>");
+			$('#node_properties').dialog('open');
+		});
 
 		node.append("text")
 			.attr("x", function(d) { return d.x - symbol_size/2; })
