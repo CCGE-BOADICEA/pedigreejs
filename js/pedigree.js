@@ -39,25 +39,36 @@
 			};
 
 			if('id' in father) {
+				father.id = id++;
 				parent['id'] = id++;
 				mother.id = id++;
+				
 			} else {
+				id = idChildren(person.children, id);
 				mother.id = id++;
 				parent['id'] = id++;
+				father.id = id++;
 			}
-			father.id = id++;
 
 			person.children.push(parent);
 		});
+		id = idChildren(person.children, id);
 
 		jQuery.each(person.children, function(i, p) {
-			if(p.id === undefined) {
-				p.id = id++;
-			}
 			id = pedigree_util.buildTree(p, partnerLinks, id)[1];
 		});
 		return [partnerLinks, id];
 	};
+	
+	
+	function idChildren(children, id) {
+		jQuery.each(children, function(i, p) {
+			if(p.id === undefined) {
+				p.id = id++;
+			}
+		});
+		return id;
+	}
 
 	pedigree_util.isProband = function(obj) {
 		var proband = $(obj).attr('proband');
@@ -151,6 +162,16 @@
 			}
 		}
 	}
+	
+	pedigree_util.urlParam = function(name){
+	    var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+	    if (results==null){
+	       return null;
+	    }
+	    else{
+	       return results[1] || 0;
+	    }
+	}
 }(window.pedigree_util = window.pedigree_util || {}, jQuery));
 
 
@@ -169,7 +190,7 @@
 		ped2.append("rect")
 			.attr("width", "100%")
 			.attr("height", "100%")
-			.attr("fill", "pink");
+			.attr("fill", "lightgrey");
 		
 		var top_level = [];
 		for(var i=0; i<dataset.length; i++) {
@@ -226,16 +247,13 @@
 				return d.data.sex == "M" ? "#69d3bf" : "red"
 			})
 			.style("stroke", "#253544").style("stroke-width", ".8px");
-		
-		
-		
+
 		node.append("text")
 			.attr("x", function(d) { return d.x - symbol_size/2; })
 			.attr("y", function(d) { return d.y + symbol_size; })
 			.attr("dy", ".25em")
-			.text(function(d) { return (d.data.name + ' ' + d.data.id); });
-		
-		
+			.text(function(d) { return (d.data.name + (DEBUG ? ' ' + d.data.id : '')); });
+
 		var partnerLink = ped2.selectAll(".partner")
 		            	 	  .data(partnerLinkNodes)
 		            	 	  .enter()
@@ -244,7 +262,7 @@
 		            	 	  	.attr("stroke", "grey")
 		            	 	  	.attr("shape-rendering", "crispEdges")
 		            	 	  	.attr('d', pedigree_util.connectPartners);
-		
+
 		var link = ped2.selectAll(".link")
 					   .data(root.links(nodes.descendants()))
 					   .enter()
@@ -255,40 +273,3 @@
 	}
 
 }(window.ptree = window.ptree || {}, jQuery));
-
-var DEBUG = true;
-var symbol_size = 35;
-var width = 600;
-var height = 400;
-
-////////////////////
-var dataset = [
-	{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-	{"name": "m11", "sex": "M", "top_level": true},
-	{"name": "f12", "sex": "F", "disorders": [603235, "custom disorder"], "top_level": true},
-	{"name": "m12", "sex": "M", "top_level": true},
-	{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
-	{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
-	{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
-	{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
-	{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
-];
-$( "#pedigrees" ).append( $( "<div id='pedigree1'></div>" ) );
-ptree.build('#pedigree1', dataset, width, height, symbol_size, DEBUG);
-
-////////////////////
-dataset = [
-	{"name": "f12", "sex": "F", "disorders": [603235, "custom disorder"], "top_level": true},
-	{"name": "m12", "sex": "M", "top_level": true},
-	{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-	{"name": "m11", "sex": "M", "top_level": true},
-	{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
-	{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
-	{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
-	{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-	{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
-	{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
-];
-$( "#pedigrees" ).append( $( "<div id='pedigree2'></div>" ) );
-ptree.build('#pedigree2', dataset, width, height, symbol_size, DEBUG);
