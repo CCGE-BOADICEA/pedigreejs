@@ -23,7 +23,7 @@
 	var dataset = [
 		{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
 		{"name": "m11", "sex": "M", "top_level": true},
-		{"name": "f12", "sex": "F", "disorders": [603235, "custom disorder"], "top_level": true},
+		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
 		{"name": "m12", "sex": "M", "top_level": true},
 		{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
 		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
@@ -37,7 +37,7 @@
 
 	////////////////////
 	dataset = [
-		{"name": "f12", "sex": "F", "disorders": [603235, "custom disorder"], "top_level": true},
+		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
 		{"name": "m12", "sex": "M", "top_level": true},
 		{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
 		{"name": "m11", "sex": "M", "top_level": true},
@@ -53,7 +53,7 @@
 
 	////////////////////
 	dataset = [
-		{"name": "f12", "sex": "F", "disorders": [603235, "custom disorder"], "top_level": true},
+		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
 		{"name": "m12", "sex": "M", "top_level": true},
 		{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
 		{"name": "m11", "sex": "M", "top_level": true},
@@ -67,6 +67,27 @@
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree3'></div>" ) );
 	ptree.build('#pedigree3', dataset, width, height, symbol_size, DEBUG);
+	
+	////////////////////
+	dataset = [
+		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
+		{"name": "m12", "sex": "M", "top_level": true},
+		{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
+		{"name": "m11", "sex": "M", "top_level": true},
+		{"name": "f1", "sex": "F", "top_level": true},
+		{"name": "m1", "sex": "M", "top_level": true},
+		{"name": "m111", "sex": "M", "mother": "f1", "father": "m1"},
+		{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
+		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
+		{"name": "f23", "sex": "F", "mother": "f11", "father": "m11"},
+		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
+		{"name": "f22", "sex": "M", "mother": "f12", "father": "m12"},
+		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
+		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"},
+		{"name": "ch2", "sex": "M", "mother": "f23", "father": "m111"}
+	];
+	$( "#pedigrees" ).append( $( "<div id='pedigree4'></div>" ) );
+	ptree.build('#pedigree4', dataset, width, height, symbol_size, DEBUG);
 	</script>
 </body>
 

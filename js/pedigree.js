@@ -259,7 +259,7 @@
 		            	 	  .enter()
 		            	 	  	.insert("path", "g")
 		            	 	  	.attr("fill", "none")
-		            	 	  	.attr("stroke", "grey")
+		            	 	  	.attr("stroke", "#000")
 		            	 	  	.attr("shape-rendering", "crispEdges")
 		            	 	  	.attr('d', pedigree_util.connectPartners);
 
