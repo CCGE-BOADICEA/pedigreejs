@@ -76,7 +76,7 @@
 		return typeof proband !== typeof undefined && proband !== false;
 	}
 
-	pedigree_util.getProbandIndex = function(dataset) {
+/*	pedigree_util.getProbandIndex = function(dataset) {
 		var proband;
 		jQuery.each(dataset, function(i, val) {
 			if (pedigree_util.isProband(val)) {
@@ -84,7 +84,7 @@
 			}
 		});
 		return proband;
-	}
+	}*/
 
 	pedigree_util.getChildren = function(dataset, person) {
 		var children = [];
@@ -96,7 +96,7 @@
 		return children;
 	}
 
-	pedigree_util.getIdxByName = function(arr, name) {
+/*	pedigree_util.getIdxByName = function(arr, name) {
 		var idx = -1;
 		jQuery.each(arr, function(i, p) {
 			if (name === p.name) {
@@ -104,7 +104,7 @@
 			}
 		});
 		return idx;
-	}
+	}*/
 
 	pedigree_util.getPersonByName = function(dataset, name) {
 		var person = undefined;
@@ -192,7 +192,7 @@
 	}
 
 	pedigree_util.getNodeByName = function(nodes, name) {
-		for (i = 0; i < nodes.length; i++) {
+		for (var i = 0; i < nodes.length; i++) {
 			if (name === nodes[i].data.name) {
 				return nodes[i];
 			}
@@ -216,14 +216,12 @@
 (function(ptree, $, undefined) {
 
 	ptree.build = function(targetDiv, dataset, width, height, symbol_size, DEBUG) {
-		var proband_index = pedigree_util.getProbandIndex(dataset);
-	
-		var ped2 = d3.select(targetDiv)
+		var ped = d3.select(targetDiv)
 					 .append("svg:svg")
 					 .attr("width", width)
 					 .attr("height", height);
 		
-		ped2.append("rect")
+		ped.append("rect")
 			.attr("width", "100%")
 			.attr("height", "100%")
 			.attr("fill", "lightgrey");
@@ -254,7 +252,7 @@
 		pedigree_util.adjust_coords(nodes, flattenNodes);
 		var partnerLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
 		
-		var node = ped2.selectAll(".node")
+		var node = ped.selectAll(".node")
 					   .data(nodes.descendants())
 					   .enter()
 					   	.append("g");
@@ -308,22 +306,25 @@
 			.attr("dy", ".25em")
 			.text(function(d) { return (d.data.name + (DEBUG ? ' ' + d.data.id : '')); });
 
-		var partnerLink = ped2.selectAll(".partner")
-		            	 	  .data(partnerLinkNodes)
-		            	 	  .enter()
-		            	 	  	.insert("path", "g")
-		            	 	  	.attr("fill", "none")
-		            	 	  	.attr("stroke", "#000")
-		            	 	  	.attr("shape-rendering", "crispEdges")
-		            	 	  	.attr('d', pedigree_util.connectPartners);
+		// links between partners
+		ped.selectAll(".partner")
+		  	.data(partnerLinkNodes)
+		  	.enter()
+		  		.insert("path", "g")
+		  		.attr("fill", "none")
+		  		.attr("stroke", "#000")
+		  		.attr("shape-rendering", "crispEdges")
+		  		.attr('d', pedigree_util.connectPartners);
 
-		var link = ped2.selectAll(".link")
-					   .data(root.links(nodes.descendants()))
-					   .enter()
-					   	.insert("path", "g").attr("fill", "none")
-					   	.attr("stroke", "#000")
-					   	.attr("shape-rendering", "crispEdges")
-					   	.attr("d", pedigree_util.connect);
+		// links to children
+		ped.selectAll(".link")
+			.data(root.links(nodes.descendants()))
+			.enter()
+				.insert("path", "g")
+				.attr("fill", "none")
+				.attr("stroke", "#000")
+				.attr("shape-rendering", "crispEdges")
+				.attr("d", pedigree_util.connect);
 	}
 
 }(window.ptree = window.ptree || {}, jQuery));
