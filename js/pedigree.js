@@ -35,6 +35,8 @@
 					name : '',
 					hidden : true,
 					parent : null,
+					father : ptr.father,
+					mother : ptr.mother,
 					children : pedigree_util.getChildren(dataset, mother)
 			};
 
@@ -59,8 +61,7 @@
 		});
 		return [partnerLinks, id];
 	};
-	
-	
+
 	function idChildren(children, id) {
 		jQuery.each(children, function(i, p) {
 			if(p.id === undefined) {
@@ -122,7 +123,7 @@
 		}
 
 		return "M" + (d.source.x) + "," + (d.source.y + symbol_size) +
-		       "V" + ((3 * d.source.y + 4 * d.target.y) / 7) +
+		       "V" + ((d.source.y + 4 * d.target.y) / 5) +
 		       "H" + d.target.x +
 		       "V" + (d.target.y + symbol_size);
 	};
@@ -153,6 +154,41 @@
 		}
 		recurse(root);
 		return flat;
+	}
+	
+	// Adjust D3 layout positioning.
+	// Position hidden parent node centring them between father and mother nodes. Remove kinks
+	// from links - e.g. where there is a single child plus a hidden child
+	pedigree_util.adjust_coords  = function(root, flattenNodes) {
+		function recurse(node) {
+			if (node.children) {
+				if(node.data.father !== undefined) {
+					var father = pedigree_util.getNodeByName(flattenNodes, node.data.father.name);
+					var mother = pedigree_util.getNodeByName(flattenNodes, node.data.mother.name);
+					var xmid = (father.x + mother.x) /2;
+					if(node.children.length == 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
+							for(var i=0; i<node.children.length; i++) {
+								if(node.children[i].data.hidden == undefined) {
+							  		node.children[i].x = xmid;
+							  		node.x = xmid;
+								}
+							}
+					} else {
+						var diff = node.x - xmid;
+						node.x = xmid;
+						if(node.children.length == 1) {
+							node.children[0].x = xmid;
+						} else {
+							for(var i=0; i<node.children.length; i++) {
+								node.children[i].x -= diff;
+							}
+						}
+					}
+				}
+				node.children.forEach(recurse);
+			}
+		}
+		recurse(root);
 	}
 
 	pedigree_util.getNodeByName = function(nodes, name) {
@@ -215,6 +251,7 @@
 		
 		var nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 		var flattenNodes = pedigree_util.flatten(nodes);
+		pedigree_util.adjust_coords(nodes, flattenNodes);
 		var partnerLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
 		
 		var node = ped2.selectAll(".node")
