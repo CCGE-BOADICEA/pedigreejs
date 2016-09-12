@@ -32,12 +32,22 @@
 		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
 		{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
 		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
+		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree1'></div>" ) );
 	ptree.build('#pedigree1', dataset, width, height, symbol_size, DEBUG);
 
+	////////////////////
+	dataset = [
+		{"name": "m21", "sex": "M", "top_level": true},
+		{"name": "f21", "sex": "F", "top_level": true},
+		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
+		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
+	];
+	$( "#pedigrees" ).append( $( "<div id='pedigree1a'></div>" ) );
+	ptree.build('#pedigree1a', dataset, width, height, symbol_size, DEBUG);
+	
 	////////////////////
 	dataset = [
 		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
@@ -48,7 +58,7 @@
 		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
 		{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
 		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
+		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree2'></div>" ) );
@@ -65,7 +75,7 @@
 		{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
 		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
 		{"name": "f22", "sex": "M", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
+		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree3'></div>" ) );
@@ -85,7 +95,7 @@
 		{"name": "f23", "sex": "F", "mother": "f11", "father": "m11"},
 		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
 		{"name": "f22", "sex": "M", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
+		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"},
 		{"name": "ch2", "sex": "M", "mother": "f23", "father": "m111"}
 	];
@@ -110,7 +120,7 @@
 		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
 		{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
 		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "disorders": [603235], "proband": true},
+		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree5'></div>" ) );
