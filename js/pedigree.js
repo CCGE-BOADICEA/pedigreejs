@@ -122,15 +122,15 @@
 			return;
 		}
 
-		return "M" + (d.source.x) + "," + (d.source.y + symbol_size) +
-		       "V" + ((d.source.y + 4 * d.target.y) / 5) +
+		return "M" + (d.source.x) + "," + (d.source.y ) +
+		       "V" + ((d.source.y + d.target.y) / 2) +
 		       "H" + d.target.x +
-		       "V" + (d.target.y + symbol_size);
+		       "V" + (d.target.y );
 	};
 
 	pedigree_util.connectPartners = function(d, i) {
-		return "M" + (d.mother.x) + "," + (d.mother.y + symbol_size) +
-		       "L" + (d.father.x) + "," + (d.father.y + symbol_size);
+		return "M" + (d.mother.x) + "," + (d.mother.y) +
+		       "L" + (d.father.x) + "," + (d.father.y);
 	}
 	
 	// convert the partner names into corresponding tree nodes
@@ -261,8 +261,9 @@
 			.filter(function (d) {
 		    	return d.data.hidden && !DEBUG ? false : true;
 			})
+			.attr("class", "node")
 			.attr("transform", function(d, i) {
-				return "translate(" + (d.x) + "," + (d.y + symbol_size) + ")";
+				return "translate(" + (d.x) + "," + (d.y) + ")";
 			})
 			.attr("d", d3.symbol().size(function(d) {
 				if (d.data.hidden) {
@@ -282,30 +283,111 @@
 				return d.data.sex == "M" ? "#69d3bf" : "red"
 			})
 			.style("stroke", "#253544").style("stroke-width", ".8px");
-		
-		node.on("click", function(d, i) {
-			console.log(d.data.name);
-			d3.event.stopPropagation();
-			$('#node_properties').dialog({
-			    autoOpen: false,
-			    title: d.data.name
-			});
-			$('#node_properties').html("<ul>");
-			$.each(d.data, function(k, v) {
-				if(k !== "children") {
-					$('#node_properties').append("<li>"+k+": "+v+"</li>");
-				}
-		    });
-			$('#node_properties').append("</ul>");
-			$('#node_properties').dialog('open');
-		});
 
+/*		var contextMenuShowing = false;
+		d3.selectAll(targetDiv).on('contextmenu', function (d, i) {
+		    if(contextMenuShowing) {
+		        d3.event.preventDefault();
+		        d3.select(".popup").remove();
+		    } else {
+		    	if(contextMenuShowing) {
+			        d3.event.preventDefault();
+			        d3.select(".popup").remove();
+		    	} else {
+				d3_target = d3.select(d3.event.target);
+					console.log(d3_target);
+			        if (d3_target.classed("label")) {
+			        	d = d3_target.datum();
+			        	console.log(d);
+			            d3.event.preventDefault();
+			        }
+		    	}
+		    }
+		});*/
+
+		// names of individuals
 		node.append("text")
-			.attr("x", function(d) { return d.x - symbol_size/2; })
-			.attr("y", function(d) { return d.y + symbol_size; })
+			.attr("class", "label")
+			.attr("x", function(d) { return d.x - (2 * symbol_size)/5; })
+			.attr("y", function(d) { return d.y; })
 			.attr("dy", ".25em")
 			.text(function(d) { return (d.data.name + (DEBUG ? ' ' + d.data.id : '')); });
 
+		// rectangle used to highlight on mouse over
+		node.append("rect")
+			.attr("x", function(d) { return d.x - symbol_size; })
+			.attr("y", function(d) { return d.y - symbol_size; })
+			.attr("width",  (2 * symbol_size)+'px')
+			.attr("height", (2 * symbol_size)+'px')
+			.style("stroke", "black")
+			.style("stroke-width", 1)
+			.style("opacity", 0)
+			.attr("fill", "lightgrey");
+		
+		// settings widget
+		node.append("text")
+			.filter(function (d) {
+		    	return d.data.hidden && !DEBUG ? false : true;
+			})
+			.attr("class", "settings")
+			.style("opacity", 0)
+			.attr('font-family', 'FontAwesome')
+			.attr("x", function(d) { return d.x; })
+			.attr("y", function(d) { return d.y - (2*symbol_size)/3; })
+			.attr('font-size', '0.9em' )
+			.text(function(d) { return '\uf013' });
+		
+		// editing widget
+		node.append("text")
+			.filter(function (d) {
+		    	return d.data.hidden && !DEBUG ? false : true;
+			})
+			.attr("class", "edit")
+			.style("opacity", 0)
+			.attr('font-family', 'FontAwesome')
+			.attr("x", function(d) { return d.x + 16; })
+			.attr("y", function(d) { return d.y - (2*symbol_size)/3; })
+			.attr('font-size', '0.9em' )
+			.text(function(d) { return '\uf044' });
+
+		// handle widget clicks
+		d3.selectAll(".settings, .edit")
+		  .on("click", function () {
+			var opt = d3.select(this).attr('class');
+			var d = d3.select(this.parentNode).datum();
+
+			if(opt === 'settings') {
+				$('#node_properties').dialog({
+				    autoOpen: false,
+				    title: d.data.name
+				});
+				$('#node_properties').html("<ul>");
+				$.each(d.data, function(k, v) {
+					if(k !== "children") {
+						$('#node_properties').append("<li>"+k+": "+v+"</li>");
+					}
+			    });
+				$('#node_properties').append("</ul>");
+				$('#node_properties').dialog('open');
+			} else if(opt === 'edit') {
+				console.log('EDIT');
+			}
+		});
+
+		// other mouse events
+		node.on("mouseover", function(){
+			d3.select(this).selectAll('.settings, .edit')
+			  .style("opacity", 1);
+			d3.select(this).select('rect')
+			  .style("opacity", 0.2);
+		})
+		.on("mouseout", function(){
+			d3.select(this).selectAll('.settings, .edit')
+			  .style("opacity", 0);
+			d3.select(this).select('rect')
+		  	  .style("opacity", 0);
+		});
+			
 		// links between partners
 		ped.selectAll(".partner")
 		  	.data(partnerLinkNodes)
