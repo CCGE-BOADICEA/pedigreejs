@@ -35,6 +35,8 @@
 					name : '',
 					hidden : true,
 					parent : null,
+					father : ptr.father,
+					mother : ptr.mother,
 					children : pedigree_util.getChildren(dataset, mother)
 			};
 
@@ -59,8 +61,7 @@
 		});
 		return [partnerLinks, id];
 	};
-	
-	
+
 	function idChildren(children, id) {
 		jQuery.each(children, function(i, p) {
 			if(p.id === undefined) {
@@ -75,7 +76,7 @@
 		return typeof proband !== typeof undefined && proband !== false;
 	}
 
-	pedigree_util.getProbandIndex = function(dataset) {
+/*	pedigree_util.getProbandIndex = function(dataset) {
 		var proband;
 		jQuery.each(dataset, function(i, val) {
 			if (pedigree_util.isProband(val)) {
@@ -83,7 +84,7 @@
 			}
 		});
 		return proband;
-	}
+	}*/
 
 	pedigree_util.getChildren = function(dataset, person) {
 		var children = [];
@@ -121,15 +122,15 @@
 			return;
 		}
 
-		return "M" + (d.source.x) + "," + (d.source.y + symbol_size) +
-		       "V" + ((3 * d.source.y + 4 * d.target.y) / 7) +
+		return "M" + (d.source.x) + "," + (d.source.y ) +
+		       "V" + ((d.source.y + d.target.y) / 2) +
 		       "H" + d.target.x +
-		       "V" + (d.target.y + symbol_size);
+		       "V" + (d.target.y );
 	};
 
 	pedigree_util.connectPartners = function(d, i) {
-		return "M" + (d.mother.x) + "," + (d.mother.y + symbol_size) +
-		       "L" + (d.father.x) + "," + (d.father.y + symbol_size);
+		return "M" + (d.mother.x) + "," + (d.mother.y) +
+		       "L" + (d.father.x) + "," + (d.father.y);
 	}
 	
 	// convert the partner names into corresponding tree nodes
@@ -154,9 +155,44 @@
 		recurse(root);
 		return flat;
 	}
+	
+	// Adjust D3 layout positioning.
+	// Position hidden parent node centring them between father and mother nodes. Remove kinks
+	// from links - e.g. where there is a single child plus a hidden child
+	pedigree_util.adjust_coords  = function(root, flattenNodes) {
+		function recurse(node) {
+			if (node.children) {
+				if(node.data.father !== undefined) {
+					var father = pedigree_util.getNodeByName(flattenNodes, node.data.father.name);
+					var mother = pedigree_util.getNodeByName(flattenNodes, node.data.mother.name);
+					var xmid = (father.x + mother.x) /2;
+					if(node.children.length == 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
+							for(var i=0; i<node.children.length; i++) {
+								if(node.children[i].data.hidden == undefined) {
+							  		node.children[i].x = xmid;
+							  		node.x = xmid;
+								}
+							}
+					} else {
+						var diff = node.x - xmid;
+						node.x = xmid;
+						if(node.children.length == 1) {
+							node.children[0].x = xmid;
+						} else {
+							for(var i=0; i<node.children.length; i++) {
+								node.children[i].x -= diff;
+							}
+						}
+					}
+				}
+				node.children.forEach(recurse);
+			}
+		}
+		recurse(root);
+	}
 
 	pedigree_util.getNodeByName = function(nodes, name) {
-		for (i = 0; i < nodes.length; i++) {
+		for (var i = 0; i < nodes.length; i++) {
 			if (name === nodes[i].data.name) {
 				return nodes[i];
 			}
@@ -180,14 +216,12 @@
 (function(ptree, $, undefined) {
 
 	ptree.build = function(targetDiv, dataset, width, height, symbol_size, DEBUG) {
-		var proband_index = pedigree_util.getProbandIndex(dataset);
-	
-		var ped2 = d3.select(targetDiv)
+		var ped = d3.select(targetDiv)
 					 .append("svg:svg")
 					 .attr("width", width)
 					 .attr("height", height);
 		
-		ped2.append("rect")
+		ped.append("rect")
 			.attr("width", "100%")
 			.attr("height", "100%")
 			.attr("fill", "lightgrey");
@@ -215,9 +249,10 @@
 		
 		var nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 		var flattenNodes = pedigree_util.flatten(nodes);
+		pedigree_util.adjust_coords(nodes, flattenNodes);
 		var partnerLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
 		
-		var node = ped2.selectAll(".node")
+		var node = ped.selectAll(".node")
 					   .data(nodes.descendants())
 					   .enter()
 					   	.append("g");
@@ -226,8 +261,9 @@
 			.filter(function (d) {
 		    	return d.data.hidden && !DEBUG ? false : true;
 			})
+			.attr("class", "node")
 			.attr("transform", function(d, i) {
-				return "translate(" + (d.x) + "," + (d.y + symbol_size) + ")";
+				return "translate(" + (d.x) + "," + (d.y) + ")";
 			})
 			.attr("d", d3.symbol().size(function(d) {
 				if (d.data.hidden) {
@@ -247,46 +283,126 @@
 				return d.data.sex == "M" ? "#69d3bf" : "red"
 			})
 			.style("stroke", "#253544").style("stroke-width", ".8px");
-		
-		node.on("click", function(d, i) {
-			console.log(d.data.name);
-			d3.event.stopPropagation();
-			$('#node_properties').dialog({
-			    autoOpen: false,
-			    title: d.data.name
-			});
-			$('#node_properties').html("<ul>");
-			$.each(d.data, function(k, v) {
-				if(k !== "children") {
-					$('#node_properties').append("<li>"+k+": "+v+"</li>");
-				}
-		    });
-			$('#node_properties').append("</ul>");
-			$('#node_properties').dialog('open');
-		});
 
+		// names of individuals
 		node.append("text")
-			.attr("x", function(d) { return d.x - symbol_size/2; })
-			.attr("y", function(d) { return d.y + symbol_size; })
+			.attr("class", "label")
+			.attr("x", function(d) { return d.x - (2 * symbol_size)/5; })
+			.attr("y", function(d) { return d.y; })
 			.attr("dy", ".25em")
 			.text(function(d) { return (d.data.name + (DEBUG ? ' ' + d.data.id : '')); });
 
-		var partnerLink = ped2.selectAll(".partner")
-		            	 	  .data(partnerLinkNodes)
-		            	 	  .enter()
-		            	 	  	.insert("path", "g")
-		            	 	  	.attr("fill", "none")
-		            	 	  	.attr("stroke", "#000")
-		            	 	  	.attr("shape-rendering", "crispEdges")
-		            	 	  	.attr('d', pedigree_util.connectPartners);
+		// rectangle used to highlight on mouse over
+		node.append("rect")
+			.attr("x", function(d) { return d.x - symbol_size; })
+			.attr("y", function(d) { return d.y - symbol_size; })
+			.attr("width",  (2 * symbol_size)+'px')
+			.attr("height", (2 * symbol_size)+'px')
+			.style("stroke", "black")
+			.style("stroke-width", 1)
+			.style("opacity", 0)
+			.attr("fill", "lightgrey");
+		
+		// settings widget
+		var widgets = {'settings': '\uf013', 'addchild': '\uf007', 'addsibling': '\uf234', 'addpartner': '\uf0c1'}
+		var off = 0;
+		
+		for(var key in widgets) {
+			node.append("text")
+				.filter(function (d) {
+			    	return d.data.hidden && !DEBUG ? false : true;
+				})
+				.attr("class", key)
+				.style("opacity", 0)
+				.attr('font-family', 'FontAwesome')
+				.attr("x", function(d) { return d.x - symbol_size + off; })
+				.attr("y", function(d) { return d.y + symbol_size; })
+				.attr('font-size', '1em' )
+				.text(function(d) { return widgets[key] });		
+			off += 16;
+		}
 
-		var link = ped2.selectAll(".link")
-					   .data(root.links(nodes.descendants()))
-					   .enter()
-					   	.insert("path", "g").attr("fill", "none")
-					   	.attr("stroke", "#000")
-					   	.attr("shape-rendering", "crispEdges")
-					   	.attr("d", pedigree_util.connect);
+		// handle widget clicks
+		d3.selectAll(".settings, .addchild, .addsibling, .addpartner")
+		  .on("click", function () {
+			var opt = d3.select(this).attr('class');
+			var d = d3.select(this.parentNode).datum();
+			console.log(opt);
+
+			if(opt === 'settings') {
+				$('#node_properties').dialog({
+				    autoOpen: false,
+				    title: d.data.name
+				});
+				$('#node_properties').html("<ul>");
+				$.each(d.data, function(k, v) {
+					if(k !== "children") {
+						$('#node_properties').append("<li>"+k+": "+v+"</li>");
+					}
+			    });
+				$('#node_properties').append("</ul>");
+				$('#node_properties').dialog('open');
+			} else if(opt === 'addchild') {
+				$(targetDiv).empty();
+				var idx = pedigree_util.getIdxByName(dataset, d.data.name);
+				var newbie = {"name": "XXX", "sex": "M", "mother": "f21", "father": "m21"};
+				dataset.splice(idx, 0, newbie);
+				ptree.build(targetDiv, dataset, width, height, symbol_size, DEBUG);
+			} else if(opt === 'addsibling') {
+				$(targetDiv).empty();
+				var idx = pedigree_util.getIdxByName(dataset, d.data.name);
+				var newbie = {"name": "XXX", "sex": d.data.sex, "mother": d.data.mother, "father": d.data.father};
+				dataset.splice(idx, 0, newbie);
+				ptree.build(targetDiv, dataset, width, height, symbol_size, DEBUG);
+			} else if(opt === 'addpartner') {
+				$(targetDiv).empty();
+				var idx = pedigree_util.getIdxByName(dataset, d.data.name);
+				var partner, child;
+				if(d.data.sex === 'F') {
+					partner = {"name": "XXX", "sex": 'M'};
+					child = {"name": "XXXa", "sex": "M", "mother": d.data.name, "father": "XXX"};
+				} else {
+					partner = {"name": "XXX", "sex": 'F'};
+					child = {"name": "XXXa", "sex": "M", "mother": "XXX", "father": d.data.name};
+				}
+				dataset.splice(idx, 0, partner,child);
+				ptree.build(targetDiv, dataset, width, height, symbol_size, DEBUG);				
+			}
+		});
+		
+		// other mouse events
+		node.on("mouseover", function(){
+			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner')
+			  .style("opacity", 1);
+			d3.select(this).select('rect')
+			  .style("opacity", 0.2);
+		})
+		.on("mouseout", function(){
+			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner')
+			  .style("opacity", 0);
+			d3.select(this).select('rect')
+		  	  .style("opacity", 0);
+		});
+			
+		// links between partners
+		ped.selectAll(".partner")
+		  	.data(partnerLinkNodes)
+		  	.enter()
+		  		.insert("path", "g")
+		  		.attr("fill", "none")
+		  		.attr("stroke", "#000")
+		  		.attr("shape-rendering", "crispEdges")
+		  		.attr('d', pedigree_util.connectPartners);
+
+		// links to children
+		ped.selectAll(".link")
+			.data(root.links(nodes.descendants()))
+			.enter()
+				.insert("path", "g")
+				.attr("fill", "none")
+				.attr("stroke", "#000")
+				.attr("shape-rendering", "crispEdges")
+				.attr("d", pedigree_util.connect);
 	}
 
 }(window.ptree = window.ptree || {}, jQuery));
