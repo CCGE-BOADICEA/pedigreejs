@@ -96,7 +96,7 @@
 		return children;
 	}
 
-/*	pedigree_util.getIdxByName = function(arr, name) {
+	pedigree_util.getIdxByName = function(arr, name) {
 		var idx = -1;
 		jQuery.each(arr, function(i, p) {
 			if (name === p.name) {
@@ -104,7 +104,7 @@
 			}
 		});
 		return idx;
-	}*/
+	}
 
 	pedigree_util.getPersonByName = function(dataset, name) {
 		var person = undefined;
@@ -284,27 +284,6 @@
 			})
 			.style("stroke", "#253544").style("stroke-width", ".8px");
 
-/*		var contextMenuShowing = false;
-		d3.selectAll(targetDiv).on('contextmenu', function (d, i) {
-		    if(contextMenuShowing) {
-		        d3.event.preventDefault();
-		        d3.select(".popup").remove();
-		    } else {
-		    	if(contextMenuShowing) {
-			        d3.event.preventDefault();
-			        d3.select(".popup").remove();
-		    	} else {
-				d3_target = d3.select(d3.event.target);
-					console.log(d3_target);
-			        if (d3_target.classed("label")) {
-			        	d = d3_target.datum();
-			        	console.log(d);
-			            d3.event.preventDefault();
-			        }
-		    	}
-		    }
-		});*/
-
 		// names of individuals
 		node.append("text")
 			.attr("class", "label")
@@ -325,36 +304,30 @@
 			.attr("fill", "lightgrey");
 		
 		// settings widget
-		node.append("text")
-			.filter(function (d) {
-		    	return d.data.hidden && !DEBUG ? false : true;
-			})
-			.attr("class", "settings")
-			.style("opacity", 0)
-			.attr('font-family', 'FontAwesome')
-			.attr("x", function(d) { return d.x; })
-			.attr("y", function(d) { return d.y - (2*symbol_size)/3; })
-			.attr('font-size', '0.9em' )
-			.text(function(d) { return '\uf013' });
+		var widgets = {'settings': '\uf013', 'addchild': '\uf007', 'addsibling': '\uf234', 'addpartner': '\uf0c1'}
+		var off = 0;
 		
-		// editing widget
-		node.append("text")
-			.filter(function (d) {
-		    	return d.data.hidden && !DEBUG ? false : true;
-			})
-			.attr("class", "edit")
-			.style("opacity", 0)
-			.attr('font-family', 'FontAwesome')
-			.attr("x", function(d) { return d.x + 16; })
-			.attr("y", function(d) { return d.y - (2*symbol_size)/3; })
-			.attr('font-size', '0.9em' )
-			.text(function(d) { return '\uf044' });
+		for(var key in widgets) {
+			node.append("text")
+				.filter(function (d) {
+			    	return d.data.hidden && !DEBUG ? false : true;
+				})
+				.attr("class", key)
+				.style("opacity", 0)
+				.attr('font-family', 'FontAwesome')
+				.attr("x", function(d) { return d.x - symbol_size + off; })
+				.attr("y", function(d) { return d.y + symbol_size; })
+				.attr('font-size', '1em' )
+				.text(function(d) { return widgets[key] });		
+			off += 16;
+		}
 
 		// handle widget clicks
-		d3.selectAll(".settings, .edit")
+		d3.selectAll(".settings, .addchild, .addsibling, .addpartner")
 		  .on("click", function () {
 			var opt = d3.select(this).attr('class');
 			var d = d3.select(this.parentNode).datum();
+			console.log(opt);
 
 			if(opt === 'settings') {
 				$('#node_properties').dialog({
@@ -369,20 +342,43 @@
 			    });
 				$('#node_properties').append("</ul>");
 				$('#node_properties').dialog('open');
-			} else if(opt === 'edit') {
-				console.log('EDIT');
+			} else if(opt === 'addchild') {
+				$(targetDiv).empty();
+				var idx = pedigree_util.getIdxByName(dataset, d.data.name);
+				var newbie = {"name": "XXX", "sex": "M", "mother": "f21", "father": "m21"};
+				dataset.splice(idx, 0, newbie);
+				ptree.build(targetDiv, dataset, width, height, symbol_size, DEBUG);
+			} else if(opt === 'addsibling') {
+				$(targetDiv).empty();
+				var idx = pedigree_util.getIdxByName(dataset, d.data.name);
+				var newbie = {"name": "XXX", "sex": d.data.sex, "mother": d.data.mother, "father": d.data.father};
+				dataset.splice(idx, 0, newbie);
+				ptree.build(targetDiv, dataset, width, height, symbol_size, DEBUG);
+			} else if(opt === 'addpartner') {
+				$(targetDiv).empty();
+				var idx = pedigree_util.getIdxByName(dataset, d.data.name);
+				var partner, child;
+				if(d.data.sex === 'F') {
+					partner = {"name": "XXX", "sex": 'M'};
+					child = {"name": "XXXa", "sex": "M", "mother": d.data.name, "father": "XXX"};
+				} else {
+					partner = {"name": "XXX", "sex": 'F'};
+					child = {"name": "XXXa", "sex": "M", "mother": "XXX", "father": d.data.name};
+				}
+				dataset.splice(idx, 0, partner,child);
+				ptree.build(targetDiv, dataset, width, height, symbol_size, DEBUG);				
 			}
 		});
-
+		
 		// other mouse events
 		node.on("mouseover", function(){
-			d3.select(this).selectAll('.settings, .edit')
+			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner')
 			  .style("opacity", 1);
 			d3.select(this).select('rect')
 			  .style("opacity", 0.2);
 		})
 		.on("mouseout", function(){
-			d3.select(this).selectAll('.settings, .edit')
+			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner')
 			  .style("opacity", 0);
 			d3.select(this).select('rect')
 		  	  .style("opacity", 0);
