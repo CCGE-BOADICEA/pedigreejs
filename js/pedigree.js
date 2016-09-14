@@ -1,9 +1,9 @@
 
 // Pedigree Tree Utils
 (function(pedigree_util, $, undefined) {
-	pedigree_util.buildTree = function(person, partnerLinks, id) {
+	pedigree_util.buildTree = function(opts, person, partnerLinks, id) {
 		if (typeof person.children === typeof undefined) {
-			person.children = pedigree_util.getChildren(dataset, person);
+			person.children = pedigree_util.getChildren(opts.dataset, person);
 		}
 		if (typeof partnerLinks === typeof undefined) {
 			partnerLinks = [];
@@ -13,13 +13,13 @@
 		var partners = [];
 		var partnerNames = [];
 		jQuery.each(person.children, function(i, child) {
-			jQuery.each(dataset, function(i, p) {
+			jQuery.each(opts.dataset, function(i, p) {
 				if (child.name === p.mother) {
 					if ($.inArray(p.father, partnerNames) == -1) {
 						partnerNames.push(p.father);
 						partners.push({
 							'mother' : child,
-							'father' : pedigree_util.getPersonByName(dataset, p.father)
+							'father' : pedigree_util.getPersonByName(opts.dataset, p.father)
 						});
 					}
 				}
@@ -37,7 +37,7 @@
 					parent : null,
 					father : ptr.father,
 					mother : ptr.mother,
-					children : pedigree_util.getChildren(dataset, mother)
+					children : pedigree_util.getChildren(opts.dataset, mother)
 			};
 
 			if('id' in father) {
@@ -51,13 +51,15 @@
 				parent['id'] = id++;
 				father.id = id++;
 			}
+			mother['parent_node'] = parent;
+			father['parent_node'] = parent;
 
 			person.children.push(parent);
 		});
 		id = idChildren(person.children, id);
 
 		jQuery.each(person.children, function(i, p) {
-			id = pedigree_util.buildTree(p, partnerLinks, id)[1];
+			id = pedigree_util.buildTree(opts, p, partnerLinks, id)[1];
 		});
 		return [partnerLinks, id];
 	};
@@ -252,8 +254,8 @@
 			hidden : true,
 			children : top_level
 		};
-		
-		var partners = pedigree_util.buildTree(hidden_root)[0];
+
+		var partners = pedigree_util.buildTree(opts, hidden_root)[0];
 		var root = d3.hierarchy(hidden_root);
 		var treemap = d3.tree()
 						.separation(function(a, b) {
@@ -407,16 +409,29 @@
 				$(opts.targetDiv).empty();
 				ptree.build(opts);
 			} else if(opt === 'addchild') {
-				$(opts.targetDiv).empty();
-				var idx = pedigree_util.getIdxByName(opts.dataset, d.data.name);
-				var newbie = {"name": "XXX", "sex": "M", "mother": "f21", "father": "m21"};
-				opts.dataset.splice(idx, 0, newbie);
-				ptree.build(opts);
+				if(d.data.parent_node !== undefined){
+					var children = d.data.parent_node.children;
+					if(children !== undefined && children.length > 0) {
+						var child = children[0];
+						var newdataset = copy_dataset(opts.dataset);
+						var idx = pedigree_util.getIdxByName(newdataset, child.name);
+						
+						var newbie = {"name": ptree.makeid(3), "sex": "M", "mother": child.mother, "father": child.father};
+						newdataset.splice(idx, 0, newbie);
+						opts['dataset'] = newdataset;
+						$(opts.targetDiv).empty();
+						ptree.build(opts);
+					}
+				} else {
+					// TODO - currently no children so a partner has not been added
+				}
 			} else if(opt === 'addsibling') {
+				var newbie = {"name": ptree.makeid(3), "sex": d.data.sex, "mother": d.data.mother, "father": d.data.father};
+				var newdataset = copy_dataset(opts.dataset);
+				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
+				newdataset.splice(idx, 0, newbie);
+				opts['dataset'] = newdataset;
 				$(opts.targetDiv).empty();
-				var idx = pedigree_util.getIdxByName(opts.dataset, d.data.name);
-				var newbie = {"name": "XXX", "sex": d.data.sex, "mother": d.data.mother, "father": d.data.father};
-				opts.dataset.splice(idx, 0, newbie);
 				ptree.build(opts);
 			} else if(opt === 'addpartner') {
 				$(opts.targetDiv).empty();
@@ -447,6 +462,29 @@
 			d3.select(this).select('rect')
 		  	  .style("opacity", 0);
 		});
+	}
+	
+	copy_dataset = function(dataset) {
+		var disallowed = ["children", "id", "parent_node", "parent"];
+		var newdataset = [];
+		for(var i=0; i<dataset.length; i++){
+			var obj = {};
+			for(var key in dataset[i]) {
+				if(disallowed.indexOf(key) == -1) {
+					obj[key] = dataset[i][key];
+				}
+			}
+			newdataset.push(obj);
+		}
+		return newdataset;
+	}
+
+	ptree.makeid = function(len) {
+	    var text = "";
+	    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	    for( var i=0; i < len; i++ )
+	        text += possible.charAt(Math.floor(Math.random() * possible.length));
+	    return text;
 	}
 
 }(window.ptree = window.ptree || {}, jQuery));
