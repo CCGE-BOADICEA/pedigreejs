@@ -443,7 +443,7 @@
 						ptree.build(opts);
 					}
 				} else {
-					// TODO - currently no children so a partner has not been added
+					// TODO:: currently no children so a partner has not been added
 				}
 			} else if(opt === 'addsibling') {
 				var newbie = {"name": ptree.makeid(3), "sex": d.data.sex, "mother": d.data.mother, "father": d.data.father};
@@ -458,6 +458,8 @@
 				var newdataset = copy_dataset(opts.dataset);
 				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
 				var parent, partner, child;
+				
+				// TODO:: assumes depth (d.depth) is 2
 				parent = {"name": ptree.makeid(3), 'hidden': true, 'invisible': true, 'top_level': true};
 				if(d.data.sex === 'F') {
 					partner = {"name": ptree.makeid(3), "sex": 'M', 'parent': parent};
