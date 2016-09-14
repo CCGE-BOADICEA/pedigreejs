@@ -120,7 +120,7 @@
 
 	
 	pedigree_util.connect = function(d, i) {
-		if (d.source.parent == null || d.target.data.hidden) {
+		if(d.source.parent == null || d.target.data.hidden || d.source.data.invisible) {
 			return;
 		}
 
@@ -210,6 +210,18 @@
 	       return results[1] || 0;
 	    }
 	}
+	
+	pedigree_util.print_dataset = function(dataset){
+    	$("#pedigree_data").remove();
+    	$("body").append("<div id='pedigree_data'></div>" );
+    	for(var i=0; i<dataset.length; i++) {
+    		$("#pedigree_data").append("<br /><strong>"+dataset[i]['name']+"</strong><br />");
+    		for(var key in dataset[i]) {
+    			if(key === 'name') continue;
+    			$("#pedigree_data").append("<span>"+key + ":" + dataset[i][key]+"; </span>");
+    		}
+    	}
+	}
 }(window.pedigree_util = window.pedigree_util || {}, jQuery));
 
 
@@ -232,6 +244,9 @@
         		DEBUG: false
         }, options );
 		
+        if(opts.DEBUG) {
+        	pedigree_util.print_dataset(opts.dataset);
+        }
 		var ped = d3.select(opts.targetDiv)
 					 .append("svg:svg")
 					 .attr("width", opts.width)
@@ -259,6 +274,9 @@
 		var root = d3.hierarchy(hidden_root);
 		var treemap = d3.tree()
 						.separation(function(a, b) {
+							if(a.data.invisible || b.data.invisible) {
+								return 0;
+							}
 							return a.parent === b.parent ? 1 : 1.2;
 						})
 						.size([ opts.width, opts.height - opts.symbol_size - opts.symbol_size ]);
@@ -301,7 +319,9 @@
 			.style("stroke", "#253544").style("stroke-width", ".8px");
 
 		// names of individuals
-		node.append("text")
+		node.filter(function (d) {
+	    		return d.data.hidden && !DEBUG ? false : true;
+			}).append("text")
 			.attr("class", "label")
 			.attr("x", function(d) { return d.x - (2 * opts.symbol_size)/5; })
 			.attr("y", function(d) { return d.y; })
@@ -435,22 +455,29 @@
 				ptree.build(opts);
 			} else if(opt === 'addpartner') {
 				$(opts.targetDiv).empty();
-				var idx = pedigree_util.getIdxByName(opts.dataset, d.data.name);
-				var partner, child;
+				var newdataset = copy_dataset(opts.dataset);
+				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
+				var parent, partner, child;
+				parent = {"name": ptree.makeid(3), 'hidden': true, 'invisible': true, 'top_level': true};
 				if(d.data.sex === 'F') {
-					partner = {"name": "XXX", "sex": 'M'};
-					child = {"name": "XXXa", "sex": "M", "mother": d.data.name, "father": "XXX"};
+					partner = {"name": ptree.makeid(3), "sex": 'M', 'parent': parent};
+					child = {"name": ptree.makeid(3), "sex": "M", "mother": d.data.name, "father": partner.name};
 				} else {
-					partner = {"name": "XXX", "sex": 'F'};
-					child = {"name": "XXXa", "sex": "M", "mother": "XXX", "father": d.data.name};
+					partner = {"name": ptree.makeid(3), "sex": 'F', 'parent': parent};
+					child = {"name": ptree.makeid(3), "sex": "M", "mother": partner.name, "father": d.data.name};
 				}
-				opts.dataset.splice(idx, 0, partner,child);
+				parent['children'] = [partner];
+				newdataset.splice(idx, 0, parent, partner, child);
+				opts['dataset'] = newdataset;
 				ptree.build(opts);				
 			}
 		});
 		
 		// other mouse events
-		node.on("mouseover", function(){
+		node.filter(function (d) {
+	    	return !d.data.hidden;
+		})
+		.on("mouseover", function(){
 			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .delete')
 			  .style("opacity", 1);
 			d3.select(this).select('rect')
