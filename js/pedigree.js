@@ -215,7 +215,7 @@
 // Pedigree Tree Builder
 (function(ptree, $, undefined) {
 
-	ptree.build = function(targetDiv, dataset, width, height, symbol_size, DEBUG) {
+	ptree.build = function(targetDiv, dataset, width, height, symbol_size, DEBUG) {	
 		var ped = d3.select(targetDiv)
 					 .append("svg:svg")
 					 .attr("width", width)
@@ -294,18 +294,36 @@
 
 		// rectangle used to highlight on mouse over
 		node.append("rect")
+			.filter(function (d) {
+			    return d.data.hidden && !DEBUG ? false : true;
+			})
 			.attr("x", function(d) { return d.x - symbol_size; })
 			.attr("y", function(d) { return d.y - symbol_size; })
 			.attr("width",  (2 * symbol_size)+'px')
 			.attr("height", (2 * symbol_size)+'px')
 			.style("stroke", "black")
-			.style("stroke-width", 1)
+			.style("stroke-width", 0.7)
 			.style("opacity", 0)
 			.attr("fill", "lightgrey");
 		
-		// settings widget
+		// widgets
+		node.append("text")
+			.filter(function (d) {
+		    	return d.data.hidden && !DEBUG ? false : true;
+			})
+			.attr("class", 'delete')
+			.style("opacity", 0)
+			.attr("x", function(d) { return d.x + symbol_size - 11; })
+			.attr("y", function(d) { return d.y - symbol_size + 11; })
+			.attr('font-family', 'monospace')
+			.attr('font-size', '0.9em' )
+			.style('fill', 'darkred')
+			.style("font-weight", "bold")
+			.text(function(d) { return 'x' });		
+
+		
 		var widgets = {'settings': '\uf013', 'addchild': '\uf007', 'addsibling': '\uf234', 'addpartner': '\uf0c1'}
-		var off = 0;
+		var off = 1;
 		
 		for(var key in widgets) {
 			node.append("text")
@@ -317,13 +335,13 @@
 				.attr('font-family', 'FontAwesome')
 				.attr("x", function(d) { return d.x - symbol_size + off; })
 				.attr("y", function(d) { return d.y + symbol_size; })
-				.attr('font-size', '1em' )
+				.attr('font-size', '0.9em' )
 				.text(function(d) { return widgets[key] });		
-			off += 16;
+			off += 17;
 		}
 
 		// handle widget clicks
-		d3.selectAll(".settings, .addchild, .addsibling, .addpartner")
+		d3.selectAll(".settings, .addchild, .addsibling, .addpartner, .delete")
 		  .on("click", function () {
 			var opt = d3.select(this).attr('class');
 			var d = d3.select(this.parentNode).datum();
@@ -342,6 +360,11 @@
 			    });
 				$('#node_properties').append("</ul>");
 				$('#node_properties').dialog('open');
+			} else if(opt === 'delete') {
+				var idx = pedigree_util.getIdxByName(dataset, d.data.name);
+				dataset.splice(idx, 1);
+				$(targetDiv).empty();
+				ptree.build(targetDiv, dataset, width, height, symbol_size, DEBUG);
 			} else if(opt === 'addchild') {
 				$(targetDiv).empty();
 				var idx = pedigree_util.getIdxByName(dataset, d.data.name);
@@ -372,13 +395,13 @@
 		
 		// other mouse events
 		node.on("mouseover", function(){
-			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner')
+			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .delete')
 			  .style("opacity", 1);
 			d3.select(this).select('rect')
 			  .style("opacity", 0.2);
 		})
 		.on("mouseout", function(){
-			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner')
+			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .delete')
 			  .style("opacity", 0);
 			d3.select(this).select('rect')
 		  	  .style("opacity", 0);
