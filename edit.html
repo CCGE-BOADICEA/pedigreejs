@@ -9,18 +9,15 @@
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
 
-
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://code.jquery.com/ui/1.12.0/themes/ui-darkness/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
 	<script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script> 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
 	<script src="js/pedigree.js"></script>
 
 	<script type="text/javascript">
 	var DEBUG = (pedigree_util.urlParam('debug') === null ? false : true);
-	var symbol_size = 35;
-	var width = 600;
-	var height = 400;
 
 	////////////////////
 	dataset = [
@@ -29,8 +26,14 @@
 		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
-	$( "#pedigrees" ).append( $( "<div id='pedigree1a'></div>" ) );
-	ptree.build('#pedigree1a', dataset, width, height, symbol_size, DEBUG);
+	$( "#pedigrees" ).append( $( "<div id='pedigree1'></div>" ) );
+	ptree.build({
+		'targetDiv': '#pedigree1',
+		'dataset': dataset,
+		'width': 600,
+		'height': 400,
+		'symbol_size': 35,
+		'DEBUG': DEBUG});
 
 	</script>
 </body>

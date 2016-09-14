@@ -37,7 +37,13 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree1'></div>" ) );
-	ptree.build('#pedigree1', dataset, width, height, symbol_size, DEBUG);
+	ptree.build({
+		'targetDiv': '#pedigree1',
+		'dataset': dataset,
+		'width': width,
+		'height': height,
+		'symbol_size': symbol_size,
+		'DEBUG': DEBUG});
 
 	////////////////////
 	dataset = [
@@ -47,7 +53,13 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree1a'></div>" ) );
-	ptree.build('#pedigree1a', dataset, width, height, symbol_size, DEBUG);
+	ptree.build({
+		'targetDiv': '#pedigree1a',
+		'dataset': dataset,
+		'width': width,
+		'height': height,
+		'symbol_size': symbol_size,
+		'DEBUG': DEBUG});
 	
 	////////////////////
 	dataset = [
@@ -63,7 +75,13 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree2'></div>" ) );
-	ptree.build('#pedigree2', dataset, width, height, symbol_size, DEBUG);
+	ptree.build({
+		'targetDiv': '#pedigree2',
+		'dataset': dataset,
+		'width': width,
+		'height': height,
+		'symbol_size': symbol_size,
+		'DEBUG': DEBUG});
 
 	////////////////////
 	dataset = [
@@ -80,7 +98,13 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree3'></div>" ) );
-	ptree.build('#pedigree3', dataset, width, height, symbol_size, DEBUG);
+	ptree.build({
+		'targetDiv': '#pedigree3',
+		'dataset': dataset,
+		'width': width,
+		'height': height,
+		'symbol_size': symbol_size,
+		'DEBUG': DEBUG});
 	
 	////////////////////
 	dataset = [
@@ -101,7 +125,13 @@
 		{"name": "ch2", "sex": "M", "mother": "f23", "father": "m111"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree4'></div>" ) );
-	ptree.build('#pedigree4', dataset, width, height, symbol_size, DEBUG);
+	ptree.build({
+		'targetDiv': '#pedigree4',
+		'dataset': dataset,
+		'width': width,
+		'height': height,
+		'symbol_size': symbol_size,
+		'DEBUG': DEBUG});
 	
 	////////////////////
 	var dataset = [
@@ -125,9 +155,13 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree5'></div>" ) );
-	width = 800;
-	height = 550;
-	ptree.build('#pedigree5', dataset, width, height, symbol_size, DEBUG);
+	ptree.build({
+		'targetDiv': '#pedigree5',
+		'dataset': dataset,
+		'width': 800,
+		'height': 550,
+		'symbol_size': symbol_size,
+		'DEBUG': DEBUG});
 	</script>
 </body>
 
