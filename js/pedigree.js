@@ -205,7 +205,7 @@
     			if(key === 'parent') {
     				$("#pedigree_data").append("<span>"+key + ":" + opts.dataset[i][key].name+"; </span>");
     			} else if (key === 'children') {
-    				if (dataset[i][key][0] !== undefined) {
+    				if (opts.dataset[i][key][0] !== undefined) {
     					$("#pedigree_data").append("<span>"+key + ":" + opts.dataset[i][key][0].name+"; </span>");
     				}
     			} else {
@@ -323,7 +323,7 @@
 			.attr("x", function(d) { return d.x + (3 * opts.symbol_size)/5 ; })
 			.attr("y", function(d) { return d.y; })
 			.attr("dy", ".25em")
-			.text(function(d) { if(DEBUG) console.log(d.data.name + ' ' +d.x); return (d.data.name + (opts.DEBUG ? ' ' + d.data.id : '')); });
+			.text(function(d) { return (d.data.name + (opts.DEBUG ? ' ' + d.data.id : '')); });
 
 		ptree.addWidgets(opts, node);
 			
@@ -502,7 +502,7 @@
 	}
 	
 	copy_dataset = function(dataset) {
-		var disallowed = ["children", "id", "parent_node", "parent"];
+		var disallowed = ["children", "id", "parent_node"];
 		var newdataset = [];
 		for(var i=0; i<dataset.length; i++){
 			var obj = {};
