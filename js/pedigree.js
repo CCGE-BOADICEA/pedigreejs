@@ -211,15 +211,29 @@
 	    }
 	}
 	
-	pedigree_util.print_dataset = function(dataset){
+	// print options and dataset
+	pedigree_util.print_opts = function(opts){
     	$("#pedigree_data").remove();
     	$("body").append("<div id='pedigree_data'></div>" );
-    	for(var i=0; i<dataset.length; i++) {
-    		$("#pedigree_data").append("<br /><strong>"+dataset[i]['name']+"</strong><br />");
-    		for(var key in dataset[i]) {
+    	for(var i=0; i<opts.dataset.length; i++) {
+    		$("#pedigree_data").append("<br /><strong>"+opts.dataset[i]['name']+"</strong><br />");
+    		for(var key in opts.dataset[i]) {
     			if(key === 'name') continue;
-    			$("#pedigree_data").append("<span>"+key + ":" + dataset[i][key]+"; </span>");
+    			if(key === 'parent') {
+    				$("#pedigree_data").append("<span>"+key + ":" + opts.dataset[i][key].name+"; </span>");
+    			} else if (key === 'children') {
+    				if (dataset[i][key][0] !== undefined) {
+    					$("#pedigree_data").append("<span>"+key + ":" + opts.dataset[i][key][0].name+"; </span>");
+    				}
+    			} else {
+    				$("#pedigree_data").append("<span>"+key + ":" + opts.dataset[i][key]+"; </span>");
+    			}
     		}
+    	}
+    	$("#pedigree_data").append("<br /><br />");
+    	for(var key in opts) {
+    		if(key === 'dataset') continue;
+    		$("#pedigree_data").append("<span>"+key + ":" + opts[key]+"; </span>");
     	}
 	}
 }(window.pedigree_util = window.pedigree_util || {}, jQuery));
@@ -245,7 +259,7 @@
         }, options );
 		
         if(opts.DEBUG) {
-        	pedigree_util.print_dataset(opts.dataset);
+        	pedigree_util.print_opts(opts);
         }
 		var ped = d3.select(opts.targetDiv)
 					 .append("svg:svg")
