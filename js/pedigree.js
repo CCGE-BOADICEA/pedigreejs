@@ -2,15 +2,6 @@
 // Pedigree Tree Utils
 (function(pedigree_util, $, undefined) {
 	
-	getNodeByName = function(root, name) {
-		nodes = pedigree_util.flatten(root);
-		for(var i=0; i<nodes.length; i++) {
-			if(nodes[i].name == name)
-				return nodes[i];
-		}
-		return undefined;
-	}
-
 	pedigree_util.buildTree = function(opts, person, root, partnerLinks, id) {
 		if (typeof person.children === typeof undefined) {
 			person.children = pedigree_util.getChildren(opts.dataset, person);
@@ -136,9 +127,19 @@
 		}
 		return links;
 	}
+	
+	// get a node by its name
+	getNodeByName = function(root, name) {
+		nodes = flatten(root);
+		for(var i=0; i<nodes.length; i++) {
+			if(nodes[i].name == name)
+				return nodes[i];
+		}
+		return undefined;
+	}
 
 	// return a flattened representation of the tree
-	pedigree_util.flatten = function(root) {
+	flatten = function(root) {
 		var flat = [];
 		function recurse(node) {
 			if (node.children) {
