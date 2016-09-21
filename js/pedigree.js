@@ -1,7 +1,17 @@
 
 // Pedigree Tree Utils
 (function(pedigree_util, $, undefined) {
-	pedigree_util.buildTree = function(opts, person, partnerLinks, id) {
+	
+	getNodeByName = function(root, name) {
+		nodes = pedigree_util.flatten(root);
+		for(var i=0; i<nodes.length; i++) {
+			if(nodes[i].name == name)
+				return nodes[i];
+		}
+		return undefined;
+	}
+
+	pedigree_util.buildTree = function(opts, person, root, partnerLinks, id) {
 		if (typeof person.children === typeof undefined) {
 			person.children = pedigree_util.getChildren(opts.dataset, person);
 		}
@@ -19,7 +29,7 @@
 						partnerNames.push(p.father);
 						partners.push({
 							'mother' : child,
-							'father' : pedigree_util.getPersonByName(opts.dataset, p.father)
+							'father' : getNodeByName(root, p.father)
 						});
 					}
 				}
@@ -32,7 +42,7 @@
 			var father = ptr.father;
 			mother.children = [];
 			var parent = {
-					name : '',
+					name : ptree.makeid(3),
 					hidden : true,
 					parent : null,
 					father : ptr.father,
@@ -44,7 +54,6 @@
 				father.id = id++;
 				parent['id'] = id++;
 				mother.id = id++;
-				
 			} else {
 				id = idChildren(person.children, id);
 				mother.id = id++;
@@ -59,7 +68,7 @@
 		id = idChildren(person.children, id);
 
 		jQuery.each(person.children, function(i, p) {
-			id = pedigree_util.buildTree(opts, p, partnerLinks, id)[1];
+			id = pedigree_util.buildTree(opts, p, root, partnerLinks, id)[1];
 		});
 		return [partnerLinks, id];
 	};
@@ -248,7 +257,7 @@
 					 .append("svg:svg")
 					 .attr("width", opts.width)
 					 .attr("height", opts.height);
-		
+
 		ped.append("rect")
 			.attr("width", "100%")
 			.attr("height", "100%")
@@ -261,13 +270,13 @@
 			}
 		}
 		var hidden_root = {
-			name : '',
+			name : 'hidden_root',
 			id : 0,
 			hidden : true,
 			children : top_level
 		};
 
-		var partners = pedigree_util.buildTree(opts, hidden_root)[0];
+		var partners = pedigree_util.buildTree(opts, hidden_root, hidden_root)[0];	
 		var root = d3.hierarchy(hidden_root);
 		var treemap = d3.tree()
 						.separation(function(a, b) {
@@ -279,15 +288,15 @@
 						.size([ opts.width - (2*opts.symbol_size), opts.height - (2*opts.symbol_size) ]);
 		
 		var nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
-		var flattenNodes = pedigree_util.flatten(nodes);
+		var flattenNodes = nodes.descendants();
 		pedigree_util.adjust_coords(nodes, flattenNodes);
 		var partnerLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
-		
+
 		var node = ped.selectAll(".node")
 					   .data(nodes.descendants())
 					   .enter()
 					   	.append("g");
-		
+	
 		node.append("path")
 			.filter(function (d) {
 		    	return d.data.hidden && !DEBUG ? false : true;
@@ -502,7 +511,7 @@
 	}
 	
 	copy_dataset = function(dataset) {
-		var disallowed = ["children", "id", "parent_node"];
+		var disallowed = ["id", "parent_node"];
 		var newdataset = [];
 		for(var i=0; i<dataset.length; i++){
 			var obj = {};
