@@ -18,9 +18,10 @@
 				if (child.name === p.mother) {
 					if ($.inArray(p.father, partnerNames) == -1) {
 						partnerNames.push(p.father);
+						var f = getNodeByName(root, p.father);
 						partners.push({
 							'mother' : child,
-							'father' : getNodeByName(root, p.father)
+							'father' : f !== undefined? f : pedigree_util.getPersonByName(opts.dataset, p.father)
 						});
 					}
 				}
@@ -477,8 +478,19 @@
 				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
 				var parent, partner, child;
 				
-				// TODO:: assumes depth (d.depth) is 2
-				parent = {"name": ptree.makeid(3), 'hidden': true, 'invisible': true, 'top_level': true};
+				// create parent node at each level
+				var prevParent;
+				for(var i=0; i<d.depth-1; i++) {
+					parent = {"name": ptree.makeid(3), 'hidden': true, 'invisible': true};
+					if(i == 0) {
+						parent['top_level'] = true;
+					} else {
+						prevParent['children'] = [parent];
+					}
+					prevParent = parent;
+					newdataset.splice(idx++, 0, parent);
+				}
+				
 				if(d.data.sex === 'F') {
 					partner = {"name": ptree.makeid(3), "sex": 'M', 'parent': parent};
 					child = {"name": ptree.makeid(3), "sex": "M", "mother": d.data.name, "father": partner.name};
@@ -487,7 +499,7 @@
 					child = {"name": ptree.makeid(3), "sex": "M", "mother": partner.name, "father": d.data.name};
 				}
 				parent['children'] = [partner];
-				newdataset.splice(idx, 0, parent, partner, child);
+				newdataset.splice(idx, 0, partner, child);
 				opts['dataset'] = newdataset;
 				ptree.build(opts);				
 			}
