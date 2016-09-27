@@ -402,27 +402,35 @@
 			.style("font-weight", "bold")
 			.text(function(d) { return 'x' });		
 
-		
-		var widgets = {'settings': '\uf013', 'addchild': '\uf007', 'addsibling': '\uf234', 'addpartner': '\uf0c1'}
+		var fx = function(d) { return d.x + off; };
+		var fy = function(d) { return d.y + opts.symbol_size; }
+		var widgets = {
+				'settings':   {'text': '\uf013'},
+				'addchild':   {'text': '\uf063'},
+				'addsibling': {'text': '\uf234'},
+				'addpartner': {'text': '\uf0c1'},
+				'addparents': {'text': '\uf062', 'fx': function(d) { return d.x }, 'fy': function(d) { return d.y }}};
+
 		var off = 1;
-		
 		for(var key in widgets) {
 			node.append("text")
 				.filter(function (d) {
-			    	return d.data.hidden && !opts.DEBUG ? false : true;
+			    	return  (d.data.hidden && !opts.DEBUG ? false : true) &&
+			    	       !(d.data.parent_node !== undefined && key === 'addpartner') &&
+			    	       !(d.data.mother !== undefined && key === 'addparents');
 				})
 				.attr("class", key)
 				.style("opacity", 0)
 				.attr('font-family', 'FontAwesome')
-				.attr("x", function(d) { return d.x + off; })
-				.attr("y", function(d) { return d.y + opts.symbol_size; })
+				.attr("x", 'fx' in widgets[key] ? widgets[key]['fx']: fx)
+				.attr("y", 'fy' in widgets[key] ? widgets[key]['fy']: fy)
 				.attr('font-size', '0.9em' )
-				.text(function(d) { return widgets[key] });		
+				.text(function(d) { return widgets[key]['text'] });		
 			off += 17;
 		}
 
 		// handle widget clicks
-		d3.selectAll(".settings, .addchild, .addsibling, .addpartner, .delete")
+		d3.selectAll(".settings, .addchild, .addsibling, .addpartner, .addparents, .delete")
 		  .on("click", function () {
 			var opt = d3.select(this).attr('class');
 			var d = d3.select(this.parentNode).datum();
@@ -476,8 +484,34 @@
 				opts['dataset'] = newdataset;
 				$(opts.targetDiv).empty();
 				ptree.build(opts);
-			} else if(opt === 'addpartner') {
+			} else if(opt === 'addparents') {
+				
+				var newdataset = copy_dataset(opts.dataset);
+				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
+				opts['dataset'] = newdataset;
+
+				var mother = {"name": ptree.makeid(3), "sex": 'F'};
+				var father = {"name": ptree.makeid(3), "sex": 'M'};
+
+				if(d.depth == 2) {
+					mother['top_level'] = true;
+					father['top_level'] = true;
+				} else {
+					mother.parent = newdataset[idx].parent.parent;
+					father.parent = newdataset[idx].parent.parent;
+				}
+				newdataset[idx]['mother'] = mother.name;
+				newdataset[idx]['father'] = father.name;
+				
+				idx = pedigree_util.getIdxByName(newdataset, newdataset[idx].parent.name);
+				newdataset.splice(idx, 1);
+				idx = pedigree_util.getIdxByName(newdataset, d.data.name);
+				delete newdataset[idx].parent;
+				newdataset.splice(idx, 0, mother, father);
+				
 				$(opts.targetDiv).empty();
+				ptree.build(opts);
+			} else if(opt === 'addpartner') {
 				var newdataset = copy_dataset(opts.dataset);
 				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
 				var parent, partner, child;
@@ -511,25 +545,37 @@
 				}
 				newdataset.splice(idx, 0, partner, child);
 				opts['dataset'] = newdataset;
+				$(opts.targetDiv).empty();
 				ptree.build(opts);				
 			}
 		});
 		
 		// other mouse events
+		var highlight = [];
 		node.filter(function (d) {
 	    	return !d.data.hidden;
 		})
+		.on("click", function (d) {
+			if (d3.event.ctrlKey) {
+				if(highlight.indexOf(this) == -1){
+					highlight.push(this);
+				} else {
+					highlight.splice(highlight.indexOf(this), 1);
+				}
+			}
+     	})
 		.on("mouseover", function(){
-			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .delete')
+			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .addparents, .delete')
 			  .style("opacity", 1);
 			d3.select(this).select('rect')
 			  .style("opacity", 0.2);
 		})
 		.on("mouseout", function(){
-			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .delete')
+			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .addparents, .delete')
 			  .style("opacity", 0);
-			d3.select(this).select('rect')
-		  	  .style("opacity", 0);
+			if(highlight.indexOf(this) == -1){
+				d3.select(this).select('rect').style("opacity", 0);
+			}
 		});
 	}
 	
