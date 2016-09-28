@@ -44,12 +44,12 @@
 
 			if('id' in father) {
 				father.id = id++;
-				parent['id'] = id++;
+				parent.id = id++;
 				mother.id = id++;
 			} else {
 				id = idChildren(person.children, id);
 				mother.id = id++;
-				parent['id'] = id++;
+				parent.id = id++;
 				father.id = id++;
 			}
 			mother['parent_node'] = parent;
@@ -360,7 +360,8 @@
 				.attr("stroke", "#000")
 				.attr("shape-rendering", "crispEdges")
 				.attr("d", function(d, i) {
-					if(d.source.parent == null || d.target.data.hidden || d.source.data.invisible) {
+					if(d.target.data.noparents !== undefined ||
+					   d.source.parent == null || d.target.data.hidden || d.source.data.invisible) {
 						return;
 					}
 					return "M" + (d.source.x + opts.symbol_size) + "," + (d.source.y ) +
@@ -417,7 +418,7 @@
 				.filter(function (d) {
 			    	return  (d.data.hidden && !opts.DEBUG ? false : true) &&
 			    	       !(d.data.parent_node !== undefined && key === 'addpartner') &&
-			    	       !(d.data.mother !== undefined && key === 'addparents');
+			    	       !(d.data.noparents === undefined && key === 'addparents');
 				})
 				.attr("class", key)
 				.style("opacity", 0)
@@ -472,78 +473,46 @@
 					}
 				} else {
 					// TODO:: currently no children so a partner has not been added
+					console.log('TODO:: currently no children so a partner has not been added');
 				}
 			} else if(opt === 'addsibling') {
-				var newbie = {"name": ptree.makeid(3), "sex": d.data.sex, "mother": d.data.mother, "father": d.data.father};
-				if(d.data.top_level) {
-					newbie['top_level'] = true;
-				}
 				var newdataset = copy_dataset(opts.dataset);
-				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
-				newdataset.splice(idx, 0, newbie);
+				addsibling(newdataset, d.data, d.data.sex);
 				opts['dataset'] = newdataset;
 				$(opts.targetDiv).empty();
 				ptree.build(opts);
 			} else if(opt === 'addparents') {
-				
 				var newdataset = copy_dataset(opts.dataset);
-				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
 				opts['dataset'] = newdataset;
-
-				var mother = {"name": ptree.makeid(3), "sex": 'F'};
-				var father = {"name": ptree.makeid(3), "sex": 'M'};
-
+				
+				var midx = pedigree_util.getIdxByName(newdataset, d.data.mother);
+				var thismother = newdataset[midx];
+				var mother = addsibling(newdataset, thismother, 'F');
+				var father = addsibling(newdataset, thismother, 'M');
+				
+				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
 				if(d.depth == 2) {
-					mother['top_level'] = true;
-					father['top_level'] = true;
+					mother.top_level = true;
+					father.top_level = true;
 				} else {
-					mother.parent = newdataset[idx].parent.parent;
-					father.parent = newdataset[idx].parent.parent;
+					mother.noparents = true;
+					father.noparents = true;
 				}
-				newdataset[idx]['mother'] = mother.name;
-				newdataset[idx]['father'] = father.name;
-				
-				idx = pedigree_util.getIdxByName(newdataset, newdataset[idx].parent.name);
-				newdataset.splice(idx, 1);
-				idx = pedigree_util.getIdxByName(newdataset, d.data.name);
-				delete newdataset[idx].parent;
-				newdataset.splice(idx, 0, mother, father);
-				
+				newdataset[idx].mother = mother.name;
+				newdataset[idx].father = father.name;
+				delete newdataset[idx].noparents;
+			
 				$(opts.targetDiv).empty();
 				ptree.build(opts);
 			} else if(opt === 'addpartner') {
 				var newdataset = copy_dataset(opts.dataset);
+				var partner = addsibling(newdataset, d.data, d.data.sex=== 'F' ? 'M' : 'F');
+				partner.noparents = true;
+
+				var child = {"name": ptree.makeid(3), "sex": "M", "mother": partner.name, "father": d.data.name};
 				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
-				var parent, partner, child;
-				
-				// create parent node at each level
-				var prevParent;
-				var parent = undefined;
-				for(var i=0; i<d.depth-1; i++) {
-					parent = {"name": ptree.makeid(3), 'hidden': true, 'invisible': true};
-					if(i == 0) {
-						parent['top_level'] = true;
-					} else {
-						prevParent['children'] = [parent];
-					}
-					prevParent = parent;
-					newdataset.splice(idx++, 0, parent);
-				}
-				
-				if(d.data.sex === 'F') {
-					partner = {"name": ptree.makeid(3), "sex": 'M'};
-					child = {"name": ptree.makeid(3), "sex": "M", "mother": d.data.name, "father": partner.name};
-				} else {
-					partner = {"name": ptree.makeid(3), "sex": 'F'};
-					child = {"name": ptree.makeid(3), "sex": "M", "mother": partner.name, "father": d.data.name};
-				}
-				if(parent === undefined) {
-					partner['top_level'] = true;
-				} else {
-					partner['parent'] = parent
-					parent['children'] = [partner];
-				}
-				newdataset.splice(idx, 0, partner, child);
+
+				newdataset.splice(idx, 0, child);
 				opts['dataset'] = newdataset;
 				$(opts.targetDiv).empty();
 				ptree.build(opts);				
@@ -558,10 +527,14 @@
 		.on("click", function (d) {
 			if (d3.event.ctrlKey) {
 				if(highlight.indexOf(this) == -1){
-					highlight.push(this);
+					highlight.push(d);
+					console.log(d.data.parent_node.father);
+					console.log(d.data.parent_node.mother);
 				} else {
-					highlight.splice(highlight.indexOf(this), 1);
+					highlight.splice(highlight.indexOf(d), 1);
 				}
+			} else {
+				highlight = [];
 			}
      	})
 		.on("mouseover", function(){
@@ -570,10 +543,10 @@
 			d3.select(this).select('rect')
 			  .style("opacity", 0.2);
 		})
-		.on("mouseout", function(){
+		.on("mouseout", function(d){
 			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .addparents, .delete')
 			  .style("opacity", 0);
-			if(highlight.indexOf(this) == -1){
+			if(highlight.indexOf(d) == -1){
 				d3.select(this).select('rect').style("opacity", 0);
 			}
 		});
@@ -592,6 +565,17 @@
 			newdataset.push(obj);
 		}
 		return newdataset;
+	}
+	
+	//
+	addsibling = function(dataset, node, sex) {
+		var newbie = {"name": ptree.makeid(3), "sex": sex, "mother": node.mother, "father": node.father};
+		if(node.top_level) {
+			newbie['top_level'] = true;
+		}
+		var idx = pedigree_util.getIdxByName(dataset, node.name);
+		dataset.splice(idx, 0, newbie);
+		return newbie;
 	}
 	
 	// delete a node and it's descendants
