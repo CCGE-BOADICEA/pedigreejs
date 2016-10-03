@@ -339,7 +339,7 @@
 		ptree.addWidgets(opts, node);
 			
 		// links between partners
-		ped.selectAll(".partner")
+		var partners = ped.selectAll(".partner")
 		  	.data(partnerLinkNodes)
 		  	.enter()
 		  		.insert("path", "g")
@@ -352,7 +352,7 @@
 		  		});
 
 		// links to children
-		ped.selectAll(".link")
+		var links = ped.selectAll(".link")
 			.data(root.links(nodes.descendants()))
 			.enter()
 				.insert("path", "g")
@@ -369,6 +369,17 @@
 					       "H" + (d.target.x + opts.symbol_size) +
 					       "V" + (d.target.y );
 				});
+
+		var zoom = d3.zoom()
+		  .scaleExtent([1, 100])
+		  .on('zoom', zoomFn);
+
+		function zoomFn() {
+		  ped.selectAll('g').attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
+		  links.attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
+		  partners.attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
+		}
+		ped.select('rect').call(zoom);
 	}
 	
 	//
