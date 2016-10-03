@@ -370,8 +370,9 @@
 					       "V" + (d.target.y );
 				});
 
+		// drag and zoom
 		var zoom = d3.zoom()
-		  .scaleExtent([1, 100])
+		  .scaleExtent([0.5, 4])
 		  .on('zoom', zoomFn);
 
 		function zoomFn() {
