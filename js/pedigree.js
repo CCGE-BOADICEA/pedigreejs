@@ -430,6 +430,7 @@
 				.filter(function (d) {
 			    	return  (d.data.hidden && !opts.DEBUG ? false : true) &&
 			    	       !(d.data.parent_node !== undefined && key === 'addpartner') &&
+			    	       !(d.data.parent_node === undefined && key === 'addchild') &&
 			    	       !(d.data.noparents === undefined && key === 'addparents');
 				})
 				.attr("class", key)
