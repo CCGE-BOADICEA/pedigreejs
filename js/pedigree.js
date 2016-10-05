@@ -234,6 +234,93 @@
 
 
 
+
+
+
+
+(function(pedcache, $, undefined) {
+	var count = 0;
+	var max_limit = 5;
+
+	pedcache.add = function(data, store_type) {
+		console.log('HEREA '+count);
+		if (typeof(Storage) !== "undefined" && (store_type === undefined || store_type === 'local')) {
+		    // local storage
+			localStorage.setItem(count, JSON.stringify(data));
+			if(count < max_limit) {
+				count++;
+			} else {
+				count = 0;
+			}
+		} else {
+		    // array cache
+		}
+	};
+	
+	pedcache.nstore = function() {
+		for(var i=max_limit; i>0; i--) {
+			if(localStorage.getItem(i-1) !== null) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	pedcache.last = function() {
+		for(var i=max_limit; i>0; i--) {
+			var it = localStorage.getItem(i-1);
+			if(it !== null) {
+				count = i;
+				return JSON.parse(it);
+			}
+		}
+		return undefined;
+	}
+	
+	pedcache.previous = function(previous) {
+		if(previous === undefined){
+			previous = count - 2;
+		}
+		if(previous < 0) {
+			var nstore = pedcache.nstore;
+			if(nstore < max_limit){
+				previous = nstore - 1;
+			} else {
+				previous = max_limit - 1;
+			}
+		}
+		console.log('count '+count);
+		console.log('previous '+previous);
+		count = previous + 1;
+		console.log('new count '+count);
+		return JSON.parse(localStorage.getItem(previous));
+	}
+	
+	
+	pedcache.next = function(next) {
+		if(next === undefined){
+			next = count;
+		}
+		if(next >= max_limit) {
+			next = 0;
+		}
+
+		console.log('count '+count);
+		console.log('next '+next);
+		count = next + 1;
+		console.log('new count '+count);
+		return JSON.parse(localStorage.getItem(next));
+	}
+
+
+}(window.pedcache = window.pedcache || {}, jQuery));
+
+
+
+
+
+
+
 // Pedigree Tree Builder
 (function(ptree, $, undefined) {
 
@@ -252,6 +339,9 @@
         		DEBUG: false
         }, options );
 		
+        if(pedcache.nstore() == -1) {
+        	pedcache.add(opts.dataset);
+        }
         if(opts.DEBUG) {
         	pedigree_util.print_opts(opts);
         }
@@ -381,6 +471,7 @@
 		  partners.attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
 		}
 		ped.select('rect').call(zoom);
+		return opts;
 	}
 	
 	//
@@ -444,6 +535,13 @@
 		}
 
 		// handle widget clicks
+		
+		var rebuild = function(opts) {
+			$(opts.targetDiv).empty();
+			pedcache.add(opts.dataset);
+			ptree.build(opts);
+		}
+		
 		d3.selectAll(".settings, .addchild, .addsibling, .addpartner, .addparents, .delete")
 		  .on("click", function () {
 			var opt = d3.select(this).attr('class');
@@ -465,11 +563,11 @@
 			    });
 				$('#node_properties').append("</ul>");
 				$('#node_properties').dialog('open');
+				return;
 			} else if(opt === 'delete') {
 				var newdataset = copy_dataset(opts.dataset);
 				opts['dataset'] = delete_node_dataset(newdataset, d.data);
-				$(opts.targetDiv).empty();
-				ptree.build(opts);
+				rebuild(opts);
 			} else if(opt === 'addchild') {
 				if(d.data.parent_node !== undefined){
 					var children = d.data.parent_node.children;
@@ -481,8 +579,7 @@
 						var newbie = {"name": ptree.makeid(3), "sex": "M", "mother": child.mother, "father": child.father};
 						newdataset.splice(idx, 0, newbie);
 						opts['dataset'] = newdataset;
-						$(opts.targetDiv).empty();
-						ptree.build(opts);
+						rebuild(opts);
 					}
 				} else {
 					// TODO:: currently no children so a partner has not been added
@@ -492,8 +589,7 @@
 				var newdataset = copy_dataset(opts.dataset);
 				addsibling(newdataset, d.data, d.data.sex);
 				opts['dataset'] = newdataset;
-				$(opts.targetDiv).empty();
-				ptree.build(opts);
+				rebuild(opts);
 			} else if(opt === 'addparents') {
 				var newdataset = copy_dataset(opts.dataset);
 				opts['dataset'] = newdataset;
@@ -515,8 +611,7 @@
 				newdataset[idx].father = father.name;
 				delete newdataset[idx].noparents;
 			
-				$(opts.targetDiv).empty();
-				ptree.build(opts);
+				rebuild(opts);
 			} else if(opt === 'addpartner') {
 				var newdataset = copy_dataset(opts.dataset);
 				var partner = addsibling(newdataset, d.data, d.data.sex=== 'F' ? 'M' : 'F');
@@ -527,8 +622,7 @@
 
 				newdataset.splice(idx, 0, child);
 				opts['dataset'] = newdataset;
-				$(opts.targetDiv).empty();
-				ptree.build(opts);				
+				rebuild(opts);				
 			}
 		});
 		

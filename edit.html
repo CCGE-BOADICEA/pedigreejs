@@ -6,6 +6,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
+	<i class="fa fa-undo" aria-hidden="true" id="undo"></i>
+	<i class="fa fa-repeat" aria-hidden="true" id="redo"></i>
+	<i class="fa fa-refresh" aria-hidden="true" id="refresh"></i>
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
 
@@ -27,14 +30,34 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree1'></div>" ) );
-	ptree.build({
-		'targetDiv': '#pedigree1',
-		//'dataset': dataset,
-		'width': 800,
-		'height': 600,
-		'symbol_size': 35,
-		'DEBUG': DEBUG});
+	
+	var opts = {
+			'targetDiv': '#pedigree1',
+			'width': 800,
+			'height': 600,
+			'symbol_size': 35,
+			'DEBUG': DEBUG};
+	var local_dataset = pedcache.last();
+	if (local_dataset !== undefined && local_dataset !== null) {
+		opts.dataset = local_dataset;
+	}
+	opts= ptree.build(opts);
 
+	$( document ).ready(function() {
+		$( "#undo" ).on( "click", function() {
+			opts['dataset'] = pedcache.previous();
+			console.log(JSON.stringify(opts.dataset));
+			$(opts.targetDiv).empty();
+			ptree.build(opts);
+		});
+		
+		$( "#redo" ).on( "click", function() {
+			opts['dataset'] = pedcache.next();
+			console.log(JSON.stringify(opts.dataset));
+			$(opts.targetDiv).empty();
+			ptree.build(opts);
+		});
+	});
 	</script>
 </body>
 </html>
