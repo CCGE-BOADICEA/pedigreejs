@@ -4,8 +4,19 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<style>
+		.disabled {
+		    color: grey;
+		}
+	</style>
 </head>
 <body>
+	<div id="buttons">
+		<i class="fa fa-undo" aria-hidden="true" aria-label="undo" id="undo"></i>
+		<i class="fa fa-repeat" aria-hidden="true" aria-label="redo" id="redo"></i>
+		<i class="fa fa-refresh" aria-hidden="true" aria-label="reset" id=reset></i>
+	</div>
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
 
@@ -27,13 +38,19 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree1'></div>" ) );
-	ptree.build({
-		'targetDiv': '#pedigree1',
-		'dataset': dataset,
-		'width': 600,
-		'height': 400,
-		'symbol_size': 35,
-		'DEBUG': DEBUG});
+	
+	var opts = {
+			'targetDiv': '#pedigree1',
+			'width': 800,
+			'height': 600,
+			'symbol_size': 35,
+			'DEBUG': DEBUG};
+	var local_dataset = pedcache.last();
+	if (local_dataset !== undefined && local_dataset !== null) {
+		opts.dataset = local_dataset;
+	}
+	opts= ptree.build(opts);
+	pbuttons.click(opts);
 
 	</script>
 </body>
