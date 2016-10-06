@@ -4,11 +4,19 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<style>
+		.disabled {
+		    color: grey;
+		}
+	</style>
 </head>
 <body>
-	<i class="fa fa-undo" aria-hidden="true" id="undo"></i>
-	<i class="fa fa-repeat" aria-hidden="true" id="redo"></i>
-	<i class="fa fa-refresh" aria-hidden="true" id="refresh"></i>
+	<div id="buttons">
+		<i class="fa fa-undo" aria-hidden="true" aria-label="undo" id="undo"></i>
+		<i class="fa fa-repeat" aria-hidden="true" aria-label="redo" id="redo"></i>
+		<i class="fa fa-refresh" aria-hidden="true" aria-label="reset" id=reset></i>
+	</div>
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
 
@@ -42,22 +50,8 @@
 		opts.dataset = local_dataset;
 	}
 	opts= ptree.build(opts);
+	pbuttons.click(opts);
 
-	$( document ).ready(function() {
-		$( "#undo" ).on( "click", function() {
-			opts['dataset'] = pedcache.previous();
-			console.log(JSON.stringify(opts.dataset));
-			$(opts.targetDiv).empty();
-			ptree.build(opts);
-		});
-		
-		$( "#redo" ).on( "click", function() {
-			opts['dataset'] = pedcache.next();
-			console.log(JSON.stringify(opts.dataset));
-			$(opts.targetDiv).empty();
-			ptree.build(opts);
-		});
-	});
 	</script>
 </body>
 </html>

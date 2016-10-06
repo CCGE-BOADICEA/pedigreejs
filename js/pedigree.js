@@ -237,16 +237,17 @@
 
 
 
-
+//
+// store a history of pedigree
 (function(pedcache, $, undefined) {
 	var count = 0;
-	var max_limit = 5;
+	var max_limit = 25;
+	var PREFIX = "PEDIGREE_";
 
 	pedcache.add = function(data, store_type) {
-		console.log('HEREA '+count);
 		if (typeof(Storage) !== "undefined" && (store_type === undefined || store_type === 'local')) {
 		    // local storage
-			localStorage.setItem(count, JSON.stringify(data));
+			localStorage.setItem(PREFIX+count, JSON.stringify(data));
 			if(count < max_limit) {
 				count++;
 			} else {
@@ -259,16 +260,20 @@
 	
 	pedcache.nstore = function() {
 		for(var i=max_limit; i>0; i--) {
-			if(localStorage.getItem(i-1) !== null) {
+			if(localStorage.getItem(PREFIX+(i-1)) !== null) {
 				return i;
 			}
 		}
 		return -1;
 	}
+	
+	pedcache.current = function() {
+		return count-1;
+	}
 
 	pedcache.last = function() {
 		for(var i=max_limit; i>0; i--) {
-			var it = localStorage.getItem(i-1);
+			var it = localStorage.getItem(PREFIX+(i-1));
 			if(it !== null) {
 				count = i;
 				return JSON.parse(it);
@@ -293,9 +298,8 @@
 		console.log('previous '+previous);
 		count = previous + 1;
 		console.log('new count '+count);
-		return JSON.parse(localStorage.getItem(previous));
+		return JSON.parse(localStorage.getItem(PREFIX+previous));
 	}
-	
 	
 	pedcache.next = function(next) {
 		if(next === undefined){
@@ -309,17 +313,57 @@
 		console.log('next '+next);
 		count = next + 1;
 		console.log('new count '+count);
-		return JSON.parse(localStorage.getItem(next));
+		return JSON.parse(localStorage.getItem(PREFIX+next));
 	}
 
+	pedcache.clear = function(previous) {
+		count = 0;
+		localStorage.clear();
+	}
 
 }(window.pedcache = window.pedcache || {}, jQuery));
 
+//
+// undo, redo, reset buttons
+(function(pbuttons, $, undefined) {
+	
+	pbuttons.click = function(opts) {
+		$( "#buttons" ).on( "click", ":not(.disabled)", function(e) {
+			e.stopPropagation();
+			var target = e.target.id;
+			if(target === 'undo') {
+				opts['dataset'] = pedcache.previous();
+				$(opts.targetDiv).empty();
+				ptree.build(opts);				
+			} else if (target === 'redo') {
+				opts['dataset'] = pedcache.next();
+				$(opts.targetDiv).empty();
+				ptree.build(opts);				
+			} else if (target === 'reset') {
+				pedcache.clear();
+				delete opts.dataset;
+				$(opts.targetDiv).empty();
+				ptree.build(opts);
+			}
+		});
+	}
+	
+	pbuttons.updateButtons = function() {
+		var current = pedcache.current()+1;
+		var nstore = pedcache.nstore();
+		if(nstore <= current) {
+			$("#redo").addClass('disabled');
+		} else {
+			$("#redo").removeClass('disabled');
+		}
+		if(current > 1) {
+			$("#undo").removeClass('disabled');
+		} else {
+			$("#undo").addClass('disabled');
+		}
+	}
 
-
-
-
-
+}(window.pbuttons = window.pbuttons || {}, jQuery));
 
 // Pedigree Tree Builder
 (function(ptree, $, undefined) {
@@ -345,6 +389,8 @@
         if(opts.DEBUG) {
         	pedigree_util.print_opts(opts);
         }
+        pbuttons.updateButtons();
+
 		var ped = d3.select(opts.targetDiv)
 					 .append("svg:svg")
 					 .attr("width", opts.width)
@@ -471,6 +517,7 @@
 		  partners.attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
 		}
 		ped.select('rect').call(zoom);
+
 		return opts;
 	}
 	
