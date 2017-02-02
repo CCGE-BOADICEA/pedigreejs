@@ -477,6 +477,15 @@
 			    	return opts.diseases[i].colour; 
 			    });
 
+		// alive status = 0; dead status = 1
+		var status = node.append('line')
+		.filter(function (d) {return d.data.status == 1})
+		    .style("stroke", "black")
+		    .attr("x1", function(d, i) {return -0.6*opts.symbol_size})
+		    .attr("y1", function(d, i) {return 0.6*opts.symbol_size})
+		    .attr("x2", function(d, i) {return 0.6*opts.symbol_size})
+		    .attr("y2", function(d, i) {return -0.6*opts.symbol_size});
+		
 		// names of individuals
 		addLabel(opts, node, ".25em", -(3 * opts.symbol_size)/10, 0,
 				function(d) {
