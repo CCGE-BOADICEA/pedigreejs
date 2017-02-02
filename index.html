@@ -31,7 +31,7 @@
 
 	////////////////////
 	var dataset = [
-		{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
+		{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true},
 		{"name": "m11", "sex": "M", "top_level": true},
 		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
 		{"name": "m12", "sex": "M", "top_level": true},
@@ -43,7 +43,7 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree_history'></div>" ) );
-	$( "#pedigrees" ).append( $( "<div id='pedigree'></div>" ) );
+	$( "#pedigrees" ).append( $( "<div id='pedigree'><br/></div>" ) );
 	
 	var opts = {
 			'targetDiv': '#pedigree',
@@ -56,6 +56,8 @@
 	var local_dataset = pedcache.current(opts);
 	if (local_dataset !== undefined && local_dataset !== null) {
 		opts.dataset = local_dataset;
+	} else {
+		opts.dataset = dataset;
 	}
 	pbuttons.add(opts);
 	opts= ptree.build(opts);
