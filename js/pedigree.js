@@ -1,27 +1,27 @@
-
 // Pedigree Tree Utils
 (function(pedigree_util, $, undefined) {
 	
 	pedigree_util.buildTree = function(opts, person, root, partnerLinks, id) {
-		if (typeof person.children === typeof undefined) {
+		if (typeof person.children === typeof undefined)
 			person.children = pedigree_util.getChildren(opts.dataset, person);
-		}
+
 		if (typeof partnerLinks === typeof undefined) {
 			partnerLinks = [];
 			id = 1;
 		}
 
+		//console.log('NAME='+person.name+' NO. CHILDREN='+person.children.length);
 		var partners = [];
-		var partnerNames = [];
-		jQuery.each(person.children, function(i, child) {
-			jQuery.each(opts.dataset, function(i, p) {
-				if (child.name === p.mother) {
-					if ($.inArray(p.father, partnerNames) == -1) {
-						partnerNames.push(p.father);
-						var f = getNodeByName(root, p.father);
+		$.each(person.children, function(i, child) {
+			$.each(opts.dataset, function(j, p) {
+				if (((child.name === p.mother) || (child.name === p.father)) && child.id == undefined) {
+					if (!(contains_parent(partners, child.name))) {
+						var nodes = pedigree_util.flatten(root);
+						var m = pedigree_util.getNodeByName(nodes, p.mother);
+						var f = pedigree_util.getNodeByName(nodes, p.father);
 						partners.push({
-							'mother' : child,
-							'father' : f !== undefined? f : getPersonByName(opts.dataset, p.father)
+							'mother' : m !== undefined? m : pedigree_util.getNodeByName(opts.dataset, p.mother),
+							'father' : f !== undefined? f : pedigree_util.getNodeByName(opts.dataset, p.father)
 						});
 					}
 				}
@@ -29,7 +29,7 @@
 		});
 		$.merge(partnerLinks, partners);
 
-		jQuery.each(partners, function(i, ptr) {
+		$.each(partners, function(i, ptr) {
 			var mother = ptr.mother;
 			var father = ptr.father;
 			mother.children = [];
@@ -37,115 +37,162 @@
 					name : ptree.makeid(3),
 					hidden : true,
 					parent : null,
-					father : ptr.father,
-					mother : ptr.mother,
-					children : pedigree_util.getChildren(opts.dataset, mother)
+					father : father,
+					mother : mother,
+					children : pedigree_util.getChildren(opts.dataset, mother, father)
 			};
 
-			if('id' in father) {
+			var midx = pedigree_util.getIdxByName(opts.dataset, mother.name);
+			var fidx = pedigree_util.getIdxByName(opts.dataset, father.name);
+			if(!('id' in father) && !('id' in mother))
+				id = setChildrenId(person.children, id);
+
+			// look at grandparents index
+			var gp = pedigree_util.get_grandparents_idx(opts.dataset, midx, fidx);
+			if(gp.fidx < gp.midx) {
 				father.id = id++;
 				parent.id = id++;
 				mother.id = id++;
 			} else {
-				id = idChildren(person.children, id);
 				mother.id = id++;
 				parent.id = id++;
 				father.id = id++;
 			}
-			mother['parent_node'] = parent;
-			father['parent_node'] = parent;
-
+			addParent(mother, parent);
+			addParent(father, parent);
 			person.children.push(parent);
 		});
-		id = idChildren(person.children, id);
+		id = setChildrenId(person.children, id);
 
-		jQuery.each(person.children, function(i, p) {
+		$.each(person.children, function(i, p) {
 			id = pedigree_util.buildTree(opts, p, root, partnerLinks, id)[1];
 		});
 		return [partnerLinks, id];
 	};
 
-	function idChildren(children, id) {
-		jQuery.each(children, function(i, p) {
-			if(p.id === undefined) {
-				p.id = id++;
-			}
+	function addParent(p, parent) {
+		if('parent_node' in p)
+			p.parent_node.push(parent)
+		else
+			p['parent_node'] = [parent];
+	}
+
+	function setChildrenId(children, id) {
+		$.each(children, function(i, p) {
+			if(p.id === undefined) p.id = id++;
 		});
 		return id;
 	}
-
+	
 	pedigree_util.isProband = function(obj) {
-		var proband = $(obj).attr('proband');
-		return typeof proband !== typeof undefined && proband !== false;
+		return typeof $(obj).attr('proband') !== typeof undefined && $(obj).attr('proband') !== false;
+	}
+	
+	pedigree_util.setProband = function(dataset, name, is_proband) {
+		$.each(dataset, function(i, p) {
+			if (name === p.name)
+				p.proband = is_proband;
+			else
+				delete p.proband;
+		});
 	}
 
-/*	pedigree_util.getProbandIndex = function(dataset) {
+	pedigree_util.getProbandIndex = function(dataset) {
 		var proband;
-		jQuery.each(dataset, function(i, val) {
-			if (pedigree_util.isProband(val)) {
-				return proband = i;
-			}
+		$.each(dataset, function(i, val) {
+			if (pedigree_util.isProband(val)) return proband = i;
 		});
 		return proband;
-	}*/
-
-	pedigree_util.getChildren = function(dataset, person) {
-		var children = [];
-		jQuery.each(dataset, function(i, p) {
-			if (person.name === p.mother) {
-				children.push(p);
-			}
-		});
-		return children;
 	}
 
+	pedigree_util.getChildren = function(dataset, mother, father) {
+		var children = [];
+		if(mother.sex === 'F')
+			$.each(dataset, function(i, p) {
+				if(mother.name === p.mother)
+					if(!father || father.name == p.father)
+						children.push(p);
+			});
+		return children;
+	}
+	
+	function contains_parent(arr, name) {
+		for(var i=0; i< arr.length; i++){
+			if(name === arr[i].mother.name || name === arr[i].father.name)
+				return true;
+		}
+		return false;
+	}
+
+	// get the siblings of a given individual - sex is an optional parameter
+	// for only returning brothers or sisters
+	pedigree_util.getSiblings = function(dataset, person, sex) {
+		return $.map(dataset, function(p, i){
+			return  p.name !== person.name && !('noparents' in p) && 
+			       (p.mother === person.mother && p.father === person.father) &&
+			       (!sex || p.sex == sex) ? p : null
+		});
+	}
+	
+	// get the adopted siblings of a given individual
+	pedigree_util.getAdoptedSiblings = function(dataset, person) {
+		return $.map(dataset, function(p, i){
+			return  p.name !== person.name && 'noparents' in p && 
+			       (p.mother === person.mother && p.father === person.father) ? p : null
+		});
+	}
+	
+	pedigree_util.getAllChildren = function(dataset, person, sex) {
+		return $.map(dataset, function(p, i){
+			return !('noparents' in p) &&
+			       (p.mother === person.name || p.father === person.name) &&
+			       (!sex || p.sex === sex) ? p : null
+		});
+	}
+	
+	// get the depth of the given person from the root
+	pedigree_util.getDepth = function(dataset, name) {
+		var idx = pedigree_util.getIdxByName(dataset, name);
+		var depth = 1;
+
+		while(idx >= 0 && ('mother' in dataset[idx] || dataset[idx].top_level)){
+			idx = pedigree_util.getIdxByName(dataset, dataset[idx].mother);
+			depth++;
+		}
+		return depth;
+	}
+
+	// given an array of people get an index for a given person
 	pedigree_util.getIdxByName = function(arr, name) {
 		var idx = -1;
-		jQuery.each(arr, function(i, p) {
-			if (name === p.name) {
-				return idx = i;
-			}
+		$.each(arr, function(i, p) {
+			if (name === p.name) return idx = i;
 		});
 		return idx;
 	}
 
-	getPersonByName = function(dataset, name) {
-		var person = undefined;
-		jQuery.each(dataset, function(i, p) {
-			if (name === p.name) {
-				return person = p;
-			}
-		});
-		return person;
+	// get the nodes at a given depth sorted by their x position
+	pedigree_util.getNodesAtDepth = function(fnodes, depth, exclude_names) {
+		return $.map(fnodes, function(p, i){
+			return p.depth == depth && !p.data.hidden && $.inArray(p.data.name, exclude_names) == -1 ? p : null
+		}).sort(function (a,b) {return a.x - b.x;});
 	}
 
 	// convert the partner names into corresponding tree nodes
 	pedigree_util.linkNodes = function(flattenNodes, partners) {
 		var links = [];
-		for(var i=0; i< partners.length; i++){
+		for(var i=0; i< partners.length; i++)
 			links.push({'mother': pedigree_util.getNodeByName(flattenNodes, partners[i].mother.name),
 						'father': pedigree_util.getNodeByName(flattenNodes, partners[i].father.name)});
-		}
 		return links;
-	}
-	
-	// get a node by its name
-	getNodeByName = function(root, name) {
-		nodes = flatten(root);
-		for(var i=0; i<nodes.length; i++) {
-			if(nodes[i].name == name)
-				return nodes[i];
-		}
-		return undefined;
 	}
 
 	// return a flattened representation of the tree
-	flatten = function(root) {
+	pedigree_util.flatten = function(root) {
 		var flat = [];
 		function recurse(node) {
-			if (node.children) {
+			if(node.children)
 				node.children.forEach(recurse);
-			}
 			flat.push(node);
 		}
 		recurse(root);
@@ -155,74 +202,128 @@
 	// Adjust D3 layout positioning.
 	// Position hidden parent node centring them between father and mother nodes. Remove kinks
 	// from links - e.g. where there is a single child plus a hidden child
-	pedigree_util.adjust_coords  = function(root, flattenNodes) {
+	pedigree_util.adjust_coords  = function(opts, root, flattenNodes) {
 		function recurse(node) {
 			if (node.children) {
-				if(node.data.father !== undefined) {
+				node.children.forEach(recurse);
+
+				if(node.data.father !== undefined) { 	// hidden nodes
 					var father = pedigree_util.getNodeByName(flattenNodes, node.data.father.name);
 					var mother = pedigree_util.getNodeByName(flattenNodes, node.data.mother.name);
 					var xmid = (father.x + mother.x) /2;
-					if(node.children.length == 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
-							for(var i=0; i<node.children.length; i++) {
-								if(node.children[i].data.hidden == undefined) {
-							  		node.children[i].x = xmid;
-							  		node.x = xmid;
+					node.x = xmid;   // centralise parent nodes
+					if(!pedigree_util.overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
+						var diff = node.x - xmid;
+						if(node.children.length == 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
+							if(!(node.children[0].data.hidden && node.children[1].data.hidden)) {
+								var child1 = (node.children[0].data.hidden ? node.children[1] : node.children[0]);
+								var child2 = (node.children[0].data.hidden ? node.children[0] : node.children[1]);
+								if( ((child1.x < child2.x && xmid < child2.x) || (child1.x > child2.x && xmid > child2.x)) &&
+								    !pedigree_util.overlap(opts, root.descendants(), xmid, child1.depth, [child1.data.name])){
+									child1.x = xmid;
 								}
 							}
-					} else {
-						var diff = node.x - xmid;
-						node.x = xmid;
-						if(node.children.length == 1) {
+						} else if(node.children.length == 1 && !node.children[0].data.hidden) {
 							node.children[0].x = xmid;
 						} else {
-							for(var i=0; i<node.children.length; i++) {
-								node.children[i].x -= diff;
+							if(diff != 0 && !nodesOverlap(opts, node, diff, root)){
+								if(node.children.length == 1) {
+									node.children[0].x = xmid;
+								} else {
+									var descendants = node.descendants();
+									if(opts.DEBUG)
+										console.log('ADJUSTING '+node.data.name+' NO. DESCENDANTS '+descendants.length+' diff='+diff);
+									for(var i=0; i<descendants.length; i++) {
+										if(node.data.name !== descendants[i].data.name)
+											descendants[i].x -= diff;
+									}
+								}
 							}
 						}
 					}
 				}
-				node.children.forEach(recurse);
 			}
 		}
 		recurse(root);
+		recurse(root);
 	}
 
-	pedigree_util.getNodeByName = function(nodes, name) {
-		for (var i = 0; i < nodes.length; i++) {
-			if (name === nodes[i].data.name) {
-				return nodes[i];
+	// test if moving siblings by diff overlaps with other nodes
+	function nodesOverlap(opts, node, diff, root) {
+		var descendants = node.descendants();
+		var descendantsNames = $.map(descendants, function(descendant, i){return descendant.data.name});
+		var nodes = root.descendants();
+		for(var i=0; i<descendants.length; i++){
+			var descendant = descendants[i];
+			if(node.data.name !== descendant.data.name){
+				var xnew = descendant.x - diff;
+				if(pedigree_util.overlap(opts, nodes, xnew, descendant.depth, descendantsNames))
+					return true
 			}
 		}
+		return false;
 	}
-	
+
+	// test if x position overlaps a node at the same depth
+	pedigree_util.overlap = function(opts, nodes, xnew, depth, exclude_names) {
+		for(var n=0; n<nodes.length; n++) {
+			if(depth == nodes[n].depth && $.inArray(nodes[n].data.name, exclude_names) == -1){
+				if(Math.abs(xnew - nodes[n].x) < (opts.symbol_size*1.15))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	// given a persons name return the corresponding d3 tree node
+	pedigree_util.getNodeByName = function(nodes, name) {
+		for (var i = 0; i < nodes.length; i++) {
+			if(nodes[i].data && name === nodes[i].data.name)
+				return nodes[i];
+			else if (name === nodes[i].name)
+				return nodes[i];
+		}
+	}
+
+	// given the name of a url param get the value
 	pedigree_util.urlParam = function(name){
 	    var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-	    if (results==null){
+	    if (results==null)
 	       return null;
-	    }
-	    else{
+	    else
 	       return results[1] || 0;
-	    }
 	}
 	
+	// get grandparents index
+	pedigree_util.get_grandparents_idx = function(dataset, midx, fidx) {
+		var gmidx = midx;
+		var gfidx = fidx;
+		while(  'mother' in dataset[gmidx] && 'mother' in dataset[gfidx] &&
+			  !('noparents' in dataset[gmidx]) && !('noparents' in dataset[gfidx])){
+			gmidx = pedigree_util.getIdxByName(dataset, dataset[gmidx].mother);
+			gfidx = pedigree_util.getIdxByName(dataset, dataset[gfidx].mother);
+		}
+		return {'midx': gmidx, 'fidx': gfidx};
+	}
+
 	// print options and dataset
 	pedigree_util.print_opts = function(opts){
     	$("#pedigree_data").remove();
     	$("body").append("<div id='pedigree_data'></div>" );
     	for(var i=0; i<opts.dataset.length; i++) {
-    		$("#pedigree_data").append("<br /><strong>"+opts.dataset[i]['name']+"</strong><br />");
+    		var person = "<div class='row'><strong class='col-md-1 text-right'>"+opts.dataset[i]['name']+"</strong><div class='col-md-11'>";
     		for(var key in opts.dataset[i]) {
     			if(key === 'name') continue;
-    			if(key === 'parent') {
-    				$("#pedigree_data").append("<span>"+key + ":" + opts.dataset[i][key].name+"; </span>");
-    			} else if (key === 'children') {
-    				if (opts.dataset[i][key][0] !== undefined) {
-    					$("#pedigree_data").append("<span>"+key + ":" + opts.dataset[i][key][0].name+"; </span>");
-    				}
-    			} else {
-    				$("#pedigree_data").append("<span>"+key + ":" + opts.dataset[i][key]+"; </span>");
-    			}
+    			if(key === 'parent')
+    				person += "<span>"+key + ":" + opts.dataset[i][key].name+"; </span>";
+    			else if (key === 'children') {
+    				if (opts.dataset[i][key][0] !== undefined)
+    					person += "<span>"+key + ":" + opts.dataset[i][key][0].name+"; </span>";
+    			} else
+    				person += "<span>"+key + ":" + opts.dataset[i][key]+"; </span>";
     		}
+    		$("#pedigree_data").append(person + "</div></div>");
+    		
     	}
     	$("#pedigree_data").append("<br /><br />");
     	for(var key in opts) {
@@ -233,180 +334,58 @@
 }(window.pedigree_util = window.pedigree_util || {}, jQuery));
 
 
-
-
-
-
-//
-// store a history of pedigree
-(function(pedcache, $, undefined) {
-	var count = 0;
-	var max_limit = 25;
-	var PREFIX = "PEDIGREE_";
-
-	pedcache.add = function(data, store_type) {
-		if (typeof(Storage) !== "undefined" && (store_type === undefined || store_type === 'local')) {
-		    // local storage
-			localStorage.setItem(PREFIX+count, JSON.stringify(data));
-			if(count < max_limit) {
-				count++;
-			} else {
-				count = 0;
-			}
-		} else {
-		    // array cache
-		}
-	};
-	
-	pedcache.nstore = function() {
-		for(var i=max_limit; i>0; i--) {
-			if(localStorage.getItem(PREFIX+(i-1)) !== null) {
-				return i;
-			}
-		}
-		return -1;
-	}
-	
-	pedcache.current = function() {
-		return count-1;
-	}
-
-	pedcache.last = function() {
-		for(var i=max_limit; i>0; i--) {
-			var it = localStorage.getItem(PREFIX+(i-1));
-			if(it !== null) {
-				count = i;
-				return JSON.parse(it);
-			}
-		}
-		return undefined;
-	}
-	
-	pedcache.previous = function(previous) {
-		if(previous === undefined){
-			previous = count - 2;
-		}
-		if(previous < 0) {
-			var nstore = pedcache.nstore;
-			if(nstore < max_limit){
-				previous = nstore - 1;
-			} else {
-				previous = max_limit - 1;
-			}
-		}
-		console.log('count '+count);
-		console.log('previous '+previous);
-		count = previous + 1;
-		console.log('new count '+count);
-		return JSON.parse(localStorage.getItem(PREFIX+previous));
-	}
-	
-	pedcache.next = function(next) {
-		if(next === undefined){
-			next = count;
-		}
-		if(next >= max_limit) {
-			next = 0;
-		}
-
-		console.log('count '+count);
-		console.log('next '+next);
-		count = next + 1;
-		console.log('new count '+count);
-		return JSON.parse(localStorage.getItem(PREFIX+next));
-	}
-
-	pedcache.clear = function(previous) {
-		count = 0;
-		localStorage.clear();
-	}
-
-}(window.pedcache = window.pedcache || {}, jQuery));
-
-//
-// undo, redo, reset buttons
-(function(pbuttons, $, undefined) {
-	
-	pbuttons.click = function(opts) {
-		$( "#buttons" ).on( "click", ":not(.disabled)", function(e) {
-			e.stopPropagation();
-			var target = e.target.id;
-			if(target === 'undo') {
-				opts['dataset'] = pedcache.previous();
-				$(opts.targetDiv).empty();
-				ptree.build(opts);				
-			} else if (target === 'redo') {
-				opts['dataset'] = pedcache.next();
-				$(opts.targetDiv).empty();
-				ptree.build(opts);				
-			} else if (target === 'reset') {
-				pedcache.clear();
-				delete opts.dataset;
-				$(opts.targetDiv).empty();
-				ptree.build(opts);
-			}
-		});
-	}
-	
-	pbuttons.updateButtons = function() {
-		var current = pedcache.current()+1;
-		var nstore = pedcache.nstore();
-		if(nstore <= current) {
-			$("#redo").addClass('disabled');
-		} else {
-			$("#redo").removeClass('disabled');
-		}
-		if(current > 1) {
-			$("#undo").removeClass('disabled');
-		} else {
-			$("#undo").addClass('disabled');
-		}
-	}
-
-}(window.pbuttons = window.pbuttons || {}, jQuery));
-
 // Pedigree Tree Builder
 (function(ptree, $, undefined) {
-
+	ptree.roots = {};
 	ptree.build = function(options) {
-        var opts = $.extend({
-            // defaults
+        var opts = $.extend({ // defaults
         	targetDiv: '#pedigree_edit',
-        	dataset: [
-        	  		{"name": "m21", "sex": "M", "top_level": true},
-        			{"name": "f21", "sex": "F", "top_level": true},
-        			{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true}
-        		],
-        		width: 600,
-        		height: 400,
-        		symbol_size: 35,
-        		DEBUG: false
-        }, options );
+        	dataset: [ {"name": "m21", "sex": "M", "top_level": true},
+        		       {"name": "f21", "sex": "F", "top_level": true},
+        			   {"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true}],
+        	width: 600, 
+        	height: 400,
+        	symbol_size: 35,
+        	diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
+						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
+						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
+						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+        	DEBUG: false}, options );
 		
-        if(pedcache.nstore() == -1) {
-        	pedcache.add(opts.dataset);
-        }
-        if(opts.DEBUG) {
+        if(pedcache.nstore(opts) == -1)
+        	pedcache.add(opts);
+        if(opts.DEBUG)
         	pedigree_util.print_opts(opts);
-        }
-        pbuttons.updateButtons();
+        pbuttons.updateButtons(opts);
 
-		var ped = d3.select(opts.targetDiv)
+        // group top level nodes by partners
+        opts.dataset = group_top_level(opts.dataset);
+
+        var svg_dimensions = get_svg_dimensions(opts);
+        var svg = d3.select(opts.targetDiv)
 					 .append("svg:svg")
-					 .attr("width", opts.width)
-					 .attr("height", opts.height);
+					 .attr("width", svg_dimensions.width)
+					 .attr("height", svg_dimensions.height);
 
-		ped.append("rect")
+		svg.append("rect")
 			.attr("width", "100%")
 			.attr("height", "100%")
-			.attr("fill", "lightgrey");
-		
-		var top_level = [];
-		for(var i=0; i<opts.dataset.length; i++) {
-			if('top_level' in opts.dataset[i] && opts.dataset[i].top_level) {
-				top_level.push(opts.dataset[i]);
-			}
+			.attr("rx", 6)
+			.attr("ry", 6)
+			.attr("fill", "#EEE");
+
+		var xytransform = pedcache.getposition(opts);  // cached position
+		var xtransform = xytransform[0];
+		var ytransform = xytransform[1];
+		if(xtransform == null) {
+			xtransform = opts.symbol_size/2;
+			ytransform = (-opts.symbol_size*1.5);
 		}
+		var ped = svg.append("g")
+				 .attr("class", "diagram")
+	             .attr("transform", "translate("+xtransform+"," + ytransform + ")");
+
+		var top_level = $.map(opts.dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
 		var hidden_root = {
 			name : 'hidden_root',
 			id : 0,
@@ -414,77 +393,159 @@
 			children : top_level
 		};
 
-		var partners = pedigree_util.buildTree(opts, hidden_root, hidden_root)[0];	
+		var partners = pedigree_util.buildTree(opts, hidden_root, hidden_root)[0];
 		var root = d3.hierarchy(hidden_root);
-		var treemap = d3.tree()
-						.separation(function(a, b) {
-							if(a.data.invisible || b.data.invisible) {
-								return 0;
-							}
-							return a.parent === b.parent ? 1 : 1.2;
-						})
-						.size([ opts.width - (2*opts.symbol_size), opts.height - (2*opts.symbol_size) ]);
+		ptree.roots[opts.targetDiv] = root;
 		
+		/// get score at each depth used to adjust node separation
+		var tree_dimensions = ptree.get_tree_dimensions(opts, svg_dimensions);
+		if(opts.DEBUG)
+			console.log('opts.width='+svg_dimensions.width+' width='+tree_dimensions.width+
+					    ' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
+
+		var treemap = d3.tree().separation(function(a, b) {
+				if(a.data.hidden || b.data.hidden)
+					return 1.2;
+				if(a.parent === b.parent && ('noparents' in a.data || 'noparents' in b.data || 'top_level' in a.data))
+					return 1.2;			
+				return a.parent === b.parent ? 1 : 1.2;
+		}).size([tree_dimensions.width, tree_dimensions.height]);
+
 		var nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 		var flattenNodes = nodes.descendants();
-		pedigree_util.adjust_coords(nodes, flattenNodes);
-		var partnerLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
+		pedigree_util.adjust_coords(opts, nodes, flattenNodes);
+
+		var ptrLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
+
+		check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines
+		var unconnected = ptree.unconnected(opts.dataset);
+		if(unconnected.length > 0)
+			console.error("individuals unconnected to pedigree ", unconnected);
 
 		var node = ped.selectAll(".node")
 					   .data(nodes.descendants())
 					   .enter()
-					   	.append("g");
-	
+					   	.append("g")
+					   	.attr("transform", function(d, i) {
+							return "translate(" + d.x + "," + d.y + ")";
+						});
+
+		// provide a border to the node
 		node.append("path")
-			.filter(function (d) {
-		    	return (d.data.hidden || d.data.invisible) && !DEBUG ? false : true;
-			})
+			.filter(function (d) {return !d.data.hidden})
+			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
+			.type(function(d) {return d.data.sex == "M" ? d3.symbolSquare : d3.symbolCircle;}))
+			.style("stroke", "grey")
+			.style("fill", "none");
+
+		// set a clippath
+		node.append("clipPath")
+			.attr("id", function (d) {return d.data.name}).append("path")
+			.filter(function (d) {return !(d.data.hidden && !opts.DEBUG)})
 			.attr("class", "node")
-			.attr("transform", function(d, i) {
-				return "translate(" + (d.x + opts.symbol_size) + "," + (d.y) + ")";
-			})
 			.attr("d", d3.symbol().size(function(d) {
-				if (d.data.hidden) {
+				if (d.data.hidden)
 					return opts.symbol_size * opts.symbol_size / 5;
-				}
 				return opts.symbol_size * opts.symbol_size;
 			})
-			.type(function(d) {
-				return d.data.sex == "M" ? d3.symbolSquare : d3.symbolCircle;
-			}))
-			.style("fill", function(d) {
-				if (pedigree_util.isProband(d.data)) {
-					return "yellow";
-				} else if (d.data.hidden) {
-					return "lightgrey";
-				}
-				return d.data.sex == "M" ? "#69d3bf" : "red"
-			})
-			.style("stroke", "#253544").style("stroke-width", ".8px");
+			.type(function(d) {return d.data.sex == "M" ? d3.symbolSquare : d3.symbolCircle;}));
+
+		// pie plots for disease colours
+		var pienode = node.selectAll("pienode")
+		   .data(function(d) {     		// set the disease data for the pie plot
+			   var ncancers = 0;
+			   var cancers = $.map(opts.diseases, function(val, i){
+				   if(opts.diseases[i].type in d.data) {ncancers++; return 1;} else return 0;
+			   });
+			   if(ncancers == 0) cancers = [1];
+			   return [$.map(cancers, function(val, i){ 
+				   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
+					   	   'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden};})];
+		   })
+		   .enter()
+		    .append("g");
+
+		pienode.selectAll("path")
+		    .data(d3.pie().value(function(d) {return  d.cancer}))
+		    .enter().append("path")
+		    	.attr("clip-path", function(d) {return "url(#"+d.data.id+")"}) // clip the rectangle
+			    .attr("class", "pienode")
+			    .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
+			    .style("fill", function(d, i) {
+			    	if(d.data.ncancers == 0)
+				    	return "lightgrey";
+			    	return opts.diseases[i].colour; 
+			    });
 
 		// names of individuals
-		node.filter(function (d) {
-	    		return d.data.hidden && !DEBUG ? false : true;
-			}).append("text")
-			.attr("class", "label")
-			.attr("x", function(d) { return d.x + (3 * opts.symbol_size)/5 ; })
-			.attr("y", function(d) { return d.y; })
-			.attr("dy", ".25em")
-			.text(function(d) { return (d.data.name + (opts.DEBUG ? ' ' + d.data.id : '')); });
+		addLabel(opts, node, ".25em", -(3 * opts.symbol_size)/10, 0,
+				function(d) {
+					if(opts.DEBUG)
+						return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
+					return 'display_name' in d.data ? d.data.display_name : '';});
 
-		ptree.addWidgets(opts, node);
-			
+		var font_size = parseInt($("body").css('font-size'));
+		addLabel(opts, node, ".25em",
+				function(d) {return d.x - (3 * opts.symbol_size)/10 ; }, 
+				function(d) {return d.y + font_size; },
+				function(d) {return 'age' in d.data ? d.data.age : '';});		
+
+		//
+		widgets.addWidgets(opts, node);
+
 		// links between partners
+		var clash_depth = {};
 		var partners = ped.selectAll(".partner")
-		  	.data(partnerLinkNodes)
+		  	.data(ptrLinkNodes)
 		  	.enter()
 		  		.insert("path", "g")
 		  		.attr("fill", "none")
 		  		.attr("stroke", "#000")
 		  		.attr("shape-rendering", "crispEdges")
 		  		.attr('d', function(d, i) {
-		  			return	"M" + (d.mother.x+ opts.symbol_size) + "," + (d.mother.y) +
-		  					"L" + (d.father.x+ opts.symbol_size) + "," + (d.father.y);
+		  			var x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
+	  				var x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
+	  				var dy1 = d.mother.y;
+
+	  				// identify clashes with other nodes at the same depth
+		  			var clash = ptree.check_ptr_link_clashes(opts, d);
+		  			var path = "";
+		  			if(clash) {
+		  				if(d.mother.depth in clash_depth)
+		  					clash_depth[d.mother.depth] += 3;
+		  				else
+		  					clash_depth[d.mother.depth] = 3;
+
+		  				dy1 -= clash_depth[d.mother.depth];
+		  				var dx = 3 + clash_depth[d.mother.depth] + opts.symbol_size/2;
+		  				
+		  				var parent_node = pedigree_util.getNodeByName(flattenNodes, d.mother.data.parent_node[0].name);
+						parent_node.y = dy1; // adjust hgt of parent node
+		  				clash.sort(function (a,b) {return a - b;});
+
+		  				extend = function(i, l) {
+		  					if(i+1 < l)   //  && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
+		  						return extend(++i);
+		  					return i;
+		  				}
+
+		  				var dy2 = (dy1-opts.symbol_size/2-3);
+		  				// loop over node(s)
+		  				for(var i=0; i<clash.length; i++) {
+		  					var j = extend(i, clash.length);
+		  					var dx1 = clash[i] - dx;
+		  					var dx2 = clash[j] + dx;
+		  					if(parent_node.x > dx1 && parent_node.x < dx2)
+		  						parent_node.y = dy2;
+
+	  						path += "L" + dx1 + "," +  dy1 +
+		  					        "L" + dx1 + "," +  dy2 +
+		  					        "L" + dx2 + "," +  dy2 +
+		  					        "L" + dx2 + "," +  dy1;
+	  						i = j;
+		  				}
+		  			}
+		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1;
 		  		});
 
 		// links to children
@@ -493,254 +554,508 @@
 			.enter()
 				.insert("path", "g")
 				.attr("fill", "none")
-				.attr("stroke", "#000")
+				.attr("stroke-width", function(d, i) {
+					if(d.target.data.noparents !== undefined || d.source.parent == null || d.target.data.hidden)
+						return 1;
+					return (opts.DEBUG ? 2 : 1);
+				})
+				.attr("stroke", function(d, i) {
+					if(d.target.data.noparents !== undefined || d.source.parent == null || d.target.data.hidden)
+						return 'pink';
+					return "#000";
+				})
 				.attr("shape-rendering", "crispEdges")
 				.attr("d", function(d, i) {
-					if(d.target.data.noparents !== undefined ||
-					   d.source.parent == null || d.target.data.hidden || d.source.data.invisible) {
+					if(!opts.DEBUG &&
+					   (d.target.data.noparents !== undefined ||  d.source.parent == null || d.target.data.hidden))
 						return;
-					}
-					return "M" + (d.source.x + opts.symbol_size) + "," + (d.source.y ) +
+					return "M" + (d.source.x) + "," + (d.source.y ) +
 					       "V" + ((d.source.y + d.target.y) / 2) +
-					       "H" + (d.target.x + opts.symbol_size) +
-					       "V" + (d.target.y );
+					       "H" + (d.target.x) +
+					       "V" + (d.target.y);
 				});
 
+		// draw proband arrow
+		var probandIdx  = pedigree_util.getProbandIndex(opts.dataset);
+		var probandNode = pedigree_util.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
+
+		ped.append("svg:defs").append("svg:marker")    // arrow head
+		    .attr("id", "triangle")
+		    .attr("refX", 6)
+		    .attr("refY", 6)
+		    .attr("markerWidth", 20)
+		    .attr("markerHeight", 20)
+		    .attr("orient", "auto")
+		    .append("path")
+		    .attr("d", "M 0 0 12 6 0 12 3 6")
+		    .style("fill", "black");
+		
+		ped.append("line")
+	        .attr("x1", probandNode.x+opts.symbol_size)
+	        .attr("y1", probandNode.y-opts.symbol_size)
+	        .attr("x2", probandNode.x+opts.symbol_size/2)
+	        .attr("y2", probandNode.y-opts.symbol_size/2)
+	        .attr("stroke-width", 1)
+	        .attr("stroke", "black")
+	        .attr("marker-end", "url(#triangle)");
+		
 		// drag and zoom
 		var zoom = d3.zoom()
-		  .scaleExtent([0.5, 4])
+		  .scaleExtent([1., 1.])
 		  .on('zoom', zoomFn);
 
 		function zoomFn() {
-		  ped.selectAll('g').attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
-		  links.attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
-		  partners.attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
+			var t = d3.event.transform;
+			var pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))]
+			pedcache.setposition(opts, pos[0], pos[1]);
+			ped.attr('transform', 'translate(' + pos[0] + ',' + pos[1] + ') scale(' + t.k + ')');
 		}
-		ped.select('rect').call(zoom);
-
+		svg.call(zoom);
 		return opts;
 	}
-	
-	//
-	// Add widgets to nodes and bind events
-	ptree.addWidgets = function(opts, node) {
-		// rectangle used to highlight on mouse over
-		node.append("rect")
-			.filter(function (d) {
-			    return d.data.hidden && !opts.DEBUG ? false : true;
-			})
-			.attr("x", function(d) { return d.x; })
-			.attr("y", function(d) { return d.y - opts.symbol_size; })
-			.attr("width",  (2 * opts.symbol_size)+'px')
-			.attr("height", (2 * opts.symbol_size)+'px')
-			.style("stroke", "black")
-			.style("stroke-width", 0.7)
-			.style("opacity", 0)
-			.attr("fill", "lightgrey");
-		
-		// widgets
-		node.append("text")
-			.filter(function (d) {
-		    	return d.data.hidden && !opts.DEBUG ? false : true;
-			})
-			.attr("class", 'delete')
-			.style("opacity", 0)
-			.attr("x", function(d) { return d.x + (2*opts.symbol_size) - 11; })
-			.attr("y", function(d) { return d.y - opts.symbol_size + 11; })
-			.attr('font-family', 'monospace')
-			.attr('font-size', '0.9em' )
-			.style('fill', 'darkred')
-			.style("font-weight", "bold")
-			.text(function(d) { return 'x' });		
 
-		var fx = function(d) { return d.x + off; };
-		var fy = function(d) { return d.y + opts.symbol_size; }
-		var widgets = {
-				'settings':   {'text': '\uf013'},
-				'addchild':   {'text': '\uf063'},
-				'addsibling': {'text': '\uf234'},
-				'addpartner': {'text': '\uf0c1'},
-				'addparents': {'text': '\uf062', 'fx': function(d) { return d.x }, 'fy': function(d) { return d.y }}};
-
-		var off = 1;
-		for(var key in widgets) {
-			node.append("text")
-				.filter(function (d) {
-			    	return  (d.data.hidden && !opts.DEBUG ? false : true) &&
-			    	       !(d.data.parent_node !== undefined && key === 'addpartner') &&
-			    	       !(d.data.parent_node === undefined && key === 'addchild') &&
-			    	       !(d.data.noparents === undefined && key === 'addparents');
-				})
-				.attr("class", key)
-				.style("opacity", 0)
-				.attr('font-family', 'FontAwesome')
-				.attr("x", 'fx' in widgets[key] ? widgets[key]['fx']: fx)
-				.attr("y", 'fy' in widgets[key] ? widgets[key]['fy']: fy)
-				.attr('font-size', '0.9em' )
-				.text(function(d) { return widgets[key]['text'] });		
-			off += 17;
+	// return a list of individuals that aren't connected to the target
+	ptree.unconnected = function(dataset){
+		var target = dataset[ pedigree_util.getProbandIndex(dataset) ];
+		if(!target){
+			console.error("No target defined");
+			return [];
 		}
+        var connected = [target.name];
+        var change = true;
+        var ii = 0;
+        while(change && ii < 200) {
+        	ii++;
+        	var nconnect = connected.length;
+            $.each(dataset, function( idx, p ) {
+            	if($.inArray( p.name, connected ) != -1) {
+            		// check if this person or a partner has a parent
+            		var ptrs = get_partners(dataset, p);
+            		var has_parent = (p.name === target.name || !p.noparents);
+            		for(var i=0; i<ptrs.length; i++){
+            			if(!pedigree_util.getNodeByName(dataset, ptrs[i]).noparents)
+            				has_parent = true;
+            		}
 
-		// handle widget clicks
-		
-		var rebuild = function(opts) {
-			$(opts.targetDiv).empty();
-			pedcache.add(opts.dataset);
-			ptree.build(opts);
-		}
-		
-		d3.selectAll(".settings, .addchild, .addsibling, .addpartner, .addparents, .delete")
-		  .on("click", function () {
-			var opt = d3.select(this).attr('class');
-			var d = d3.select(this.parentNode).datum();
-			if(DEBUG) {
-				console.log(opt);
-			}
+            		if(has_parent){
+	            		if(p.mother && $.inArray( p.mother, connected ) == -1)
+	            			connected.push(p.mother);
+	            		if(p.father && $.inArray( p.father, connected ) == -1)
+	            			connected.push(p.father);
+            		}
+            	} else if( !p.noparents &&
+            			  ((p.mother && $.inArray( p.mother, connected ) != -1) ||
+            			   (p.father && $.inArray( p.father, connected ) != -1))){
+            		connected.push(p.name);
+            	}
+        		// include any children
+            	include_children(connected, p, dataset);
+            });
+            change = (nconnect != connected.length);
+        }
+        var names = $.map(dataset, function(val, i){return val.name});
+        return $.map(names, function(name, i){return $.inArray(name, connected) == -1 ? name : null});
+	}
 
-			if(opt === 'settings') {
-				$('#node_properties').dialog({
-				    autoOpen: false,
-				    title: d.data.name
-				});
-				$('#node_properties').html("<ul>");
-				$.each(d.data, function(k, v) {
-					if(k !== "children") {
-						$('#node_properties').append("<li>"+k+": "+v+"</li>");
-					}
-			    });
-				$('#node_properties').append("</ul>");
-				$('#node_properties').dialog('open');
-				return;
-			} else if(opt === 'delete') {
-				var newdataset = copy_dataset(opts.dataset);
-				opts['dataset'] = delete_node_dataset(newdataset, d.data);
-				rebuild(opts);
-			} else if(opt === 'addchild') {
-				if(d.data.parent_node !== undefined){
-					var children = d.data.parent_node.children;
-					if(children !== undefined && children.length > 0) {
-						var child = children[0];
-						var newdataset = copy_dataset(opts.dataset);
-						var idx = pedigree_util.getIdxByName(newdataset, child.name);
-						
-						var newbie = {"name": ptree.makeid(3), "sex": "M", "mother": child.mother, "father": child.father};
-						newdataset.splice(idx, 0, newbie);
-						opts['dataset'] = newdataset;
-						rebuild(opts);
-					}
-				} else {
-					// TODO:: currently no children so a partner has not been added
-					console.log('TODO:: currently no children so a partner has not been added');
-				}
-			} else if(opt === 'addsibling') {
-				var newdataset = copy_dataset(opts.dataset);
-				addsibling(newdataset, d.data, d.data.sex);
-				opts['dataset'] = newdataset;
-				rebuild(opts);
-			} else if(opt === 'addparents') {
-				var newdataset = copy_dataset(opts.dataset);
-				opts['dataset'] = newdataset;
-				
-				var midx = pedigree_util.getIdxByName(newdataset, d.data.mother);
-				var thismother = newdataset[midx];
-				var mother = addsibling(newdataset, thismother, 'F');
-				var father = addsibling(newdataset, thismother, 'M');
-				
-				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
-				if(d.depth == 2) {
-					mother.top_level = true;
-					father.top_level = true;
-				} else {
-					mother.noparents = true;
-					father.noparents = true;
-				}
-				newdataset[idx].mother = mother.name;
-				newdataset[idx].father = father.name;
-				delete newdataset[idx].noparents;
-			
-				rebuild(opts);
-			} else if(opt === 'addpartner') {
-				var newdataset = copy_dataset(opts.dataset);
-				var partner = addsibling(newdataset, d.data, d.data.sex=== 'F' ? 'M' : 'F');
-				partner.noparents = true;
+	function include_children(connected, p, dataset) {
+		if($.inArray( p.name, connected ) == -1)
+			return;
+		combineArrays(connected, get_partners(dataset, p));
+		var children = pedigree_util.getAllChildren(dataset, p);
+    	$.each(children, function( child_idx, child ) {
+    		if($.inArray( child.name, connected ) == -1) {
+    			connected.push(child.name);
+    			combineArrays(connected, get_partners(dataset, child));
+    		}
+    	});
+	}
 
-				var child = {"name": ptree.makeid(3), "sex": "M", "mother": partner.name, "father": d.data.name};
-				var idx = pedigree_util.getIdxByName(newdataset, d.data.name);
-
-				newdataset.splice(idx, 0, child);
-				opts['dataset'] = newdataset;
-				rebuild(opts);				
-			}
-		});
-		
-		// other mouse events
-		var highlight = [];
-		node.filter(function (d) {
-	    	return !d.data.hidden;
-		})
-		.on("click", function (d) {
-			if (d3.event.ctrlKey) {
-				if(highlight.indexOf(this) == -1){
-					highlight.push(d);
-					console.log(d.data.parent_node.father);
-					console.log(d.data.parent_node.mother);
-				} else {
-					highlight.splice(highlight.indexOf(d), 1);
-				}
-			} else {
-				highlight = [];
-			}
-     	})
-		.on("mouseover", function(){
-			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .addparents, .delete')
-			  .style("opacity", 1);
-			d3.select(this).select('rect')
-			  .style("opacity", 0.2);
-		})
-		.on("mouseout", function(d){
-			d3.select(this).selectAll('.settings, .addchild, .addsibling, .addpartner, .addparents, .delete')
-			  .style("opacity", 0);
-			if(highlight.indexOf(d) == -1){
-				d3.select(this).select('rect').style("opacity", 0);
-			}
-		});
+	// combine arrays ignoring duplicates
+	function combineArrays(arr1, arr2) {
+	    for(var i=0; i<arr2.length; i++)
+	    	if($.inArray( arr2[i], arr1 ) == -1) arr1.push(arr2[i]);
 	}
 	
-	copy_dataset = function(dataset) {
+	// check for crossing of partner lines
+	function check_ptr_links(opts, ptrLinkNodes){
+		for(var a=0; a<ptrLinkNodes.length; a++) {
+			var clash = ptree.check_ptr_link_clashes(opts, ptrLinkNodes[a]);
+			if(clash)
+				console.log("CLASH :: "+ptrLinkNodes[a].mother.data.name+" "+ptrLinkNodes[a].father.data.name, clash);
+		}
+	}
+	
+	ptree.check_ptr_link_clashes = function(opts, anode) {
+		var root = ptree.roots[opts.targetDiv];
+		var flattenNodes = pedigree_util.flatten(root);
+		var mother, father;
+		if('name' in anode) {
+			anode = pedigree_util.getNodeByName(flattenNodes, anode.name);
+			if(!('mother' in anode.data))
+				return null;
+			mother = pedigree_util.getNodeByName(flattenNodes, anode.data.mother);
+			father = pedigree_util.getNodeByName(flattenNodes, anode.data.father);
+		} else {
+			mother = anode.mother;
+			father = anode.father;
+		}
+
+		var x1 = (mother.x < father.x ? mother.x : father.x);
+		var x2 = (mother.x < father.x ? father.x : mother.x);
+		var dy = mother.y;
+
+		// identify clashes with other nodes at the same depth
+  		var clash = $.map(flattenNodes, function(bnode, i){
+  			return !bnode.data.hidden &&
+  				    bnode.data.name !== mother.data.name &&  bnode.data.name !== father.data.name && 
+  				    bnode.y == dy && bnode.x > x1 && bnode.x < x2 ? bnode.x : null
+  		});
+  		return clash.length > 0 ? clash : null;
+	}
+	
+	function get_svg_dimensions(opts) {
+        return {'width' : (pbuttons.is_fullscreen()? window.innerWidth  : opts.width),
+        	    'height': (pbuttons.is_fullscreen()? window.innerHeight : opts.height)};
+	}
+	
+	ptree.get_tree_dimensions = function(opts, svg_dimensions) {
+		/// get score at each depth used to adjust node separation
+		var maxscore = 0;
+		var generation = {};
+		for(var i=0; i<opts.dataset.length; i++) {
+			var depth = pedigree_util.getDepth(opts.dataset, opts.dataset[i].name);
+			var children = pedigree_util.getAllChildren(opts.dataset, opts.dataset[i]);
+
+			// score based on no. of children and if parent defined
+			var score = 1 + (children.length > 0 ? 0.55+(children.length*0.25) : 0) + (opts.dataset[i].father ? 0.25 : 0);
+			if(depth in generation)
+				generation[depth] += score;
+			else
+				generation[depth] = score;
+
+			if(generation[depth] > maxscore)
+				maxscore = generation[depth];
+		}
+
+		var max_depth = Object.keys(generation).length*opts.symbol_size*3;
+		var tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.5 ?
+				           svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.5);
+		var tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
+		      		       svg_dimensions.height - opts.symbol_size : max_depth);
+		return {'width': tree_width, 'height': tree_height};
+	}
+	
+	// get the partners for a given node
+	function get_partners(dataset, anode) {
+		var ptrs = [];
+		for(var i=0; i<dataset.length; i++) {
+			var bnode = dataset[i];
+			if(anode.name === bnode.mother && $.inArray(bnode.father, ptrs) == -1)
+				ptrs.push(bnode.father);
+			else if(anode.name === bnode.father && $.inArray(bnode.mother, ptrs) == -1)
+				ptrs.push(bnode.mother);
+		}		
+		return ptrs;
+	}
+	
+	// group top_level nodes by their partners
+	function group_top_level(dataset) {
+		//var top_level = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
+		// calculate top_level nodes
+		for(var i=0;i<dataset.length;i++) {
+			if(pedigree_util.getDepth(dataset, dataset[i].name) == 2)
+				dataset[i].top_level = true;
+		}
+
+		var top_level = [];
+        var top_level_seen = [];
+        for(var i=0;i<dataset.length;i++) {
+        	var node = dataset[i];
+        	if('top_level' in node && $.inArray(node.name, top_level_seen) == -1){
+        		top_level_seen.push(node.name);
+        		top_level.push(node);
+        		var ptrs = get_partners(dataset, node);
+        		for(var j=0; j<ptrs.length; j++){
+        			top_level_seen.push(ptrs[j]);
+        			top_level.push(pedigree_util.getNodeByName(dataset, ptrs[j]));
+        		}
+        	}
+        }
+
+        var newdataset = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? null : val});
+        for (var i = top_level.length; i > 0; --i)
+        	newdataset.unshift(top_level[i-1]);
+        return newdataset;
+	}
+
+	// Add label
+	function addLabel(opts, node, size, fx, fy, ftext) {
+		node.filter(function (d) {
+    		return d.data.hidden && !opts.DEBUG ? false : true;
+		}).append("text")
+		.attr("class", "label")
+		.attr("x", fx)
+		.attr("y", fy)
+		.attr("dy", size)
+		.text(ftext);	
+    }
+
+	ptree.rebuild = function(opts) {
+		$(opts.targetDiv).empty();
+		pedcache.add(opts);
+		ptree.build(opts);
+	}
+
+	ptree.copy_dataset = function(dataset) {
+	    // sort by id
+		dataset.sort(function(a,b) {return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0)); } );
+
 		var disallowed = ["id", "parent_node"];
 		var newdataset = [];
 		for(var i=0; i<dataset.length; i++){
 			var obj = {};
 			for(var key in dataset[i]) {
-				if(disallowed.indexOf(key) == -1) {
+				if(disallowed.indexOf(key) == -1)
 					obj[key] = dataset[i][key];
-				}
 			}
 			newdataset.push(obj);
 		}
 		return newdataset;
 	}
 	
+	// add children to a given node
+	ptree.addchild = function(dataset, node, sex, nchild) {
+		if (typeof nchild === typeof undefined)
+			nchild = 1;
+		var children = pedigree_util.getAllChildren(dataset, node);
+		var ptr_name, idx;
+		if (children.length == 0) {
+			var partner = ptree.addsibling(dataset, node, node.sex === 'F' ? 'M': 'F');
+			partner.noparents = true;
+			ptr_name = partner.name
+			idx = pedigree_util.getIdxByName(dataset, node.name)+1;
+		} else {
+			var c = children[0];
+			ptr_name = (c.father === node.name ? c.mother : c.father)
+			idx = pedigree_util.getIdxByName(dataset, c.name);
+		}
+
+		for (var i = 0; i < nchild; i++) {
+			var child = {"name": ptree.makeid(3), "sex": sex,
+					     "mother": (node.sex === 'F' ? node.name : ptr_name),
+				         "father": (node.sex === 'F' ? ptr_name : node.name)};
+			dataset.splice(idx, 0, child);
+		}
+	}
+
 	//
-	addsibling = function(dataset, node, sex) {
-		var newbie = {"name": ptree.makeid(3), "sex": sex, "mother": node.mother, "father": node.father};
+	ptree.addsibling = function(dataset, node, sex, add_lhs) {
+		var newbie = {"name": ptree.makeid(3), "sex": sex};
 		if(node.top_level) {
-			newbie['top_level'] = true;
+			newbie.top_level = true;
+		} else {
+			newbie.mother = node.mother;
+			newbie.father = node.father;
 		}
 		var idx = pedigree_util.getIdxByName(dataset, node.name);
+		if(add_lhs) { // add to LHS
+			if(idx > 0) idx--;
+		} else
+			idx++;
 		dataset.splice(idx, 0, newbie);
 		return newbie;
 	}
 	
-	// delete a node and it's descendants
-	delete_node_dataset = function(dataset, node) {
-		var nodeName = node.name;
-		var idx = pedigree_util.getIdxByName(dataset, nodeName);
-		dataset.splice(idx, 1);
-		if(node.parent_node !== undefined) {
-			for(var i=0; i<node.parent_node.children.length; i++) {
-				dataset = delete_node_dataset(dataset, node.parent_node.children[i]);
+	// add parents to the 'node'
+	ptree.addparents = function(opts, dataset, name) {
+		var mother, father;
+		var root = ptree.roots[opts.targetDiv];
+		var flat_tree = pedigree_util.flatten(root);
+		var tree_node = pedigree_util.getNodeByName(flat_tree, name);
+		var node  = tree_node.data;
+		var depth = tree_node.depth;   // depth of the node in relation to the root (depth = 1 is a top_level node)
+
+		var pid = -101;
+		var ptr_name;
+		var children = pedigree_util.getAllChildren(dataset, node);
+		if(children.length > 0){
+			ptr_name = children[0].mother == node.name ? children[0].father : children[0].mother;
+			pid = pedigree_util.getNodeByName(flat_tree, ptr_name).data.id;
+		}
+
+		if(depth == 1) {
+			mother = {"name": ptree.makeid(3), "sex": "F", "top_level": true};
+			father = {"name": ptree.makeid(3), "sex": "M", "top_level": true};
+			dataset.splice(0, 0, father);
+			dataset.splice(0, 0, mother);
+
+			for(var i=0; i<dataset.length; i++){
+				if(dataset[i].top_level && dataset[i].name !== mother.name && dataset[i].name !== father.name){
+					delete dataset[i].top_level;
+					dataset[i].noparents = true;
+					dataset[i].mother = mother.name;
+					dataset[i].father = father.name;
+				}
 			}
+		} else {
+			var node_mother = pedigree_util.getNodeByName(flat_tree, tree_node.data.mother);
+			var node_father = pedigree_util.getNodeByName(flat_tree, tree_node.data.father);
+			var node_sibs = pedigree_util.getSiblings(dataset, node);
+
+			// lhs & rhs id's for siblings of this node
+			var rid = 10000;
+			var lid = tree_node.data.id;
+			for(var i=0; i<node_sibs.length; i++){
+				var sid = pedigree_util.getNodeByName(flat_tree, node_sibs[i].name).data.id;
+				if(sid < rid && sid > tree_node.data.id)
+					rid = sid;
+				if(sid < lid)
+					lid = sid;
+			}
+			var add_lhs = (lid >= tree_node.data.id || (pid == lid && rid < 10000));
+			if(opts.DEBUG)
+				console.log('lid='+lid+' rid='+rid+' nid='+tree_node.data.id+' ADD_LHS='+add_lhs);
+			var midx;
+			if( (!add_lhs && node_father.data.id > node_mother.data.id) ||
+				(add_lhs && node_father.data.id < node_mother.data.id) )
+				midx = pedigree_util.getIdxByName(dataset, node.father);
+			else
+				midx = pedigree_util.getIdxByName(dataset, node.mother);
+
+			var parent = dataset[midx];
+			mother = ptree.addsibling(dataset, parent, 'F', add_lhs);
+			father = ptree.addsibling(dataset, parent, 'M', add_lhs);
+
+			var orphans = pedigree_util.getAdoptedSiblings(dataset, node);
+			var nid = tree_node.data.id;
+			for(var i=0; i<orphans.length; i++){
+				var oid = pedigree_util.getNodeByName(flat_tree, orphans[i].name).data.id;
+				if(opts.DEBUG)
+					console.log('ORPHAN='+i+' '+orphans[i].name+' '+(nid < oid && oid < rid)+' nid='+nid+' oid='+oid+' rid='+rid);
+				if((add_lhs || nid < oid) && oid < rid){
+					var oidx = pedigree_util.getIdxByName(dataset, orphans[i].name);
+					dataset[oidx].mother = mother.name;
+					dataset[oidx].father = father.name;
+				}
+			}
+		}
+
+		if(depth == 2) {
+			mother.top_level = true;
+			father.top_level = true;
+		} else if(depth > 2) {
+			mother.noparents = true;
+			father.noparents = true;
+		}
+		var idx = pedigree_util.getIdxByName(dataset, node.name);
+		dataset[idx].mother = mother.name;
+		dataset[idx].father = father.name;
+		delete dataset[idx].noparents;
+
+		if('parent_node' in node) {
+			var ptr_node = dataset[pedigree_util.getIdxByName(dataset, ptr_name)];
+			if('noparents' in ptr_node) {
+				ptr_node.mother = mother.name;
+				ptr_node.father = father.name;
+			}
+		}
+	}
+	
+	// add partner
+	ptree.addpartner = function(opts, dataset, name) {
+		var root = ptree.roots[opts.targetDiv];
+		var flat_tree = pedigree_util.flatten(root);
+		var tree_node = pedigree_util.getNodeByName(flat_tree, name);
+
+		var partner = ptree.addsibling(dataset, tree_node.data, tree_node.data.sex=== 'F' ? 'M' : 'F');
+		partner.noparents = true;
+
+		var child = {"name": ptree.makeid(3), "sex": "M"};
+		child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
+		child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
+
+		var idx = pedigree_util.getIdxByName(dataset, tree_node.data.name)+2;
+		dataset.splice(idx, 0, child);
+	}
+	
+	// get adjacent nodes at the same depth
+	function adjacent_nodes(root, node, excludes) {
+		var dnodes = pedigree_util.getNodesAtDepth(pedigree_util.flatten(root), node.depth, excludes);
+		var lhs_node, rhs_node;
+		for(var i=0; i<dnodes.length; i++) {
+			if(dnodes[i].x < node.x)
+				lhs_node = dnodes[i];
+			if(!rhs_node && dnodes[i].x > node.x)
+				rhs_node = dnodes[i];
+		}
+		return [lhs_node, rhs_node];
+	}
+	
+	// delete a node and descendants
+	ptree.delete_node_dataset = function(dataset, node, opts) {
+		var root = ptree.roots[opts.targetDiv];
+		var fnodes = pedigree_util.flatten(root);
+		var deletes = [];
+
+		if(node.parent_node) {
+			for(var i=0; i<node.parent_node.length; i++){
+				var parent = node.parent_node[i];
+				var ps = [pedigree_util.getNodeByName(dataset, parent.mother.name),
+					      pedigree_util.getNodeByName(dataset, parent.father.name)];
+				// delete parents
+				for(var j=0; j<ps.length; j++) {
+					if(ps[j].name === node.name || ps[j].noparents !== undefined || ps[j].top_level) {
+						dataset.splice(pedigree_util.getIdxByName(dataset, ps[j].name), 1);
+						deletes.push(ps[j]);
+					}
+				}
+
+				var children = parent.children;
+				var children_names = $.map(children, function(p, i){return p.name}); 
+				for(var j=0; j<children.length; j++) {
+					var child = pedigree_util.getNodeByName(dataset, children[j].name);
+					if(child){
+						child.noparents = true;
+						ptrs = get_partners(dataset, child);
+						var ptr = undefined;
+						if(ptrs.length > 0)
+							ptr = pedigree_util.getNodeByName(dataset, ptrs[0]);
+						if(ptr && ptr.mother !== child.mother) {
+							child.mother = ptr.mother;
+							child.father = ptr.father;
+						} else if(ptr) {
+							var child_node  = pedigree_util.getNodeByName(fnodes, child.name);
+							var adj = adjacent_nodes(root, child_node, children_names);
+							child.mother = adj[0] ? adj[0].data.mother : (adj[1] ? adj[1].data.mother : null);
+							child.father = adj[0] ? adj[0].data.father : (adj[1] ? adj[1].data.father : null);
+						} else {
+							dataset.splice(pedigree_util.getIdxByName(dataset, child.name), 1);
+						}
+					}
+				}
+			}
+		} else
+			dataset.splice(pedigree_util.getIdxByName(dataset, node.name), 1);
+
+		// delete ancestors
+		console.log(deletes);
+		for(var i=0; i<deletes.length; i++) {
+			var del = deletes[i];
+			var sibs = pedigree_util.getSiblings(dataset, del);
+			console.log('DEL', del.name, sibs);
+			if(sibs.length < 1) {
+				console.log('del sibs', del.name, sibs);
+				var data_node  = pedigree_util.getNodeByName(fnodes, del.name);
+				var ancestors = data_node.ancestors();
+				for(var j=0; j<ancestors.length; j++) {
+					console.log(ancestors[i]);
+					if(ancestors[j].data.mother){
+						console.log('DELETE ', ancestors[j].data.mother, ancestors[j].data.father);
+						dataset.splice(pedigree_util.getIdxByName(dataset, ancestors[j].data.mother.name), 1);
+						dataset.splice(pedigree_util.getIdxByName(dataset, ancestors[j].data.father.name), 1);
+					}
+				}
+			}	
 		}
 		return dataset;
 	}

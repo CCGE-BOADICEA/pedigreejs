@@ -4,18 +4,27 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
+
+	<style>
+		.disabled {
+		    color: grey;
+		}
+	</style>
 </head>
 
 <body>
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
 
-	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link href="https://code.jquery.com/ui/1.12.0/themes/ui-darkness/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
 	<script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script> 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.1/d3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
 	<script src="js/pedigree.js"></script>
+	<script src="js/widgets.js"></script>
+	<script src="js/undo_redo_refresh.js"></script>
 
 	<script type="text/javascript">
 	var DEBUG = (pedigree_util.urlParam('debug') === null ? false : true);
@@ -30,119 +39,27 @@
 		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
 		{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
 		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
+		{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
-	$( "#pedigrees" ).append( $( "<div id='pedigree1'></div>" ) );
-	ptree.build({
-		'targetDiv': '#pedigree1',
-		'dataset': dataset,
-		'DEBUG': DEBUG});
-
-	////////////////////
-	dataset = [
-		{"name": "m21", "sex": "M", "top_level": true},
-		{"name": "f21", "sex": "F", "top_level": true},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
-		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
-	];
-	$( "#pedigrees" ).append( $( "<div id='pedigree1a'></div>" ) );
-	ptree.build({
-		'targetDiv': '#pedigree1a',
-		'dataset': dataset,
-		'DEBUG': DEBUG});
+	$( "#pedigrees" ).append( $( "<div id='pedigree_history'></div>" ) );
+	$( "#pedigrees" ).append( $( "<div id='pedigree'></div>" ) );
 	
-	////////////////////
-	dataset = [
-		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
-		{"name": "m12", "sex": "M", "top_level": true},
-		{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-		{"name": "m11", "sex": "M", "top_level": true},
-		{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
-		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
-		{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
-		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
-		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
-	];
-	$( "#pedigrees" ).append( $( "<div id='pedigree2'></div>" ) );
-	ptree.build({
-		'targetDiv': '#pedigree2',
-		'dataset': dataset,
-		'DEBUG': DEBUG});
-
-	////////////////////
-	dataset = [
-		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
-		{"name": "m12", "sex": "M", "top_level": true},
-		{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-		{"name": "m11", "sex": "M", "top_level": true},
-		{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
-		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
-		{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
-		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-		{"name": "f22", "sex": "M", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
-		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
-	];
-	$( "#pedigrees" ).append( $( "<div id='pedigree3'></div>" ) );
-	ptree.build({
-		'targetDiv': '#pedigree3',
-		'dataset': dataset,
-		'DEBUG': DEBUG});
+	var opts = {
+			'targetDiv': '#pedigree',
+			'btn_target': 'pedigree_history',
+		//	'nodeclick': pedigree_form.nodeclick,
+			'width': 700,
+			'height': 500,
+			'symbol_size': 35,
+			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)};
+	var local_dataset = pedcache.current(opts);
+	if (local_dataset !== undefined && local_dataset !== null) {
+		opts.dataset = local_dataset;
+	}
+	pbuttons.add(opts);
+	opts= ptree.build(opts);
 	
-	////////////////////
-	dataset = [
-		{"name": "f12", "sex": "F", "bc1":  true, "top_level": true},
-		{"name": "m12", "sex": "M", "top_level": true},
-		{"name": "f11", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-		{"name": "m11", "sex": "M", "top_level": true},
-		{"name": "f1", "sex": "F", "top_level": true},
-		{"name": "m1", "sex": "M", "top_level": true},
-		{"name": "m111", "sex": "M", "mother": "f1", "father": "m1"},
-		{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
-		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
-		{"name": "f23", "sex": "F", "mother": "f11", "father": "m11"},
-		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-		{"name": "f22", "sex": "M", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
-		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"},
-		{"name": "ch2", "sex": "M", "mother": "f23", "father": "m111"}
-	];
-	$( "#pedigrees" ).append( $( "<div id='pedigree4'></div>" ) );
-	ptree.build({
-		'targetDiv': '#pedigree4',
-		'dataset': dataset,
-		'DEBUG': DEBUG});
-	
-	////////////////////
-	var dataset = [
-	    {"name": "f01", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-	    {"name": "m01", "sex": "M", "lifeStatus": "deceased", "top_level": true},
-	    {"name": "f02", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-	    {"name": "m02", "sex": "M", "lifeStatus": "deceased", "top_level": true},
-	    {"name": "f03", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-	    {"name": "m03", "sex": "M", "lifeStatus": "deceased", "top_level": true},
-	    {"name": "f04", "sex": "F", "lifeStatus": "deceased", "top_level": true},
-	    {"name": "m04", "sex": "M", "lifeStatus": "deceased", "top_level": true},
-		{"name": "f11", "sex": "F", "mother": "f01", "father": "m01", "lifeStatus": "deceased"},
-		{"name": "m11", "sex": "M", "mother": "f02", "father": "m02"},
-		{"name": "f12", "sex": "F", "bc1":  true, "mother": "f03", "father": "m03"},
-		{"name": "m12", "sex": "M", "mother": "f04", "father": "m04"},
-		{"name": "m22", "sex": "M", "mother": "f11", "father": "m11"},
-		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11"},
-		{"name": "m23", "sex": "F", "mother": "f11", "father": "m11"},
-		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12"},
-		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true},
-		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
-	];
-	$( "#pedigrees" ).append( $( "<div id='pedigree5'></div>" ) );
-	ptree.build({
-		'targetDiv': '#pedigree5',
-		'dataset': dataset,
-		'width': 800,
-		'height': 550,
-		'DEBUG': DEBUG});
 	</script>
 </body>
 
