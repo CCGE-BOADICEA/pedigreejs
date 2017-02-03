@@ -1,6 +1,6 @@
 
 $('#load').change(function(e) {
-	io.load
+	io.load(e);
 });
 
 $('#save').click(function(e) {
@@ -18,7 +18,7 @@ $('#save').click(function(e) {
 		window.open(uriContent, 'boadicea_pedigree');
 	}
 	
-	io.load = function() {
+	io.load = function(e) {
 	    var f = e.target.files[0];
 		if(f) {
 			var reader = new FileReader();
