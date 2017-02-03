@@ -30,6 +30,7 @@
     	popup_selection.append("rect").attr("class", "popup_selection")
     							.attr("rx", 6)
     							.attr("ry", 6)
+    							.attr("transform", "translate(-1000,-100)")
     							.style("opacity", 0)
     							.attr("width", (font_size+4)*3)
     							.attr("height", font_size+4)
@@ -40,6 +41,7 @@
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
 			.attr("class", "popup_selection fa-square persontype")
+			.attr("transform", "translate(-1000,-100)")
 			.attr("x", 2)
 			.attr("y", font_size)
 			.html("\uf096&nbsp");
@@ -50,6 +52,7 @@
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
 			.attr("class", "popup_selection fa-circle persontype")
+			.attr("transform", "translate(-1000,-100)")
 			.attr("x", font_size+4)
 			.attr("y", font_size)
 			.html("\uf10c&nbsp");
@@ -59,6 +62,7 @@
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
+			.attr("transform", "translate(-1000,-100)")
 			.attr("class", "popup_selection fa-unspecified popup_selection_rotate45 persontype")
 			.html("\uf096&nbsp");
 		var unspecified_title = unspecified.append("svg:title").text("add unspecified");
