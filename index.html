@@ -6,6 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
 
 	<style>
@@ -16,15 +17,29 @@
 </head>
 
 <body>
+
+<div class="container">
+	<div class="row">
+		<label class="btn btn-default btn-file">
+				<input id="load" type="file" style="display: none;"/>Load
+		</label>	
+		<label class="btn btn-default btn-file">
+				<input id="save" type="button" style="display: none;"/>Save
+		</label>
+	</div>
+		
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
+</div>
 
 	<script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.1/d3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
 	<script src="js/pedigree.js"></script>
 	<script src="js/widgets.js"></script>
 	<script src="js/undo_redo_refresh.js"></script>
+	<script src="js/io.js"></script>
 
 	<script type="text/javascript">
 	var DEBUG = (pedigree_util.urlParam('debug') === null ? false : true);
