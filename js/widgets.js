@@ -31,38 +31,48 @@
     							.attr("rx", 6)
     							.attr("ry", 6)
     							.style("opacity", 0)
-    							.attr("transform", "translate(-2,2)")
-    							.attr("width", (font_size+4)*2)
+    							.attr("width", (font_size+4)*3)
     							.attr("height", font_size+4)
     							.attr("fill", "white");
     	
-		var mars = popup_selection.append("text")  // male
+		var square = popup_selection.append("text")  // male
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
-			.attr("class", "popup_selection fa-mars persontype")
-			.attr("transform", "translate(2,"+(font_size+2)+")")
-			.html("\uf222&nbsp");
-		var mars_title = mars.append("svg:title").text("add male");
+			.attr("class", "popup_selection fa-square persontype")
+			.attr("x", 2)
+			.attr("y", font_size)
+			.html("\uf096&nbsp");
+		var square_title = square.append("svg:title").text("add male");
 		
-		var venus = popup_selection.append("text")  // female
+		var circle = popup_selection.append("text")  // female
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
-			.attr("class", "popup_selection fa-venus persontype")
-			.attr("transform", "translate("+(font_size+4)+","+(font_size+2)+")")
-			.html("\uf221");
-		var venus_title = venus.append("svg:title").text("add female");
+			.attr("class", "popup_selection fa-circle persontype")
+			.attr("x", font_size+4)
+			.attr("y", font_size)
+			.html("\uf10c&nbsp");
+		var circle_title = circle.append("svg:title").text("add female");
+
+		var unspecified = popup_selection.append("text")  // unspecified
+			.attr('font-family', 'FontAwesome')
+			.style("opacity", 0)
+			.attr('font-size', '1.em' )
+			.attr("class", "popup_selection fa-unspecified popup_selection_rotate45 persontype")
+			.html("\uf096&nbsp");
+		var unspecified_title = unspecified.append("svg:title").text("add unspecified");
 
 		var add_person = {};
 		// click the person type selection
 		d3.selectAll(".persontype")
 		  .on("click", function () {
 			var newdataset = ptree.copy_dataset(opts.dataset);
+			var sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
 			if(add_person['type'] === 'addsibling')
-				ptree.addsibling(newdataset, add_person['node'].datum().data, d3.select(this).classed("fa-mars") ? 'M' : 'F');
+				ptree.addsibling(newdataset, add_person['node'].datum().data, sex);
 			else if(add_person['type'] === 'addchild')
-				ptree.addchild(newdataset, add_person['node'].datum().data, d3.select(this).classed("fa-mars") ? 'M' : 'F');
+				ptree.addchild(newdataset, add_person['node'].datum().data, sex);
 			else
 				return
 			opts['dataset'] = newdataset;	
@@ -76,15 +86,15 @@
 			  d3.selectAll('.popup_selection').style("opacity", 1);
 			  // add tooltips to font awesome widgets
 			  if(add_person['type'] === 'addsibling'){
-				 if(d3.select(this).classed("fa-mars"))
-					  mars_title.text("add brother");
+				 if(d3.select(this).classed("fa-square"))
+					  square_title.text("add brother");
 				  else 
-					  venus_title.text("add sister");
+					  circle_title.text("add sister");
 			  } else if(add_person['type'] === 'addchild'){
-				  if(d3.select(this).classed("fa-mars"))
-					  mars_title.text("add son");
+				  if(d3.select(this).classed("fa-square"))
+					  square_title.text("add son");
 				  else
-					  venus_title.text("add daughter");				  
+					  circle_title.text("add daughter");				  
 			  }
 		  });
 
@@ -172,7 +182,9 @@
 			  var translate = getTranslation(d3.select('.diagram').attr("transform"));
 			  var x = parseInt(d3.select(this).attr("xx")) + parseInt(d3.select(this).attr("x")) + translate[0];
 			  var y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y")) + translate[1];
-			  d3.selectAll('.popup_selection').attr("y", y).attr("x", x);
+			  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
+			  d3.selectAll('.popup_selection_rotate45')
+			  	.attr("transform", "translate("+(x+2*(font_size+3))+","+(y+font_size/2+4)+") rotate(45)");
 		  })
 		  .on("mouseout", function () {
 			  d3.selectAll('.popup_selection').style("opacity", 0);

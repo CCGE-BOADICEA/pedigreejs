@@ -433,8 +433,9 @@
 		// provide a border to the node
 		node.append("path")
 			.filter(function (d) {return !d.data.hidden})
+			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : ""})
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
-			.type(function(d) {return d.data.sex == "M" ? d3.symbolSquare : d3.symbolCircle;}))
+			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare}))
 			.style("stroke", "grey")
 			.style("fill", "none");
 
@@ -443,12 +444,13 @@
 			.attr("id", function (d) {return d.data.name}).append("path")
 			.filter(function (d) {return !(d.data.hidden && !opts.DEBUG)})
 			.attr("class", "node")
+			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : ""})
 			.attr("d", d3.symbol().size(function(d) {
 				if (d.data.hidden)
 					return opts.symbol_size * opts.symbol_size / 5;
 				return opts.symbol_size * opts.symbol_size;
 			})
-			.type(function(d) {return d.data.sex == "M" ? d3.symbolSquare : d3.symbolCircle;}));
+			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare}));
 
 		// pie plots for disease colours
 		var pienode = node.selectAll("pienode")
