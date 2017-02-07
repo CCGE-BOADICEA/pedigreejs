@@ -347,6 +347,7 @@
         	height: 400,
         	symbol_size: 35,
         	diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
+        				{'type': 'breast_cancer2', 'colour': 'pink'},
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
@@ -496,9 +497,7 @@
 					return 'display_name' in d.data ? d.data.display_name : '';});
 
 		var font_size = parseInt($("body").css('font-size'));
-		addLabel(opts, node, ".25em",
-				function(d) {return d.x - (3 * opts.symbol_size)/10 ; }, 
-				function(d) {return d.y + font_size; },
+		addLabel(opts, node, ".25em", -(3 * opts.symbol_size)/10, font_size,
 				function(d) {return 'age' in d.data ? d.data.age : '';});		
 
 		//
