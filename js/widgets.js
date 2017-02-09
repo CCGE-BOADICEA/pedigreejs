@@ -32,18 +32,19 @@
     							.attr("ry", 6)
     							.attr("transform", "translate(-1000,-100)")
     							.style("opacity", 0)
-    							.attr("width", (font_size+4)*3)
-    							.attr("height", font_size+4)
+    							.attr("width",  font_size*4.75)
+    							.attr("height", font_size*2)
+    							.style("stroke", "darkgrey")
     							.attr("fill", "white");
     	
 		var square = popup_selection.append("text")  // male
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
-			.attr("class", "popup_selection fa-square persontype")
+			.attr("class", "popup_selection fa-lg fa-square persontype")
 			.attr("transform", "translate(-1000,-100)")
-			.attr("x", 2)
-			.attr("y", font_size)
+			.attr("x", font_size/3)
+			.attr("y", font_size*1.5)
 			.html("\uf096&nbsp");
 		var square_title = square.append("svg:title").text("add male");
 		
@@ -51,10 +52,10 @@
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
-			.attr("class", "popup_selection fa-circle persontype")
+			.attr("class", "popup_selection fa-lg fa-circle persontype")
 			.attr("transform", "translate(-1000,-100)")
-			.attr("x", font_size+4)
-			.attr("y", font_size)
+			.attr("x", font_size*1.7)
+			.attr("y", font_size*1.5)
 			.html("\uf10c&nbsp");
 		var circle_title = circle.append("svg:title").text("add female");
 
@@ -63,7 +64,7 @@
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
 			.attr("transform", "translate(-1000,-100)")
-			.attr("class", "popup_selection fa-unspecified popup_selection_rotate45 persontype")
+			.attr("class", "popup_selection fa-lg fa-unspecified popup_selection_rotate45 persontype")
 			.html("\uf096&nbsp");
 		var unspecified_title = unspecified.append("svg:title").text("add unspecified");
 
@@ -115,7 +116,7 @@
 			.filter(function (d) {
 			    return d.data.hidden && !opts.DEBUG ? false : true;
 			})
-			.attr("class", 'indiv_rect')
+			.attr("class", 'indi_rect')
 			.attr("rx", 6)
 			.attr("ry", 6)
 			.attr("x", function(d) { return - 0.75*opts.symbol_size; })
@@ -188,7 +189,7 @@
 			  var y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y")) + translate[1];
 			  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
 			  d3.selectAll('.popup_selection_rotate45')
-			  	.attr("transform", "translate("+(x+2*(font_size+3))+","+(y+font_size/2+4)+") rotate(45)");
+			  	.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
 		  })
 		  .on("mouseout", function () {
 			  d3.selectAll('.popup_selection').style("opacity", 0);
@@ -234,21 +235,20 @@
 			
 			if('nodeclick' in opts) {
 				opts.nodeclick(d.data);
-				d3.selectAll(".indiv_rect").style("opacity", 0);
-				d3.selectAll('.indiv_rect').filter(function(d) {return highlight.indexOf(d) != -1}).style("opacity", 0.5);
+				d3.selectAll(".indi_rect").style("opacity", 0);
+				d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1}).style("opacity", 0.5);
 			}
      	})
 		.on("mouseover", function(d){
-			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete')
-			  .style("opacity", 1);
-			d3.select(this).select('rect')
-			  .style("opacity", 0.2);
+			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete').style("opacity", 1);
+			d3.select(this).select('rect').style("opacity", 0.2);
+			d3.select(this).selectAll('.indi_details').style("opacity", 0);
 		})
 		.on("mouseout", function(d){
-			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete')
-			  .style("opacity", 0);
+			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete').style("opacity", 0);
 			if(highlight.indexOf(d) == -1)
 				d3.select(this).select('rect').style("opacity", 0);
+			d3.select(this).selectAll('.indi_details').style("opacity", 1);
 		});
 	}
 
