@@ -490,15 +490,35 @@
 		    .attr("y2", function(d, i) {return -0.6*opts.symbol_size});
 		
 		// names of individuals
-		addLabel(opts, node, ".25em", -(3 * opts.symbol_size)/10, 0,
+		addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size),
 				function(d) {
 					if(opts.DEBUG)
 						return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
 					return 'display_name' in d.data ? d.data.display_name : '';});
 
 		var font_size = parseInt($("body").css('font-size'));
-		addLabel(opts, node, ".25em", -(3 * opts.symbol_size)/10, font_size,
+		addLabel(opts, node, ".25em", -(0.3 * opts.symbol_size), -(0.2 * opts.symbol_size)+font_size,
 				function(d) {return 'age' in d.data ? d.data.age : '';});		
+
+		// individuals disease details
+		for(var i=0;i<opts.diseases.length; i++) {
+			var disease = opts.diseases[i].type;
+			addLabel(opts, node, ".25em", -(opts.symbol_size),
+					function(d) {
+						var y_offset = font_size*2;
+						for(var j=0;j<opts.diseases.length; j++) {
+							if(disease === opts.diseases[j].type)
+								break;
+							if(opts.diseases[j].type in d.data)
+								y_offset += font_size;
+						}
+						return y_offset;
+					},
+					function(d) {
+						var dis = disease.replace('_', ' ').replace('cancer', 'ca.');
+						return disease+'_diagnosis_age' in d.data ? dis +": "+ d.data[disease+'_diagnosis_age'] : '';
+					}, 'indi_details');
+		}
 
 		//
 		widgets.addWidgets(opts, node);
@@ -799,11 +819,11 @@
 	}
 
 	// Add label
-	function addLabel(opts, node, size, fx, fy, ftext) {
+	function addLabel(opts, node, size, fx, fy, ftext, class_label) {
 		node.filter(function (d) {
     		return d.data.hidden && !opts.DEBUG ? false : true;
 		}).append("text")
-		.attr("class", "label")
+		.attr("class", class_label + ' label' || "label")
 		.attr("x", fx)
 		.attr("y", fy)
 		.attr("dy", size)
