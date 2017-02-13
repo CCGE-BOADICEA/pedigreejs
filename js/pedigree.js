@@ -211,8 +211,8 @@
 					var father = pedigree_util.getNodeByName(flattenNodes, node.data.father.name);
 					var mother = pedigree_util.getNodeByName(flattenNodes, node.data.mother.name);
 					var xmid = (father.x + mother.x) /2;
-					node.x = xmid;   // centralise parent nodes
 					if(!pedigree_util.overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
+						node.x = xmid;   // centralise parent nodes
 						var diff = node.x - xmid;
 						if(node.children.length == 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
 							if(!(node.children[0].data.hidden && node.children[1].data.hidden)) {
@@ -347,6 +347,7 @@
         	height: 400,
         	symbol_size: 35,
         	diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
+        				{'type': 'breast_cancer2', 'colour': 'pink'},
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
@@ -423,8 +424,8 @@
 			console.error("individuals unconnected to pedigree ", unconnected);
 
 		var node = ped.selectAll(".node")
-					   .data(nodes.descendants())
-					   .enter()
+					  .data(nodes.descendants())
+					  .enter()
 					   	.append("g")
 					   	.attr("transform", function(d, i) {
 							return "translate(" + d.x + "," + d.y + ")";
@@ -433,8 +434,9 @@
 		// provide a border to the node
 		node.append("path")
 			.filter(function (d) {return !d.data.hidden})
+			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : ""})
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
-			.type(function(d) {return d.data.sex == "M" ? d3.symbolSquare : d3.symbolCircle;}))
+			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare}))
 			.style("stroke", "grey")
 			.style("fill", "none");
 
@@ -443,12 +445,13 @@
 			.attr("id", function (d) {return d.data.name}).append("path")
 			.filter(function (d) {return !(d.data.hidden && !opts.DEBUG)})
 			.attr("class", "node")
+			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : ""})
 			.attr("d", d3.symbol().size(function(d) {
 				if (d.data.hidden)
 					return opts.symbol_size * opts.symbol_size / 5;
 				return opts.symbol_size * opts.symbol_size;
 			})
-			.type(function(d) {return d.data.sex == "M" ? d3.symbolSquare : d3.symbolCircle;}));
+			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare}));
 
 		// pie plots for disease colours
 		var pienode = node.selectAll("pienode")
@@ -477,18 +480,45 @@
 			    	return opts.diseases[i].colour; 
 			    });
 
+		// alive status = 0; dead status = 1
+		var status = node.append('line')
+		.filter(function (d) {return d.data.status == 1})
+		    .style("stroke", "black")
+		    .attr("x1", function(d, i) {return -0.6*opts.symbol_size})
+		    .attr("y1", function(d, i) {return 0.6*opts.symbol_size})
+		    .attr("x2", function(d, i) {return 0.6*opts.symbol_size})
+		    .attr("y2", function(d, i) {return -0.6*opts.symbol_size});
+		
 		// names of individuals
-		addLabel(opts, node, ".25em", -(3 * opts.symbol_size)/10, 0,
+		addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size),
 				function(d) {
 					if(opts.DEBUG)
 						return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
 					return 'display_name' in d.data ? d.data.display_name : '';});
 
 		var font_size = parseInt($("body").css('font-size'));
-		addLabel(opts, node, ".25em",
-				function(d) {return d.x - (3 * opts.symbol_size)/10 ; }, 
-				function(d) {return d.y + font_size; },
+		addLabel(opts, node, ".25em", -(0.3 * opts.symbol_size), -(0.2 * opts.symbol_size)+font_size,
 				function(d) {return 'age' in d.data ? d.data.age : '';});		
+
+		// individuals disease details
+		for(var i=0;i<opts.diseases.length; i++) {
+			var disease = opts.diseases[i].type;
+			addLabel(opts, node, ".25em", -(opts.symbol_size),
+					function(d) {
+						var y_offset = font_size*2;
+						for(var j=0;j<opts.diseases.length; j++) {
+							if(disease === opts.diseases[j].type)
+								break;
+							if(opts.diseases[j].type in d.data)
+								y_offset += font_size;
+						}
+						return y_offset;
+					},
+					function(d) {
+						var dis = disease.replace('_', ' ').replace('cancer', 'ca.');
+						return disease+'_diagnosis_age' in d.data ? dis +": "+ d.data[disease+'_diagnosis_age'] : '';
+					}, 'indi_details');
+		}
 
 		//
 		widgets.addWidgets(opts, node);
@@ -591,10 +621,10 @@
 		    .style("fill", "black");
 		
 		ped.append("line")
-	        .attr("x1", probandNode.x+opts.symbol_size)
-	        .attr("y1", probandNode.y-opts.symbol_size)
-	        .attr("x2", probandNode.x+opts.symbol_size/2)
-	        .attr("y2", probandNode.y-opts.symbol_size/2)
+	        .attr("x1", probandNode.x-opts.symbol_size)
+	        .attr("y1", probandNode.y+opts.symbol_size)
+	        .attr("x2", probandNode.x-opts.symbol_size/2)
+	        .attr("y2", probandNode.y+opts.symbol_size/2)
 	        .attr("stroke-width", 1)
 	        .attr("stroke", "black")
 	        .attr("marker-end", "url(#triangle)");
@@ -789,11 +819,11 @@
 	}
 
 	// Add label
-	function addLabel(opts, node, size, fx, fy, ftext) {
+	function addLabel(opts, node, size, fx, fy, ftext, class_label) {
 		node.filter(function (d) {
     		return d.data.hidden && !opts.DEBUG ? false : true;
 		}).append("text")
-		.attr("class", "label")
+		.attr("class", class_label + ' label' || "label")
 		.attr("x", fx)
 		.attr("y", fy)
 		.attr("dy", size)

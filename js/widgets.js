@@ -30,39 +30,54 @@
     	popup_selection.append("rect").attr("class", "popup_selection")
     							.attr("rx", 6)
     							.attr("ry", 6)
+    							.attr("transform", "translate(-1000,-100)")
     							.style("opacity", 0)
-    							.attr("transform", "translate(-2,2)")
-    							.attr("width", (font_size+4)*2)
-    							.attr("height", font_size+4)
+    							.attr("width",  font_size*4.75)
+    							.attr("height", font_size*2)
+    							.style("stroke", "darkgrey")
     							.attr("fill", "white");
     	
-		var mars = popup_selection.append("text")  // male
+		var square = popup_selection.append("text")  // male
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
-			.attr("class", "popup_selection fa-mars persontype")
-			.attr("transform", "translate(2,"+(font_size+2)+")")
-			.html("\uf222&nbsp");
-		var mars_title = mars.append("svg:title").text("add male");
+			.attr("class", "popup_selection fa-lg fa-square persontype")
+			.attr("transform", "translate(-1000,-100)")
+			.attr("x", font_size/3)
+			.attr("y", font_size*1.5)
+			.html("\uf096&nbsp");
+		var square_title = square.append("svg:title").text("add male");
 		
-		var venus = popup_selection.append("text")  // female
+		var circle = popup_selection.append("text")  // female
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr('font-size', '1.em' )
-			.attr("class", "popup_selection fa-venus persontype")
-			.attr("transform", "translate("+(font_size+4)+","+(font_size+2)+")")
-			.html("\uf221");
-		var venus_title = venus.append("svg:title").text("add female");
+			.attr("class", "popup_selection fa-lg fa-circle persontype")
+			.attr("transform", "translate(-1000,-100)")
+			.attr("x", font_size*1.7)
+			.attr("y", font_size*1.5)
+			.html("\uf10c&nbsp");
+		var circle_title = circle.append("svg:title").text("add female");
+
+		var unspecified = popup_selection.append("text")  // unspecified
+			.attr('font-family', 'FontAwesome')
+			.style("opacity", 0)
+			.attr('font-size', '1.em' )
+			.attr("transform", "translate(-1000,-100)")
+			.attr("class", "popup_selection fa-lg fa-unspecified popup_selection_rotate45 persontype")
+			.html("\uf096&nbsp");
+		var unspecified_title = unspecified.append("svg:title").text("add unspecified");
 
 		var add_person = {};
 		// click the person type selection
 		d3.selectAll(".persontype")
 		  .on("click", function () {
 			var newdataset = ptree.copy_dataset(opts.dataset);
+			var sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
 			if(add_person['type'] === 'addsibling')
-				ptree.addsibling(newdataset, add_person['node'].datum().data, d3.select(this).classed("fa-mars") ? 'M' : 'F');
+				ptree.addsibling(newdataset, add_person['node'].datum().data, sex);
 			else if(add_person['type'] === 'addchild')
-				ptree.addchild(newdataset, add_person['node'].datum().data, d3.select(this).classed("fa-mars") ? 'M' : 'F');
+				ptree.addchild(newdataset, add_person['node'].datum().data, sex);
 			else
 				return
 			opts['dataset'] = newdataset;	
@@ -76,15 +91,15 @@
 			  d3.selectAll('.popup_selection').style("opacity", 1);
 			  // add tooltips to font awesome widgets
 			  if(add_person['type'] === 'addsibling'){
-				 if(d3.select(this).classed("fa-mars"))
-					  mars_title.text("add brother");
+				 if(d3.select(this).classed("fa-square"))
+					  square_title.text("add brother");
 				  else 
-					  venus_title.text("add sister");
+					  circle_title.text("add sister");
 			  } else if(add_person['type'] === 'addchild'){
-				  if(d3.select(this).classed("fa-mars"))
-					  mars_title.text("add son");
+				  if(d3.select(this).classed("fa-square"))
+					  square_title.text("add son");
 				  else
-					  venus_title.text("add daughter");				  
+					  circle_title.text("add daughter");				  
 			  }
 		  });
 
@@ -101,7 +116,7 @@
 			.filter(function (d) {
 			    return d.data.hidden && !opts.DEBUG ? false : true;
 			})
-			.attr("class", 'indiv_rect')
+			.attr("class", 'indi_rect')
 			.attr("rx", 6)
 			.attr("ry", 6)
 			.attr("x", function(d) { return - 0.75*opts.symbol_size; })
@@ -172,7 +187,9 @@
 			  var translate = getTranslation(d3.select('.diagram').attr("transform"));
 			  var x = parseInt(d3.select(this).attr("xx")) + parseInt(d3.select(this).attr("x")) + translate[0];
 			  var y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y")) + translate[1];
-			  d3.selectAll('.popup_selection').attr("y", y).attr("x", x);
+			  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
+			  d3.selectAll('.popup_selection_rotate45')
+			  	.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
 		  })
 		  .on("mouseout", function () {
 			  d3.selectAll('.popup_selection').style("opacity", 0);
@@ -218,21 +235,20 @@
 			
 			if('nodeclick' in opts) {
 				opts.nodeclick(d.data);
-				d3.selectAll(".indiv_rect").style("opacity", 0);
-				d3.selectAll('.indiv_rect').filter(function(d) {return highlight.indexOf(d) != -1}).style("opacity", 0.5);
+				d3.selectAll(".indi_rect").style("opacity", 0);
+				d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1}).style("opacity", 0.5);
 			}
      	})
 		.on("mouseover", function(d){
-			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete')
-			  .style("opacity", 1);
-			d3.select(this).select('rect')
-			  .style("opacity", 0.2);
+			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete').style("opacity", 1);
+			d3.select(this).select('rect').style("opacity", 0.2);
+			d3.select(this).selectAll('.indi_details').style("opacity", 0);
 		})
 		.on("mouseout", function(d){
-			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete')
-			  .style("opacity", 0);
+			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete').style("opacity", 0);
 			if(highlight.indexOf(d) == -1)
 				d3.select(this).select('rect').style("opacity", 0);
+			d3.select(this).selectAll('.indi_details').style("opacity", 1);
 		});
 	}
 
