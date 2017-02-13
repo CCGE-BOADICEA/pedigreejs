@@ -621,10 +621,10 @@
 		    .style("fill", "black");
 		
 		ped.append("line")
-	        .attr("x1", probandNode.x+opts.symbol_size)
-	        .attr("y1", probandNode.y-opts.symbol_size)
-	        .attr("x2", probandNode.x+opts.symbol_size/2)
-	        .attr("y2", probandNode.y-opts.symbol_size/2)
+	        .attr("x1", probandNode.x-opts.symbol_size)
+	        .attr("y1", probandNode.y+opts.symbol_size)
+	        .attr("x2", probandNode.x-opts.symbol_size/2)
+	        .attr("y2", probandNode.y+opts.symbol_size/2)
 	        .attr("stroke-width", 1)
 	        .attr("stroke", "black")
 	        .attr("marker-end", "url(#triangle)");
