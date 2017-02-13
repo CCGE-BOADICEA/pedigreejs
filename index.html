@@ -19,15 +19,33 @@
 <body>
 
 <!-- HEADER -->
-<div id="header_wrap" class="outer">
-    <header class="inner">
-          <a id="forkme_banner" href="https://github.com/CCGE-BOADICEA/pedigreejs">View on GitHub</a>
-          <h1 id="project_title">pedigreejs</h1>
-          <h2 id="project_tagline">A web tool to build pedigrees.</h2>
-     </header>
+<div class="jumbotron" style="background-color:#DDD1C1">
+<div class="container">
+          <a class="btn btn-primary btn-lg pull-right" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs">View on GitHub</a>
+          <h1>pedigreejs</h1>
+          <h2>A web tool for building pedigrees.</h2>
+</div>
 </div>
 
 <div class="container">
+
+	<div class="row">
+	<p>
+	<strong>pedigreejs</strong> is a JavaScript library that uses <a href="https://d3js.org/">d3</a>
+	to layout the hierarchical structure and draw the individual nodes using standard pedigree
+	nomenclature. An example is given below.
+	</p>
+	<p>
+	Individuals can be added to the pedigree by clicking on another individual and adding a
+	partner, parent or sibling.
+	
+	There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i>,
+	'redo' <i class="fa fa-repeat" aria-hidden="true"></i> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i>
+	buttons at the top and a button to enable full screen editing <i class="fa fa-arrows-alt" aria-hidden="true"></i>.
+	</p>
+	</div>	
+	<br/>
+
 	<div class="row">
 		<label class="btn btn-default btn-file">
 				<input id="load" type="file" style="display: none;"/>Load
@@ -36,9 +54,11 @@
 				<input id="save" type="button" style="display: none;"/>Save
 		</label>
 	</div>
-		
-	<div id="pedigrees"></div>
-	<div id="node_properties"></div>
+	
+	<div class="row">
+		<div id="pedigrees"></div>
+		<div id="node_properties"></div>
+	</div>
 </div>
 
 	<script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script> 
@@ -67,7 +87,7 @@
 		{"name": "ch2", "sex": "M", "mother": "f21", "father": "m21"}
 	];
 	$( "#pedigrees" ).append( $( "<div id='pedigree_history'></div>" ) );
-	$( "#pedigrees" ).append( $( "<div id='pedigree'><br/></div>" ) );
+	$( "#pedigrees" ).append( $( "<div id='pedigree'></div>" ) );
 	
 	var opts = {
 			'targetDiv': '#pedigree',
