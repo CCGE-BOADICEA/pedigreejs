@@ -339,7 +339,7 @@
 	ptree.roots = {};
 	ptree.build = function(options) {
         var opts = $.extend({ // defaults
-        	targetDiv: '#pedigree_edit',
+        	targetDiv: 'pedigree_edit',
         	dataset: [ {"name": "m21", "sex": "M", "top_level": true},
         		       {"name": "f21", "sex": "F", "top_level": true},
         			   {"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true}],
@@ -831,7 +831,7 @@
     }
 
 	ptree.rebuild = function(opts) {
-		$(opts.targetDiv).empty();
+		$("#"+opts.targetDiv).empty();
 		pedcache.add(opts);
 		ptree.build(opts);
 	}
