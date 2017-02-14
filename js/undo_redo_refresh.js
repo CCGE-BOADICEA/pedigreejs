@@ -34,7 +34,7 @@
 
 		$('#fullscreen').on('click', function(e) {
 			if (!document.mozFullScreen && !document.webkitFullScreen) {
-				var target = $(opts.targetDiv)[0];
+				var target = $("#"+opts.targetDiv)[0];
 				if(target.mozRequestFullScreen)
 					target.mozRequestFullScreen();
 			    else
@@ -53,16 +53,16 @@
 
 			if($(e.target).hasClass('fa-undo')) {
 				opts['dataset'] = pedcache.previous(opts);
-				$(opts.targetDiv).empty();
+				$("#"+opts.targetDiv).empty();
 				ptree.build(opts);				
 			} else if ($(e.target).hasClass('fa-repeat')) {
 				opts['dataset'] = pedcache.next(opts);
-				$(opts.targetDiv).empty();
+				$("#"+opts.targetDiv).empty();
 				ptree.build(opts);				
 			} else if ($(e.target).hasClass('fa-refresh')) {
 				pedcache.clear(opts);
 				delete opts.dataset;
-				$(opts.targetDiv).empty();
+				$("#"+opts.targetDiv).empty();
 				ptree.build(opts);
 			}
 		});
