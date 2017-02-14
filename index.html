@@ -31,23 +31,26 @@
 	<div class="row">
 		<div class="col-md-5">
 			<h3>Overview</h3>
+			<p class="text-justify">
 			<strong>pedigreejs</strong> is a JavaScript library used to draw family trees using
 			standard pedigree nomenclature. It uses <a href="https://d3js.org/">d3</a>
-			to layout the hierarchical structure and draw the individual nodes using svg.
-			The size of the svg can be configured as well as the colour codes used to denote disease.
+			to layout the hierarchical structure and draw the individual nodes as a SVG image.
+			The size of the SVG can be configured as well as the colour codes used to denote disease.
 			It can be used to build the pedigree structure or load in an existing data set.
+			To assist visualisation and building of larger pedigrees a full screen mode is provided.
+			</p>
 		</div>
 	
 <!-- EXAMPLE -->
 		<div class="col-md-7">
-			<label class="btn btn-default btn-file">
-					<input id="load" type="file" style="display: none;"/>Load
-			</label>	
-			<label class="btn btn-default btn-file">
-					<input id="save" type="button" style="display: none;"/>Save
-			</label>
+			<div class="text-center">
+				<label class="btn btn-default btn-file">
+						<input id="load" type="file" style="display: none;"/>Load
+				</label>	
+				<label class="btn btn-default btn-file">
+						<input id="save" type="button" style="display: none;"/>Save
+				</label>
 
-			<div class="row">
 				<div id="pedigrees"></div>
 				<div id="node_properties"></div>
 			</div>
@@ -83,13 +86,13 @@
 			'targetDiv': 'pedigree',
 			'btn_target': 'pedigree_history',
 		//	'nodeclick': pedigree_form.nodeclick,
-			'width': 450,
-			'height': 320,
-			'symbol_size': 35,
-        	diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
-						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+			'width': 390,
+			'height': 280,
+			'symbol_size': 30,
+        	'diseases': [{'type': 'breast_cancer', 'colour': '#F68F35'},
+						 {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
+						 {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
+						 {'type': 'prostate_cancer', 'colour': '#D5494A'}],
 			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)};
 	var local_dataset = pedcache.current(opts);
 	if (local_dataset !== undefined && local_dataset !== null) {
@@ -106,7 +109,8 @@
 	<h3>Building Pedigrees</h3>
 	<p>
 	Individuals can be added to the pedigree by clicking on another individual and adding a
-	partner <i class="fa fa-link" aria-hidden="true"></i>, parent <i class="fa fa-arrow-up" aria-hidden="true"></i>
+	partner <i class="fa fa-link" aria-hidden="true"></i> (two people with at least one child),
+	parent <i class="fa fa-arrow-up" aria-hidden="true"></i>
 	or sibling <i class="fa fa-arrow-down" aria-hidden="true"></i>.
 	
 	There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i>,
