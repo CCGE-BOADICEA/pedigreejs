@@ -2,7 +2,7 @@ describe('Test pedigree SVG ', function() {
 	var wid = 600;
 	var hgt = 500;
 	var opts = {
-			targetDiv : '#pedigree_edit',
+			targetDiv : 'pedigree_edit',
 			width : wid,
 			height : hgt,
 			symbol_size: 35

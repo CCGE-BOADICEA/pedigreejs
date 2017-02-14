@@ -363,7 +363,7 @@
         opts.dataset = group_top_level(opts.dataset);
 
         var svg_dimensions = get_svg_dimensions(opts);
-        var svg = d3.select(opts.targetDiv)
+        var svg = d3.select("#"+opts.targetDiv)
 					 .append("svg:svg")
 					 .attr("width", svg_dimensions.width)
 					 .attr("height", svg_dimensions.height);
