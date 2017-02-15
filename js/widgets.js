@@ -190,9 +190,6 @@
 			  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
 			  d3.selectAll('.popup_selection_rotate45')
 			  	.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
-		  })
-		  .on("mouseout", function () {
-			  d3.selectAll('.popup_selection').style("opacity", 0);
 		  });
 
 		// handle widget clicks	
