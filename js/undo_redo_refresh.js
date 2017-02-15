@@ -3,18 +3,20 @@
 // undo, redo, reset buttons
 (function(pbuttons, $, undefined) {
 	
-	pbuttons.add = function(options) {
+	pbuttons.add = function(options, li) {
 		var opts = $.extend({
             // defaults
 			btn_target: 'pedigree_history'
         }, options );
 
-		var btns = 
-			'<i class="fa fa-undo fa-lg" aria-hidden="true" aria-label="undo"></i>&thinsp;' +
-			'<i class="fa fa-repeat fa-lg" aria-hidden="true" aria-label="redo"></i>&thinsp;' +
-			'<i class="fa fa-refresh fa-lg" aria-hidden="true" aria-label="reset"></i>&nbsp;' +
-			'<i class="fa fa-arrows-alt" aria-hidden="true" id="fullscreen"></i>';
-		$( "#" + opts.btn_target ).append( btns );
+		var btns = ["fa-undo", "fa-repeat", "fa-refresh", "fa-arrows-alt"];
+		for(var i=0; i<btns.length; i++) {
+			if(li) $( "#"+opts.btn_target ).append('<li>');
+			$( "#"+opts.btn_target ).append('&nbsp;<i class="fa fa-lg ' + btns[i] + '" ' +
+			                                  (btns[i] == "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
+			                                  ' aria-hidden="true"></i>' );
+			if(li) $( "#"+opts.btn_target ).append('</li>');
+		}
 		click(opts);
 	}
 	
