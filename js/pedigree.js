@@ -607,28 +607,29 @@
 
 		// draw proband arrow
 		var probandIdx  = pedigree_util.getProbandIndex(opts.dataset);
-		var probandNode = pedigree_util.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
-
-		ped.append("svg:defs").append("svg:marker")    // arrow head
-		    .attr("id", "triangle")
-		    .attr("refX", 6)
-		    .attr("refY", 6)
-		    .attr("markerWidth", 20)
-		    .attr("markerHeight", 20)
-		    .attr("orient", "auto")
-		    .append("path")
-		    .attr("d", "M 0 0 12 6 0 12 3 6")
-		    .style("fill", "black");
-		
-		ped.append("line")
-	        .attr("x1", probandNode.x-opts.symbol_size)
-	        .attr("y1", probandNode.y+opts.symbol_size)
-	        .attr("x2", probandNode.x-opts.symbol_size/2)
-	        .attr("y2", probandNode.y+opts.symbol_size/2)
-	        .attr("stroke-width", 1)
-	        .attr("stroke", "black")
-	        .attr("marker-end", "url(#triangle)");
-		
+		if(probandIdx) {
+			var probandNode = pedigree_util.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
+	
+			ped.append("svg:defs").append("svg:marker")    // arrow head
+			    .attr("id", "triangle")
+			    .attr("refX", 6)
+			    .attr("refY", 6)
+			    .attr("markerWidth", 20)
+			    .attr("markerHeight", 20)
+			    .attr("orient", "auto")
+			    .append("path")
+			    .attr("d", "M 0 0 12 6 0 12 3 6")
+			    .style("fill", "black");
+			
+			ped.append("line")
+		        .attr("x1", probandNode.x-opts.symbol_size)
+		        .attr("y1", probandNode.y+opts.symbol_size)
+		        .attr("x2", probandNode.x-opts.symbol_size/2)
+		        .attr("y2", probandNode.y+opts.symbol_size/2)
+		        .attr("stroke-width", 1)
+		        .attr("stroke", "black")
+		        .attr("marker-end", "url(#triangle)");
+		}
 		// drag and zoom
 		var zoom = d3.zoom()
 		  .scaleExtent([1., 1.])
