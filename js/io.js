@@ -7,9 +7,30 @@ $('#save').click(function(e) {
 	io.save();
 });
 
+$('#print').click(function(e) {
+	io.print();
+});
+
 // pedigree I/O 
 (function(io, $, undefined) {
 
+	io.print = function(){
+        var popUpAndPrint = function() {
+        	var svg = $('svg');
+            var container = $('svg').parent();
+            
+            var width = parseFloat(svg.width())
+            var height = parseFloat(svg.height())
+            var printWindow = window.open('', 'PrintMap',
+            'width=' + width + ',height=' + height);
+            printWindow.document.writeln($(container).html());
+            printWindow.document.close();
+            printWindow.print();
+            printWindow.close();
+        };
+        setTimeout(popUpAndPrint, 500);
+	}
+	
 	io.save = function(){
 		var content = JSON.stringify(pedcache.current(opts));
 		if(opts.DEBUG)
