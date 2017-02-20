@@ -8,22 +8,21 @@ $('#save').click(function(e) {
 });
 
 $('#print').click(function(e) {
-	io.print();
+	io.print($('svg').parent());
 });
 
 // pedigree I/O 
 (function(io, $, undefined) {
 
-	io.print = function(){
+	io.print = function(el){
+
         var popUpAndPrint = function() {
-        	var svg = $('svg');
-            var container = $('svg').parent();
-            
-            var width = parseFloat(svg.width())
-            var height = parseFloat(svg.height())
+        	var element = $(el);           
+            var width = parseFloat(element.width())
+            var height = parseFloat(element.height())
             var printWindow = window.open('', 'PrintMap',
             'width=' + width + ',height=' + height);
-            printWindow.document.writeln($(container).html());
+            printWindow.document.writeln($(el).html());
             printWindow.document.close();
             printWindow.print();
             printWindow.close();
