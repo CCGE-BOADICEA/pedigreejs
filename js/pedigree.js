@@ -211,8 +211,8 @@
 					var father = pedigree_util.getNodeByName(flattenNodes, node.data.father.name);
 					var mother = pedigree_util.getNodeByName(flattenNodes, node.data.mother.name);
 					var xmid = (father.x + mother.x) /2;
+					node.x = xmid;   // centralise parent nodes
 					if(!pedigree_util.overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
-						node.x = xmid;   // centralise parent nodes
 						var diff = node.x - xmid;
 						if(node.children.length == 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
 							if(!(node.children[0].data.hidden && node.children[1].data.hidden)) {
