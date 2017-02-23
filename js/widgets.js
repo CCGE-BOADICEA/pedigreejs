@@ -206,7 +206,7 @@
 			}
 
 			if(opt === 'settings') {
-				if(typeof opts.edit == 'function') { 
+				if(typeof opts.edit === 'function') { 
 					opts.edit();
 				} else {
 					$('#node_properties').dialog({
