@@ -148,6 +148,10 @@
 				'styles': {"font-weight": "bold", "fill": "darkred", "font-family": "monospace"}
 			}
 		};
+		
+		if(opts.edit) {
+			widgets['settings'] = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
+		}
 
 		for(var key in widgets) {
 			var widget = node.append("text")
@@ -193,7 +197,7 @@
 		  });
 
 		// handle widget clicks	
-		d3.selectAll(".addchild, .addpartner, .addparents, .delete")
+		d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
 		  .on("click", function () {
 			var opt = d3.select(this).attr('class');
 			var d = d3.select(this.parentNode).datum();
@@ -201,7 +205,57 @@
 				console.log(opt);
 			}
 
-			if(opt === 'delete') {
+			if(opt === 'settings') {
+				if(typeof opts.edit == 'function') { 
+					opts.edit();
+				} else {
+					$('#node_properties').dialog({
+					    autoOpen: false,
+					    title: d.data.display_name,
+					    width: 450
+					});
+	
+					var table = "<table class='table'>";
+					table += "<tr><td>Name&nbsp;</td><td><input type='text' id='id_display_name' name='display_name' value="+
+							(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
+					
+					table += '<tr><td>sex</td><td id="id_sex">' +
+							 '<label class="radio-inline"><input type="radio" name="sex" value="M">Male</label>' +
+							 '<label class="radio-inline"><input type="radio" name="sex" value="F">Female</label>' +
+							 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
+							 '</td></tr>';
+	
+					$("#id_sex input[value='"+d.data.sex+"']").prop('checked', true);
+					
+					// alive status = 0; dead status = 1
+					table += '<tr><td>status</td><td id="id_status">' +
+							 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status == 0 ? "checked" : "")+'>Alive</label>' +
+							 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status == 1 ? "checked" : "")+'>Deceased</label>' +
+							 '</td></tr>';
+					$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
+					
+					$.each(d.data, function(k, v) {
+						if($.inArray(k, ["children", "parent_node", "top_level", "id", "sex", "status", "display_name"] ) == -1) {
+							if(v === true || v === false) {
+								table += "<tr><td>"+k+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
+										k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
+							} else if(k.length > 0){
+								table += "<tr><td>"+k+"&nbsp;</td><td><input type='text' id='id_" +
+										k+"' name='"+k+"' value="+v+"></td></tr>";
+							}
+						}
+				    });
+					$('#node_properties').html(table);
+					$('#node_properties').dialog('open');
+	
+					$('#id_name').closest('tr').toggle();
+					$('input[type=radio], input[type=checkbox]').change(function() {
+				    	pedigree_form.save(opts);
+				    });
+					pedigree_form.update(opts);
+					return;
+				}
+			} else if(opt === 'delete') {
 				var newdataset = ptree.copy_dataset(opts.dataset);
 				opts['dataset'] = ptree.delete_node_dataset(newdataset, d.data, opts);
 				ptree.rebuild(opts);
@@ -237,12 +291,12 @@
 			}
      	})
 		.on("mouseover", function(d){
-			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete').style("opacity", 1);
+			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
 			d3.select(this).select('rect').style("opacity", 0.2);
 			d3.select(this).selectAll('.indi_details').style("opacity", 0);
 		})
 		.on("mouseout", function(d){
-			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete').style("opacity", 0);
+			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
 			if(highlight.indexOf(d) == -1)
 				d3.select(this).select('rect').style("opacity", 0);
 			d3.select(this).selectAll('.indi_details').style("opacity", 1);
