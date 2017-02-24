@@ -94,7 +94,7 @@
 			'targetDiv': 'pedigree',
 			'btn_target': 'pedigree_history',
 		//	'nodeclick': pedigree_form.nodeclick,
-			'width': 390,
+			'width': ($(window).width() > 450 ? 390 : $(window).width()- 30),
 			'height': 280,
 			'symbol_size': 30,
 			'edit': true,

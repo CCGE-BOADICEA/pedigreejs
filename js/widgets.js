@@ -212,7 +212,7 @@
 					$('#node_properties').dialog({
 					    autoOpen: false,
 					    title: d.data.display_name,
-					    width: 450
+					    width: ($(window).width() > 400 ? 430 : $(window).width()- 30)
 					});
 	
 					var table = "<table class='table'>";
