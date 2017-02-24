@@ -216,7 +216,7 @@
 					});
 	
 					var table = "<table class='table'>";
-					table += "<tr><td>Name&nbsp;</td><td><input type='text' id='id_display_name' name='display_name' value="+
+					table += "<tr><td>name</td><td><input type='text' id='id_display_name' name='display_name' value="+
 							(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 					
 					table += '<tr><td>sex</td><td id="id_sex">' +
@@ -234,8 +234,16 @@
 							 '</td></tr>';
 					$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 					
+					var exclude = ["children", "parent_node", "top_level", "id", "sex", "status", "display_name", "mother", "father"];
+					$.each(opts.diseases, function(k, v) {
+						exclude.push(v.type);
+						table += "<tr><td>"+v.type.replace("_", " ")+"&nbsp;</td><td><input type='checkbox' id='id_" + v.type + "' name='" +
+									v.type+"' value="+v.type+" "+(d.data[v.type] ? "checked" : "")+"></td></tr>";
+						
+					});
+
 					$.each(d.data, function(k, v) {
-						if($.inArray(k, ["children", "parent_node", "top_level", "id", "sex", "status", "display_name"] ) == -1) {
+						if($.inArray(k, exclude) == -1) {
 							if(v === true || v === false) {
 								table += "<tr><td>"+k+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
 										k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
