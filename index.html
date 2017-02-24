@@ -29,20 +29,8 @@
 
 <div class="container">
 	<div class="row">
-		<div class="col-md-5">
-			<h3>Overview</h3>
-			<p class="text-justify">
-			<strong>pedigreejs</strong> is a JavaScript library used to draw family trees using
-			standard pedigree nomenclature. It uses <a href="https://d3js.org/">d3</a>
-			to layout the hierarchical structure and draw the individual nodes as a SVG image.
-			The size of the SVG can be configured as well as the colour codes used to denote disease.
-			It can be used to build the pedigree structure or load in an existing data set.
-			To assist visualisation and building of larger pedigrees a full screen mode is provided.
-			</p>
-		</div>
-	
 <!-- EXAMPLE -->
-		<div class="col-md-7">
+		<div class="col-md-7 col-md-push-5">
 			<div class="text-center">
 				<label class="btn btn-default btn-file">
 						<input id="load" type="file" style="display: none;"/>Load
@@ -57,6 +45,22 @@
 				<div id="pedigrees"></div>
 				<div id="node_properties"></div>
 			</div>
+		</div>
+		<div class="col-md-5 col-md-pull-7">
+			<h3>Overview</h3>
+			<p class="text-justify">
+			<strong>pedigreejs</strong> is a JavaScript library used to draw family trees using
+			standard pedigree nomenclature. It uses <a href="https://d3js.org/">d3</a>
+			to layout the hierarchical structure and draw the individual nodes as a SVG image.
+			The size of the SVG can be configured as well as the colour codes used to denote disease.
+			It can be used to build the pedigree structure or load in an existing data set.
+			To assist visualisation and building of larger pedigrees a full screen mode is provided.
+			</p>
+			<h3>Current Limitations</h3>
+			<ul>
+				<li>The maximum number of partners an individual can have is 2.</li>
+				<li>Consanguinity can not be represented.</li>
+			</ul>
 		</div>
 	</div>
 
@@ -94,6 +98,8 @@
 			'height': 280,
 			'symbol_size': 30,
 			'edit': true,
+			'zoomIn': .8,
+			'zoomOut': 3.,
         	'diseases': [{'type': 'breast_cancer', 'colour': '#F68F35'},
         				 {'type': 'breast_cancer2', 'colour': 'pink'},
 						 {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
@@ -182,6 +188,14 @@
 	<div class="row">
 		<div class="col-md-1"><strong>symbol_size</strong></div>
 		<div class="col-md-11">Size of the nodes, <i>e.g.</i> 35.</div>
+    </div>
+	<div class="row">
+		<div class="col-md-1"><strong>zoomIn</strong></div>
+		<div class="col-md-11">The factor by which the svg size can be scaled down to, default 1.</div>
+    </div>
+	<div class="row">
+		<div class="col-md-1"><strong>zoomOut</strong></div>
+		<div class="col-md-11">The factor by which the svg size can be scaled up to, default 1.</div>
     </div>
 	<div class="row">
 		<div class="col-md-1"><strong>edit</strong></div>
