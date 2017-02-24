@@ -348,6 +348,8 @@
         	width: 600, 
         	height: 400,
         	symbol_size: 35,
+        	zoomIn: 1.,
+        	zoomOut: 1.,
         	diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
         				{'type': 'breast_cancer2', 'colour': 'pink'},
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
@@ -634,7 +636,7 @@
 		}
 		// drag and zoom
 		var zoom = d3.zoom()
-		  .scaleExtent([1., 1.])
+		  .scaleExtent([opts.zoomIn, opts.zoomOut])
 		  .on('zoom', zoomFn);
 
 		function zoomFn() {
