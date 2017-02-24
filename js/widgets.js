@@ -220,13 +220,11 @@
 							(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 					
 					table += '<tr><td>sex</td><td id="id_sex">' +
-							 '<label class="radio-inline"><input type="radio" name="sex" value="M">Male</label>' +
-							 '<label class="radio-inline"><input type="radio" name="sex" value="F">Female</label>' +
+							 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
+							 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
 							 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
 							 '</td></tr>';
-	
-					$("#id_sex input[value='"+d.data.sex+"']").prop('checked', true);
-					
+
 					// alive status = 0; dead status = 1
 					table += '<tr><td>status</td><td id="id_status">' +
 							 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status == 0 ? "checked" : "")+'>Alive</label>' +
@@ -257,7 +255,7 @@
 					$('#node_properties').dialog('open');
 	
 					$('#id_name').closest('tr').toggle();
-					$('input[type=radio], input[type=checkbox]').change(function() {
+					$('input[type=radio], input[type=checkbox], input[type=text]').change(function() {
 				    	pedigree_form.save(opts);
 				    });
 					pedigree_form.update(opts);
