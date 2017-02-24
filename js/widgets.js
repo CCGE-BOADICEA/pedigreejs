@@ -206,7 +206,7 @@
 			}
 
 			if(opt === 'settings') {
-				if(typeof opts.edit == 'function') { 
+				if(typeof opts.edit === 'function') { 
 					opts.edit();
 				} else {
 					$('#node_properties').dialog({
@@ -300,6 +300,9 @@
 			if(highlight.indexOf(d) == -1)
 				d3.select(this).select('rect').style("opacity", 0);
 			d3.select(this).selectAll('.indi_details').style("opacity", 1);
+			// hide popup if it looks like the mouse is moving north
+	        if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
+	        	d3.selectAll('.popup_selection').style("opacity", 0);
 		});
 	}
 
