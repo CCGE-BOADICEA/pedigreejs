@@ -26,7 +26,7 @@
 
     	// popup gender selection box
     	var font_size = parseInt($("body").css('font-size'));
-    	var popup_selection = d3.select('svg').append("g");
+    	var popup_selection = d3.select('.diagram');
     	popup_selection.append("rect").attr("class", "popup_selection")
     							.attr("rx", 6)
     							.attr("ry", 6)
@@ -188,9 +188,9 @@
 			  d3.selectAll('.popup_selection').style("opacity", 1);
 			  add_person = {'node': d3.select(this.parentNode), 'type': type};
 
-			  var translate = getTranslation(d3.select('.diagram').attr("transform"));
-			  var x = parseInt(d3.select(this).attr("xx")) + parseInt(d3.select(this).attr("x")) + translate[0];
-			  var y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y")) + translate[1];
+			  //var translate = getTranslation(d3.select('.diagram').attr("transform"));
+			  var x = parseInt(d3.select(this).attr("xx")) + parseInt(d3.select(this).attr("x"));
+			  var y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y"));
 			  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
 			  d3.selectAll('.popup_selection_rotate45')
 			  	.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
