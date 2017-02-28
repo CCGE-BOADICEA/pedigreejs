@@ -462,7 +462,7 @@
 		   .data(function(d) {     		// set the disease data for the pie plot
 			   var ncancers = 0;
 			   var cancers = $.map(opts.diseases, function(val, i){
-				   if((opts.diseases[i].type + '_diagnosis_age') in d.data) {ncancers++; return 1;} else return 0;
+				   if(prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
 			   });
 			   if(ncancers == 0) cancers = [1];
 			   return [$.map(cancers, function(val, i){ 
@@ -513,7 +513,7 @@
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
-							if(opts.diseases[j].type + '_diagnosis_age' in d.data)
+							if(prefixInObj(opts.diseases[i].type, d.data))
 								y_offset += font_size;
 						}
 						return y_offset;
@@ -647,6 +647,16 @@
 		}
 		svg.call(zoom);
 		return opts;
+	}
+	
+	// check if the object contains a key with a given prefix
+	function prefixInObj(prefix, obj) {
+		var found = false;
+		$.each(obj, function(k, n){
+		    if(k.startsWith(prefix))
+		    	return found = true;
+		});
+		return found;
 	}
 
 	// return a list of individuals that aren't connected to the target
