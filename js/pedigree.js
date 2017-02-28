@@ -362,7 +362,7 @@
         if(opts.DEBUG)
         	pedigree_util.print_opts(opts);
         pbuttons.updateButtons(opts);
-
+ 
         // group top level nodes by partners
         opts.dataset = group_top_level(opts.dataset);
 
@@ -492,7 +492,7 @@
 		    .attr("y1", function(d, i) {return 0.6*opts.symbol_size})
 		    .attr("x2", function(d, i) {return 0.6*opts.symbol_size})
 		    .attr("y2", function(d, i) {return -0.6*opts.symbol_size});
-		
+
 		// names of individuals
 		addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size),
 				function(d) {
@@ -513,7 +513,7 @@
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
-							if(prefixInObj(opts.diseases[i].type, d.data))
+							if(prefixInObj(opts.diseases[j].type, d.data))
 								y_offset += font_size;
 						}
 						return y_offset;
@@ -652,10 +652,11 @@
 	// check if the object contains a key with a given prefix
 	function prefixInObj(prefix, obj) {
 		var found = false;
-		$.each(obj, function(k, n){
-		    if(k.startsWith(prefix))
-		    	return found = true;
-		});
+		if(obj)
+			$.each(obj, function(k, n){
+			    if(k.indexOf(prefix+"_") == 0 || k === prefix)
+			    	return found = true;
+			});
 		return found;
 	}
 
