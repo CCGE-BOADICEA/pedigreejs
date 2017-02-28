@@ -12,7 +12,7 @@
 #   - dist/**/*.js
 #
 src_files:
-  - https://cdnjs.cloudflare.com/ajax/libs/d3/4.3.0/d3.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js
   - https://code.jquery.com/jquery-3.1.0.min.js
   - js/*.js
 
