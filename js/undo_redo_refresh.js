@@ -10,13 +10,15 @@
         }, options );
 
 		var btns = ["fa-undo", "fa-repeat", "fa-refresh", "fa-arrows-alt"];
+		var lis = "";
 		for(var i=0; i<btns.length; i++) {
-			if(li) $( "#"+opts.btn_target ).append('<li>');
-			$( "#"+opts.btn_target ).append('&nbsp;<i class="fa fa-lg ' + btns[i] + '" ' +
+			lis += '<li">';
+			lis += '&nbsp;<i class="fa fa-lg ' + btns[i] + '" ' +
 			                                  (btns[i] == "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
-			                                  ' aria-hidden="true"></i>' );
-			if(li) $( "#"+opts.btn_target ).append('</li>');
+			                                  ' aria-hidden="true"></i>';
+			if(li) lis += '</li>';
 		}
+		$( "#"+opts.btn_target ).append(lis);
 		click(opts);
 	}
 	
