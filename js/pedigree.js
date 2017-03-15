@@ -359,13 +359,13 @@
 		
         if(pedcache.nstore(opts) == -1)
         	pedcache.add(opts);
-        if(opts.DEBUG)
-        	pedigree_util.print_opts(opts);
+
         pbuttons.updateButtons(opts);
  
         // group top level nodes by partners
         opts.dataset = group_top_level(opts.dataset);
-
+        if(opts.DEBUG)
+        	pedigree_util.print_opts(opts);
         var svg_dimensions = get_svg_dimensions(opts);
         var svg = d3.select("#"+opts.targetDiv)
 					 .append("svg:svg")
@@ -806,7 +806,7 @@
 	
 	// group top_level nodes by their partners
 	function group_top_level(dataset) {
-		//var top_level = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
+		// var top_level = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
 		// calculate top_level nodes
 		for(var i=0;i<dataset.length;i++) {
 			if(pedigree_util.getDepth(dataset, dataset[i].name) == 2)
@@ -853,8 +853,9 @@
 	}
 
 	ptree.copy_dataset = function(dataset) {
-	    // sort by id
-		dataset.sort(function(a,b) {return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0)); } );
+		if(dataset[0].id) { // sort by id
+			dataset.sort(function(a,b){return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))});
+		}
 
 		var disallowed = ["id", "parent_node"];
 		var newdataset = [];
