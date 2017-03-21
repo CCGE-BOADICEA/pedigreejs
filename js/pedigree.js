@@ -344,7 +344,7 @@
         	targetDiv: 'pedigree_edit',
         	dataset: [ {"name": "m21", "sex": "M", "top_level": true},
         		       {"name": "f21", "sex": "F", "top_level": true},
-        			   {"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true}],
+        			   {"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
         	width: 600, 
         	height: 400,
         	symbol_size: 35,
@@ -438,10 +438,16 @@
 		// provide a border to the node
 		node.append("path")
 			.filter(function (d) {return !d.data.hidden})
+			.attr("shape-rendering", "geometricPrecision")
 			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : ""})
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
 			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare}))
-			.style("stroke", "grey")
+			.style("stroke", function (d) {
+				return d.data.age && d.data.yob ? "#303030" : "grey"
+			})
+			.style("stroke-width", function (d) {
+				return d.data.age && d.data.yob ? ".3em" : ".1em"
+			})
 			.style("fill", "none");
 
 		// set a clippath
@@ -499,6 +505,15 @@
 					if(opts.DEBUG)
 						return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
 					return 'display_name' in d.data ? d.data.display_name : '';});
+	
+/*		var warn = node.filter(function (d) {
+    		return (!d.data.age || !d.data.yob) && !d.data.hidden;
+		}).append("text")
+		.attr('font-family', 'FontAwesome')
+		.attr("x", ".25em")
+		.attr("y", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size))
+		.html("\uf071");
+		warn.append("svg:title").text("incomplete");*/
 
 		var font_size = parseInt($("body").css('font-size'));
 		addLabel(opts, node, ".25em", -(0.3 * opts.symbol_size), -(0.2 * opts.symbol_size)+font_size,
