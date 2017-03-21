@@ -71,6 +71,14 @@
 		$('select[name$="_bc_pathology"]').val('-');
 		// clear gene tests
 		$('select[name*="_gene_test"]').val('-');
+
+		// males should not have ovarian cancer and females should not have prostate cancer
+		$('#history tr').show();
+		if(node.sex === 'M') {
+			$('#id_ovarian_cancer_diagnosis_age').closest('tr').hide();
+		} else if(node.sex === 'F') {
+			$('#id_prostate_cancer_diagnosis_age').closest('tr').hide();
+		}
 		
 		for(key in node) {
 			if(key !== 'proband' && key !== 'sex') {

@@ -9,13 +9,16 @@
 			btn_target: 'pedigree_history'
         }, options );
 
-		var btns = ["fa-undo", "fa-repeat", "fa-refresh", "fa-arrows-alt"];
+		var btns = [{"fa": "fa-undo", "title": "undo"},
+					{"fa": "fa-repeat", "title": "redo"},
+					{"fa": "fa-refresh", "title": "reset"},
+					{"fa": "fa-arrows-alt", "title": "fullscreen"}];
 		var lis = "";
 		for(var i=0; i<btns.length; i++) {
 			lis += '<li">';
-			lis += '&nbsp;<i class="fa fa-lg ' + btns[i] + '" ' +
-			                                  (btns[i] == "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
-			                                  ' aria-hidden="true"></i>';
+			lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' +
+			               (btns[i].fa == "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
+			               ' aria-hidden="true" title="'+ btns[i].title +'"></i>';
 			if(li) lis += '</li>';
 		}
 		$( "#"+opts.btn_target ).append(lis);
@@ -52,8 +55,11 @@
 		});
 		
 		// undo/redo/reset
-		$( "#"+opts.btn_target ).on( "click", ":not(.disabled)", function(e) {
+		$( "#"+opts.btn_target ).on( "click", function(e) {
 			e.stopPropagation();
+			if($(e.target).hasClass("disabled")){
+				return false;
+			}
 
 			if($(e.target).hasClass('fa-undo')) {
 				opts['dataset'] = pedcache.previous(opts);
