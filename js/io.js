@@ -14,6 +14,17 @@ $('#print').click(function(e) {
 // pedigree I/O 
 (function(io, $, undefined) {
 
+	// cancers, genetic & pathology tests
+	io.cancers = {
+			'breast_cancer': 'breast_cancer_diagnosis_age',
+			'breast_cancer2': 'breast_cancer2_diagnosis_age',
+			'ovarian_cancer': 'ovarian_cancer_diagnosis_age',
+			'prostate_cancer': 'prostate_cancer_diagnosis_age',
+			'pancreatic_cancer': 'pancreatic_cancer_diagnosis_age'
+		};
+	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
+	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
+
 	io.print = function(el){
 
         var popUpAndPrint = function() {
@@ -68,8 +79,7 @@ $('#print').click(function(e) {
 		var ped = []
 		// assumes two line header
 		for(var i = 2;i < lines.length;i++){
-		    //code here using lines[i] which will give you each line
-			var attr = $.map(lines[i].split('\t'), function(val, i){return val.trim()});
+		   var attr = $.map(lines[i].split('\t'), function(val, i){return val.trim()});
 			if(attr.length > 1) {
 				var indi = {
 					'famid': attr[0],
@@ -86,7 +96,7 @@ $('#print').click(function(e) {
 				if(attr[10] != 0) indi.yob = attr[10];
 
 				var idx = 11;
-				$.each(run_prediction.cancers, function(cancer, diagnosis_age) {
+				$.each(io.cancers, function(cancer, diagnosis_age) {
 					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
 					if(attr[idx] != 0) {
 						indi[cancer] = true;
@@ -97,12 +107,12 @@ $('#print').click(function(e) {
 
 				if(attr[idx++] != 0) indi.ashkenazi = true;
 				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
-				for(var j=0; j<run_prediction.genetic_test.length; j++) {
+				for(var j=0; j<io.genetic_test.length; j++) {
 					// todo
 					idx+=2;
 				}
 				// status, 0 = unspecified, N = negative, P = positive
-				for(var j=0; j<run_prediction.pathology_tests.length; j++) {
+				for(var j=0; j<io.pathology_tests.length; j++) {
 					// todo 
 				}
 				ped.unshift(indi);
