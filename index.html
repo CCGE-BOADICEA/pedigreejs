@@ -50,7 +50,8 @@
 			<h3>Overview</h3>
 			<p class="text-justify">
 			<strong>pedigreejs</strong> is a JavaScript library used to draw family trees using
-			standard pedigree nomenclature. It uses <a href="https://d3js.org/">d3</a>
+			standard pedigree nomenclature (<a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430">PMID:7887430</a>).
+			It uses the JavaScript <a href="https://d3js.org/">d3</a> library
 			to layout the hierarchical structure and draw the individual nodes as a SVG image.
 			The size of the SVG can be configured as well as the colour codes used to denote disease.
 			It can be used to build the pedigree structure or load in an existing data set.
@@ -58,13 +59,13 @@
 			</p>
 			<h3>Current Limitations</h3>
 			<ul>
-				<li>The maximum number of partners an individual can have is 2.</li>
+				<li>The maximum number of partners an individual can be represented to have is 2.</li>
 				<li>Consanguineous partners can not be represented.</li>
 			</ul>
 		</div>
 	</div>
 
-	<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script> 
+	<script src="https://code.jquery.com/jquery-3.2.0.min.js"></script> 
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
@@ -122,8 +123,9 @@
 	<p>
 	Individuals can be added to the pedigree by clicking on another individual and adding a
 	partner <i class="fa fa-link" aria-hidden="true"></i> (two people with at least one child),
-	parent <i class="fa fa-arrow-up" aria-hidden="true"></i>
-	or sibling <i class="fa fa-arrow-down" aria-hidden="true"></i>.
+	parent <i class="fa fa-arrow-up" aria-hidden="true"></i>,
+	sibling <i class="fa fa-user-plus" aria-hidden="true"></i>,
+	or child <i class="fa fa-arrow-down" aria-hidden="true"></i>.
 	
 	There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i>,
 	'redo' <i class="fa fa-repeat" aria-hidden="true"></i> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i>
@@ -131,7 +133,9 @@
 	</p>
 	
 	<h3>Loading and Saving Pedigree Data</h3>
-	<p>The pedigree can be saved out and loaded back in. BOADICEA file format (v4) can also be loaded in.</p>
+	<p>The pedigree can be saved out and loaded back in. Preliminary support is given to loading basic
+	BOADICEA file format v4 (see the BOADICEA documentation 
+	<a href="https://pluto.srl.cam.ac.uk/bd4/v4/docs/BWA_v4_Appendix_A.pdf">Appendix</a>).</p>
 
 	<h3>Configuration</h3>
 	<p>The following parameters can be used to configure pedigreejs.</p>
