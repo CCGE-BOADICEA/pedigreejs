@@ -130,7 +130,8 @@
 			}
 			set_count(opts, count)
 		} else {
-		    // array cache
+		    // TODO :: array cache
+			console.warn('Local storage not found/supported for this browser!');
 		}
 	};
 	
