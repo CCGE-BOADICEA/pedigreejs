@@ -24,7 +24,23 @@
 			pedcache.add(opts);
 			$("#"+opts.targetDiv).empty();
 			ptree.build(opts);
-		});	
+		});
+
+		// advanced options - model parameters
+		$("input[id$='_mut_sensitivity'], input[id$='_mut_freq'").prop('disabled', true);
+		$('#id_use_custom_mutation_sensitivities').change(function() {
+			$("input[id$='_mut_sensitivity']").prop('disabled', !$(this).is(":checked"));
+		});
+
+		$('#id_mutation_frequencies').change(function() {
+			$("input[id$='_mut_freq']").prop('disabled', (this.value !== 'Custom'));
+			// note pedigree_form.mutation_frequencies is set in the view see pedigree.html
+			if(pedigree_form.mutation_frequencies && this.value !== 'Custom') {
+				var mfreq = pedigree_form.mutation_frequencies[this.value];
+				for (var gene in mfreq)
+					$('#id_'+gene.toLowerCase()+'_mut_freq').val(mfreq[gene]);
+			}
+		});
 	}
 	
 	pedigree_form.nodeclick = function(node) {
