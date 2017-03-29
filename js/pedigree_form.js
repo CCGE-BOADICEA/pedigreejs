@@ -27,18 +27,18 @@
 		});
 
 		// advanced options - model parameters
-		$("input[id$='_mut_sensitivity'], input[id$='_mut_freq'").prop('disabled', true);
+		$("input[id$='_mut_sensitivity'], input[id$='_mut_frequency'").prop('disabled', true);
 		$('#id_use_custom_mutation_sensitivities').change(function() {
 			$("input[id$='_mut_sensitivity']").prop('disabled', !$(this).is(":checked"));
 		});
 
 		$('#id_mutation_frequencies').change(function() {
-			$("input[id$='_mut_freq']").prop('disabled', (this.value !== 'Custom'));
+			$("input[id$='_mut_frequency']").prop('disabled', (this.value !== 'Custom'));
 			// note pedigree_form.mutation_frequencies is set in the view see pedigree.html
 			if(pedigree_form.mutation_frequencies && this.value !== 'Custom') {
 				var mfreq = pedigree_form.mutation_frequencies[this.value];
 				for (var gene in mfreq)
-					$('#id_'+gene.toLowerCase()+'_mut_freq').val(mfreq[gene]);
+					$('#id_'+gene.toLowerCase()+'_mut_frequency').val(mfreq[gene]);
 			}
 		});
 	}
@@ -82,18 +82,18 @@
 		} else {
 			$('#id_yob_0').val('-');
 		}
-		
+
 		// clear pathology
 		$('select[name$="_bc_pathology"]').val('-');
 		// clear gene tests
 		$('select[name*="_gene_test"]').val('-');
 
 		// males should not have ovarian cancer and females should not have prostate cancer
-		$('#history tr').show();
+		$('#cancer .row').show();
 		if(node.sex === 'M') {
-			$('#id_ovarian_cancer_diagnosis_age').closest('tr').hide();
+			$('#id_ovarian_cancer_diagnosis_age').closest('.row').hide();
 		} else if(node.sex === 'F') {
-			$('#id_prostate_cancer_diagnosis_age').closest('tr').hide();
+			$('#id_prostate_cancer_diagnosis_age').closest('.row').hide();
 		}
 		
 		for(key in node) {
@@ -115,7 +115,6 @@
     pedigree_form.save = function(opts) {
 		var dataset = pedcache.current(opts);
 		var name = $('#id_name').val();
-
 		$("#"+opts.targetDiv).empty();
 		var newdataset = ptree.copy_dataset(dataset);
 		var person = pedigree_util.getNodeByName(newdataset, name);
@@ -144,14 +143,14 @@
 		else
 			delete person.ashkenazi;
 
-		$("input[type=text], input[type=number]").each(function() {
+		$("#person_details input[type=text], #person_details input[type=number]").each(function() {
 			if($(this).val())
 				person[this.name] = $(this).val();
 			else
 				delete person[this.name]
         });
 		
-		$('input[type="checkbox"][name$="cancer"],input[type="checkbox"][name$="cancer2"]').each(function() {
+		$('#person_details input[type="checkbox"][name$="cancer"],input[type="checkbox"][name$="cancer2"]').each(function() {
 			if(this.checked)
 				person[$(this).attr('name')] = true;
 			else
@@ -159,7 +158,7 @@
 		});
 
 		// pathology tests
-		$('select[name$="_bc_pathology"]').each(function() {
+		$('#person_details select[name$="_bc_pathology"]').each(function() {
 			if($(this).val() !== '-') {
 				person[$(this).attr('name')] = $(this).val();
 			} else {
@@ -168,7 +167,7 @@
 		});
 
 		// genetic tests
-		$('select[name$="_gene_test"]').each(function() {
+		$('#person_details select[name$="_gene_test"]').each(function() {
 			if($(this).val() !== '-') {
 				var tres = $('select[name="'+$(this).attr('name')+'_result"]');
 				person[$(this).attr('name')] = {'type': $(this).val(), 'result': $(tres).val()};
