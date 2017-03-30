@@ -134,6 +134,14 @@
 		});
 	}
 	
+	// get the monozygotic twin(s)
+	pedigree_util.getMzTwins = function(dataset, person) {
+		var sibs = pedigree_util.getSiblings(dataset, person);
+		return $.map(sibs, function(p, i){
+			return p.name !== person.name && p.mztwin == person.mztwin ? p : null;
+		});
+	}
+	
 	// get the adopted siblings of a given individual
 	pedigree_util.getAdoptedSiblings = function(dataset, person) {
 		return $.map(dataset, function(p, i){
@@ -342,9 +350,9 @@
 	ptree.build = function(options) {
         var opts = $.extend({ // defaults
         	targetDiv: 'pedigree_edit',
-        	dataset: [ {"name": "m21", "sex": "M", "top_level": true},
-        		       {"name": "f21", "sex": "F", "top_level": true},
-        			   {"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
+        	dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
+        		       {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
+        			   {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
         	width: 600, 
         	height: 400,
         	symbol_size: 35,
@@ -613,11 +621,25 @@
 						return 'pink';
 					return "#000";
 				})
-				.attr("shape-rendering", "crispEdges")
+				.attr("shape-rendering", "geometricPrecision")
 				.attr("d", function(d, i) {
 					if(!opts.DEBUG &&
-					   (d.target.data.noparents !== undefined ||  d.source.parent == null || d.target.data.hidden))
+					   (d.target.data.noparents !== undefined || d.source.parent == null || d.target.data.hidden))
 						return;
+					if(d.target.data.mztwin) {
+						// get twin position
+						var twins = pedigree_util.getMzTwins(opts.dataset, d.target.data);
+						if(twins.length >= 1) {
+							var twinx = 0;
+							for(var t=0; t<twins.length; t++) {
+								twinx += pedigree_util.getNodeByName(flattenNodes, twins[t].name).x;
+							}
+							return "M" + (d.source.x) + "," + (d.source.y ) +
+						           "V" + ((d.source.y + d.target.y) / 2) +
+						           "H" + ((d.target.x + twinx) / (twins.length+1)) +
+						           "L" + (d.target.x) + " " + (d.target.y ) ;
+						}
+					}
 					return "M" + (d.source.x) + "," + (d.source.y ) +
 					       "V" + ((d.source.y + d.target.y) / 2) +
 					       "H" + (d.target.x) +
@@ -886,7 +908,7 @@
 	}
 	
 	// add children to a given node
-	ptree.addchild = function(dataset, node, sex, nchild) {
+	ptree.addchild = function(dataset, node, sex, nchild, mztwin) {
 		if (typeof nchild === typeof undefined)
 			nchild = 1;
 		var children = pedigree_util.getAllChildren(dataset, node);
@@ -902,16 +924,21 @@
 			idx = pedigree_util.getIdxByName(dataset, c.name);
 		}
 
+		if(mztwin)
+			mztwin = getUniqueTwinID(dataset);
 		for (var i = 0; i < nchild; i++) {
 			var child = {"name": ptree.makeid(3), "sex": sex,
 					     "mother": (node.sex === 'F' ? node.name : ptr_name),
 				         "father": (node.sex === 'F' ? ptr_name : node.name)};
 			dataset.splice(idx, 0, child);
+
+			if(mztwin)
+				child.mztwin = mztwin;
 		}
 	}
 
 	//
-	ptree.addsibling = function(dataset, node, sex, add_lhs) {
+	ptree.addsibling = function(dataset, node, sex, add_lhs, mztwin) {
 		var newbie = {"name": ptree.makeid(3), "sex": sex};
 		if(node.top_level) {
 			newbie.top_level = true;
@@ -920,6 +947,11 @@
 			newbie.father = node.father;
 		}
 		var idx = pedigree_util.getIdxByName(dataset, node.name);
+		
+		if(mztwin) {
+			setMzTwin(dataset, dataset[idx], newbie);
+		}
+
 		if(add_lhs) { // add to LHS
 			if(idx > 0) idx--;
 		} else
@@ -927,7 +959,68 @@
 		dataset.splice(idx, 0, newbie);
 		return newbie;
 	}
+
+	// set two siblings as twins 
+	function setMzTwin(dataset, d1, d2) {
+		if(!d1.mztwin) {
+			d1.mztwin = getUniqueTwinID(dataset);
+			if(!d1.mztwin)
+				return false;
+		}
+		d2.mztwin = d1.mztwin;
+		if(d1.yob)
+			d2.yob = d1.yob;
+		if(d1.age && (d1.status == 0 || !d1.status))
+			d2.age = d1.age;
+		return true;
+	}
 	
+	// get a new unique twins ID, max of 10 twins in a pedigree
+	function getUniqueTwinID(dataset) {
+		var mz = [1, 2, 3, 4, 5, 6, 7, 8, 9, "A"];
+		for(var i=0; i<dataset.length; i++) {
+			if(dataset[i].mztwin) {
+				var idx = mz.indexOf(dataset[i].mztwin);
+				if (idx > -1)
+					mz.splice(idx, 1);
+			}
+		}
+		if(mz.length > 0)
+			return mz[0];
+		return undefined;
+	}
+
+	// sync attributes of twins
+	ptree.syncTwins = function(dataset, d1) {
+		if(!d1.mztwin)
+			return;
+		for(var i=0; i<dataset.length; i++) {
+			var d2 = dataset[i];
+			if(d2.mztwin && d1.mztwin == d2.mztwin && d2.name !== d1.name) {
+				d2.sex = d1.sex;
+				if(d1.yob)
+					d2.yob = d1.yob;
+				if(d1.age && (d1.status == 0 || !d1.status))
+					d2.age = d1.age;
+			}
+		}
+	}
+
+	// check integrity twin settings
+	function checkTwins(dataset) {
+		for(var i=0; i<dataset.length; i++) {
+			if(dataset[i].mztwin) {
+				var count = 0;
+				for(var j=0; j<dataset.length; j++) {
+					if(dataset[j].mztwin == dataset[i].mztwin)
+						count++;
+				}
+				if(count < 2)
+					delete dataset[i].mztwin;
+			}
+		}
+	}
+
 	// add parents to the 'node'
 	ptree.addparents = function(opts, dataset, name) {
 		var mother, father;
@@ -1119,6 +1212,10 @@
 				}
 			}	
 		}
+
+		// check integrity of mztwins settings
+		checkTwins(dataset);
+
 		return dataset;
 	}
 

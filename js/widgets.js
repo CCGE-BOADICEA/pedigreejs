@@ -32,11 +32,11 @@
     							.attr("ry", 6)
     							.attr("transform", "translate(-1000,-100)")
     							.style("opacity", 0)
-    							.attr("width",  font_size*4.75)
+    							.attr("width",  font_size*6.2)
     							.attr("height", font_size*2)
     							.style("stroke", "darkgrey")
     							.attr("fill", "white");
-    	
+
 		var square = popup_selection.append("text")  // male
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
@@ -68,16 +68,32 @@
 			.html("\uf096&nbsp");
 		var unspecified_title = unspecified.append("svg:title").text("add unspecified");
 
+		var mztwin = popup_selection.append("text")  // monozygotic twins
+			.attr('font-family', 'FontAwesome')
+			.style("opacity", 0)
+			.attr("transform", "translate(-1000,-100)")
+			.attr("class", "popup_selection fa-2x fa-angle-up persontype mztwin")
+			.attr("x", font_size*4.6)
+			.attr("y", font_size*1.5)
+			.html("\uf106&nbsp");
+		var mztwin_title = mztwin.append("svg:title").text("add monozygotic twins");
+
 		var add_person = {};
 		// click the person type selection
 		d3.selectAll(".persontype")
 		  .on("click", function () {
 			var newdataset = ptree.copy_dataset(opts.dataset);
-			var sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
+			var mztwin = d3.select(this).classed("mztwin");
+			var sex;
+			if(mztwin)
+				sex = add_person['node'].datum().data.sex;
+			else
+				sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
+
 			if(add_person['type'] === 'addsibling')
-				ptree.addsibling(newdataset, add_person['node'].datum().data, sex);
+				ptree.addsibling(newdataset, add_person['node'].datum().data, sex, false, mztwin);
 			else if(add_person['type'] === 'addchild')
-				ptree.addchild(newdataset, add_person['node'].datum().data, sex);
+				ptree.addchild(newdataset, add_person['node'].datum().data, (mztwin ? 'U' : sex), (mztwin ? 2 : 1), mztwin);
 			else
 				return
 			opts['dataset'] = newdataset;	
@@ -209,57 +225,7 @@
 				if(typeof opts.edit === 'function') { 
 					opts.edit();
 				} else {
-					$('#node_properties').dialog({
-					    autoOpen: false,
-					    title: d.data.display_name,
-					    width: ($(window).width() > 400 ? 430 : $(window).width()- 30)
-					});
-	
-					var table = "<table class='table'>";
-					table += "<tr><td>name</td><td><input type='text' id='id_display_name' name='display_name' value="+
-							(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
-					
-					table += '<tr><td>sex</td><td id="id_sex">' +
-							 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
-							 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
-							 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
-							 '</td></tr>';
-
-					// alive status = 0; dead status = 1
-					table += '<tr><td>status</td><td id="id_status">' +
-							 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status == 0 ? "checked" : "")+'>Alive</label>' +
-							 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status == 1 ? "checked" : "")+'>Deceased</label>' +
-							 '</td></tr>';
-					$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
-					
-					var exclude = ["children", "parent_node", "top_level", "id", "sex", "status", "display_name", "mother", "father"];
-					$.each(opts.diseases, function(k, v) {
-						exclude.push(v.type);
-						table += "<tr><td>"+v.type.replace("_", " ")+"&nbsp;</td><td><input type='checkbox' id='id_" + v.type + "' name='" +
-									v.type+"' value="+v.type+" "+(d.data[v.type] ? "checked" : "")+"></td></tr>";
-						
-					});
-
-					$.each(d.data, function(k, v) {
-						if($.inArray(k, exclude) == -1) {
-							if(v === true || v === false) {
-								table += "<tr><td>"+k+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
-										k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
-							} else if(k.length > 0){
-								table += "<tr><td>"+k+"&nbsp;</td><td><input type='text' id='id_" +
-										k+"' name='"+k+"' value="+v+"></td></tr>";
-							}
-						}
-				    });
-					$('#node_properties').html(table);
-					$('#node_properties').dialog('open');
-	
-					$('#id_name').closest('tr').toggle();
-					$('input[type=radio], input[type=checkbox], input[type=text]').change(function() {
-				    	pedigree_form.save(opts);
-				    });
-					pedigree_form.update(opts);
-					return;
+					openEditDialog(opts, d);
 				}
 			} else if(opt === 'delete') {
 				var newdataset = ptree.copy_dataset(opts.dataset);
@@ -311,5 +277,60 @@
 	        	d3.selectAll('.popup_selection').style("opacity", 0);
 		});
 	}
+
+    // if opt.edit is set true (rather than given a function) this is called to edit node attributes
+    function openEditDialog(opts, d) {
+		$('#node_properties').dialog({
+		    autoOpen: false,
+		    title: d.data.display_name,
+		    width: ($(window).width() > 400 ? 430 : $(window).width()- 30)
+		});
+
+		var table = "<table id='person_details' class='table'>";
+		table += "<tr><td>name</td><td><input type='text' id='id_display_name' name='display_name' value="+
+				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
+		
+		table += '<tr><td>sex</td><td id="id_sex">' +
+				 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
+				 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
+				 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
+				 '</td></tr>';
+
+		// alive status = 0; dead status = 1
+		table += '<tr><td>status</td><td id="id_status">' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status == 0 ? "checked" : "")+'>Alive</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status == 1 ? "checked" : "")+'>Deceased</label>' +
+				 '</td></tr>';
+		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
+		
+		var exclude = ["children", "parent_node", "top_level", "id", "sex", "status", "display_name", "mother", "father"];
+		$.each(opts.diseases, function(k, v) {
+			exclude.push(v.type);
+			table += "<tr><td>"+v.type.replace("_", " ")+"&nbsp;</td><td><input type='checkbox' id='id_" + v.type + "' name='" +
+						v.type+"' value="+v.type+" "+(d.data[v.type] ? "checked" : "")+"></td></tr>";
+			
+		});
+
+		$.each(d.data, function(k, v) {
+			if($.inArray(k, exclude) == -1) {
+				if(v === true || v === false) {
+					table += "<tr><td>"+k+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
+							k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
+				} else if(k.length > 0){
+					table += "<tr><td>"+k+"&nbsp;</td><td><input type='text' id='id_" +
+							k+"' name='"+k+"' value="+v+"></td></tr>";
+				}
+			}
+	    });
+		$('#node_properties').html(table);
+		$('#node_properties').dialog('open');
+
+		$('#id_name').closest('tr').toggle();
+		$('input[type=radio], input[type=checkbox], input[type=text]').change(function() {
+	    	pedigree_form.save(opts);
+	    });
+		pedigree_form.update(opts);
+		return;
+    }
 
 }(window.widgets = window.widgets || {}, jQuery));
