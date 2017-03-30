@@ -177,11 +177,22 @@ describe('Test pedigree SVG ', function() {
 			check_unconnected(newopts)
 			expect(newopts.dataset.length).toBe(ncount+1);
 		});
-		
-		
+
 		it('should be possible for the proband', function() {
 			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
 			ptree.addchild(newopts.dataset, ch1, 'F', 2);
+			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
+
+			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			expect(check_clashing_partner_links(newopts)).toBe(false);
+			check_nodes_overlapping(newopts);
+			check_unconnected(newopts)
+			expect(newopts.dataset.length).toBe(ncount+3);
+		});
+
+		it('should be possible as twins for the proband', function() {
+			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
+			ptree.addchild(newopts.dataset, ch1, 'U', 2, true);
 			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
 
 			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
@@ -201,7 +212,7 @@ describe('Test pedigree SVG ', function() {
 			ptree.rebuild(newopts);
 			ncount = newopts.dataset.length;
 		});
-		
+
 		it('should be possible for nodes with parents', function() {
 			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
 			ptree.addsibling(newopts.dataset, ch1, "M");
@@ -211,6 +222,18 @@ describe('Test pedigree SVG ', function() {
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts)
 			expect(newopts.dataset.length).toBe(ncount+1);
+		});
+
+		it('should be possible to add twins', function() {
+			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
+			ptree.addsibling(newopts.dataset, ch1, ch1.sex, false, true);
+			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
+			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			expect(check_clashing_partner_links(newopts)).toBe(false);
+			check_nodes_overlapping(newopts);
+			check_unconnected(newopts)
+			expect(newopts.dataset.length).toBe(ncount+1);
+			expect(ch1.mztwin).toBeDefined();
 		});
 	});
 
