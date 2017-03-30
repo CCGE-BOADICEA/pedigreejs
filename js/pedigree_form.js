@@ -176,6 +176,7 @@
 			}
 		});
 
+		ptree.syncTwins(newdataset, person);
 		opts.dataset = newdataset;
 		pedcache.add(opts);
 		ptree.build(opts);
