@@ -95,7 +95,10 @@
 		} else if(node.sex === 'F') {
 			$('#id_prostate_cancer_diagnosis_age').closest('.row').hide();
 		}
-		
+
+		// disable sex radio buttons if the person has a partner
+		$("input[id^='id_sex_']").prop("disabled", (node.parent_node ? true : false));
+
 		for(key in node) {
 			if(key !== 'proband' && key !== 'sex') {
 				if(node[key] === true) {			// cancer diagnosed
