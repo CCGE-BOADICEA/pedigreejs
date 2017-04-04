@@ -10,13 +10,13 @@
 			id = 1;
 		}
 
+		var nodes = pedigree_util.flatten(root);
 		//console.log('NAME='+person.name+' NO. CHILDREN='+person.children.length);
 		var partners = [];
 		$.each(person.children, function(i, child) {
 			$.each(opts.dataset, function(j, p) {
 				if (((child.name === p.mother) || (child.name === p.father)) && child.id == undefined) {
 					if (!(contains_parent(partners, child.name))) {
-						var nodes = pedigree_util.flatten(root);
 						var m = pedigree_util.getNodeByName(nodes, p.mother);
 						var f = pedigree_util.getNodeByName(nodes, p.father);
 						partners.push({
@@ -34,7 +34,7 @@
 			var father = ptr.father;
 			mother.children = [];
 			var parent = {
-					name : ptree.makeid(3),
+					name : ptree.makeid(4),
 					hidden : true,
 					parent : null,
 					father : father,
@@ -58,8 +58,8 @@
 				parent.id = id++;
 				father.id = id++;
 			}
-			addParent(mother, parent);
-			addParent(father, parent);
+			id = updateParent(mother, parent, id, nodes, opts);
+			id = updateParent(father, parent, id, nodes, opts);
 			person.children.push(parent);
 		});
 		id = setChildrenId(person.children, id);
@@ -70,14 +70,36 @@
 		return [partnerLinks, id];
 	};
 
-	function addParent(p, parent) {
+	// update parent node and sort twins
+	function updateParent(p, parent, id, nodes, opts) {
+		// add to parent node
 		if('parent_node' in p)
 			p.parent_node.push(parent)
 		else
 			p['parent_node'] = [parent];
+
+		// check twins lie next to each other
+		if(p.mztwin) {
+			var twins = pedigree_util.getMzTwins(opts.dataset, p);
+			for(var i=0; i<twins.length; i++) {
+				var twin = pedigree_util.getNodeByName(nodes, twins[i].name);
+				if(twin)
+					twin.id = id++;
+			}
+		}
+		return id;
 	}
 
 	function setChildrenId(children, id) {
+		// sort twins to lie next to each other
+		children.sort(function(a, b) {
+			if(a.mztwin && b.mztwin && a.mztwin == b.mztwin)
+				return 0;
+			else if(a.mztwin || b.mztwin)
+				return 1;
+			return 0;
+		});
+		
 		$.each(children, function(i, p) {
 			if(p.id === undefined) p.id = id++;
 		});
@@ -621,7 +643,11 @@
 						return 'pink';
 					return "#000";
 				})
-				.attr("shape-rendering", "geometricPrecision")
+				.attr("shape-rendering", function(d, i) {
+					if(d.target.data.mztwin) 
+						return "geometricPrecision";
+					return "crispEdges";
+				})
 				.attr("d", function(d, i) {
 					if(!opts.DEBUG &&
 					   (d.target.data.noparents !== undefined || d.source.parent == null || d.target.data.hidden))
@@ -637,7 +663,7 @@
 							return "M" + (d.source.x) + "," + (d.source.y ) +
 						           "V" + ((d.source.y + d.target.y) / 2) +
 						           "H" + ((d.target.x + twinx) / (twins.length+1)) +
-						           "L" + (d.target.x) + " " + (d.target.y ) ;
+						           "L" + (d.target.x) + " " + (d.target.y-opts.symbol_size/2) ;
 						}
 					}
 					return "M" + (d.source.x) + "," + (d.source.y ) +
@@ -927,7 +953,7 @@
 		if(mztwin)
 			mztwin = getUniqueTwinID(dataset);
 		for (var i = 0; i < nchild; i++) {
-			var child = {"name": ptree.makeid(3), "sex": sex,
+			var child = {"name": ptree.makeid(4), "sex": sex,
 					     "mother": (node.sex === 'F' ? node.name : ptr_name),
 				         "father": (node.sex === 'F' ? ptr_name : node.name)};
 			dataset.splice(idx, 0, child);
@@ -939,7 +965,7 @@
 
 	//
 	ptree.addsibling = function(dataset, node, sex, add_lhs, mztwin) {
-		var newbie = {"name": ptree.makeid(3), "sex": sex};
+		var newbie = {"name": ptree.makeid(4), "sex": sex};
 		if(node.top_level) {
 			newbie.top_level = true;
 		} else {
@@ -1039,8 +1065,8 @@
 		}
 
 		if(depth == 1) {
-			mother = {"name": ptree.makeid(3), "sex": "F", "top_level": true};
-			father = {"name": ptree.makeid(3), "sex": "M", "top_level": true};
+			mother = {"name": ptree.makeid(4), "sex": "F", "top_level": true};
+			father = {"name": ptree.makeid(4), "sex": "M", "top_level": true};
 			dataset.splice(0, 0, father);
 			dataset.splice(0, 0, mother);
 
@@ -1125,7 +1151,7 @@
 		var partner = ptree.addsibling(dataset, tree_node.data, tree_node.data.sex=== 'F' ? 'M' : 'F');
 		partner.noparents = true;
 
-		var child = {"name": ptree.makeid(3), "sex": "M"};
+		var child = {"name": ptree.makeid(4), "sex": "M"};
 		child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
 		child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
