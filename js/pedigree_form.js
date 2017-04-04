@@ -181,8 +181,7 @@
 
 		ptree.syncTwins(newdataset, person);
 		opts.dataset = newdataset;
-		pedcache.add(opts);
-		ptree.build(opts);
+		ptree.rebuild(opts);
     }
 
 }(window.pedigree_form = window.pedigree_form || {}, jQuery));
