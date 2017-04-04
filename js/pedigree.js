@@ -149,7 +149,7 @@
 	// get the siblings of a given individual - sex is an optional parameter
 	// for only returning brothers or sisters
 	pedigree_util.getSiblings = function(dataset, person, sex) {
-		if(!person.mother || person.noparents)
+		if(!person.mother)
 			return [];
 
 		return $.map(dataset, function(p, i){
