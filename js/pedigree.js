@@ -149,8 +149,11 @@
 	// get the siblings of a given individual - sex is an optional parameter
 	// for only returning brothers or sisters
 	pedigree_util.getSiblings = function(dataset, person, sex) {
+		if(!person.mother || person.noparents)
+			return [];
+
 		return $.map(dataset, function(p, i){
-			return  p.name !== person.name && !('noparents' in p) && 
+			return  p.name !== person.name && !('noparents' in p) && p.mother &&
 			       (p.mother === person.mother && p.father === person.father) &&
 			       (!sex || p.sex == sex) ? p : null
 		});
@@ -913,6 +916,11 @@
 		$("#"+opts.targetDiv).empty();
 		pedcache.add(opts);
 		ptree.build(opts);
+		try {
+			templates.update(opts);
+		} catch(e) {
+			// templates not declared 
+		}
 	}
 
 	ptree.copy_dataset = function(dataset) {
