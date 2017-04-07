@@ -46,8 +46,8 @@
 	pedigree_form.nodeclick = function(node) {
 		$('form > fieldset').removeAttr('disabled');
 		// clear values
-		$('form').find("input[type=text], input[type=number]").val("");
-		$('input[type="checkbox"][name$="cancer"],input[type="checkbox"][name$="cancer2"]').prop('checked', false);
+		$('#person_details').find("input[type=text], input[type=number]").val("");
+		$('#person_details select').val('').prop('selected', true);
 
 		// assign values to input fields in form
 		if(node.sex === 'M' || node.sex === 'F')
@@ -91,9 +91,9 @@
 		// males should not have ovarian cancer and females should not have prostate cancer
 		$('#cancer .row').show();
 		if(node.sex === 'M') {
-			$('#id_ovarian_cancer_diagnosis_age').closest('.row').hide();
+			$("[id^='id_ovarian_cancer_diagnosis_age']").closest('.row').hide();
 		} else if(node.sex === 'F') {
-			$('#id_prostate_cancer_diagnosis_age').closest('.row').hide();
+			$("[id^='id_prostate_cancer_diagnosis_age']").closest('.row').hide();
 		}
 
 		// disable sex radio buttons if the person has a partner
@@ -101,14 +101,18 @@
 
 		for(key in node) {
 			if(key !== 'proband' && key !== 'sex') {
-				if(node[key] === true) {			// cancer diagnosed
-					$("form").find("input[type=checkbox][name='"+key+"']").prop('checked', true);
-				} else if($('#id_'+key).length) {	// input value
+				if($('#id_'+key).length) {	// input value
 					if(key.indexOf('_gene_test')  !== -1 && node[key] !== null && typeof node[key] === 'object') {
 						$('#id_'+key).val(node[key]['type']);
 						$('#id_'+key+'_result').val(node[key]['result']);
 					} else {
 						$('#id_'+key).val(node[key]);
+					}
+				} else if(key.indexOf('_diagnosis_age') !== -1) {
+					if($("#id_approx").is(':checked')) {
+						$('#id_'+key+'_1').val(round5(node[key])).prop('selected', true);
+					} else {
+						$('#id_'+key+'_0').val(node[key]);
 					}
 				}
 			}
@@ -146,13 +150,20 @@
 		else
 			delete person.ashkenazi;
 
-		$("#person_details input[type=text], #person_details input[type=number]").each(function() {
-			if($(this).val())
-				person[this.name] = $(this).val();
-			else
-				delete person[this.name]
+		$("#person_details select[name*='_diagnosis_age']:visible, #person_details input[type=text]:visible, #person_details input[type=number]:visible").each(function() {
+			var name = (this.name.indexOf("_diagnosis_age")>-1 ? this.name.substring(0, this.name.length-2): this.name);
+
+			if($(this).val()) {
+				var val = $(this).val();
+				if(name.indexOf("_diagnosis_age") > -1 && $("#id_approx").is(':checked'))
+					val = round5(val);
+				person[name] = val;
+			} else {
+				delete person[name]
+			}
         });
 		
+		// cancer checkboxes
 		$('#person_details input[type="checkbox"][name$="cancer"],input[type="checkbox"][name$="cancer2"]').each(function() {
 			if(this.checked)
 				person[$(this).attr('name')] = true;
@@ -182,6 +193,35 @@
 		ptree.syncTwins(newdataset, person);
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
+    }
+
+    pedigree_form.update_diagnosis_age_widget = function() {
+		if($("#id_approx").is(':checked')) {
+			$("[id$='_diagnosis_age_0']").each(function( index ) {
+				if($(this).val() !== '') {
+					var name = this.name.substring(0, this.name.length-2);
+					$("#id_"+name+"_1").val(round5($(this).val())).prop('selected', true);
+				}
+			});
+
+			$("[id$='_diagnosis_age_0']").hide();
+			$("[id$='_diagnosis_age_1']").show();
+		} else {
+			$("[id$='_diagnosis_age_1']").each(function( index ) {
+				if($(this).val() !== '') {
+					var name = this.name.substring(0, this.name.length-2);
+					$("#id_"+name+"_0").val($(this).val());
+				}
+			});
+
+			$("[id$='_diagnosis_age_0']").show();
+			$("[id$='_diagnosis_age_1']").hide();
+		}
+    }
+    
+    // round to 5, 15, 25, 35 ....
+    function round5(x) {
+    	return (Math.round((x-1) / 10) * 10) + 5;
     }
 
 }(window.pedigree_form = window.pedigree_form || {}, jQuery));
