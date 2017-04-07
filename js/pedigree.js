@@ -388,6 +388,8 @@
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+			background: "#EEE",
+			node_background: '#fdfdfd',
         	DEBUG: false}, options );
 		
         if(pedcache.nstore(opts) == -1)
@@ -410,7 +412,9 @@
 			.attr("height", "100%")
 			.attr("rx", 6)
 			.attr("ry", 6)
-			.attr("fill", "#EEE");
+			.style("stroke", "darkgrey")
+       		.style("fill", opts.background) // or none
+       		.style("stroke-width", 1);
 
 		var xytransform = pedcache.getposition(opts);  // cached position
 		var xtransform = xytransform[0];
@@ -519,7 +523,7 @@
 			    .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
 			    .style("fill", function(d, i) {
 			    	if(d.data.ncancers == 0)
-				    	return "lightgrey";
+				    	return opts.node_background;
 			    	return opts.diseases[i].colour; 
 			    });
 
