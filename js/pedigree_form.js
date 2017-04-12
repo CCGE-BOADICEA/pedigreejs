@@ -70,11 +70,11 @@
 			$('#id_exclude').prop('checked', false);
 		}
 		
-		if('ashkenazi' in node) {
+/*		if('ashkenazi' in node) {
 			$('#id_ashkenazi').prop('checked', (node.proband == 1 ? true: false));
 		} else {
 			$('#id_ashkenazi').prop('checked', false);
-		}
+		}*/
 		
 		// year of both
 		if('yob' in node) {
@@ -99,6 +99,10 @@
 		// disable sex radio buttons if the person has a partner
 		$("input[id^='id_sex_']").prop("disabled", (node.parent_node ? true : false));
 
+		// approximate diagnosis age
+		$('#id_approx').prop('checked', (node.approx_diagnosis_age ? true: false));
+		pedigree_form.update_diagnosis_age_widget();
+
 		for(key in node) {
 			if(key !== 'proband' && key !== 'sex') {
 				if($('#id_'+key).length) {	// input value
@@ -117,6 +121,12 @@
 				}
 			}
 		}
+
+		try {
+			$('#person_details').find('form').valid();
+		} catch(err) {
+			console.warn('valid() not found');
+		}
 	}
 	
     pedigree_form.save = function(opts) {
@@ -128,8 +138,10 @@
 
 		// individual's personal and clinical details
 		var yob = $('#id_yob_0').val();
-		if(yob && yob !== '-') {
+		if(yob && yob !== '') {
 			person.yob = yob;
+		} else {
+			delete person.yob;
 		}
 
 		// current status: 0 = alive, 1 = dead
@@ -145,10 +157,15 @@
 		}
 
 		// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
-		if($('#id_ashkenazi').is(':checked'))
+/*		if($('#id_ashkenazi').is(':checked'))
 			person.ashkenazi = 1;
 		else
-			delete person.ashkenazi;
+			delete person.ashkenazi;*/
+
+		if($('#id_approx').is(':checked')) // approximate diagnosis age
+			person.approx_diagnosis_age = true;
+		else
+			delete person.approx_diagnosis_age;
 
 		$("#person_details select[name*='_diagnosis_age']:visible, #person_details input[type=text]:visible, #person_details input[type=number]:visible").each(function() {
 			var name = (this.name.indexOf("_diagnosis_age")>-1 ? this.name.substring(0, this.name.length-2): this.name);
@@ -189,6 +206,13 @@
 				delete person[$(this).attr('name')];
 			}
 		});
+		
+		try {
+			$('#person_details').find('form').valid();
+		} catch(err) {
+			console.warn('valid() not found');
+		}
+		
 
 		ptree.syncTwins(newdataset, person);
 		opts.dataset = newdataset;
