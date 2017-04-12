@@ -72,7 +72,6 @@
 			} else if ($(e.target).hasClass('fa-refresh')) {
 				pedcache.clear(opts);
 				delete opts.dataset;
-				$("#"+opts.targetDiv).empty();
 
 				var selected = $("input[name='default_fam']:checked");
 				if(selected.length > 0 && selected.val() == 'extended2') {    // secondary relatives
@@ -103,9 +102,13 @@
 						{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
 						{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
 						{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"}]
+				} else {
+					opts.dataset = [ 
+						{"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
+	        		    {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
+	        			{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}]
 				}
-
-				ptree.build(opts);
+				ptree.rebuild(opts);
 			}
 		});
 	}
@@ -151,6 +154,8 @@
 	}
 	
 	pedcache.add = function(opts, store_type) {
+		if(!opts.dataset)
+			return;
 		if (typeof(Storage) !== "undefined" && (store_type === undefined || store_type === 'local')) {
 		    // local storage
 			var count = pedcache.get_count(opts);
