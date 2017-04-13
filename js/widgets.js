@@ -289,26 +289,31 @@
 		var table = "<table id='person_details' class='table'>";
 		table += "<tr><td>name</td><td><input type='text' id='id_display_name' name='display_name' value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
-		
-		table += '<tr><td>sex</td><td id="id_sex">' +
+
+		table += "<tr><td>age</td><td><input type='text' id='id_age' name='age' value="+
+				(d.data.age ? d.data.age : "")+"></td></tr>";
+
+		table += '<tr><td colspan="2" id="id_sex">' +
 				 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
 				 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
 				 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
 				 '</td></tr>';
 
 		// alive status = 0; dead status = 1
-		table += '<tr><td>status</td><td id="id_status">' +
+		table += '<tr><td colspan="2" id="id_status">' +
 				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status == 0 ? "checked" : "")+'>Alive</label>' +
 				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status == 1 ? "checked" : "")+'>Deceased</label>' +
 				 '</td></tr>';
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 		
-		var exclude = ["children", "parent_node", "top_level", "id", "sex", "status", "display_name", "mother", "father"];
+		var exclude = ["children", "parent_node", "top_level", "id", "age", "sex", "status", "display_name", "mother", "father"];
 		$.each(opts.diseases, function(k, v) {
-			exclude.push(v.type);
-			table += "<tr><td>"+v.type.replace("_", " ")+"&nbsp;</td><td><input type='checkbox' id='id_" + v.type + "' name='" +
-						v.type+"' value="+v.type+" "+(d.data[v.type] ? "checked" : "")+"></td></tr>";
-			
+			exclude.push(v.type+"_diagnosis_age");
+			table += "<tr><td>"+v.type.replace("_", " ")+"&nbsp;</td><td>" +
+			         "<input class='form-control' id='id_" + 
+			          v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
+			          v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
+			          d.data[v.type + "_diagnosis_age"] +"'></td></tr>";
 		});
 
 		$.each(d.data, function(k, v) {
@@ -326,7 +331,7 @@
 		$('#node_properties').dialog('open');
 
 		$('#id_name').closest('tr').toggle();
-		$('input[type=radio], input[type=checkbox], input[type=text]').change(function() {
+		$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function() {
 	    	pedigree_form.save(opts);
 	    });
 		pedigree_form.update(opts);
