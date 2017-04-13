@@ -149,8 +149,11 @@
 	// get the siblings of a given individual - sex is an optional parameter
 	// for only returning brothers or sisters
 	pedigree_util.getSiblings = function(dataset, person, sex) {
+		if(!person.mother)
+			return [];
+
 		return $.map(dataset, function(p, i){
-			return  p.name !== person.name && !('noparents' in p) && 
+			return  p.name !== person.name && !('noparents' in p) && p.mother &&
 			       (p.mother === person.mother && p.father === person.father) &&
 			       (!sex || p.sex == sex) ? p : null
 		});
@@ -385,6 +388,8 @@
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+			background: "#EEE",
+			node_background: '#fdfdfd',
         	DEBUG: false}, options );
 		
         if(pedcache.nstore(opts) == -1)
@@ -407,7 +412,9 @@
 			.attr("height", "100%")
 			.attr("rx", 6)
 			.attr("ry", 6)
-			.attr("fill", "#EEE");
+			.style("stroke", "darkgrey")
+       		.style("fill", opts.background) // or none
+       		.style("stroke-width", 1);
 
 		var xytransform = pedcache.getposition(opts);  // cached position
 		var xtransform = xytransform[0];
@@ -516,7 +523,7 @@
 			    .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
 			    .style("fill", function(d, i) {
 			    	if(d.data.ncancers == 0)
-				    	return "lightgrey";
+				    	return opts.node_background;
 			    	return opts.diseases[i].colour; 
 			    });
 
@@ -913,6 +920,11 @@
 		$("#"+opts.targetDiv).empty();
 		pedcache.add(opts);
 		ptree.build(opts);
+		try {
+			templates.update(opts);
+		} catch(e) {
+			// templates not declared 
+		}
 	}
 
 	ptree.copy_dataset = function(dataset) {
