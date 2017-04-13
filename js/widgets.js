@@ -287,10 +287,10 @@
 		});
 
 		var table = "<table id='person_details' class='table'>";
-		table += "<tr><td>name</td><td><input type='text' id='id_display_name' name='display_name' value="+
+		table += "<tr><td style='text-align:right'>name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
-		table += "<tr><td>age</td><td><input type='text' id='id_age' name='age' value="+
+		table += "<tr><td style='text-align:right'>age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:5em' value="+
 				(d.data.age ? d.data.age : "")+"></td></tr>";
 
 		table += '<tr><td colspan="2" id="id_sex">' +
@@ -307,9 +307,13 @@
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 		
 		var exclude = ["children", "parent_node", "top_level", "id", "age", "sex", "status", "display_name", "mother", "father"];
+		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
 			exclude.push(v.type+"_diagnosis_age");
-			table += "<tr><td>"+v.type.replace("_", " ")+"&nbsp;</td><td>" +
+
+			var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>'
+
+			table += "<tr><td style='text-align:right'>"+v.type.replace("_", " ")+disease_colour+"&nbsp;</td><td>" +
 			         "<input class='form-control' id='id_" + 
 			          v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
 			          v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
