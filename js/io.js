@@ -79,7 +79,7 @@ $('#print').click(function(e) {
 		var ped = []
 		// assumes two line header
 		for(var i = 2;i < lines.length;i++){
-		   var attr = $.map(lines[i].split('\t'), function(val, i){return val.trim()});
+		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim()});
 			if(attr.length > 1) {
 				var indi = {
 					'famid': attr[0],
@@ -118,11 +118,84 @@ $('#print').click(function(e) {
 				ped.unshift(indi);
 			}
 		}
+
+		// find the level of individuals in the pedigree
 		for(var i=0;i<ped.length;i++) {
-			if(pedigree_util.getDepth(ped, ped[i].name) == 1)
-				ped[i].top_level = true;
+			getLevel(ped, ped[i].name);
+		}
+		// find the max level (i.e. top_level)
+		var max_level = 0;
+		for(var i=0;i<ped.length;i++) {
+			if(ped[i].level && ped[i].level > max_level)
+				max_level = ped[i].level;
+		}
+
+		// identify top_level and other nodes without parents
+		for(var i=0;i<ped.length;i++) {
+			if(pedigree_util.getDepth(ped, ped[i].name) == 1) {
+				if(ped[i].level && ped[i].level == max_level) {
+					ped[i].top_level = true;
+				} else {
+					ped[i].noparents = true;
+
+					// 1. look for partners parents
+					var pidx = getPartnerIdx(ped, ped[i]);
+					if(pidx > -1) {
+						if(ped[pidx].mother) {
+							ped[i].mother = ped[pidx].mother;
+							ped[i].father = ped[pidx].father;
+						}
+					}
+
+					// 2. or adopt parents from level above
+					if(!ped[i].mother){
+						for(var j=0; j<ped.length; j++) {
+							if(ped[i].level == (ped[j].level-1)) {
+								var pidx = getPartnerIdx(ped, ped[j]);
+								if(pidx > -1) {
+									ped[i].mother = (ped[j].sex === 'F' ? ped[j].name : ped[pidx].name);
+									ped[i].father = (ped[j].sex === 'M' ? ped[j].name : ped[pidx].name);
+								}
+							}
+						}
+					}
+				}
+			} else {
+				delete ped[i].top_level;
+			}
 		}
 		return ped;
+	}
+
+	// get the partners for a given node
+	function getPartnerIdx(dataset, anode) {
+		var ptrs = [];
+		for(var i=0; i<dataset.length; i++) {
+			var bnode = dataset[i];
+			if(anode.name === bnode.mother)
+				return pedigree_util.getIdxByName(dataset, bnode.father);
+			else if(anode.name === bnode.father)
+				return pedigree_util.getIdxByName(dataset, bnode.mother);
+		}
+		return -1;
+	}
+	
+	// for a given individual assign levels to a parents ancestors
+	function getLevel(dataset, name) {
+		var parents = ['mother', 'father'];
+		for(var i=0; i<parents.length; i++) {
+			var level = 0;
+			var idx = pedigree_util.getIdxByName(dataset, name);
+			while(idx >= 0 && (parents[i] in dataset[idx])){
+				level++;
+				var pidx = pedigree_util.getIdxByName(dataset, dataset[idx][parents[i]]);
+				if(!dataset[pidx].level || dataset[pidx].level < level) {
+					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)].level = level;
+					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)].level = level;
+				}
+				idx = pidx;
+			}
+		}
 	}
 
 }(window.io = window.io || {}, jQuery));
