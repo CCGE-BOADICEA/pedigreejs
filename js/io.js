@@ -123,6 +123,7 @@ $('#print').click(function(e) {
 		for(var i=0;i<ped.length;i++) {
 			getLevel(ped, ped[i].name);
 		}
+
 		// find the max level (i.e. top_level)
 		var max_level = 0;
 		for(var i=0;i<ped.length;i++) {
@@ -184,8 +185,10 @@ $('#print').click(function(e) {
 	function getLevel(dataset, name) {
 		var parents = ['mother', 'father'];
 		for(var i=0; i<parents.length; i++) {
-			var level = 0;
+
 			var idx = pedigree_util.getIdxByName(dataset, name);
+			var level = (dataset[idx].level ? dataset[idx].level : 0);
+
 			while(idx >= 0 && (parents[i] in dataset[idx])){
 				level++;
 				var pidx = pedigree_util.getIdxByName(dataset, dataset[idx][parents[i]]);
