@@ -107,13 +107,26 @@ $('#print').click(function(e) {
 
 				if(attr[idx++] != 0) indi.ashkenazi = true;
 				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
+				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
+				// genetic test result, 0 = untested, P = positive, N = negative
 				for(var j=0; j<io.genetic_test.length; j++) {
-					// todo
 					idx+=2;
+					if(attr[idx-2] !== '0') {
+						if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
+							indi[io.genetic_test[j] + '_gene_test'] = {'type': attr[idx-2], 'result': attr[idx-1]};
+						else
+							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
+					}
 				}
 				// status, 0 = unspecified, N = negative, P = positive
 				for(var j=0; j<io.pathology_tests.length; j++) {
-					// todo 
+					if(attr[idx] !== '0') {
+						if(attr[idx] === 'N' || attr[idx] === 'P')
+							indi[io.pathology_tests[j] + '_bc_pathology'] = attr[idx];
+						else
+							console.warn('UNRECOGNISED PATHOLOGY ON LINE '+ (i+1) + ": " +io.pathology_tests[j] + " " +attr[idx]);
+					}
+					idx++;
 				}
 				ped.unshift(indi);
 			}
