@@ -99,13 +99,12 @@ $('#print').click(function(e) {
 				$.each(io.cancers, function(cancer, diagnosis_age) {
 					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
 					if(attr[idx] != 0) {
-						indi[cancer] = true;
 						indi[diagnosis_age] = attr[idx];
 					}
 					idx++;
 				});
 
-				if(attr[idx++] != 0) indi.ashkenazi = true;
+				if(attr[idx++] != 0) indi.ashkenazi = 1;
 				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
 				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
 				// genetic test result, 0 = untested, P = positive, N = negative
@@ -196,20 +195,23 @@ $('#print').click(function(e) {
 	
 	// for a given individual assign levels to a parents ancestors
 	function getLevel(dataset, name) {
+		var idx = pedigree_util.getIdxByName(dataset, name);
+		var level = (dataset[idx].level ? dataset[idx].level : 0);
+		update_parents_level(idx, level, dataset);
+	}
+
+	// recursively update parents levels 
+	function update_parents_level(idx, level, dataset) {
 		var parents = ['mother', 'father'];
+		level++;
 		for(var i=0; i<parents.length; i++) {
-
-			var idx = pedigree_util.getIdxByName(dataset, name);
-			var level = (dataset[idx].level ? dataset[idx].level : 0);
-
-			while(idx >= 0 && (parents[i] in dataset[idx])){
-				level++;
-				var pidx = pedigree_util.getIdxByName(dataset, dataset[idx][parents[i]]);
+			var pidx = pedigree_util.getIdxByName(dataset, dataset[idx][parents[i]]);
+			if(pidx >= 0) {
 				if(!dataset[pidx].level || dataset[pidx].level < level) {
 					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)].level = level;
 					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)].level = level;
 				}
-				idx = pidx;
+				update_parents_level(pidx, level, dataset)
 			}
 		}
 	}
