@@ -27,7 +27,7 @@
 		});
 
 		// advanced options - model parameters
-		$("input[id$='_mut_sensitivity'], input[id$='_mut_frequency'").prop('disabled', true);
+		$("input[id$='_mut_sensitivity'], input[id$='_mut_frequency']").prop('disabled', true);
 		$('#id_use_custom_mutation_sensitivities').change(function() {
 			$("input[id$='_mut_sensitivity']").prop('disabled', !$(this).is(":checked"));
 		});
@@ -167,6 +167,7 @@
 
 		$("#person_details select[name*='_diagnosis_age']:visible, #person_details input[type=text]:visible, #person_details input[type=number]:visible").each(function() {
 			var name = (this.name.indexOf("_diagnosis_age")>-1 ? this.name.substring(0, this.name.length-2): this.name);
+
 			if($(this).val()) {
 				var val = $(this).val();
 				if(name.indexOf("_diagnosis_age") > -1 && $("#id_approx").is(':checked'))
