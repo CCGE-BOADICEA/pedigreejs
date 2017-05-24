@@ -45,6 +45,21 @@ describe('Test pedigree SVG ', function() {
 		{"name":"qLM","sex":"M","mother":"KSc","father":"cMy","noparents":true},
 		{"name":"YlJ","sex":"F","mother":"KSc","father":"cMy","noparents":true}];
  
+	var bwa_v4 = "BOADICEA import pedigree file format 4.0\n" +
+			"FamID	Name	Target	IndivID	FathID	MothID	Sex	MZtwin	Dead	Age	Yob	1stBrCa	2ndBrCa	OvCa	ProCa	PanCa	Ashkn	BRCA1t	BRCA1r	BRCA2t	BRCA2r	PALB2t	PALB2r	ATMt	ATMr	CHEK2t	CHEK2r	ER	PR	HER2	CK14	CK56\n"+
+			"XXXX	0	0	lgzm	0	0	F	0	0	92	1925	81	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0\n" +
+			"XXXX	1	0	VqNY	0	0	M	0	1	78	1939	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0\n" +
+			"XXXX	2	0	m21	0	0	M	0	0	68	1949	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0\n" +
+			"XXXX	3	0	f21	VqNY	lgzm	F	0	0	67	1950	67	0	0	0	0	0	S	P	0	0	0	0	0	0	0	0	P	0	0	0	0\n" +
+			"XXXX	4	1	ch1	m21	f21	F	0	0	43	1974	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0";
+
+	var linkage_ped = 	"ex1 father 0 0 1 2 1 2\n" +
+						"ex1 mother 0 0 2 1 1 1\n" +
+						"ex1 dau1 father mother 2 1 1 2\n" +
+						"ex1 dau2 father mother 2 2 1 2\n" +
+						"ex1 son1 father mother 1 2 1 2\n" +
+						"ex1 dau3 father mother 2 1 1 1\n" +
+						"ex1 son2 father mother 1 1 1 1";
 
 	beforeEach(function() {
 		$('body').append("<div id='pedigree_edit'></div>");
@@ -405,6 +420,29 @@ describe('Test pedigree SVG ', function() {
 	    var kids = [{'name':'Jane', 'clashExpected':false}, {'name':'Ana', 'clashExpected':true}];		
 		for(var i=0; i<kids.length; i++)
 			addParentTest(kids[i].name, kids[i].clashExpected);
+	});
+	
+	// io
+	describe('the input', function() {
+		var newopts;
+		beforeEach(function() {
+			newopts = $.extend({}, opts);
+			newopts.dataset = ptree.copy_dataset(ds1);
+		});
+		
+		it('should allow bwa v4 format', function() {
+			newopts['dataset'] = io.readBoadiceaV4(bwa_v4);
+			ptree.rebuild(newopts);
+			check_nodes_overlapping(newopts);
+			check_unconnected(newopts);
+		});
+
+		it('should allow linkage format', function() {
+			newopts['dataset'] = io.readLinkage(linkage_ped);
+			ptree.rebuild(newopts);
+			check_nodes_overlapping(newopts);
+			check_unconnected(newopts);
+		});
 	});
 
 });
