@@ -149,9 +149,18 @@
 	// get the siblings of a given individual - sex is an optional parameter
 	// for only returning brothers or sisters
 	pedigree_util.getSiblings = function(dataset, person, sex) {
-		if(!person.mother)
+		if(!person.mother || person.noparents)
 			return [];
 
+		return $.map(dataset, function(p, i){
+			return  p.name !== person.name && !('noparents' in p) && p.mother &&
+			       (p.mother === person.mother && p.father === person.father) &&
+			       (!sex || p.sex == sex) ? p : null
+		});
+	}
+	
+	// get the siblings + adopted siblings
+	pedigree_util.getAllSiblings = function(dataset, person, sex) {
 		return $.map(dataset, function(p, i){
 			return  p.name !== person.name && !('noparents' in p) && p.mother &&
 			       (p.mother === person.mother && p.father === person.father) &&
@@ -892,8 +901,10 @@
         		top_level.push(node);
         		var ptrs = get_partners(dataset, node);
         		for(var j=0; j<ptrs.length; j++){
-        			top_level_seen.push(ptrs[j]);
-        			top_level.push(pedigree_util.getNodeByName(dataset, ptrs[j]));
+        			if($.inArray(ptrs[j], top_level_seen) == -1) {
+	        			top_level_seen.push(ptrs[j]);
+	        			top_level.push(pedigree_util.getNodeByName(dataset, ptrs[j]));
+        			}
         		}
         	}
         }
@@ -1093,7 +1104,7 @@
 		} else {
 			var node_mother = pedigree_util.getNodeByName(flat_tree, tree_node.data.mother);
 			var node_father = pedigree_util.getNodeByName(flat_tree, tree_node.data.father);
-			var node_sibs = pedigree_util.getSiblings(dataset, node);
+			var node_sibs = pedigree_util.getAllSiblings(dataset, node);
 
 			// lhs & rhs id's for siblings of this node
 			var rid = 10000;
@@ -1234,7 +1245,7 @@
 		console.log(deletes);
 		for(var i=0; i<deletes.length; i++) {
 			var del = deletes[i];
-			var sibs = pedigree_util.getSiblings(dataset, del);
+			var sibs = pedigree_util.getAllSiblings(dataset, del);
 			console.log('DEL', del.name, sibs);
 			if(sibs.length < 1) {
 				console.log('del sibs', del.name, sibs);

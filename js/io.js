@@ -58,9 +58,15 @@ $('#print').click(function(e) {
 					console.log(e.target.result);
 
 				if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
-					opts.dataset = readBoadiceaV4(e.target.result);
-				else
-					opts.dataset = JSON.parse(e.target.result);
+					opts.dataset = io.readBoadiceaV4(e.target.result);
+				else {
+					try {
+						opts.dataset = JSON.parse(e.target.result);
+					} catch(err) {
+						opts.dataset = io.readLinkage(e.target.result)
+				    }
+				}
+				console.log(opts.dataset);
 				ptree.rebuild(opts);
 			}
 			reader.onerror = function(event) {
@@ -73,13 +79,49 @@ $('#print').click(function(e) {
 		$("#load")[0].value = ''; // reset value
 	}
 
+	// http://www.jurgott.org/linkage/LinkageHandbook.pdf
+	// standard pre-makeped LINKAGE file format
+	// Column 1 : Pedigree identifier The identifier can be a number or a character string
+	// Column 2 : Individual's ID The identifier can be a number or a character string
+	// Column 3 : The individual's father If the person is a founder, just put a 0 in each column
+	// Column 4 : The individual's mother If the person is a founder, just put a 0 in each column
+	// Column 5 : Sex (gender) ( 1 = Male, 2 = Female )
+	// Column 6+: Genetic data (Disease and Marker Phenotypes)
+	io.readLinkage = function(boadicea_lines) {
+		var lines = boadicea_lines.trim().split('\n');
+		var ped = [];
+		var famid = undefined;
+		for(var i = 0;i < lines.length;i++){
+		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim()});
+		   if(attr.length < 5)
+			   throw('unknown format');
+			   
+		   var indi = {
+				'famid': attr[0],
+				'display_name': attr[1],
+				'name':	attr[1],
+				'sex': attr[4] == '1' ? 'M' : 'F' 
+			}
+			if(attr[2] != 0) indi.father = attr[2];
+			if(attr[3] != 0) indi.mother = attr[3];
+			
+			if (typeof famid != 'undefined' && famid !== indi.famid) {
+				console.error('multiple family IDs found only using famid = '+famid);
+				break;
+			}
+			ped.unshift(indi);
+			famid = attr[0];
+		}
+		return process_ped(ped);
+	}
+
 	// read boadicea format v4
-	function readBoadiceaV4(boadicea_lines) {
-		var lines = boadicea_lines.split('\n');
+	io.readBoadiceaV4 = function(boadicea_lines) {
+		var lines = boadicea_lines.trim().split('\n');
 		var ped = []
 		// assumes two line header
 		for(var i = 2;i < lines.length;i++){
-		   var attr = $.map(lines[i].split('\t'), function(val, i){return val.trim()});
+		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim()});
 			if(attr.length > 1) {
 				var indi = {
 					'famid': attr[0],
@@ -99,30 +141,124 @@ $('#print').click(function(e) {
 				$.each(io.cancers, function(cancer, diagnosis_age) {
 					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
 					if(attr[idx] != 0) {
-						indi[cancer] = true;
 						indi[diagnosis_age] = attr[idx];
 					}
 					idx++;
 				});
 
-				if(attr[idx++] != 0) indi.ashkenazi = true;
+				if(attr[idx++] != 0) indi.ashkenazi = 1;
 				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
+				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
+				// genetic test result, 0 = untested, P = positive, N = negative
 				for(var j=0; j<io.genetic_test.length; j++) {
-					// todo
 					idx+=2;
+					if(attr[idx-2] !== '0') {
+						if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
+							indi[io.genetic_test[j] + '_gene_test'] = {'type': attr[idx-2], 'result': attr[idx-1]};
+						else
+							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
+					}
 				}
 				// status, 0 = unspecified, N = negative, P = positive
 				for(var j=0; j<io.pathology_tests.length; j++) {
-					// todo 
+					if(attr[idx] !== '0') {
+						if(attr[idx] === 'N' || attr[idx] === 'P')
+							indi[io.pathology_tests[j] + '_bc_pathology'] = attr[idx];
+						else
+							console.warn('UNRECOGNISED PATHOLOGY ON LINE '+ (i+1) + ": " +io.pathology_tests[j] + " " +attr[idx]);
+					}
+					idx++;
 				}
 				ped.unshift(indi);
 			}
 		}
+		return process_ped(ped);
+	}
+
+	function process_ped(ped) {
+		// find the level of individuals in the pedigree
 		for(var i=0;i<ped.length;i++) {
-			if(pedigree_util.getDepth(ped, ped[i].name) == 1)
-				ped[i].top_level = true;
+			getLevel(ped, ped[i].name);
+		}
+
+		// find the max level (i.e. top_level)
+		var max_level = 0;
+		for(var i=0;i<ped.length;i++) {
+			if(ped[i].level && ped[i].level > max_level)
+				max_level = ped[i].level;
+		}
+
+		// identify top_level and other nodes without parents
+		for(var i=0;i<ped.length;i++) {
+			if(pedigree_util.getDepth(ped, ped[i].name) == 1) {
+				if(ped[i].level && ped[i].level == max_level) {
+					ped[i].top_level = true;
+				} else {
+					ped[i].noparents = true;
+
+					// 1. look for partners parents
+					var pidx = getPartnerIdx(ped, ped[i]);
+					if(pidx > -1) {
+						if(ped[pidx].mother) {
+							ped[i].mother = ped[pidx].mother;
+							ped[i].father = ped[pidx].father;
+						}
+					}
+
+					// 2. or adopt parents from level above
+					if(!ped[i].mother){
+						for(var j=0; j<ped.length; j++) {
+							if(ped[i].level == (ped[j].level-1)) {
+								var pidx = getPartnerIdx(ped, ped[j]);
+								if(pidx > -1) {
+									ped[i].mother = (ped[j].sex === 'F' ? ped[j].name : ped[pidx].name);
+									ped[i].father = (ped[j].sex === 'M' ? ped[j].name : ped[pidx].name);
+								}
+							}
+						}
+					}
+				}
+			} else {
+				delete ped[i].top_level;
+			}
 		}
 		return ped;
+	}
+
+	// get the partners for a given node
+	function getPartnerIdx(dataset, anode) {
+		var ptrs = [];
+		for(var i=0; i<dataset.length; i++) {
+			var bnode = dataset[i];
+			if(anode.name === bnode.mother)
+				return pedigree_util.getIdxByName(dataset, bnode.father);
+			else if(anode.name === bnode.father)
+				return pedigree_util.getIdxByName(dataset, bnode.mother);
+		}
+		return -1;
+	}
+	
+	// for a given individual assign levels to a parents ancestors
+	function getLevel(dataset, name) {
+		var idx = pedigree_util.getIdxByName(dataset, name);
+		var level = (dataset[idx].level ? dataset[idx].level : 0);
+		update_parents_level(idx, level, dataset);
+	}
+
+	// recursively update parents levels 
+	function update_parents_level(idx, level, dataset) {
+		var parents = ['mother', 'father'];
+		level++;
+		for(var i=0; i<parents.length; i++) {
+			var pidx = pedigree_util.getIdxByName(dataset, dataset[idx][parents[i]]);
+			if(pidx >= 0) {
+				if(!dataset[pidx].level || dataset[pidx].level < level) {
+					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)].level = level;
+					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)].level = level;
+				}
+				update_parents_level(pidx, level, dataset)
+			}
+		}
 	}
 
 }(window.io = window.io || {}, jQuery));
