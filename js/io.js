@@ -58,9 +58,15 @@ $('#print').click(function(e) {
 					console.log(e.target.result);
 
 				if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
-					opts.dataset = readBoadiceaV4(e.target.result);
-				else
-					opts.dataset = JSON.parse(e.target.result);
+					opts.dataset = io.readBoadiceaV4(e.target.result);
+				else {
+					try {
+						opts.dataset = JSON.parse(e.target.result);
+					} catch(err) {
+						opts.dataset = io.readLinkage(e.target.result)
+				    }
+				}
+				console.log(opts.dataset);
 				ptree.rebuild(opts);
 			}
 			reader.onerror = function(event) {
@@ -73,9 +79,45 @@ $('#print').click(function(e) {
 		$("#load")[0].value = ''; // reset value
 	}
 
+	// http://www.jurgott.org/linkage/LinkageHandbook.pdf
+	// standard pre-makeped LINKAGE file format
+	// Column 1 : Pedigree identifier The identifier can be a number or a character string
+	// Column 2 : Individual's ID The identifier can be a number or a character string
+	// Column 3 : The individual's father If the person is a founder, just put a 0 in each column
+	// Column 4 : The individual's mother If the person is a founder, just put a 0 in each column
+	// Column 5 : Sex (gender) ( 1 = Male, 2 = Female )
+	// Column 6+: Genetic data (Disease and Marker Phenotypes)
+	io.readLinkage = function(boadicea_lines) {
+		var lines = boadicea_lines.trim().split('\n');
+		var ped = [];
+		var famid = undefined;
+		for(var i = 0;i < lines.length;i++){
+		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim()});
+		   if(attr.length < 5)
+			   throw('unknown format');
+			   
+		   var indi = {
+				'famid': attr[0],
+				'display_name': attr[1],
+				'name':	attr[1],
+				'sex': attr[4] == '1' ? 'M' : 'F' 
+			}
+			if(attr[2] != 0) indi.father = attr[2];
+			if(attr[3] != 0) indi.mother = attr[3];
+			
+			if (typeof famid != 'undefined' && famid !== indi.famid) {
+				console.error('multiple family IDs found only using famid = '+famid);
+				break;
+			}
+			ped.unshift(indi);
+			famid = attr[0];
+		}
+		return process_ped(ped);
+	}
+
 	// read boadicea format v4
-	function readBoadiceaV4(boadicea_lines) {
-		var lines = boadicea_lines.split('\n');
+	io.readBoadiceaV4 = function(boadicea_lines) {
+		var lines = boadicea_lines.trim().split('\n');
 		var ped = []
 		// assumes two line header
 		for(var i = 2;i < lines.length;i++){
@@ -130,7 +172,10 @@ $('#print').click(function(e) {
 				ped.unshift(indi);
 			}
 		}
+		return process_ped(ped);
+	}
 
+	function process_ped(ped) {
 		// find the level of individuals in the pedigree
 		for(var i=0;i<ped.length;i++) {
 			getLevel(ped, ped[i].name);
