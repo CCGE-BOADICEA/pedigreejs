@@ -9,6 +9,22 @@
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
 
+	<style>
+		a[href^="http://"][target=_blank]:after, 
+		a[href^="https://"][target=_blank]:after, 
+		a[href^="ftp://"][target=_blank]:after {
+		  content: "\f08e";
+		  font-family: FontAwesome;
+		  font-weight: normal;
+		  font-style: normal;
+		  display: inline-block;
+		  text-decoration: none;
+		  padding: 0px 2px;
+		  display:inline;
+		}
+	</style>
+
+
 </head>
 
 <body>
@@ -59,7 +75,7 @@
 			<h3>Overview</h3>
 			<p class="text-justify">
 			<strong>pedigreejs</strong> is a JavaScript library used to draw family trees using
-			standard pedigree nomenclature (<a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430">PMID:7887430</a>).
+			<a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430" target="_blank">standard pedigree nomenclature</a>.
 			It uses the JavaScript <a href="https://d3js.org/">d3</a> library
 			to layout the hierarchical structure and draw the individual nodes as a SVG image.
 			The size of the SVG can be configured as well as the colour codes used to denote disease.
@@ -67,13 +83,8 @@
 			To assist visualisation and building of larger pedigrees a full screen mode is provided.
 			</p>
 			<p>
-			An example page is given <a href="example.html">here</a>.
+			Another example page is given <a href="example.html">here</a>.
 			</p>
-			<h3>Current Limitations</h3>
-			<ul>
-				<li>The maximum number of partners an individual can be represented to have is 2.</li>
-				<li>Consanguineous partners can not be represented.</li>
-			</ul>
 		</div>
 	</div>
 
@@ -153,6 +164,13 @@
 	<p>The pedigree can be saved out and loaded back in. Preliminary support is given to loading basic
 	BOADICEA file format v4 (see the BOADICEA documentation 
 	<a href="https://pluto.srl.cam.ac.uk/bd4/v4/docs/BWA_v4_Appendix_A.pdf">Appendix</a>).</p>
+
+	<h3>Future Development</h3>
+		<p>The following will be looked at:</p>
+		<ul>
+			<li>currently the maximum number of partners an individual can be represented to have is 2.</li>
+			<li>the ability to represent consanguineous partners.</li>
+		</ul>
 
 	<h3>Configuration</h3>
 	<p>The following parameters can be used to configure pedigreejs.</p>
@@ -238,6 +256,7 @@
 		<div class="col-md-10">Debug mode, <i>e.g.</i> false.</div>
     </div>
 </div>
+
 <p></p>
 </body>
 
