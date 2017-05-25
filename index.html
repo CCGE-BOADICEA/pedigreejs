@@ -9,19 +9,6 @@
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
 
-	<style>
-	.disabled {
-		color: grey;
-	}
-
-	.popup_selection, .addpartner, .addparents, .delete, .settings {
-		cursor: pointer;
-	}
-
-	.addsibling, .addchild {
-		cursor: default;
-	}
-	</style>
 </head>
 
 <body>
@@ -37,7 +24,21 @@
 
 <div class="container">
 	<div class="row">
+	
+	
 <!-- EXAMPLE -->
+		<style>
+			.disabled {
+				color: grey;
+			}
+			.popup_selection, .addpartner, .addparents, .delete, .settings {
+				cursor: pointer;
+			}
+			.addsibling, .addchild {
+				cursor: default;
+			}
+		</style>
+
 		<div class="col-md-7 col-md-push-5">
 			<div class="text-center">
 				<label class="btn btn-default btn-file">
@@ -49,7 +50,7 @@
 				<label class="btn btn-default btn-file">
 						<input id="print" type="button" style="display: none;"/>Print
 				</label>
-				
+
 				<div id="pedigrees"></div>
 				<div id="node_properties"></div>
 			</div>
@@ -64,6 +65,9 @@
 			The size of the SVG can be configured as well as the colour codes used to denote disease.
 			It can be used to build the pedigree structure or load in an existing data set.
 			To assist visualisation and building of larger pedigrees a full screen mode is provided.
+			</p>
+			<p>
+			An example page is given <a href="pedigreejs/example.html">here</a>.
 			</p>
 			<h3>Current Limitations</h3>
 			<ul>
@@ -178,16 +182,16 @@
 </pre>
 
 	<div class="row">
-		<div class="col-md-1"><strong>targetDiv</strong></div>
-		<div class="col-md-11">This is the id of the HTML div used for drawing the pedigree, <i>e.g.</i> 'pedigree_edit'.</div>
+		<div class="col-md-2 text-right"><strong>targetDiv</strong></div>
+		<div class="col-md-10">This is the id of the HTML div used for drawing the pedigree, <i>e.g.</i> 'pedigree_edit'.</div>
 	</div>
 	<div class="row">
-		<div class="col-md-1"><strong>btn_target</strong></div>
-		<div class="col-md-11">This is the id of the HTML div used for the buttons, <i>e.g.</i> 'pedigree_history'.</div>
+		<div class="col-md-2 text-right"><strong>btn_target</strong></div>
+		<div class="col-md-10">This is the id of the HTML div used for the buttons, <i>e.g.</i> 'pedigree_history'.</div>
 	</div>
 	<div class="row">
-		<div class="col-md-1"><strong>dataset</strong></div>
-		<div class="col-md-11">The pedigree data to be displayed, <i>e.g.</i>
+		<div class="col-md-2 text-right"><strong>dataset</strong></div>
+		<div class="col-md-10">The pedigree data to be displayed, <i>e.g.</i>
 <pre>
 [ {"name": "m21", "sex": "M", "top_level": true},
   {"name": "f21", "sex": "F", "top_level": true},
@@ -195,32 +199,32 @@
     	</div>
     </div>
 	<div class="row">
-		<div class="col-md-1"><strong>width</strong></div>
-		<div class="col-md-11">Width of the SVG element, <i>e.g.</i> 600.</div>
+		<div class="col-md-2 text-right"><strong>width</strong></div>
+		<div class="col-md-10">Width of the SVG element, <i>e.g.</i> 600.</div>
 	</div>
 	<div class="row">
-		<div class="col-md-1"><strong>height</strong></div>
-		<div class="col-md-11">Height of the SVG element, <i>e.g.</i> 400.</div>
+		<div class="col-md-2 text-right"><strong>height</strong></div>
+		<div class="col-md-10">Height of the SVG element, <i>e.g.</i> 400.</div>
     </div>
 	<div class="row">
-		<div class="col-md-1"><strong>symbol_size</strong></div>
-		<div class="col-md-11">Size of the nodes, <i>e.g.</i> 35.</div>
+		<div class="col-md-2 text-right"><strong>symbol_size</strong></div>
+		<div class="col-md-10">Size of the nodes, <i>e.g.</i> 35.</div>
     </div>
 	<div class="row">
-		<div class="col-md-1"><strong>zoomIn</strong></div>
-		<div class="col-md-11">The factor by which the svg size can be scaled down to, default 1.</div>
+		<div class="col-md-2 text-right"><strong>zoomIn</strong></div>
+		<div class="col-md-10">The factor by which the svg size can be scaled down to, default 1 (no zoom in).</div>
     </div>
 	<div class="row">
-		<div class="col-md-1"><strong>zoomOut</strong></div>
-		<div class="col-md-11">The factor by which the svg size can be scaled up to, default 1.</div>
+		<div class="col-md-2 text-right"><strong>zoomOut</strong></div>
+		<div class="col-md-10">The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
     </div>
 	<div class="row">
-		<div class="col-md-1"><strong>edit</strong></div>
-		<div class="col-md-11">Set to true for a button to display an individual's details (<i>e.g.</i> age, sex) in a dialog or provide a funtion to handle editing.</div>
+		<div class="col-md-2 text-right"><strong>edit</strong></div>
+		<div class="col-md-10">Set to true for a button to display an individual's details (<i>e.g.</i> age, sex) in a dialog or provide a funtion to handle editing.</div>
     </div>
 	<div class="row">
-		<div class="col-md-1"><strong>diseases</strong></div>
-		<div class="col-md-11">Diseases and their colour representation, <i>e.g.</i>
+		<div class="col-md-2 text-right"><strong>diseases</strong></div>
+		<div class="col-md-10">Diseases and their colour representation, <i>e.g.</i>
 <pre>
 [{'type': 'breast_cancer', 'colour': '#F68F35'},
  {'type': 'breast_cancer2', 'colour': 'pink'},
@@ -230,10 +234,11 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-1"><strong>DEBUG</strong></div>
-		<div class="col-md-11">Debug mode, <i>e.g.</i> false.</div>
+		<div class="col-md-2 text-right"><strong>DEBUG</strong></div>
+		<div class="col-md-10">Debug mode, <i>e.g.</i> false.</div>
     </div>
 </div>
+<p></p>
 </body>
 
 </html>
