@@ -312,12 +312,13 @@
 			exclude.push(v.type+"_diagnosis_age");
 
 			var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>'
+			var diagnosis_age = d.data[v.type + "_diagnosis_age"];
 
 			table += "<tr><td style='text-align:right'>"+v.type.replace("_", " ")+disease_colour+"&nbsp;</td><td>" +
 			         "<input class='form-control' id='id_" + 
 			          v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
 			          v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
-			          d.data[v.type + "_diagnosis_age"] +"'></td></tr>";
+			          (diagnosis_age !== undefined ? diagnosis_age : "") +"'></td></tr>";
 		});
 
 		$.each(d.data, function(k, v) {
@@ -331,6 +332,8 @@
 				}
 			}
 	    });
+		table += "</table>";
+
 		$('#node_properties').html(table);
 		$('#node_properties').dialog('open');
 
