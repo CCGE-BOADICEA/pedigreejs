@@ -45,7 +45,7 @@
 			.attr("transform", "translate(-1000,-100)")
 			.attr("x", font_size/3)
 			.attr("y", font_size*1.5)
-			.html("\uf096&nbsp");
+			.text("\uf096 ");
 		var square_title = square.append("svg:title").text("add male");
 		
 		var circle = popup_selection.append("text")  // female
@@ -56,7 +56,7 @@
 			.attr("transform", "translate(-1000,-100)")
 			.attr("x", font_size*1.7)
 			.attr("y", font_size*1.5)
-			.html("\uf10c&nbsp");
+			.text("\uf10c ");
 		var circle_title = circle.append("svg:title").text("add female");
 
 		var unspecified = popup_selection.append("text")  // unspecified
@@ -65,7 +65,7 @@
 			.attr('font-size', '1.em' )
 			.attr("transform", "translate(-1000,-100)")
 			.attr("class", "popup_selection fa-lg fa-unspecified popup_selection_rotate45 persontype")
-			.html("\uf096&nbsp");
+			.text("\uf096 ");
 		var unspecified_title = unspecified.append("svg:title").text("add unspecified");
 
 		var mztwin = popup_selection.append("text")  // monozygotic twins
@@ -75,7 +75,7 @@
 			.attr("class", "popup_selection fa-2x fa-angle-up persontype mztwin")
 			.attr("x", font_size*4.6)
 			.attr("y", font_size*1.5)
-			.html("\uf106&nbsp");
+			.text("\uf106 ");
 		var mztwin_title = mztwin.append("svg:title").text("add monozygotic twins");
 
 		var add_person = {};
@@ -186,7 +186,7 @@
 				.attr("x", widgets[key]['fx'])
 				.attr("y", widgets[key]['fy'])
 				.attr('font-size', '0.9em' )
-				.html(widgets[key]['text']);
+				.text(widgets[key]['text']);
 
 			if('styles' in widgets[key])
 				for(var style in widgets[key]['styles']){
