@@ -28,15 +28,50 @@ $('#print').click(function(e) {
 	io.print = function(el){
 
         var popUpAndPrint = function() {
-        	var element = $(el);           
-            var width = parseFloat(element.width())
-            var height = parseFloat(element.height())
+        	
+        	if(el.constructor !== Array)
+        		el = [el];
+       	
+        	var width = $(window).width()*2/3;
+        	var height = $(window).height()-40;
+            var cssFile = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css';
+            
             var printWindow = window.open('', 'PrintMap',
             'width=' + width + ',height=' + height);
-            printWindow.document.writeln($(el).html());
+
+            var headContent = '<link href="'+cssFile+'" rel="stylesheet" type="text/css" media="all">';
+            /*var headContent2 = '';
+            var links = document.getElementsByTagName('link');
+            for(var i=0;i<links.length; i++) {
+            	var html = links[i].outerHTML;
+            	if(html.indexOf('href="http') !== -1)
+            		headContent2 += html;
+            }
+            headContent2 += html;          
+            var scripts = document.getElementsByTagName('script');
+            for(var i=0;i<scripts.length; i++) {
+            	var html = scripts[i].outerHTML;
+            	if(html.indexOf('src="http') !== -1)
+            		headContent += html;
+            }*/
+            
+            html = "<!doctype html><head>";
+            html += headContent;
+            html += "</head><body>";
+            for(var i=0; i<el.length; i++)
+            	html += $(el[i]).html();
+            html +=  "</body></html>";
+            
+            printWindow.document.body.innerHTML = html;           
+            var img = document.createElement('img');
+            printWindow.document.body.appendChild(img);
             printWindow.document.close();
-            printWindow.print();
-            printWindow.close();
+            img.style.display = 'none';
+            img.onerror = function(){
+            	printWindow.print();
+                printWindow.close();
+            };
+            img.src = cssFile;
         };
         setTimeout(popUpAndPrint, 500);
 	}
