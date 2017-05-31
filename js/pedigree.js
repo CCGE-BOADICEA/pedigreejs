@@ -266,7 +266,8 @@
 								}
 							}
 						} else if(node.children.length == 1 && !node.children[0].data.hidden) {
-							node.children[0].x = xmid;
+							if(!pedigree_util.overlap(opts, root.descendants(), xmid, node.children[0].depth, [node.children[0].data.name]))
+								node.children[0].x = xmid;
 						} else {
 							if(diff != 0 && !nodesOverlap(opts, node, diff, root)){
 								if(node.children.length == 1) {
