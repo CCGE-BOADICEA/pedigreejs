@@ -11,6 +11,12 @@ $('#print').click(function(e) {
 	io.print($('svg').parent());
 });
 
+
+$('#svg_download').click(function(e) {
+	io.svg_download();
+});
+
+
 // pedigree I/O 
 (function(io, $, undefined) {
 
@@ -25,17 +31,24 @@ $('#print').click(function(e) {
 	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
+	// download the SVG to a file
+	io.svg_download = function(){
+		var a      = document.createElement('a');
+		a.href     = 'data:image/svg+xml;utf8,' + unescape($('#'+opts.targetDiv).find("svg")[0].outerHTML);
+		a.download = 'plot.svg';
+		a.target   = '_blank';
+		document.body.appendChild(a); a.click(); document.body.removeChild(a);
+	}
+	
 	io.print = function(el){
 
         var popUpAndPrint = function() {
-        	
         	if(el.constructor !== Array)
         		el = [el];
-       	
+
         	var width = $(window).width()*2/3;
         	var height = $(window).height()-40;
             var cssFile = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css';
-            
             var printWindow = window.open('', 'PrintMap',
             'width=' + width + ',height=' + height);
 
@@ -54,14 +67,14 @@ $('#print').click(function(e) {
             	if(html.indexOf('src="http') !== -1)
             		headContent += html;
             }*/
-            
+
             html = "<!doctype html><head>";
             html += headContent;
             html += "</head><body>";
             for(var i=0; i<el.length; i++)
             	html += $(el[i]).html();
             html +=  "</body></html>";
-            
+
             printWindow.document.body.innerHTML = html;           
             var img = document.createElement('img');
             printWindow.document.body.appendChild(img);
@@ -75,7 +88,7 @@ $('#print').click(function(e) {
         };
         setTimeout(popUpAndPrint, 500);
 	}
-	
+
 	io.save = function(){
 		var content = JSON.stringify(pedcache.current(opts));
 		if(opts.DEBUG)
@@ -83,7 +96,7 @@ $('#print').click(function(e) {
 		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
 		window.open(uriContent, 'boadicea_pedigree');
 	}
-	
+
 	io.load = function(e) {
 	    var f = e.target.files[0];
 		if(f) {
