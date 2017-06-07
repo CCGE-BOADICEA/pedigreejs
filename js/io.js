@@ -8,7 +8,7 @@ $('#save').click(function(e) {
 });
 
 $('#print').click(function(e) {
-	io.print($('svg').parent());
+	io.print(io.get_printable_svg());
 });
 
 
@@ -30,6 +30,39 @@ $('#svg_download').click(function(e) {
 		};
 	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
+
+	// get printable svg div, adjust size to tree dimensions and scale to fit
+	io.get_printable_svg = function() {
+		var local_dataset = pedcache.current(opts); // get current dataset
+		if (local_dataset !== undefined && local_dataset !== null) {
+			opts.dataset = local_dataset;
+		}
+
+		var tree_dimensions = ptree.get_tree_dimensions(opts);
+		var svg_div = $('#'+opts.targetDiv).find('svg').parent();
+		if(opts.width < tree_dimensions.width || opts.height < tree_dimensions.height) {
+		    var wid = tree_dimensions.width;
+		    var hgt = tree_dimensions.height + 100;
+		    var scale = 1.0;
+
+		    if(tree_dimensions.width > 595 || tree_dimensions.height > 842) {   // scale to fit A4
+		    	wid = 595;
+		    	hgt = 842;
+		    	var xscale = 595/tree_dimensions.width;
+		    	var yscale = 842/tree_dimensions.height;
+		    	scale = (xscale < yscale ? xscale : yscale);
+		    }
+			svg_div = $('<div></div>');  				// create a new div
+			svg_div.append($('svg').parent().html());	// copy svg html to new div
+		    var svg = svg_div.find( "svg" );
+		    svg.attr('width', wid);		// adjust dimensions
+		    svg.attr('height', hgt);
+
+		    var ytransform = (-opts.symbol_size*1.5*scale);
+		    svg.find(".diagram").attr("transform", "translate(0, "+ytransform+") scale("+scale+")");
+		}
+		return svg_div;
+	}
 
 	// download the SVG to a file
 	io.svg_download = function(){
