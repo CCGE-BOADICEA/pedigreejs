@@ -13,7 +13,7 @@ $('#print').click(function(e) {
 
 
 $('#svg_download').click(function(e) {
-	io.svg_download();
+	io.svg_download(io.get_printable_svg());
 });
 
 
@@ -65,9 +65,9 @@ $('#svg_download').click(function(e) {
 	}
 
 	// download the SVG to a file
-	io.svg_download = function(){
+	io.svg_download = function(svg){
 		var a      = document.createElement('a');
-		a.href     = 'data:image/svg+xml;utf8,' + unescape($('#'+opts.targetDiv).find("svg")[0].outerHTML);
+		a.href     = 'data:image/svg+xml;utf8,' + unescape(svg.html());
 		a.download = 'plot.svg';
 		a.target   = '_blank';
 		document.body.appendChild(a); a.click(); document.body.removeChild(a);
