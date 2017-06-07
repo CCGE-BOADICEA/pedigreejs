@@ -91,7 +91,7 @@
 		$('select[name*="_gene_test"]').val('-');
 
 		// disable sex radio buttons if the person has a partner
-		$("input[id^='id_sex_']").prop("disabled", (node.parent_node ? true : false));
+		$("input[id^='id_sex_']").prop("disabled", (node.parent_node && node.sex !== 'U' ? true : false));
 
 		// disable pathology for male relatives (as not used by model)
 		$("select[id$='_bc_pathology']").prop("disabled", (node.sex === 'M' ? true : false));

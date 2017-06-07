@@ -450,7 +450,7 @@
 		ptree.roots[opts.targetDiv] = root;
 		
 		/// get score at each depth used to adjust node separation
-		var tree_dimensions = ptree.get_tree_dimensions(opts, svg_dimensions);
+		var tree_dimensions = ptree.get_tree_dimensions(opts);
 		if(opts.DEBUG)
 			console.log('opts.width='+svg_dimensions.width+' width='+tree_dimensions.width+
 					    ' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
@@ -844,8 +844,9 @@
         	    'height': (pbuttons.is_fullscreen()? window.innerHeight : opts.height)};
 	}
 	
-	ptree.get_tree_dimensions = function(opts, svg_dimensions) {
+	ptree.get_tree_dimensions = function(opts) {
 		/// get score at each depth used to adjust node separation
+		var svg_dimensions = get_svg_dimensions(opts);
 		var maxscore = 0;
 		var generation = {};
 		for(var i=0; i<opts.dataset.length; i++) {
@@ -863,9 +864,9 @@
 				maxscore = generation[depth];
 		}
 
-		var max_depth = Object.keys(generation).length*opts.symbol_size*3;
-		var tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.5 ?
-				           svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.5);
+		var max_depth = Object.keys(generation).length*opts.symbol_size*3.5;
+		var tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
+				           svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
 		var tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
 		      		       svg_dimensions.height - opts.symbol_size : max_depth);
 		return {'width': tree_width, 'height': tree_height};
