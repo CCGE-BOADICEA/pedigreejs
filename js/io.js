@@ -11,9 +11,39 @@ $('#print').click(function(e) {
 	io.print(io.get_printable_svg());
 });
 
-
 $('#svg_download').click(function(e) {
 	io.svg_download(io.get_printable_svg());
+});
+
+$('#png_download').click(function(e) {
+	var wrapper = $(io.get_printable_svg()).appendTo('body')[0];
+	var svg = wrapper.querySelector("svg");
+    if (typeof window.XMLSerializer != "undefined") {
+        var svgData = (new XMLSerializer()).serializeToString(svg);
+    } else if (typeof svg.xml != "undefined") {
+        var svgData = svg.xml;
+    }
+
+    var canvas = document.createElement("canvas");
+    var svgSize = svg.getBoundingClientRect();
+    canvas.width = svgSize.width;
+    canvas.height = svgSize.height;
+    var ctx = canvas.getContext("2d");
+
+    var img = document.createElement("img");
+    img.setAttribute("src", "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData))) );
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0);
+        var imgsrc = canvas.toDataURL("image/png");
+		var a      = document.createElement('a');
+		a.href     = imgsrc;
+		a.download = 'plot.png';
+		a.target   = '_blank';
+		document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function() {
+        	wrapper.remove();
+        }, 200);
+    };
 });
 
 
@@ -67,25 +97,24 @@ $('#svg_download').click(function(e) {
 	// download the SVG to a file
 	io.svg_download = function(svg){
 		var a      = document.createElement('a');
-		a.href     = 'data:image/svg+xml;utf8,' + unescape(svg.html());
+		a.href     = 'data:image/svg+xml;base64,'+ btoa( unescape( encodeURIComponent( svg.html() ) ) );
 		a.download = 'plot.svg';
 		a.target   = '_blank';
 		document.body.appendChild(a); a.click(); document.body.removeChild(a);
 	}
-	
+
+	// open print window for a given element
 	io.print = function(el){
+        if(el.constructor !== Array)
+        	el = [el];
 
-        var popUpAndPrint = function() {
-        	if(el.constructor !== Array)
-        		el = [el];
+        var width = $(window).width()*2/3;
+        var height = $(window).height()-40;
+        var cssFile = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css';
+        var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
+        var headContent = '<link href="'+cssFile+'" rel="stylesheet" type="text/css" media="all">';
+        headContent += "<style>body {font-size: " + $("body").css('font-size') + ";}</style>"
 
-        	var width = $(window).width()*2/3;
-        	var height = $(window).height()-40;
-            var cssFile = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css';
-            var printWindow = window.open('', 'PrintMap',
-            'width=' + width + ',height=' + height);
-
-            var headContent = '<link href="'+cssFile+'" rel="stylesheet" type="text/css" media="all">';
             /*var headContent2 = '';
             var links = document.getElementsByTagName('link');
             for(var i=0;i<links.length; i++) {
@@ -101,25 +130,19 @@ $('#svg_download').click(function(e) {
             		headContent += html;
             }*/
 
-            html = "<!doctype html><head>";
-            html += headContent;
-            html += "</head><body>";
-            for(var i=0; i<el.length; i++)
-            	html += $(el[i]).html();
-            html +=  "</body></html>";
+        html = "";
+        for(var i=0; i<el.length; i++)
+        	html += $(el[i]).html();
 
-            printWindow.document.body.innerHTML = html;           
-            var img = document.createElement('img');
-            printWindow.document.body.appendChild(img);
-            printWindow.document.close();
-            img.style.display = 'none';
-            img.onerror = function(){
-            	printWindow.print();
-                printWindow.close();
-            };
-            img.src = cssFile;
-        };
-        setTimeout(popUpAndPrint, 500);
+        printWindow.document.write(headContent);
+        printWindow.document.write(html);
+        printWindow.document.close();
+
+        printWindow.focus();
+        setTimeout(function() {
+            printWindow.print();
+            printWindow.close();
+        }, 100);
 	}
 
 	io.save = function(){
