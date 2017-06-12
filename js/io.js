@@ -62,7 +62,7 @@ $('#png_download').click(function(e) {
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
 	// get printable svg div, adjust size to tree dimensions and scale to fit
-	io.get_printable_svg = function(svg_transform) {
+	io.get_printable_svg = function() {
 		var local_dataset = pedcache.current(opts); // get current dataset
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
@@ -90,8 +90,6 @@ $('#png_download').click(function(e) {
 
 		    var ytransform = (-opts.symbol_size*1.5*scale);
 		    svg.find(".diagram").attr("transform", "translate(0, "+ytransform+") scale("+scale+")");
-		    if(svg_transform)
-		    	svg.attr("transform", "translate(0, "+svg_transform+")");
 		}
 		return svg_div;
 	}
@@ -143,7 +141,7 @@ $('#png_download').click(function(e) {
         printWindow.focus();
         setTimeout(function() {
             printWindow.print();
-            //printWindow.close();
+            printWindow.close();
         }, 100);
 	}
 
