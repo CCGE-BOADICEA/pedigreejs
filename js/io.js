@@ -16,9 +16,8 @@ $('#svg_download').click(function(e) {
 });
 
 $('#png_download').click(function(e) {
-    var wrapper = document.getElementById(opts.targetDiv);
-    var svg = svgdiv.querySelector("svg");
-
+	var wrapper = $(io.get_printable_svg()).appendTo('body')[0];
+	var svg = wrapper.querySelector("svg");
     if (typeof window.XMLSerializer != "undefined") {
         var svgData = (new XMLSerializer()).serializeToString(svg);
     } else if (typeof svg.xml != "undefined") {
@@ -33,15 +32,17 @@ $('#png_download').click(function(e) {
 
     var img = document.createElement("img");
     img.setAttribute("src", "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData))) );
-
     img.onload = function() {
         ctx.drawImage(img, 0, 0);
         var imgsrc = canvas.toDataURL("image/png");
-
-        var a = document.createElement("a");
-        a.download = "plot.png";
-        a.href = imgsrc;
-        a.click(); document.body.removeChild(a); document.body.removeChild(canvas);
+		var a      = document.createElement('a');
+		a.href     = imgsrc;
+		a.download = 'plot.png';
+		a.target   = '_blank';
+		document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function() {
+        	wrapper.remove();
+        }, 200);
     };
 });
 
@@ -61,7 +62,7 @@ $('#png_download').click(function(e) {
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
 	// get printable svg div, adjust size to tree dimensions and scale to fit
-	io.get_printable_svg = function() {
+	io.get_printable_svg = function(svg_transform) {
 		var local_dataset = pedcache.current(opts); // get current dataset
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
@@ -89,6 +90,8 @@ $('#png_download').click(function(e) {
 
 		    var ytransform = (-opts.symbol_size*1.5*scale);
 		    svg.find(".diagram").attr("transform", "translate(0, "+ytransform+") scale("+scale+")");
+		    if(svg_transform)
+		    	svg.attr("transform", "translate(0, "+svg_transform+")");
 		}
 		return svg_div;
 	}
