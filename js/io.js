@@ -61,6 +61,20 @@ $('#png_download').click(function(e) {
 	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
+	// return a copy of svg html with unique url references (e.g. for clippath)
+	io.copy_svg_html = function() {
+    	var svg_html = io.get_printable_svg().html();
+    	// find all url's to make unique
+    	var myRegexp = /url\(\#(.*?)\)/g;
+		var match = myRegexp.exec(svg_html);
+		while (match != null) {
+			var val = match[1];  // replace all url id's with new unique id's
+			svg_html = svg_html.replace(new RegExp(val, 'g'), val+ptree.makeid(2));
+			match = myRegexp.exec(svg_html);
+		}
+		return svg_html;
+	}
+
 	// get printable svg div, adjust size to tree dimensions and scale to fit
 	io.get_printable_svg = function() {
 		var local_dataset = pedcache.current(opts); // get current dataset
@@ -131,8 +145,11 @@ $('#png_download').click(function(e) {
             }*/
 
         html = "";
-        for(var i=0; i<el.length; i++)
+        for(var i=0; i<el.length; i++) {
         	html += $(el[i]).html();
+        	if(i < el.length-1)
+        		html += '<div style="page-break-before:always"> </div>';
+        }
 
         printWindow.document.write(headContent);
         printWindow.document.write(html);
