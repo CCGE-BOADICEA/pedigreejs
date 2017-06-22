@@ -648,6 +648,11 @@
 		var links = ped.selectAll(".link")
 			.data(root.links(nodes.descendants()))
 			.enter()
+				.filter(function (d) {
+					// filter unless debug is set
+					return (opts.DEBUG ||
+							(d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden))
+				})
 				.insert("path", "g")
 				.attr("fill", "none")
 				.attr("stroke-width", function(d, i) {
