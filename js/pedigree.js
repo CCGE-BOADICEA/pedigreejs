@@ -931,6 +931,8 @@
 		.attr("x", fx)
 		.attr("y", fy)
 		.attr("dy", size)
+		.attr("font-family", 'Helvetica')
+		.attr("font-size", '12px')
 		.text(ftext);	
     }
 
