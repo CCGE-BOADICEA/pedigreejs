@@ -597,7 +597,7 @@
 		  		.insert("path", "g")
 		  		.attr("fill", "none")
 		  		.attr("stroke", "#000")
-		  		.attr("shape-rendering", "crispEdges")
+		  		.attr("shape-rendering", "auto")
 		  		.attr('d', function(d, i) {
 		  			var x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
 	  				var x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
@@ -668,7 +668,7 @@
 				.attr("shape-rendering", function(d, i) {
 					if(d.target.data.mztwin) 
 						return "geometricPrecision";
-					return "crispEdges";
+					return "auto";
 				})
 				.attr("d", function(d, i) {
 					if(!opts.DEBUG &&
