@@ -431,7 +431,7 @@
 		var ytransform = xytransform[1];
 		if(xtransform == null) {
 			xtransform = opts.symbol_size/2;
-			ytransform = (-opts.symbol_size*1.5);
+			ytransform = (-opts.symbol_size*2.5);
 		}
 		var ped = svg.append("g")
 				 .attr("class", "diagram")
