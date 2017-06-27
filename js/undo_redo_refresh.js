@@ -1,8 +1,7 @@
-
 //
 // undo, redo, reset buttons
 (function(pbuttons, $, undefined) {
-	
+
 	pbuttons.add = function(options, li) {
 		var opts = $.extend({
             // defaults
@@ -24,11 +23,11 @@
 		$( "#"+opts.btn_target ).append(lis);
 		click(opts);
 	}
-	
+
 	pbuttons.is_fullscreen = function(){
 		return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement);
 	}
-	
+
 	function click(opts) {
 		// fullscreen
 	    $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function(e)  {
@@ -53,13 +52,12 @@
 			    	document.webkitCancelFullScreen();
 			}
 		});
-		
+
 		// undo/redo/reset
 		$( "#"+opts.btn_target ).on( "click", function(e) {
 			e.stopPropagation();
-			if($(e.target).hasClass("disabled")){
+			if($(e.target).hasClass("disabled"))
 				return false;
-			}
 
 			if($(e.target).hasClass('fa-undo')) {
 				opts['dataset'] = pedcache.previous(opts);
@@ -112,23 +110,21 @@
 			}
 		});
 	}
-	
+
 	pbuttons.updateButtons = function(opts) {
 		var current = pedcache.get_count(opts);
 		var nstore = pedcache.nstore(opts);
 		var id = "#"+opts.btn_target;
-		if(nstore <= current) {
+		if(nstore <= current)
 			$(id+" .fa-repeat").addClass('disabled');
-		} else {
+		else
 			$(id+" .fa-repeat").removeClass('disabled');
-		}
-		if(current > 1) {
-			$(id+" .fa-undo").removeClass('disabled');
-		} else {
-			$(id+" .fa-undo").addClass('disabled');
-		}
-	}
 
+		if(current > 1)
+			$(id+" .fa-undo").removeClass('disabled');
+		else
+			$(id+" .fa-undo").addClass('disabled');
+	}
 }(window.pbuttons = window.pbuttons || {}, jQuery));
 
 //
@@ -136,112 +132,156 @@
 (function(pedcache, $, undefined) {
 	var count = 0;
 	var max_limit = 25;
+	var dict_cache = {};
+
+	// test if local storage is supported
+	function has_local_storage(opts) {
+	    try {
+	    	var mod = 'test';
+	        localStorage.setItem(mod, mod);
+	        localStorage.removeItem(mod);
+	        return (opts.store_type === undefined || opts.store_type === 'local');
+	    } catch(e) {
+	        return false;
+	    }
+	}
 
 	function get_prefix(opts) {
 		return "PEDIGREE_"+opts.btn_target+"_";
 	}
-	
+
+	// use dict_cache to store cache as an array
+	function get_arr(opts) {
+		return dict_cache[get_prefix(opts)];
+	}
+
 	pedcache.get_count = function(opts) {
-		var count = localStorage.getItem(get_prefix(opts)+'COUNT');
-		if(count !== null) {
+		var count;
+		if (has_local_storage(opts))
+			count = localStorage.getItem(get_prefix(opts)+'COUNT');
+		else
+			count = dict_cache[get_prefix(opts)+'COUNT'];
+		if(count !== null && count !== undefined)
 			return count;
-		}
 		return 0;
 	}
-	
+
 	function set_count(opts, count) {
-		localStorage.setItem(get_prefix(opts)+'COUNT', count);
+		if (has_local_storage(opts))
+			localStorage.setItem(get_prefix(opts)+'COUNT', count);
+		else
+			dict_cache[get_prefix(opts)+'COUNT'] = count;
 	}
-	
-	pedcache.add = function(opts, store_type) {
+
+	pedcache.add = function(opts) {
 		if(!opts.dataset)
 			return;
-		if (typeof(Storage) !== "undefined" && (store_type === undefined || store_type === 'local')) {
-		    // local storage
-			var count = pedcache.get_count(opts);
+		var count = pedcache.get_count(opts);
+		if (has_local_storage(opts)) {   // local storage
 			localStorage.setItem(get_prefix(opts)+count, JSON.stringify(opts.dataset));
-			if(count < max_limit) {
-				count++;
-			} else {
-				count = 0;
-			}
-			set_count(opts, count)
-		} else {
-		    // TODO :: array cache
+		} else {   // TODO :: array cache
 			console.warn('Local storage not found/supported for this browser!');
+			max_limit = 500;
+			if(get_arr(opts) == undefined)
+				dict_cache[get_prefix(opts)] = [];
+			get_arr(opts).push(JSON.stringify(opts.dataset));
 		}
+		if(count < max_limit)
+			count++;
+		else
+			count = 0;
+		set_count(opts, count)
 	};
-	
+
 	pedcache.nstore = function(opts) {
-		for(var i=max_limit; i>0; i--) {
-			if(localStorage.getItem(get_prefix(opts)+(i-1)) !== null) {
-				return i;
+		if(has_local_storage(opts)) {
+			for(var i=max_limit; i>0; i--) {
+				if(localStorage.getItem(get_prefix(opts)+(i-1)) !== null)
+					return i;
 			}
+		} else {
+			return (get_arr(opts) && get_arr(opts).length > 0 ? get_arr(opts).length : -1);
 		}
 		return -1;
 	}
-	
+
 	pedcache.current = function(opts) {
 		var current = pedcache.get_count(opts)-1;
 		if(current == -1)
 			current = max_limit-1;
-		return JSON.parse(localStorage.getItem(get_prefix(opts)+current));
+		if(has_local_storage(opts))
+			return JSON.parse(localStorage.getItem(get_prefix(opts)+current));
+		else if(get_arr(opts))
+			return JSON.parse(get_arr(opts)[current]);
 	}
 
 	pedcache.last = function(opts) {
-		for(var i=max_limit; i>0; i--) {
-			var it = localStorage.getItem(get_prefix(opts)+(i-1));
-			if(it !== null) {
-				set_count(opts, i);
-				return JSON.parse(it);
+		if(has_local_storage(opts)) {
+			for(var i=max_limit; i>0; i--) {
+				var it = localStorage.getItem(get_prefix(opts)+(i-1));
+				if(it !== null) {
+					set_count(opts, i);
+					return JSON.parse(it);
+				}
 			}
+		} else {
+			var arr = get_arr(opts);
+			if(arr)
+				return JSON.parse(arr(arr.length-1));
 		}
 		return undefined;
 	}
-	
-	pedcache.previous = function(opts, previous) {
-		if(previous === undefined){
-			previous = pedcache.get_count(opts) - 2;
-		}
-		if(previous < 0) {
-			var nstore = pedcache.nstore;
-			if(nstore < max_limit){
-				previous = nstore - 1;
-			} else {
-				previous = max_limit - 1;
-			}
-		}
 
+	pedcache.previous = function(opts, previous) {
+		if(previous === undefined)
+			previous = pedcache.get_count(opts) - 2;
+
+		if(previous < 0) {
+			var nstore = pedcache.nstore(opts);
+			if(nstore < max_limit)
+				previous = nstore - 1;
+			else
+				previous = max_limit - 1;
+		}
 		set_count(opts, previous + 1);
-		return JSON.parse(localStorage.getItem(get_prefix(opts)+previous));
+		if(has_local_storage(opts))
+			return JSON.parse(localStorage.getItem(get_prefix(opts)+previous));
+		else
+			return JSON.parse(get_arr(opts)[previous]);
 	}
-	
+
 	pedcache.next = function(opts, next) {
-		if(next === undefined){
+		if(next === undefined)
 			next = pedcache.get_count(opts);
-		}
-		if(next >= max_limit) {
+		if(next >= max_limit)
 			next = 0;
-		}
 
 		set_count(opts, parseInt(next) + 1);
-		return JSON.parse(localStorage.getItem(get_prefix(opts)+next));
+		if(has_local_storage(opts))
+			return JSON.parse(localStorage.getItem(get_prefix(opts)+next));
+		else
+			return JSON.parse(get_arr(opts)[next]);
 	}
 
-	pedcache.clear = function(previous) {
-		localStorage.clear();
+	pedcache.clear = function(opts) {
+		if(has_local_storage(opts))
+			localStorage.clear();
+		dict_cache = {};
 	}
-	
+
 	// zoom - store translation coords
 	pedcache.setposition = function(opts, x, y) {
-		localStorage.setItem(get_prefix(opts)+'_X', x);
-		localStorage.setItem(get_prefix(opts)+'_Y', y);
+		if(has_local_storage(opts)) {
+			localStorage.setItem(get_prefix(opts)+'_X', x);
+			localStorage.setItem(get_prefix(opts)+'_Y', y);
+		} else {
+			//TODO
+		}
 	}
-	
+
 	pedcache.getposition = function(opts) {
-		if(localStorage.getItem(get_prefix(opts)+'_X') == null)
+		if(!has_local_storage(opts) || localStorage.getItem(get_prefix(opts)+'_X') == null)
 			return [null, null];
-		
 		return [parseInt(localStorage.getItem(get_prefix(opts)+'_X')),
 				parseInt(localStorage.getItem(get_prefix(opts)+'_Y'))];
 	}

@@ -312,7 +312,7 @@ describe('Test pedigree SVG ', function() {
 		});
 
 		it('should be able to clear the cache', function() {
-			pedcache.clear();
+			pedcache.clear(opts);
 			expect(pedigree_util.getProbandIndex(pedcache.current(opts))).not.toBeDefined();
 		});
 
@@ -330,6 +330,21 @@ describe('Test pedigree SVG ', function() {
 			newopts.dataset = newdataset;
 			ptree.rebuild(newopts);
 			expect(parseInt(pedcache.get_count(newopts))).toBe(parseInt(ncache)+1);
+			pedcache.clear();
+		});
+		
+		it('can be stored as an array', function() {
+			pedcache.clear();
+			var newopts = $.extend({}, opts);
+			opts.store_type = "array";
+			ptree.rebuild(newopts);
+			expect(parseInt(pedcache.get_count(newopts))).toBe(1);
+			var current = pedcache.current(newopts);
+			var idx = pedigree_util.getProbandIndex(current);
+			ptree.addsibling(current, current[idx], 'F');
+			newopts['dataset'] = current;	
+			ptree.rebuild(newopts);
+			expect(parseInt(pedcache.get_count(newopts))).toBe(2);
 			pedcache.clear();
 		});
 	});
