@@ -312,7 +312,7 @@ describe('Test pedigree SVG ', function() {
 		});
 
 		it('should be able to clear the cache', function() {
-			pedcache.clear();
+			pedcache.clear(opts);
 			expect(pedigree_util.getProbandIndex(pedcache.current(opts))).not.toBeDefined();
 		});
 
