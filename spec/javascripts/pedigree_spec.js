@@ -339,7 +339,7 @@ describe('Test pedigree SVG ', function() {
 			opts.store_type = "array";
 			ptree.rebuild(newopts);
 			expect(parseInt(pedcache.get_count(newopts))).toBe(1);
-			var current = pedcache.current(opts);
+			var current = pedcache.current(newopts);
 			var idx = pedigree_util.getProbandIndex(current);
 			ptree.addsibling(current, current[idx], 'F');
 			newopts['dataset'] = current;	
