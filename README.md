@@ -8,4 +8,4 @@ For details visit the [project page](https://ccge-boadicea.github.io/pedigreejs/
 
 ## Tests
 
-Jasmine tests are defined in [pedigree_spec.js](specs/javascripts/pedigree_spec.js).
+Jasmine tests are defined in [pedigree_spec.js](spec/javascripts/pedigree_spec.js).
