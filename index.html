@@ -194,6 +194,7 @@
 		'width': 450,
 		'height': 320,
 		'symbol_size': 35,
+		'store_type': 'array',
 		'diseases': [
 			{'type': 'breast_cancer', 'colour': '#F68F35'},
 			{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
@@ -239,6 +240,12 @@
 	<div class="row">
 		<div class="col-md-2 text-right"><strong>symbol_size</strong></div>
 		<div class="col-md-10">Size of the nodes, <i>e.g.</i> 35.</div>
+    </div>
+    <div class="row">
+		<div class="col-md-2 text-right"><strong>store_type</strong></div>
+		<div class="col-md-10">Pedigree storage (for undo, redo functions) set to 'local' or 'array'.
+		Default is local browser storage ('local'). If local storage is not supported
+		then it switches to 'array'.</div>
     </div>
 	<div class="row">
 		<div class="col-md-2 text-right"><strong>zoomIn</strong></div>
