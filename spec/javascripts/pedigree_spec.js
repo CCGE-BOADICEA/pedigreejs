@@ -332,6 +332,21 @@ describe('Test pedigree SVG ', function() {
 			expect(parseInt(pedcache.get_count(newopts))).toBe(parseInt(ncache)+1);
 			pedcache.clear();
 		});
+		
+		it('can be stored as an array', function() {
+			pedcache.clear();
+			var newopts = $.extend({}, opts);
+			opts.store_type = "array";
+			ptree.rebuild(newopts);
+			expect(parseInt(pedcache.get_count(newopts))).toBe(1);
+			var current = pedcache.current(opts);
+			var idx = pedigree_util.getProbandIndex(current);
+			ptree.addsibling(current, current[idx], 'F');
+			newopts['dataset'] = current;	
+			ptree.rebuild(newopts);
+			expect(parseInt(pedcache.get_count(newopts))).toBe(2);
+			pedcache.clear();
+		});
 	});
 
 	describe('the pedigree test data (1)', function() {
