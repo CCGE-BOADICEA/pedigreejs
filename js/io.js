@@ -1,52 +1,4 @@
 
-$('#load').change(function(e) {
-	io.load(e);
-});
-
-$('#save').click(function(e) {
-	io.save();
-});
-
-$('#print').click(function(e) {
-	io.print(io.get_printable_svg());
-});
-
-$('#svg_download').click(function(e) {
-	io.svg_download(io.get_printable_svg());
-});
-
-$('#png_download').click(function(e) {
-	var wrapper = $(io.get_printable_svg()).appendTo('body')[0];
-	var svg = wrapper.querySelector("svg");
-    if (typeof window.XMLSerializer != "undefined") {
-        var svgData = (new XMLSerializer()).serializeToString(svg);
-    } else if (typeof svg.xml != "undefined") {
-        var svgData = svg.xml;
-    }
-
-    var canvas = document.createElement("canvas");
-    var svgSize = svg.getBoundingClientRect();
-    canvas.width = svgSize.width;
-    canvas.height = svgSize.height;
-    var ctx = canvas.getContext("2d");
-
-    var img = document.createElement("img");
-    img.setAttribute("src", "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData))) );
-    img.onload = function() {
-        ctx.drawImage(img, 0, 0);
-        var imgsrc = canvas.toDataURL("image/png");
-		var a      = document.createElement('a');
-		a.href     = imgsrc;
-		a.download = 'plot.png';
-		a.target   = '_blank';
-		document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        setTimeout(function() {
-        	wrapper.remove();
-        }, 200);
-    };
-});
-
-
 // pedigree I/O 
 (function(io, $, undefined) {
 
@@ -60,23 +12,74 @@ $('#png_download').click(function(e) {
 		};
 	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
+	
+	
+	io.add = function(opts) {
+		$('#load').change(function(e) {
+			io.load(e);
+		});
+
+		$('#save').click(function(e) {
+			io.save();
+		});
+
+		$('#print').click(function(e) {
+			io.print(io.get_printable_svg(opts));
+		});
+
+		$('#svg_download').click(function(e) {
+			io.svg_download(io.get_printable_svg(opts));
+		});
+
+		$('#png_download').click(function(e) {
+			var wrapper = $(io.get_printable_svg(opts)).appendTo('body')[0];
+			var svg = wrapper.querySelector("svg");
+			var svgData;
+		    if (typeof window.XMLSerializer != "undefined") {
+		        svgData = (new XMLSerializer()).serializeToString(svg);
+		    } else if (typeof svg.xml != "undefined") {
+		        svgData = svg.xml;
+		    }
+
+		    var canvas = document.createElement("canvas");
+		    var svgSize = svg.getBoundingClientRect();
+		    canvas.width = svgSize.width;
+		    canvas.height = svgSize.height;
+		    var ctx = canvas.getContext("2d");
+
+		    var img = document.createElement("img");
+		    img.setAttribute("src", "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData))) );
+		    img.onload = function() {
+		        ctx.drawImage(img, 0, 0);
+		        var imgsrc = canvas.toDataURL("image/png");
+				var a      = document.createElement('a');
+				a.href     = imgsrc;
+				a.download = 'plot.png';
+				a.target   = '_blank';
+				document.body.appendChild(a); a.click(); document.body.removeChild(a);
+		        setTimeout(function() {
+		        	wrapper.remove();
+		        }, 200);
+		    };
+		});
+	}
 
 	// return a copy of svg html with unique url references (e.g. for clippath)
-	io.copy_svg_html = function() {
-    	var svg_html = io.get_printable_svg().html();
+	io.copy_svg_html = function(opts) {
+    	var svg_html = io.get_printable_svg(opts).html();
     	// find all url's to make unique
     	var myRegexp = /url\(\#(.*?)\)/g;
 		var match = myRegexp.exec(svg_html);
-		while (match != null) {
+		while (match !== null) {
 			var val = match[1];  // replace all url id's with new unique id's
 			svg_html = svg_html.replace(new RegExp(val, 'g'), val+ptree.makeid(2));
 			match = myRegexp.exec(svg_html);
 		}
 		return svg_html;
-	}
+	};
 
 	// get printable svg div, adjust size to tree dimensions and scale to fit
-	io.get_printable_svg = function() {
+	io.get_printable_svg = function(opts) {
 		var local_dataset = pedcache.current(opts); // get current dataset
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
@@ -106,7 +109,7 @@ $('#png_download').click(function(e) {
 		    svg.find(".diagram").attr("transform", "translate(0, "+ytransform+") scale("+scale+")");
 		}
 		return svg_div;
-	}
+	};
 
 	// download the SVG to a file
 	io.svg_download = function(svg){
@@ -115,7 +118,7 @@ $('#png_download').click(function(e) {
 		a.download = 'plot.svg';
 		a.target   = '_blank';
 		document.body.appendChild(a); a.click(); document.body.removeChild(a);
-	}
+	};
 
 	// open print window for a given element
 	io.print = function(el){
@@ -127,7 +130,7 @@ $('#png_download').click(function(e) {
         var cssFile = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css';
         var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
         var headContent = '<link href="'+cssFile+'" rel="stylesheet" type="text/css" media="all">';
-        headContent += "<style>body {font-size: " + $("body").css('font-size') + ";}</style>"
+        headContent += "<style>body {font-size: " + $("body").css('font-size') + ";}</style>";
 
             /*var headContent2 = '';
             var links = document.getElementsByTagName('link');
@@ -160,7 +163,7 @@ $('#png_download').click(function(e) {
             printWindow.print();
             printWindow.close();
         }, 100);
-	}
+	};
 
 	io.save = function(){
 		var content = JSON.stringify(pedcache.current(opts));
@@ -168,7 +171,7 @@ $('#png_download').click(function(e) {
 			console.log(content);
 		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
 		window.open(uriContent, 'boadicea_pedigree');
-	}
+	};
 
 	io.load = function(e) {
 	    var f = e.target.files[0];
@@ -184,12 +187,12 @@ $('#png_download').click(function(e) {
 					try {
 						opts.dataset = JSON.parse(e.target.result);
 					} catch(err) {
-						opts.dataset = io.readLinkage(e.target.result)
+						opts.dataset = io.readLinkage(e.target.result);
 				    }
 				}
 				console.log(opts.dataset);
 				ptree.rebuild(opts);
-			}
+			};
 			reader.onerror = function(event) {
 			    console.error("File could not be read! Code " + event.target.error.code);
 			};
@@ -198,7 +201,7 @@ $('#png_download').click(function(e) {
 			console.error("File could not be read!");
 		}
 		$("#load")[0].value = ''; // reset value
-	}
+	};
 
 	// http://www.jurgott.org/linkage/LinkageHandbook.pdf
 	// standard pre-makeped LINKAGE file format
@@ -211,7 +214,7 @@ $('#png_download').click(function(e) {
 	io.readLinkage = function(boadicea_lines) {
 		var lines = boadicea_lines.trim().split('\n');
 		var ped = [];
-		var famid = undefined;
+		var famid;
 		for(var i = 0;i < lines.length;i++){
 		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim()});
 		   if(attr.length < 5)
@@ -222,7 +225,7 @@ $('#png_download').click(function(e) {
 				'display_name': attr[1],
 				'name':	attr[1],
 				'sex': attr[4] == '1' ? 'M' : 'F' 
-			}
+			};
 			if(attr[2] != 0) indi.father = attr[2];
 			if(attr[3] != 0) indi.mother = attr[3];
 			
@@ -234,12 +237,12 @@ $('#png_download').click(function(e) {
 			famid = attr[0];
 		}
 		return process_ped(ped);
-	}
+	};
 
 	// read boadicea format v4
 	io.readBoadiceaV4 = function(boadicea_lines) {
 		var lines = boadicea_lines.trim().split('\n');
-		var ped = []
+		var ped = [];
 		// assumes two line header
 		for(var i = 2;i < lines.length;i++){
 		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim()});
@@ -250,7 +253,7 @@ $('#png_download').click(function(e) {
 					'name':	attr[3],
 					'sex': attr[6],
 					'status': attr[8]
-				}
+				};
 				if(attr[2] == 1) indi.proband = true;
 				if(attr[4] != 0) indi.father = attr[4];
 				if(attr[5] != 0) indi.mother = attr[5];
@@ -294,7 +297,7 @@ $('#png_download').click(function(e) {
 			}
 		}
 		return process_ped(ped);
-	}
+	};
 
 	function process_ped(ped) {
 		// find the level of individuals in the pedigree
@@ -377,7 +380,7 @@ $('#png_download').click(function(e) {
 					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)].level = level;
 					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)].level = level;
 				}
-				update_parents_level(pidx, level, dataset)
+				update_parents_level(pidx, level, dataset);
 			}
 		}
 	}
