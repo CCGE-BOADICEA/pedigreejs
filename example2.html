@@ -9,10 +9,11 @@
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
 
-	<script src="https://code.jquery.com/jquery-3.2.0.min.js"></script> 
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+	<script src="dist/pedigreejs.min.js"></script>
 
 	<style>
 		.disabled {
@@ -25,6 +26,42 @@
 			cursor: default;
 		}
 	</style>
+	
+	<script type="text/javascript">
+	$( document ).ready(function() {
+		var parent_width = $('#ped').parent().width();
+		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
+		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
+
+		var dataset = [
+			{"famid":"XXXX","display_name":"8","name":"ch1","sex":"F","status":"0","proband":true,"father":"m21","mother":"f21","age":"41","yob":"1976"},
+			{"famid":"XXXX","display_name":"7","name":"m21","sex":"M","status":"0","father":"iHTp","mother":"DVEO","age":"67","yob":"1950","level":1},
+			{"famid":"XXXX","display_name":"6","name":"f21","sex":"F","status":"0","father":"AhyZ","mother":"WJaM","age":"68","yob":"1949","breast_cancer_diagnosis_age":"67","ovarian_cancer_diagnosis_age":"63","brca1_gene_test":{"type":"S","result":"N"},"er_bc_pathology":"P","level":1},
+			{"famid":"XXXX","display_name":"5","name":"lXPO","sex":"F","status":"0","father":"UzQw","mother":"f21","age":"50","yob":"1967","breast_cancer_diagnosis_age":"49"},{"famid":"XXXX","display_name":"4","name":"UzQw","sex":"M","status":"0","age":"72","yob":"1945","level":1,"noparents":true,"mother":"WJaM","father":"AhyZ"},
+			{"famid":"XXXX","display_name":"3","name":"DVEO","sex":"F","status":"0","age":"87","yob":"1930","level":2,"top_level":true},
+			{"famid":"XXXX","display_name":"2","name":"iHTp","sex":"M","status":"1","age":"75","yob":"1955","breast_cancer_diagnosis_age":"72","breast_cancer2_diagnosis_age":"73","level":2,"top_level":true},
+			{"famid":"XXXX","display_name":"1","name":"AhyZ","sex":"M","status":"0","age":"88","yob":"1929","level":2,"top_level":true},
+			{"famid":"XXXX","display_name":"0","name":"WJaM","sex":"F","status":"0","age":"85","yob":"1932","breast_cancer_diagnosis_age":"55","pancreatic_cancer_diagnosis_age":"53","level":2,"top_level":true}];
+		var opts = {
+			'targetDiv': 'ped',
+			'btn_target': 'cancer_history',
+			'width': svg_width,
+			'height': 500,
+			'symbol_size': 35,
+			'edit': true,
+			'background': '#d3d3d3',
+			'node_background': '#fff',
+			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
+		};
+		var local_dataset = pedcache.current(opts);
+		if (local_dataset !== undefined && local_dataset !== null) {
+			opts.dataset = local_dataset;
+		} else {
+			opts.dataset = dataset;
+		}
+		opts= ptree.build(opts);
+	});
+	</script>
 </head>
 <body>
 
@@ -46,43 +83,4 @@
 	<div id="node_properties"></div>
 </div>
 
-<script src="js/pedigree.js"></script>
-<script src="js/widgets.js"></script>
-<script src="js/pedigree_form.js"></script>
-<script src="js/undo_redo_refresh.js"></script>
-<script src="js/io.js"></script>
-<script>
-	var parent_width = $('#ped').parent().width();
-	var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
-	var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
-
-	var dataset = [
-		{"famid":"XXXX","display_name":"8","name":"ch1","sex":"F","status":"0","proband":true,"father":"m21","mother":"f21","age":"41","yob":"1976"},
-		{"famid":"XXXX","display_name":"7","name":"m21","sex":"M","status":"0","father":"iHTp","mother":"DVEO","age":"67","yob":"1950","level":1},
-		{"famid":"XXXX","display_name":"6","name":"f21","sex":"F","status":"0","father":"AhyZ","mother":"WJaM","age":"68","yob":"1949","breast_cancer_diagnosis_age":"67","ovarian_cancer_diagnosis_age":"63","brca1_gene_test":{"type":"S","result":"N"},"er_bc_pathology":"P","level":1},
-		{"famid":"XXXX","display_name":"5","name":"lXPO","sex":"F","status":"0","father":"UzQw","mother":"f21","age":"50","yob":"1967","breast_cancer_diagnosis_age":"49"},{"famid":"XXXX","display_name":"4","name":"UzQw","sex":"M","status":"0","age":"72","yob":"1945","level":1,"noparents":true,"mother":"WJaM","father":"AhyZ"},
-		{"famid":"XXXX","display_name":"3","name":"DVEO","sex":"F","status":"0","age":"87","yob":"1930","level":2,"top_level":true},
-		{"famid":"XXXX","display_name":"2","name":"iHTp","sex":"M","status":"1","age":"75","yob":"1955","breast_cancer_diagnosis_age":"72","breast_cancer2_diagnosis_age":"73","level":2,"top_level":true},
-		{"famid":"XXXX","display_name":"1","name":"AhyZ","sex":"M","status":"0","age":"88","yob":"1929","level":2,"top_level":true},
-		{"famid":"XXXX","display_name":"0","name":"WJaM","sex":"F","status":"0","age":"85","yob":"1932","breast_cancer_diagnosis_age":"55","pancreatic_cancer_diagnosis_age":"53","level":2,"top_level":true}];
-	var opts = {
-		'targetDiv': 'ped',
-		'btn_target': 'cancer_history',
-		'width': svg_width,
-		'height': 500,
-		'symbol_size': 35,
-		'edit': true,
-		'background': '#d3d3d3',
-		'node_background': '#fff',
-		'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
-	};
-	var local_dataset = pedcache.current(opts);
-	if (local_dataset !== undefined && local_dataset !== null) {
-		opts.dataset = local_dataset;
-	} else {
-		opts.dataset = dataset;
-	}
-	pbuttons.add(opts);
-	opts= ptree.build(opts);
-</script>
 </body>

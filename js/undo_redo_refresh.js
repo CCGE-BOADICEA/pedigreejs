@@ -2,7 +2,7 @@
 // undo, redo, reset buttons
 (function(pbuttons, $, undefined) {
 
-	pbuttons.add = function(options, li) {
+	pbuttons.add = function(options) {
 		var opts = $.extend({
             // defaults
 			btn_target: 'pedigree_history'
@@ -18,15 +18,15 @@
 			lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' +
 			               (btns[i].fa == "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
 			               ' aria-hidden="true" title="'+ btns[i].title +'"></i>';
-			if(li) lis += '</li>';
+			lis += '</li>';
 		}
 		$( "#"+opts.btn_target ).append(lis);
 		click(opts);
-	}
+	};
 
 	pbuttons.is_fullscreen = function(){
 		return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement);
-	}
+	};
 
 	function click(opts) {
 		// fullscreen
@@ -60,11 +60,11 @@
 				return false;
 
 			if($(e.target).hasClass('fa-undo')) {
-				opts['dataset'] = pedcache.previous(opts);
+				opts.dataset = pedcache.previous(opts);
 				$("#"+opts.targetDiv).empty();
 				ptree.build(opts);				
 			} else if ($(e.target).hasClass('fa-repeat')) {
-				opts['dataset'] = pedcache.next(opts);
+				opts.dataset = pedcache.next(opts);
 				$("#"+opts.targetDiv).empty();
 				ptree.build(opts);				
 			} else if ($(e.target).hasClass('fa-refresh')) {
@@ -99,12 +99,12 @@
 						{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
 						{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
 						{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
-						{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"}]
+						{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"}];
 				} else {
 					opts.dataset = [ 
 						{"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
 	        		    {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
-	        			{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}]
+	        			{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}];
 				}
 				ptree.rebuild(opts);
 			}
@@ -124,7 +124,7 @@
 			$(id+" .fa-undo").removeClass('disabled');
 		else
 			$(id+" .fa-undo").addClass('disabled');
-	}
+	};
 }(window.pbuttons = window.pbuttons || {}, jQuery));
 
 //
@@ -164,7 +164,7 @@
 		if(count !== null && count !== undefined)
 			return count;
 		return 0;
-	}
+	};
 
 	function set_count(opts, count) {
 		if (has_local_storage(opts))
@@ -182,7 +182,7 @@
 		} else {   // TODO :: array cache
 			console.warn('Local storage not found/supported for this browser!');
 			max_limit = 500;
-			if(get_arr(opts) == undefined)
+			if(get_arr(opts) === undefined)
 				dict_cache[get_prefix(opts)] = [];
 			get_arr(opts).push(JSON.stringify(opts.dataset));
 		}
@@ -190,7 +190,7 @@
 			count++;
 		else
 			count = 0;
-		set_count(opts, count)
+		set_count(opts, count);
 	};
 
 	pedcache.nstore = function(opts) {
@@ -203,7 +203,7 @@
 			return (get_arr(opts) && get_arr(opts).length > 0 ? get_arr(opts).length : -1);
 		}
 		return -1;
-	}
+	};
 
 	pedcache.current = function(opts) {
 		var current = pedcache.get_count(opts)-1;
@@ -213,7 +213,7 @@
 			return JSON.parse(localStorage.getItem(get_prefix(opts)+current));
 		else if(get_arr(opts))
 			return JSON.parse(get_arr(opts)[current]);
-	}
+	};
 
 	pedcache.last = function(opts) {
 		if(has_local_storage(opts)) {
@@ -230,7 +230,7 @@
 				return JSON.parse(arr(arr.length-1));
 		}
 		return undefined;
-	}
+	};
 
 	pedcache.previous = function(opts, previous) {
 		if(previous === undefined)
@@ -248,7 +248,7 @@
 			return JSON.parse(localStorage.getItem(get_prefix(opts)+previous));
 		else
 			return JSON.parse(get_arr(opts)[previous]);
-	}
+	};
 
 	pedcache.next = function(opts, next) {
 		if(next === undefined)
@@ -261,13 +261,13 @@
 			return JSON.parse(localStorage.getItem(get_prefix(opts)+next));
 		else
 			return JSON.parse(get_arr(opts)[next]);
-	}
+	};
 
 	pedcache.clear = function(opts) {
 		if(has_local_storage(opts))
 			localStorage.clear();
 		dict_cache = {};
-	}
+	};
 
 	// zoom - store translation coords
 	pedcache.setposition = function(opts, x, y) {
@@ -277,13 +277,13 @@
 		} else {
 			//TODO
 		}
-	}
+	};
 
 	pedcache.getposition = function(opts) {
-		if(!has_local_storage(opts) || localStorage.getItem(get_prefix(opts)+'_X') == null)
+		if(!has_local_storage(opts) || localStorage.getItem(get_prefix(opts)+'_X') === null)
 			return [null, null];
 		return [parseInt(localStorage.getItem(get_prefix(opts)+'_X')),
 				parseInt(localStorage.getItem(get_prefix(opts)+'_Y'))];
-	}
+	};
 
 }(window.pedcache = window.pedcache || {}, jQuery));

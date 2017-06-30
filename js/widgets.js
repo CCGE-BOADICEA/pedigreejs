@@ -86,32 +86,32 @@
 			var mztwin = d3.select(this).classed("mztwin");
 			var sex;
 			if(mztwin)
-				sex = add_person['node'].datum().data.sex;
+				sex = add_person.node.datum().data.sex;
 			else
 				sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
 
-			if(add_person['type'] === 'addsibling')
-				ptree.addsibling(newdataset, add_person['node'].datum().data, sex, false, mztwin);
-			else if(add_person['type'] === 'addchild')
-				ptree.addchild(newdataset, add_person['node'].datum().data, (mztwin ? 'U' : sex), (mztwin ? 2 : 1), mztwin);
+			if(add_person.type === 'addsibling')
+				ptree.addsibling(newdataset, add_person.node.datum().data, sex, false, mztwin);
+			else if(add_person.type === 'addchild')
+				ptree.addchild(newdataset, add_person.node.datum().data, (mztwin ? 'U' : sex), (mztwin ? 2 : 1), mztwin);
 			else
-				return
-			opts['dataset'] = newdataset;	
+				return;
+			opts.dataset = newdataset;	
 			ptree.rebuild(opts);
 			d3.selectAll('.popup_selection').style("opacity", 0);
 			add_person = {};
 		  })
 		  .on("mouseover", function() {
-			  if(add_person['node'])
-				  add_person['node'].select('rect').style("opacity", 0.2);
+			  if(add_person.node)
+				  add_person.node.select('rect').style("opacity", 0.2);
 			  d3.selectAll('.popup_selection').style("opacity", 1);
 			  // add tooltips to font awesome widgets
-			  if(add_person['type'] === 'addsibling'){
+			  if(add_person.type === 'addsibling'){
 				 if(d3.select(this).classed("fa-square"))
 					  square_title.text("add brother");
 				  else 
 					  circle_title.text("add sister");
-			  } else if(add_person['type'] === 'addchild'){
+			  } else if(add_person.type === 'addchild'){
 				  if(d3.select(this).classed("fa-square"))
 					  square_title.text("add son");
 				  else
@@ -122,8 +122,8 @@
 		// handle mouse out of popup selection
 		d3.selectAll(".popup_selection").on("mouseout", function () {
 			// hide rect and popup selection
-			if(add_person['node'] !== undefined && highlight.indexOf(add_person['node'].datum()) == -1)
-				add_person['node'].select('rect').style("opacity", 0);
+			if(add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) == -1)
+				add_person.node.select('rect').style("opacity", 0);
 			d3.selectAll('.popup_selection').style("opacity", 0);
 		});
 
@@ -145,7 +145,7 @@
 			.attr("fill", "lightgrey");
 
 		// widgets
-		var fx = function(d) {return off - 0.75*opts.symbol_size};
+		var fx = function(d) {return off - 0.75*opts.symbol_size;};
 		var fy = opts.symbol_size -2;
 		var off = 0;
 		var widgets = {
@@ -166,7 +166,7 @@
 		};
 		
 		if(opts.edit) {
-			widgets['settings'] = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
+			widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
 		}
 
 		for(var key in widgets) {
@@ -181,19 +181,19 @@
 				.attr("class", key)
 				.style("opacity", 0)
 				.attr('font-family', 'FontAwesome')
-				.attr("xx", function(d){return d.x})
-				.attr("yy", function(d){return d.y})
-				.attr("x", widgets[key]['fx'])
-				.attr("y", widgets[key]['fy'])
+				.attr("xx", function(d){return d.x;})
+				.attr("yy", function(d){return d.y;})
+				.attr("x", widgets[key].fx)
+				.attr("y", widgets[key].fy)
 				.attr('font-size', '0.9em' )
-				.text(widgets[key]['text']);
+				.text(widgets[key].text);
 
 			if('styles' in widgets[key])
-				for(var style in widgets[key]['styles']){
-					widget.attr(style, widgets[key]['styles'][style]);
+				for(var style in widgets[key].styles){
+					widget.attr(style, widgets[key].styles[style]);
 				}
 
-			widget.append("svg:title").text(widgets[key]['title']);
+			widget.append("svg:title").text(widgets[key].title);
 			off += 17;
 		}
 
@@ -221,6 +221,7 @@
 				console.log(opt);
 			}
 
+			var newdataset;
 			if(opt === 'settings') {
 				if(typeof opts.edit === 'function') { 
 					opts.edit();
@@ -228,18 +229,18 @@
 					openEditDialog(opts, d);
 				}
 			} else if(opt === 'delete') {
-				var newdataset = ptree.copy_dataset(opts.dataset);
-				opts['dataset'] = ptree.delete_node_dataset(newdataset, d.data, opts);
+				newdataset = ptree.copy_dataset(opts.dataset);
+				opts.dataset = ptree.delete_node_dataset(newdataset, d.data, opts);
 				ptree.rebuild(opts);
 			} else if(opt === 'addparents') {
-				var newdataset = ptree.copy_dataset(opts.dataset);
-				opts['dataset'] = newdataset;
+				newdataset = ptree.copy_dataset(opts.dataset);
+				opts.dataset = newdataset;
 				ptree.addparents(opts, newdataset, d.data.name);
 				ptree.rebuild(opts);
 			} else if(opt === 'addpartner') {
-				var newdataset = ptree.copy_dataset(opts.dataset);
+				newdataset = ptree.copy_dataset(opts.dataset);
 				ptree.addpartner(opts, newdataset, d.data.name);
-				opts['dataset'] = newdataset;
+				opts.dataset = newdataset;
 				ptree.rebuild(opts);				
 			}
 		});
@@ -259,7 +260,7 @@
 			if('nodeclick' in opts) {
 				opts.nodeclick(d.data);
 				d3.selectAll(".indi_rect").style("opacity", 0);
-				d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1}).style("opacity", 0.5);
+				d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1;}).style("opacity", 0.5);
 			}
      	})
 		.on("mouseover", function(d){
@@ -276,7 +277,7 @@
 	        if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
 	        	d3.selectAll('.popup_selection').style("opacity", 0);
 		});
-	}
+	};
 
     // if opt.edit is set true (rather than given a function) this is called to edit node attributes
     function openEditDialog(opts, d) {
@@ -301,8 +302,8 @@
 
 		// alive status = 0; dead status = 1
 		table += '<tr><td colspan="2" id="id_status">' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status == 0 ? "checked" : "")+'>Alive</label>' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status == 1 ? "checked" : "")+'>Deceased</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status === 0 ? "checked" : "")+'>Alive</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>Deceased</label>' +
 				 '</td></tr>';
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 		
@@ -311,7 +312,7 @@
 		$.each(opts.diseases, function(k, v) {
 			exclude.push(v.type+"_diagnosis_age");
 
-			var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>'
+			var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>';
 			var diagnosis_age = d.data[v.type + "_diagnosis_age"];
 
 			table += "<tr><td style='text-align:right'>"+v.type.replace("_", " ")+disease_colour+"&nbsp;</td><td>" +

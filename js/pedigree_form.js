@@ -41,7 +41,7 @@
 					$('#id_'+gene.toLowerCase()+'_mut_frequency').val(mfreq[gene]);
 			}
 		});
-	}
+	};
 	
 	pedigree_form.nodeclick = function(node) {
 		$('form > fieldset').removeAttr('disabled');
@@ -57,7 +57,7 @@
 		update_cancer_by_sex(node);
 		
 		if(!('status' in node))
-			node.status = 0
+			node.status = 0;
 		$('input[name=status][value="'+node.status+'"]').prop('checked', true);
 
 		if('proband' in node) {
@@ -100,12 +100,12 @@
 		$('#id_approx').prop('checked', (node.approx_diagnosis_age ? true: false));
 		pedigree_form.update_diagnosis_age_widget();
 
-		for(key in node) {
+		for(var key in node) {
 			if(key !== 'proband' && key !== 'sex') {
 				if($('#id_'+key).length) {	// input value
 					if(key.indexOf('_gene_test')  !== -1 && node[key] !== null && typeof node[key] === 'object') {
-						$('#id_'+key).val(node[key]['type']);
-						$('#id_'+key+'_result').val(node[key]['result']);
+						$('#id_'+key).val(node[key].type);
+						$('#id_'+key+'_result').val(node[key].result);
 					} else {
 						$('#id_'+key).val(node[key]);
 					}
@@ -124,7 +124,7 @@
 		} catch(err) {
 			console.warn('valid() not found');
 		}
-	}
+	};
 	
     pedigree_form.save = function(opts) {
 		var dataset = pedcache.current(opts);
@@ -174,7 +174,7 @@
 					val = round5(val);
 				person[name] = val;
 			} else {
-				delete person[name]
+				delete person[name];
 			}
         });
 		
@@ -215,7 +215,7 @@
 		ptree.syncTwins(newdataset, person);
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
-    }
+    };
 
     pedigree_form.update_diagnosis_age_widget = function() {
 		if($("#id_approx").is(':checked')) {
@@ -239,7 +239,7 @@
 			$("[id$='_diagnosis_age_0']").show();
 			$("[id$='_diagnosis_age_1']").hide();
 		}
-    }
+    };
  
     // males should not have ovarian cancer and females should not have prostate cancer
     function update_cancer_by_sex(node) {

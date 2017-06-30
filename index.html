@@ -24,7 +24,54 @@
 		}
 	</style>
 
+	<script src="https://code.jquery.com/jquery-3.2.0.min.js"></script> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+	<script src="dist/pedigreejs.min.js"></script>
+	
+	<script type="text/javascript">
+	$( document ).ready(function() {
+		var DEBUG = (pedigree_util.urlParam('debug') === null ? false : true);
 
+		////////////////////
+		var dataset = [
+			{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true, "breast_cancer_diagnosis_age":67, "ovarian_cancer_diagnosis_age":63},
+			{"name": "m11", "sex": "M", "top_level": true},
+			{"name": "f12", "sex": "F", "top_level": true, "breast_cancer_diagnosis_age":55},
+			{"name": "m12", "sex": "M", "top_level": true},
+			{"name": "m21", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
+			{"name": "f21", "sex": "F", "mother": "f12", "father": "m12", "breast_cancer_diagnosis_age":55, "breast_cancer2_diagnosis_age": 60, "ovarian_cancer_diagnosis_age":58, "age": 63},
+			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
+		];
+		$( "#pedigrees" ).append( $( "<div id='pedigree_history'></div>" ) );
+		$( "#pedigrees" ).append( $( "<div id='pedigree'></div>" ) );
+		
+		var opts = {
+				'targetDiv': 'pedigree',
+				'btn_target': 'pedigree_history',
+			//	'nodeclick': pedigree_form.nodeclick,
+				'width': ($(window).width() > 450 ? 390 : $(window).width()- 30),
+				'height': 280,
+				'symbol_size': 30,
+				'edit': true,
+				'zoomIn': .8,
+				'zoomOut': 3.,
+	        	'diseases': [{'type': 'breast_cancer', 'colour': '#F68F35'},
+	        				 {'type': 'breast_cancer2', 'colour': 'pink'},
+							 {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
+							 {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
+							 {'type': 'prostate_cancer', 'colour': '#D5494A'}],
+				'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)};
+		var local_dataset = pedcache.current(opts);
+		if (local_dataset !== undefined && local_dataset !== null) {
+			opts.dataset = local_dataset;
+		} else {
+			opts.dataset = dataset;
+		}
+		opts= ptree.build(opts);
+	});
+	</script>
 </head>
 
 <body>
@@ -40,8 +87,6 @@
 
 <div class="container">
 	<div class="row">
-	
-	
 <!-- EXAMPLE -->
 		<style>
 			.disabled {
@@ -99,58 +144,6 @@
 		</div>
 	</div>
 
-	<script src="https://code.jquery.com/jquery-3.2.0.min.js"></script> 
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js"></script>
-	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
-	<script src="js/pedigree.js"></script>
-	<script src="js/widgets.js"></script>
-	<script src="js/pedigree_form.js"></script>
-	<script src="js/undo_redo_refresh.js"></script>
-	<script src="js/io.js"></script>
-
-	<script type="text/javascript">
-	var DEBUG = (pedigree_util.urlParam('debug') === null ? false : true);
-
-	////////////////////
-	var dataset = [
-		{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true, "breast_cancer_diagnosis_age":67, "ovarian_cancer_diagnosis_age":63},
-		{"name": "m11", "sex": "M", "top_level": true},
-		{"name": "f12", "sex": "F", "top_level": true, "breast_cancer_diagnosis_age":55},
-		{"name": "m12", "sex": "M", "top_level": true},
-		{"name": "m21", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
-		{"name": "f21", "sex": "F", "mother": "f12", "father": "m12", "breast_cancer_diagnosis_age":55, "breast_cancer2_diagnosis_age": 60, "ovarian_cancer_diagnosis_age":58, "age": 63},
-		{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
-	];
-	$( "#pedigrees" ).append( $( "<div id='pedigree_history'></div>" ) );
-	$( "#pedigrees" ).append( $( "<div id='pedigree'></div>" ) );
-	
-	var opts = {
-			'targetDiv': 'pedigree',
-			'btn_target': 'pedigree_history',
-		//	'nodeclick': pedigree_form.nodeclick,
-			'width': ($(window).width() > 450 ? 390 : $(window).width()- 30),
-			'height': 280,
-			'symbol_size': 30,
-			'edit': true,
-			'zoomIn': .8,
-			'zoomOut': 3.,
-        	'diseases': [{'type': 'breast_cancer', 'colour': '#F68F35'},
-        				 {'type': 'breast_cancer2', 'colour': 'pink'},
-						 {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-						 {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-						 {'type': 'prostate_cancer', 'colour': '#D5494A'}],
-			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)};
-	var local_dataset = pedcache.current(opts);
-	if (local_dataset !== undefined && local_dataset !== null) {
-		opts.dataset = local_dataset;
-	} else {
-		opts.dataset = dataset;
-	}
-	pbuttons.add(opts);
-	opts= ptree.build(opts);
-	
-	</script>
 <!-- EXAMPLE END -->
 	
 	<h3>Building Pedigrees</h3>
@@ -208,7 +201,6 @@
 	} else {
 		opts.dataset = dataset;
 	}
-	pbuttons.add(opts);
 	opts= ptree.build(opts);
 </pre>
 
