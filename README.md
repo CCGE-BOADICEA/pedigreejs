@@ -12,7 +12,7 @@ Jasmine tests are defined in [pedigree_spec.js](spec/javascripts/pedigree_spec.j
 
 ##  Build
 
-Grunt can be used to build the distribution:
+[Grunt](https://gruntjs.com/) can be used to build the distribution:
 
 ```
 npm install -g grunt-cli
