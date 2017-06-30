@@ -9,7 +9,7 @@ module.exports = function(grunt) {
       },
       dist: {
         src: 'js/*.js',
-        dest: 'dist/<%= pkg.name %>.js',
+        dest: 'dist/js/<%= pkg.name %>.js',
       },
     },
     uglify: {
@@ -17,11 +17,21 @@ module.exports = function(grunt) {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
         sourceMap : true,
         sourceMapIncludeSources : true,
-        sourceMapIn : 'dist/<%= pkg.name %>.js.map'
+        sourceMapIn : 'dist/js/<%= pkg.name %>.js.map'
       },
       build: {
     	src: '<%= concat.dist.dest %>',
-        dest: 'dist/<%= pkg.name %>.min.js'
+        dest: 'dist/js/<%= pkg.name %>.min.js'
+      }
+    },
+    cssmin: {
+      target: {
+    	files: [{
+    	  expand: true,
+    	  src: ['css/*.css'],
+    	  dest: 'dist',
+    	  ext: '.min.css'
+    	}]
       }
     },
     jshint: {
@@ -39,8 +49,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
 
   // Default task(s).
-  grunt.registerTask('default', ['concat', 'uglify']);
+  grunt.registerTask('default', ['concat', 'uglify', 'cssmin']);
   grunt.registerTask('hint', ['jshint']);
 };
