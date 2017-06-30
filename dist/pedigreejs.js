@@ -511,7 +511,10 @@
 	pedigree_util.getProbandIndex = function(dataset) {
 		var proband;
 		$.each(dataset, function(i, val) {
-			if (pedigree_util.isProband(val)) return proband = i;
+			if (pedigree_util.isProband(val)) {
+				proband = i;
+				return proband;
+			}
 		});
 		return proband;
 	};
@@ -597,7 +600,10 @@
 	pedigree_util.getIdxByName = function(arr, name) {
 		var idx = -1;
 		$.each(arr, function(i, p) {
-			if (name === p.name) return idx = i;
+			if (name === p.name) {
+				idx = i;
+				return idx;
+			}
 		});
 		return idx;
 	};
@@ -744,9 +750,10 @@
 	pedigree_util.print_opts = function(opts){
     	$("#pedigree_data").remove();
     	$("body").append("<div id='pedigree_data'></div>" );
+    	var key;
     	for(var i=0; i<opts.dataset.length; i++) {
     		var person = "<div class='row'><strong class='col-md-1 text-right'>"+opts.dataset[i].name+"</strong><div class='col-md-11'>";
-    		for(var key in opts.dataset[i]) {
+    		for(key in opts.dataset[i]) {
     			if(key === 'name') continue;
     			if(key === 'parent')
     				person += "<span>"+key + ":" + opts.dataset[i][key].name+"; </span>";
@@ -760,7 +767,7 @@
     		
     	}
     	$("#pedigree_data").append("<br /><br />");
-    	for(var key in opts) {
+    	for(key in opts) {
     		if(key === 'dataset') continue;
     		$("#pedigree_data").append("<span>"+key + ":" + opts[key]+"; </span>");
     	}
@@ -1022,10 +1029,10 @@
 
 		  				var dy2 = (dy1-opts.symbol_size/2-3);
 		  				// loop over node(s)
-		  				for(var i=0; i<clash.length; i++) {
-		  					var j = extend(i, clash.length);
-		  					var dx1 = clash[i] - dx;
-		  					var dx2 = clash[j] + dx;
+		  				for(var j=0; j<clash.length; j++) {
+		  					var k = extend(j, clash.length);
+		  					var dx1 = clash[j] - dx;
+		  					var dx2 = clash[k] + dx;
 		  					if(parent_node.x > dx1 && parent_node.x < dx2)
 		  						parent_node.y = dy2;
 
@@ -1033,7 +1040,7 @@
 		  					        "L" + dx1 + "," +  dy2 +
 		  					        "L" + dx2 + "," +  dy2 +
 		  					        "L" + dx2 + "," +  dy1;
-	  						i = j;
+	  						j = k;
 		  				}
 		  			}
 		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1;
@@ -1134,8 +1141,10 @@
 		var found = false;
 		if(obj)
 			$.each(obj, function(k, n){
-			    if(k.indexOf(prefix+"_") === 0 || k === prefix)
-			    	return found = true;
+			    if(k.indexOf(prefix+"_") === 0 || k === prefix) {
+			    	found = true;
+			    	return found;
+			    }
 			});
 		return found;
 	}
@@ -1296,7 +1305,7 @@
 
 		var top_level = [];
         var top_level_seen = [];
-        for(var i=0;i<dataset.length;i++) {
+        for(i=0;i<dataset.length;i++) {
         	var node = dataset[i];
         	if('top_level' in node && $.inArray(node.name, top_level_seen) == -1){
         		top_level_seen.push(node.name);
@@ -1312,7 +1321,7 @@
         }
 
         var newdataset = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? null : val;});
-        for (var i = top_level.length; i > 0; --i)
+        for (i = top_level.length; i > 0; --i)
         	newdataset.unshift(top_level[i-1]);
         return newdataset;
 	}
@@ -1491,13 +1500,14 @@
 			pid = pedigree_util.getNodeByName(flat_tree, ptr_name).data.id;
 		}
 
+		var i;
 		if(depth == 1) {
 			mother = {"name": ptree.makeid(4), "sex": "F", "top_level": true};
 			father = {"name": ptree.makeid(4), "sex": "M", "top_level": true};
 			dataset.splice(0, 0, father);
 			dataset.splice(0, 0, mother);
 
-			for(var i=0; i<dataset.length; i++){
+			for(i=0; i<dataset.length; i++){
 				if(dataset[i].top_level && dataset[i].name !== mother.name && dataset[i].name !== father.name){
 					delete dataset[i].top_level;
 					dataset[i].noparents = true;
@@ -1513,7 +1523,7 @@
 			// lhs & rhs id's for siblings of this node
 			var rid = 10000;
 			var lid = tree_node.data.id;
-			for(var i=0; i<node_sibs.length; i++){
+			for(i=0; i<node_sibs.length; i++){
 				var sid = pedigree_util.getNodeByName(flat_tree, node_sibs[i].name).data.id;
 				if(sid < rid && sid > tree_node.data.id)
 					rid = sid;
@@ -1536,7 +1546,7 @@
 
 			var orphans = pedigree_util.getAdoptedSiblings(dataset, node);
 			var nid = tree_node.data.id;
-			for(var i=0; i<orphans.length; i++){
+			for(i=0; i<orphans.length; i++){
 				var oid = pedigree_util.getNodeByName(flat_tree, orphans[i].name).data.id;
 				if(opts.DEBUG)
 					console.log('ORPHAN='+i+' '+orphans[i].name+' '+(nid < oid && oid < rid)+' nid='+nid+' oid='+oid+' rid='+rid);
@@ -1604,14 +1614,15 @@
 		var root = ptree.roots[opts.targetDiv];
 		var fnodes = pedigree_util.flatten(root);
 		var deletes = [];
+		var i, j;
 
 		if(node.parent_node) {
-			for(var i=0; i<node.parent_node.length; i++){
+			for(i=0; i<node.parent_node.length; i++){
 				var parent = node.parent_node[i];
 				var ps = [pedigree_util.getNodeByName(dataset, parent.mother.name),
 					      pedigree_util.getNodeByName(dataset, parent.father.name)];
 				// delete parents
-				for(var j=0; j<ps.length; j++) {
+				for(j=0; j<ps.length; j++) {
 					if(ps[j].name === node.name || ps[j].noparents !== undefined || ps[j].top_level) {
 						dataset.splice(pedigree_util.getIdxByName(dataset, ps[j].name), 1);
 						deletes.push(ps[j]);
@@ -1620,7 +1631,7 @@
 
 				var children = parent.children;
 				var children_names = $.map(children, function(p, i){return p.name;}); 
-				for(var j=0; j<children.length; j++) {
+				for(j=0; j<children.length; j++) {
 					var child = pedigree_util.getNodeByName(dataset, children[j].name);
 					if(child){
 						child.noparents = true;
@@ -1647,7 +1658,7 @@
 
 		// delete ancestors
 		console.log(deletes);
-		for(var i=0; i<deletes.length; i++) {
+		for(i=0; i<deletes.length; i++) {
 			var del = deletes[i];
 			var sibs = pedigree_util.getAllSiblings(dataset, del);
 			console.log('DEL', del.name, sibs);
@@ -1655,7 +1666,7 @@
 				console.log('del sibs', del.name, sibs);
 				var data_node  = pedigree_util.getNodeByName(fnodes, del.name);
 				var ancestors = data_node.ancestors();
-				for(var j=0; j<ancestors.length; j++) {
+				for(j=0; j<ancestors.length; j++) {
 					console.log(ancestors[i]);
 					if(ancestors[j].data.mother){
 						console.log('DELETE ', ancestors[j].data.mother, ancestors[j].data.father);
@@ -1665,10 +1676,8 @@
 				}
 			}	
 		}
-
 		// check integrity of mztwins settings
 		checkTwins(dataset);
-
 		return dataset;
 	};
 
@@ -1788,8 +1797,8 @@
 			if(key !== 'proband' && key !== 'sex') {
 				if($('#id_'+key).length) {	// input value
 					if(key.indexOf('_gene_test')  !== -1 && node[key] !== null && typeof node[key] === 'object') {
-						$('#id_'+key).val(node[key]['type']);
-						$('#id_'+key+'_result').val(node[key]['result']);
+						$('#id_'+key).val(node[key].type);
+						$('#id_'+key+'_result').val(node[key].result);
 					} else {
 						$('#id_'+key).val(node[key]);
 					}
