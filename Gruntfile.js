@@ -4,6 +4,9 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      options : {
+    	sourceMap :true
+      },
       dist: {
         src: 'js/*.js',
         dest: 'dist/<%= pkg.name %>.js',
@@ -11,10 +14,13 @@ module.exports = function(grunt) {
     },
     uglify: {
       options: {
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+        sourceMap : true,
+        sourceMapIncludeSources : true,
+        sourceMapIn : 'dist/<%= pkg.name %>.js.map'
       },
       build: {
-        src: 'js/*.js',
+    	src: '<%= concat.dist.dest %>',
         dest: 'dist/<%= pkg.name %>.min.js'
       }
     },

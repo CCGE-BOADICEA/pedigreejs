@@ -16,11 +16,11 @@
 	
 	io.add = function(opts) {
 		$('#load').change(function(e) {
-			io.load(e);
+			io.load(e, opts);
 		});
 
 		$('#save').click(function(e) {
-			io.save();
+			io.save(opts);
 		});
 
 		$('#print').click(function(e) {
@@ -62,7 +62,7 @@
 		        }, 200);
 		    };
 		});
-	}
+	};
 
 	// return a copy of svg html with unique url references (e.g. for clippath)
 	io.copy_svg_html = function(opts) {
@@ -165,7 +165,7 @@
         }, 100);
 	};
 
-	io.save = function(){
+	io.save = function(opts){
 		var content = JSON.stringify(pedcache.current(opts));
 		if(opts.DEBUG)
 			console.log(content);
@@ -173,7 +173,7 @@
 		window.open(uriContent, 'boadicea_pedigree');
 	};
 
-	io.load = function(e) {
+	io.load = function(e, opts) {
 	    var f = e.target.files[0];
 		if(f) {
 			var reader = new FileReader();
@@ -216,7 +216,7 @@
 		var ped = [];
 		var famid;
 		for(var i = 0;i < lines.length;i++){
-		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim()});
+		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
 		   if(attr.length < 5)
 			   throw('unknown format');
 			   
@@ -226,8 +226,8 @@
 				'name':	attr[1],
 				'sex': attr[4] == '1' ? 'M' : 'F' 
 			};
-			if(attr[2] != 0) indi.father = attr[2];
-			if(attr[3] != 0) indi.mother = attr[3];
+			if(attr[2] !== "0") indi.father = attr[2];
+			if(attr[3] !== "0") indi.mother = attr[3];
 			
 			if (typeof famid != 'undefined' && famid !== indi.famid) {
 				console.error('multiple family IDs found only using famid = '+famid);
@@ -245,7 +245,7 @@
 		var ped = [];
 		// assumes two line header
 		for(var i = 2;i < lines.length;i++){
-		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim()});
+		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
 			if(attr.length > 1) {
 				var indi = {
 					'famid': attr[0],
@@ -255,22 +255,22 @@
 					'status': attr[8]
 				};
 				if(attr[2] == 1) indi.proband = true;
-				if(attr[4] != 0) indi.father = attr[4];
-				if(attr[5] != 0) indi.mother = attr[5];
-				if(attr[7] != 0) indi.mztwin = attr[7];
-				if(attr[9] != 0) indi.age = attr[9];
-				if(attr[10] != 0) indi.yob = attr[10];
+				if(attr[4] !== "0") indi.father = attr[4];
+				if(attr[5] !== "0") indi.mother = attr[5];
+				if(attr[7] !== "0") indi.mztwin = attr[7];
+				if(attr[9] !== "0") indi.age = attr[9];
+				if(attr[10] !== "0") indi.yob = attr[10];
 
 				var idx = 11;
 				$.each(io.cancers, function(cancer, diagnosis_age) {
 					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
-					if(attr[idx] != 0) {
+					if(attr[idx] !== "0") {
 						indi[diagnosis_age] = attr[idx];
 					}
 					idx++;
 				});
 
-				if(attr[idx++] != 0) indi.ashkenazi = 1;
+				if(attr[idx++] !== "0") indi.ashkenazi = 1;
 				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
 				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
 				// genetic test result, 0 = untested, P = positive, N = negative
@@ -284,7 +284,7 @@
 					}
 				}
 				// status, 0 = unspecified, N = negative, P = positive
-				for(var j=0; j<io.pathology_tests.length; j++) {
+				for(j=0; j<io.pathology_tests.length; j++) {
 					if(attr[idx] !== '0') {
 						if(attr[idx] === 'N' || attr[idx] === 'P')
 							indi[io.pathology_tests[j] + '_bc_pathology'] = attr[idx];
@@ -307,13 +307,13 @@
 
 		// find the max level (i.e. top_level)
 		var max_level = 0;
-		for(var i=0;i<ped.length;i++) {
+		for(i=0;i<ped.length;i++) {
 			if(ped[i].level && ped[i].level > max_level)
 				max_level = ped[i].level;
 		}
 
 		// identify top_level and other nodes without parents
-		for(var i=0;i<ped.length;i++) {
+		for(i=0;i<ped.length;i++) {
 			if(pedigree_util.getDepth(ped, ped[i].name) == 1) {
 				if(ped[i].level && ped[i].level == max_level) {
 					ped[i].top_level = true;
@@ -333,7 +333,7 @@
 					if(!ped[i].mother){
 						for(var j=0; j<ped.length; j++) {
 							if(ped[i].level == (ped[j].level-1)) {
-								var pidx = getPartnerIdx(ped, ped[j]);
+								pidx = getPartnerIdx(ped, ped[j]);
 								if(pidx > -1) {
 									ped[i].mother = (ped[j].sex === 'F' ? ped[j].name : ped[pidx].name);
 									ped[i].father = (ped[j].sex === 'M' ? ped[j].name : ped[pidx].name);
@@ -2583,3 +2583,5 @@
     }
 
 }(window.widgets = window.widgets || {}, jQuery));
+
+//# sourceMappingURL=pedigreejs.js.map
