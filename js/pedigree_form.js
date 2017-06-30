@@ -104,8 +104,8 @@
 			if(key !== 'proband' && key !== 'sex') {
 				if($('#id_'+key).length) {	// input value
 					if(key.indexOf('_gene_test')  !== -1 && node[key] !== null && typeof node[key] === 'object') {
-						$('#id_'+key).val(node[key]['type']);
-						$('#id_'+key+'_result').val(node[key]['result']);
+						$('#id_'+key).val(node[key].type);
+						$('#id_'+key+'_result').val(node[key].result);
 					} else {
 						$('#id_'+key).val(node[key]);
 					}
