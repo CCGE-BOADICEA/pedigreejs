@@ -21,4 +21,4 @@ npm install
 grunt
 ```
 
-It can also be used to run (JShint)[http://jshint.com/].
+It can also be used to run [JShint](http://jshint.com/).
