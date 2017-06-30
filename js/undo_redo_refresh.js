@@ -2,7 +2,7 @@
 // undo, redo, reset buttons
 (function(pbuttons, $, undefined) {
 
-	pbuttons.add = function(options, li) {
+	pbuttons.add = function(options) {
 		var opts = $.extend({
             // defaults
 			btn_target: 'pedigree_history'
@@ -18,7 +18,7 @@
 			lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' +
 			               (btns[i].fa == "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
 			               ' aria-hidden="true" title="'+ btns[i].title +'"></i>';
-			if(li) lis += '</li>';
+			lis += '</li>';
 		}
 		$( "#"+opts.btn_target ).append(lis);
 		click(opts);
