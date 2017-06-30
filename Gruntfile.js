@@ -3,7 +3,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    concat: {
+	concat: {
       options : {
     	sourceMap :true
       },
@@ -27,7 +27,7 @@ module.exports = function(grunt) {
     jshint: {
       ignore_warning: {
         options: {
-          '-W015': true,
+          'loopfunc':true    // http://jshint.com/docs/options/#loopfunc
         },
         src: 'js/**',
         filter: 'isFile'
@@ -43,5 +43,4 @@ module.exports = function(grunt) {
   // Default task(s).
   grunt.registerTask('default', ['concat', 'uglify']);
   grunt.registerTask('hint', ['jshint']);
-
 };
