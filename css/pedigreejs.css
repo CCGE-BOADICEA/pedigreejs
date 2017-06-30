@@ -1,0 +1,10 @@
+
+.disabled {
+	color: grey;
+}
+.popup_selection, .addpartner, .addparents, .delete, .settings {
+	cursor: pointer;
+}
+.addsibling, .addchild {
+	cursor: default;
+}
