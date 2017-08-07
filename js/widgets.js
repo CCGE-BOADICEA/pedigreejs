@@ -247,6 +247,7 @@
 		
 		// other mouse events
 		var highlight = [];
+		var mouseover;
 		node.filter(function (d) { return !d.data.hidden; })
 		.on("click", function (d) {
 			if (d3.event.ctrlKey) {
@@ -264,11 +265,13 @@
 			}
      	})
 		.on("mouseover", function(d){
+			mouseover = d;
 			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
 			d3.select(this).select('rect').style("opacity", 0.2);
 			d3.select(this).selectAll('.indi_details').style("opacity", 0);
 		})
 		.on("mouseout", function(d){
+			mouseover = undefined;
 			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
 			if(highlight.indexOf(d) == -1)
 				d3.select(this).select('rect').style("opacity", 0);
@@ -277,6 +280,54 @@
 	        if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
 	        	d3.selectAll('.popup_selection').style("opacity", 0);
 		});
+
+
+
+		/////////////////////// Add drag line ///////////////////////
+		node.append("line")
+		.attr("class", 'dragline')
+        	.attr("x1", -2)
+        	.attr("y1",  2)
+        	.attr("x2",  2)
+	        .attr("y2",  2)
+	        .attr("stroke-width", 4)
+	        .attr("stroke","darkred")
+	        .call(d3.drag()
+	                .on("start", dragstarted)
+	                .on("drag", dragged)
+	                .on("end", dragended));
+		function dragstarted(d) {}
+		function dragended(d) {
+			if(d.data.name !== mouseover.data.name) {
+				// make partners
+				var child = {"name": ptree.makeid(4), "sex": 'M',
+					     "mother": (d.data.sex === 'F' ? d.data.name : mouseover.data.name),
+				         "father": (d.data.sex === 'F' ? mouseover.data.name : d.data.name)};
+				newdataset = ptree.copy_dataset(opts.dataset);
+				opts.dataset = newdataset;
+				var idx = pedigree_util.getIdxByName(opts.dataset, node.name)+1;
+				opts.dataset.splice(idx, 0, child);
+				ptree.rebuild(opts);
+			}
+			d3.select(this)
+				.attr("x1", -2)
+	        	.attr("y1",  2)
+	        	.attr("x2",  2)
+		        .attr("y2",  2);
+			return;
+		}
+		function dragged(d) {
+			var dx = d3.event.dx;
+            var dy = d3.event.dy;
+            var xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
+            var ynew = parseFloat(d3.select(this).attr('y2'))+ dy;
+            d3.select(this).attr("x1",5)
+                .attr("y1",5)
+                .attr("x2",xnew)
+                .attr("y2",ynew);
+		}
+		///////////////////////
+		
 	};
 
     // if opt.edit is set true (rather than given a function) this is called to edit node attributes
