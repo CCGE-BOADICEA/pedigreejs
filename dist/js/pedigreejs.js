@@ -404,15 +404,13 @@
 		var partners = [];
 		$.each(person.children, function(i, child) {
 			$.each(opts.dataset, function(j, p) {
-				if (((child.name === p.mother) || (child.name === p.father)) && child.id === undefined) {
-					if (!(contains_parent(partners, child.name))) {
-						var m = pedigree_util.getNodeByName(nodes, p.mother);
-						var f = pedigree_util.getNodeByName(nodes, p.father);
-						partners.push({
-							'mother' : m !== undefined? m : pedigree_util.getNodeByName(opts.dataset, p.mother),
-							'father' : f !== undefined? f : pedigree_util.getNodeByName(opts.dataset, p.father)
-						});
-					}
+				if (((child.name === p.mother) || (child.name === p.father)) && child.id === undefined) {					
+					var m = pedigree_util.getNodeByName(nodes, p.mother);
+					var f = pedigree_util.getNodeByName(nodes, p.father);
+					m = (m !== undefined? m : pedigree_util.getNodeByName(opts.dataset, p.mother));
+					f = (f !== undefined? f : pedigree_util.getNodeByName(opts.dataset, p.father));
+					if(!contains_parent(partners, m, f))
+						partners.push({'mother': m, 'father': f});
 				}
 			});
 		});
@@ -530,11 +528,10 @@
 		return children;
 	};
 	
-	function contains_parent(arr, name) {
-		for(var i=0; i< arr.length; i++){
-			if(name === arr[i].mother.name || name === arr[i].father.name)
+	function contains_parent(arr, m, f) {
+		for(var i=0; i<arr.length; i++)
+			if(arr[i].mother === m && arr[i].father === f)
 				return true;
-		}
 		return false;
 	}
 
@@ -1010,14 +1007,21 @@
 		  			var path = "";
 		  			if(clash) {
 		  				if(d.mother.depth in clash_depth)
-		  					clash_depth[d.mother.depth] += 3;
+		  					clash_depth[d.mother.depth] += 5;
 		  				else
-		  					clash_depth[d.mother.depth] = 3;
+		  					clash_depth[d.mother.depth] = 5;
 
 		  				dy1 -= clash_depth[d.mother.depth];
-		  				var dx = 3 + clash_depth[d.mother.depth] + opts.symbol_size/2;
-		  				
-		  				var parent_node = pedigree_util.getNodeByName(flattenNodes, d.mother.data.parent_node[0].name);
+		  				var dx = clash_depth[d.mother.depth] + opts.symbol_size/2;
+
+		  				var parent_nodes = d.mother.data.parent_node;
+		  				var parent_node_name = parent_nodes[0];
+		  				for(var i=0; i<parent_nodes.length; i++) {
+		  					if(parent_nodes[i].father.name === d.father.data.name &&
+		  					   parent_nodes[i].mother.name === d.mother.data.name)
+		  						 parent_node_name = parent_nodes[i].name;
+		  				}
+		  				var parent_node = pedigree_util.getNodeByName(flattenNodes, parent_node_name);
 						parent_node.y = dy1; // adjust hgt of parent node
 		  				clash.sort(function (a,b) {return a - b;});
 
