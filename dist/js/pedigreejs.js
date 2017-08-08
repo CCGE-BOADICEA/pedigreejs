@@ -2266,6 +2266,8 @@
     	  return [matrix.e, matrix.f];
     	}
     
+	var dragging;
+	var last_mouseover;
 	//
 	// Add widgets to nodes and bind events
     widgets.addWidgets = function(opts, node) {
@@ -2372,6 +2374,45 @@
 				add_person.node.select('rect').style("opacity", 0);
 			d3.selectAll('.popup_selection').style("opacity", 0);
 		});
+
+
+		// 
+		var line_drag_selection = d3.select('.diagram');
+		line_drag_selection.append("line").attr("class", 'line_drag_selection')
+	        .attr("stroke-width", 8)
+	        .style("stroke-dasharray", ("2, 2"))
+	        .attr("stroke","darkred")
+	        .call(d3.drag()
+	                .on("start", dragstarted)
+	                .on("drag", dragged)
+	                .on("end", dragended));
+		setLineDragPosition(0, 0, 0, 0);
+
+		function dragstarted(d) { dragging = last_mouseover; }
+		function dragended(d) {
+			if(last_mouseover && dragging.data.name !== last_mouseover.data.name) {
+				// make partners
+				var child = {"name": ptree.makeid(4), "sex": 'U',
+					     "mother": (dragging.data.sex === 'F' ? dragging.data.name : last_mouseover.data.name),
+				         "father": (dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name)};
+				newdataset = ptree.copy_dataset(opts.dataset);
+				opts.dataset = newdataset;
+				var idx = pedigree_util.getIdxByName(opts.dataset, node.name)+1;
+				opts.dataset.splice(idx, 0, child);
+				ptree.rebuild(opts);
+			}
+			setLineDragPosition(0, 0, 0, 0);
+			dragging = undefined;
+			return;
+		}
+		function dragged(d) {
+			var dx = d3.event.dx;
+            var dy = d3.event.dy;
+            var xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
+            //var ynew = parseFloat(d3.select(this).attr('y2'))+ dy;
+            setLineDragPosition(2, 0, xnew, 0);
+		}
+
 
 		// rectangle used to highlight on mouse over
 		node.append("rect")
@@ -2493,6 +2534,7 @@
 		
 		// other mouse events
 		var highlight = [];
+		
 		node.filter(function (d) { return !d.data.hidden; })
 		.on("click", function (d) {
 			if (d3.event.ctrlKey) {
@@ -2510,9 +2552,14 @@
 			}
      	})
 		.on("mouseover", function(d){
+			last_mouseover = d;
+			if(dragging) {
+				return;
+			}
 			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
 			d3.select(this).select('rect').style("opacity", 0.2);
 			d3.select(this).selectAll('.indi_details').style("opacity", 0);
+			setLineDragPosition(6, 0, -6, 0, d.x+","+(d.y+2));
 		})
 		.on("mouseout", function(d){
 			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
@@ -2522,8 +2569,21 @@
 			// hide popup if it looks like the mouse is moving north
 	        if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
 	        	d3.selectAll('.popup_selection').style("opacity", 0);
+	        if(!dragging) {
+	        	setLineDragPosition(0, 0, 0, 0);
+	        }
 		});
 	};
+	
+	function setLineDragPosition(x1, y1, x2, y2, translate) {
+		if(translate)
+			d3.selectAll('.line_drag_selection').attr("transform", "translate("+translate+")");
+		d3.selectAll('.line_drag_selection')
+	    	.attr("x1", x1)
+	    	.attr("y1", y1)
+	    	.attr("x2", x2)
+	        .attr("y2", y2);
+	}
 
     // if opt.edit is set true (rather than given a function) this is called to edit node attributes
     function openEditDialog(opts, d) {
