@@ -475,6 +475,15 @@
 
 		var nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 		var flattenNodes = nodes.descendants();
+
+		// check the number of visible nodes equals the size of the pedigree dataset
+		var vis_nodes = $.map(opts.dataset, function(p, i){return p.hidden ? null : p;});
+		if(vis_nodes.length != opts.dataset.length) {
+			var err = 'NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET';
+			console.error(err, vis_nodes.length, opts.dataset.length);
+			throw new Error(err);
+		}
+
 		pedigree_util.adjust_coords(opts, nodes, flattenNodes);
 
 		var ptrLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
@@ -958,7 +967,12 @@
 	ptree.rebuild = function(opts) {
 		$("#"+opts.targetDiv).empty();
 		pedcache.add(opts);
-		ptree.build(opts);
+		try {
+			ptree.build(opts);
+		} catch(e) {
+			console.error(e);
+		}
+
 		try {
 			templates.update(opts);
 		} catch(e) {
