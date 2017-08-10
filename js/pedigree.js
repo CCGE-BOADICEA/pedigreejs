@@ -1320,9 +1320,12 @@
 		// check if pedigree is split
 		var unconnected = ptree.unconnected(dataset);
 		if(unconnected.length > 0) {
-			console.error("individuals unconnected to pedigree ", unconnected);
-			if(!confirm("Deleting this will split the pedigree. Continue?"))
-				dataset = ptree.copy_dataset(opts.dataset);
+			// check & warn only if this is a new split
+			if(ptree.unconnected(opts.dataset).length == 0) {
+				console.error("individuals unconnected to pedigree ", unconnected);
+				if(!confirm("Deleting this will split the pedigree. Continue?"))
+					dataset = ptree.copy_dataset(opts.dataset);
+			}
 		}
 
 		return dataset;
