@@ -1282,8 +1282,9 @@
 					}
 				}
 			}
-		} else
+		} else {
 			dataset.splice(pedigree_util.getIdxByName(dataset, node.name), 1);
+		}
 
 		// delete ancestors
 		console.log(deletes);
@@ -1307,6 +1308,15 @@
 		}
 		// check integrity of mztwins settings
 		checkTwins(dataset);
+
+		// check if pedigree is split
+		var unconnected = ptree.unconnected(dataset);
+		if(unconnected.length > 0) {
+			console.error("individuals unconnected to pedigree ", unconnected);
+			if(!confirm("Deleting this will split the pedigree. Continue?"))
+				dataset = ptree.copy_dataset(opts.dataset);
+		}
+
 		return dataset;
 	};
 
