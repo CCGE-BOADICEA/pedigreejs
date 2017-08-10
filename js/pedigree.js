@@ -636,10 +636,10 @@
 
 		  				var parent_nodes = d.mother.data.parent_node;
 		  				var parent_node_name = parent_nodes[0];
-		  				for(var i=0; i<parent_nodes.length; i++) {
-		  					if(parent_nodes[i].father.name === d.father.data.name &&
-		  					   parent_nodes[i].mother.name === d.mother.data.name)
-		  						 parent_node_name = parent_nodes[i].name;
+		  				for(var ii=0; ii<parent_nodes.length; ii++) {
+		  					if(parent_nodes[ii].father.name === d.father.data.name &&
+		  					   parent_nodes[ii].mother.name === d.mother.data.name)
+		  						 parent_node_name = parent_nodes[ii].name;
 		  				}
 		  				var parent_node = pedigree_util.getNodeByName(flattenNodes, parent_node_name);
 						parent_node.y = dy1; // adjust hgt of parent node
