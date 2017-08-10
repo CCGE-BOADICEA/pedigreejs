@@ -283,7 +283,7 @@
 			d3.select(this).select('rect').style("opacity", 0.2);
 			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
 			d3.select(this).selectAll('.indi_details').style("opacity", 0);
-			setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size+2, 0, d.x+","+(d.y+2));
+			setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
 		})
 		.on("mouseout", function(d){
 			if(dragging)
