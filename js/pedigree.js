@@ -439,13 +439,18 @@
 		var xytransform = pedcache.getposition(opts);  // cached position
 		var xtransform = xytransform[0];
 		var ytransform = xytransform[1];
+		var zoom = 1;
+		if(xytransform.length == 3){
+			zoom = xytransform[2];
+		}
+
 		if(xtransform === null) {
 			xtransform = opts.symbol_size/2;
 			ytransform = (-opts.symbol_size*2.5);
 		}
 		var ped = svg.append("g")
 				 .attr("class", "diagram")
-	             .attr("transform", "translate("+xtransform+"," + ytransform + ")");
+	             .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+zoom+")");
 
 		var top_level = $.map(opts.dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
 		var hidden_root = {
@@ -753,7 +758,10 @@
 		function zoomFn() {
 			var t = d3.event.transform;
 			var pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
-			pedcache.setposition(opts, pos[0], pos[1]);
+			if(t.k == 1)
+				pedcache.setposition(opts, pos[0], pos[1]);
+			else
+				pedcache.setposition(opts, pos[0], pos[1], t.k);
 			ped.attr('transform', 'translate(' + pos[0] + ',' + pos[1] + ') scale(' + t.k + ')');
 		}
 		svg.call(zoom);
