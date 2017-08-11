@@ -828,13 +828,18 @@
 		var xytransform = pedcache.getposition(opts);  // cached position
 		var xtransform = xytransform[0];
 		var ytransform = xytransform[1];
+		var zoom = 1;
+		if(xytransform.length == 3){
+			zoom = xytransform[2];
+		}
+
 		if(xtransform === null) {
 			xtransform = opts.symbol_size/2;
 			ytransform = (-opts.symbol_size*2.5);
 		}
 		var ped = svg.append("g")
 				 .attr("class", "diagram")
-	             .attr("transform", "translate("+xtransform+"," + ytransform + ")");
+	             .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+zoom+")");
 
 		var top_level = $.map(opts.dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
 		var hidden_root = {
@@ -864,7 +869,7 @@
 
 		var nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 		var flattenNodes = nodes.descendants();
-		
+
 		// check the number of visible nodes equals the size of the pedigree dataset
 		var vis_nodes = $.map(opts.dataset, function(p, i){return p.hidden ? null : p;});
 		if(vis_nodes.length != opts.dataset.length) {
@@ -1025,10 +1030,10 @@
 
 		  				var parent_nodes = d.mother.data.parent_node;
 		  				var parent_node_name = parent_nodes[0];
-		  				for(var i=0; i<parent_nodes.length; i++) {
-		  					if(parent_nodes[i].father.name === d.father.data.name &&
-		  					   parent_nodes[i].mother.name === d.mother.data.name)
-		  						 parent_node_name = parent_nodes[i].name;
+		  				for(var ii=0; ii<parent_nodes.length; ii++) {
+		  					if(parent_nodes[ii].father.name === d.father.data.name &&
+		  					   parent_nodes[ii].mother.name === d.mother.data.name)
+		  						 parent_node_name = parent_nodes[ii].name;
 		  				}
 		  				var parent_node = pedigree_util.getNodeByName(flattenNodes, parent_node_name);
 						parent_node.y = dy1; // adjust hgt of parent node
@@ -1142,7 +1147,10 @@
 		function zoomFn() {
 			var t = d3.event.transform;
 			var pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
-			pedcache.setposition(opts, pos[0], pos[1]);
+			if(t.k == 1)
+				pedcache.setposition(opts, pos[0], pos[1]);
+			else
+				pedcache.setposition(opts, pos[0], pos[1], t.k);
 			ped.attr('transform', 'translate(' + pos[0] + ',' + pos[1] + ') scale(' + t.k + ')');
 		}
 		svg.call(zoom);
@@ -1671,8 +1679,9 @@
 					}
 				}
 			}
-		} else
+		} else {
 			dataset.splice(pedigree_util.getIdxByName(dataset, node.name), 1);
+		}
 
 		// delete ancestors
 		console.log(deletes);
@@ -1696,6 +1705,18 @@
 		}
 		// check integrity of mztwins settings
 		checkTwins(dataset);
+
+		// check if pedigree is split
+		var unconnected = ptree.unconnected(dataset);
+		if(unconnected.length > 0) {
+			// check & warn only if this is a new split
+			if(ptree.unconnected(opts.dataset).length == 0) {
+				console.error("individuals unconnected to pedigree ", unconnected);
+				if(!confirm("Deleting this will split the pedigree. Continue?"))
+					dataset = ptree.copy_dataset(opts.dataset);
+			}
+		}
+
 		return dataset;
 	};
 
@@ -2244,10 +2265,12 @@
 	};
 
 	// zoom - store translation coords
-	pedcache.setposition = function(opts, x, y) {
+	pedcache.setposition = function(opts, x, y, zoom) {
 		if(has_local_storage(opts)) {
 			localStorage.setItem(get_prefix(opts)+'_X', x);
 			localStorage.setItem(get_prefix(opts)+'_Y', y);
+			if(zoom)
+				localStorage.setItem(get_prefix(opts)+'_ZOOM', zoom);
 		} else {
 			//TODO
 		}
@@ -2256,8 +2279,11 @@
 	pedcache.getposition = function(opts) {
 		if(!has_local_storage(opts) || localStorage.getItem(get_prefix(opts)+'_X') === null)
 			return [null, null];
-		return [parseInt(localStorage.getItem(get_prefix(opts)+'_X')),
-				parseInt(localStorage.getItem(get_prefix(opts)+'_Y'))];
+		var pos = [parseInt(localStorage.getItem(get_prefix(opts)+'_X')),
+			   	   parseInt(localStorage.getItem(get_prefix(opts)+'_Y'))];
+		if(localStorage.getItem(get_prefix(opts)+'_ZOOM') !== null)
+			pos.push(parseFloat(localStorage.getItem(get_prefix(opts)+'_ZOOM')));
+		return pos;
 	};
 
 }(window.pedcache = window.pedcache || {}, jQuery));
@@ -2547,7 +2573,7 @@
 			d3.select(this).select('rect').style("opacity", 0.2);
 			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
 			d3.select(this).selectAll('.indi_details').style("opacity", 0);
-			setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size+2, 0, d.x+","+(d.y+2));
+			setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
 		})
 		.on("mouseout", function(d){
 			if(dragging)
