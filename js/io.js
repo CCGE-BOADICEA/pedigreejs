@@ -127,9 +127,14 @@
 
         var width = $(window).width()*2/3;
         var height = $(window).height()-40;
-        var cssFile = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css';
+        var cssFiles = [
+        	'/static/css/output.css',
+        	'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+        ];
         var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
-        var headContent = '<link href="'+cssFile+'" rel="stylesheet" type="text/css" media="all">';
+        var headContent = '';
+        for(var i=0; i<cssFiles.length; i++)
+        	headContent += '<link href="'+cssFiles[i]+'" rel="stylesheet" type="text/css" media="all">';
         headContent += "<style>body {font-size: " + $("body").css('font-size') + ";}</style>";
 
             /*var headContent2 = '';
@@ -148,7 +153,7 @@
             }*/
 
         html = "";
-        for(var i=0; i<el.length; i++) {
+        for(i=0; i<el.length; i++) {
         	html += $(el[i]).html();
         	if(i < el.length-1)
         		html += '<div style="page-break-before:always"> </div>';
