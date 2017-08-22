@@ -127,9 +127,14 @@
 
         var width = $(window).width()*2/3;
         var height = $(window).height()-40;
-        var cssFile = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css';
+        var cssFiles = [
+        	'/static/css/output.css',
+        	'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+        ];
         var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
-        var headContent = '<link href="'+cssFile+'" rel="stylesheet" type="text/css" media="all">';
+        var headContent = '';
+        for(var i=0; i<cssFiles.length; i++)
+        	headContent += '<link href="'+cssFiles[i]+'" rel="stylesheet" type="text/css" media="all">';
         headContent += "<style>body {font-size: " + $("body").css('font-size') + ";}</style>";
 
             /*var headContent2 = '';
@@ -148,7 +153,7 @@
             }*/
 
         html = "";
-        for(var i=0; i<el.length; i++) {
+        for(i=0; i<el.length; i++) {
         	html += $(el[i]).html();
         	if(i < el.length-1)
         		html += '<div style="page-break-before:always"> </div>';
@@ -976,8 +981,11 @@
 		warn.append("svg:title").text("incomplete");*/
 
 		var font_size = parseInt($("body").css('font-size'));
-		addLabel(opts, node, ".25em", -(0.3 * opts.symbol_size), -(0.2 * opts.symbol_size)+font_size,
-				function(d) {return 'age' in d.data ? d.data.age : '';});		
+		addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size), (opts.symbol_size-0.4*font_size),
+				function(d) {
+					var lab = d.data.yob ? d.data.yob : '';
+					return d.data.age ? d.data.age + 'y; ' + lab : lab;
+				}, 'indi_details');		
 
 		// individuals disease details
 		for(var i=0;i<opts.diseases.length; i++) {
@@ -985,11 +993,14 @@
 			addLabel(opts, node, ".25em", -(opts.symbol_size),
 					function(d) {
 						var y_offset = font_size*2;
+						if(d.data.age || d.data.yob)
+							y_offset += font_size-1;
+						
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
 							if(prefixInObj(opts.diseases[j].type, d.data))
-								y_offset += font_size;
+								y_offset += font_size-1;
 						}
 						return y_offset;
 					},
@@ -1140,7 +1151,7 @@
 		        .attr("marker-end", "url(#triangle)");
 		}
 		// drag and zoom
-		var zoom = d3.zoom()
+		zoom = d3.zoom()
 		  .scaleExtent([opts.zoomIn, opts.zoomOut])
 		  .on('zoom', zoomFn);
 
@@ -1174,8 +1185,8 @@
 	ptree.unconnected = function(dataset){
 		var target = dataset[ pedigree_util.getProbandIndex(dataset) ];
 		if(!target){
-			console.error("No target defined");
-			return [];
+			console.warn("No target defined");
+			target = dataset[0];
 		}
         var connected = [target.name];
         var change = true;
@@ -1710,13 +1721,12 @@
 		var unconnected = ptree.unconnected(dataset);
 		if(unconnected.length > 0) {
 			// check & warn only if this is a new split
-			if(ptree.unconnected(opts.dataset).length == 0) {
+			if(ptree.unconnected(opts.dataset).length === 0) {
 				console.error("individuals unconnected to pedigree ", unconnected);
 				if(!confirm("Deleting this will split the pedigree. Continue?"))
 					dataset = ptree.copy_dataset(opts.dataset);
 			}
 		}
-
 		return dataset;
 	};
 
@@ -1861,9 +1871,13 @@
     pedigree_form.save = function(opts) {
 		var dataset = pedcache.current(opts);
 		var name = $('#id_name').val();
-		$("#"+opts.targetDiv).empty();
 		var newdataset = ptree.copy_dataset(dataset);
 		var person = pedigree_util.getNodeByName(newdataset, name);
+		if(!person) {
+			console.warn('person not found when saving details');
+			return;
+		}
+		$("#"+opts.targetDiv).empty();
 
 		// individual's personal and clinical details
 		var yob = $('#id_yob_0').val();
@@ -2588,7 +2602,8 @@
 	        	d3.selectAll('.popup_selection').style("opacity", 0);
 	        if(!dragging) {
 	        	// hide popup if it looks like the mouse is moving north, south or west
-	        	if(Math.abs(d3.mouse(this)[1]) > 0.8*opts.symbol_size ||
+	        	if(Math.abs(d3.mouse(this)[1]) > 0.25*opts.symbol_size ||
+	        	   Math.abs(d3.mouse(this)[1]) < -0.25*opts.symbol_size ||
 	        	   d3.mouse(this)[0] < 0.2*opts.symbol_size){
 	        		setLineDragPosition(0, 0, 0, 0);
 	        	}
