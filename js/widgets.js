@@ -298,7 +298,8 @@
 	        	d3.selectAll('.popup_selection').style("opacity", 0);
 	        if(!dragging) {
 	        	// hide popup if it looks like the mouse is moving north, south or west
-	        	if(Math.abs(d3.mouse(this)[1]) > 0.8*opts.symbol_size ||
+	        	if(Math.abs(d3.mouse(this)[1]) > 0.25*opts.symbol_size ||
+	        	   Math.abs(d3.mouse(this)[1]) < -0.25*opts.symbol_size ||
 	        	   d3.mouse(this)[0] < 0.2*opts.symbol_size){
 	        		setLineDragPosition(0, 0, 0, 0);
 	        	}
