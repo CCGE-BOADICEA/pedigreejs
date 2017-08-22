@@ -587,8 +587,11 @@
 		warn.append("svg:title").text("incomplete");*/
 
 		var font_size = parseInt($("body").css('font-size'));
-		addLabel(opts, node, ".25em", -(0.3 * opts.symbol_size), -(0.2 * opts.symbol_size)+font_size,
-				function(d) {return 'age' in d.data ? d.data.age : '';});		
+		addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size), (opts.symbol_size-0.4*font_size),
+				function(d) {
+					var lab = d.data.yob ? d.data.yob : '';
+					return d.data.age ? d.data.age + 'y; ' + lab : lab;
+				}, 'indi_details');		
 
 		// individuals disease details
 		for(var i=0;i<opts.diseases.length; i++) {
@@ -596,11 +599,14 @@
 			addLabel(opts, node, ".25em", -(opts.symbol_size),
 					function(d) {
 						var y_offset = font_size*2;
+						if(d.data.age || d.data.yob)
+							y_offset += font_size-1;
+						
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
 							if(prefixInObj(opts.diseases[j].type, d.data))
-								y_offset += font_size;
+								y_offset += font_size-1;
 						}
 						return y_offset;
 					},
@@ -751,7 +757,7 @@
 		        .attr("marker-end", "url(#triangle)");
 		}
 		// drag and zoom
-		var zoom = d3.zoom()
+		zoom = d3.zoom()
 		  .scaleExtent([opts.zoomIn, opts.zoomOut])
 		  .on('zoom', zoomFn);
 
@@ -785,8 +791,8 @@
 	ptree.unconnected = function(dataset){
 		var target = dataset[ pedigree_util.getProbandIndex(dataset) ];
 		if(!target){
-			console.error("No target defined");
-			return [];
+			console.warn("No target defined");
+			target = dataset[0];
 		}
         var connected = [target.name];
         var change = true;
@@ -1321,13 +1327,12 @@
 		var unconnected = ptree.unconnected(dataset);
 		if(unconnected.length > 0) {
 			// check & warn only if this is a new split
-			if(ptree.unconnected(opts.dataset).length == 0) {
+			if(ptree.unconnected(opts.dataset).length === 0) {
 				console.error("individuals unconnected to pedigree ", unconnected);
 				if(!confirm("Deleting this will split the pedigree. Continue?"))
 					dataset = ptree.copy_dataset(opts.dataset);
 			}
 		}
-
 		return dataset;
 	};
 
