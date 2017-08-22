@@ -1032,12 +1032,12 @@
 		  			var path = "";
 		  			if(clash) {
 		  				if(d.mother.depth in clash_depth)
-		  					clash_depth[d.mother.depth] += 5;
+		  					clash_depth[d.mother.depth] += 4;
 		  				else
-		  					clash_depth[d.mother.depth] = 5;
+		  					clash_depth[d.mother.depth] = 4;
 
 		  				dy1 -= clash_depth[d.mother.depth];
-		  				var dx = clash_depth[d.mother.depth] + opts.symbol_size/2;
+		  				var dx = clash_depth[d.mother.depth] + opts.symbol_size/2 + 2;
 
 		  				var parent_nodes = d.mother.data.parent_node;
 		  				var parent_node_name = parent_nodes[0];
