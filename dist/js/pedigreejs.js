@@ -908,11 +908,12 @@
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
 			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}))
 			.style("stroke", function (d) {
-				return d.data.age && d.data.yob ? "#303030" : "grey";
+				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 			})
 			.style("stroke-width", function (d) {
-				return d.data.age && d.data.yob ? ".3em" : ".1em";
+				return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
 			})
+			.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
 			.style("fill", "none");
 
 		// set a clippath
@@ -938,7 +939,8 @@
 			   if(ncancers === 0) cancers = [1];
 			   return [$.map(cancers, function(val, i){ 
 				   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
-					   	   'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden};})];
+					   	   'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
+					   	   'exclude': d.data.exclude};})];
 		   })
 		   .enter()
 		    .append("g");
@@ -950,6 +952,8 @@
 			    .attr("class", "pienode")
 			    .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
 			    .style("fill", function(d, i) {
+			    	if(d.data.exclude)
+			    		return 'lightgrey';
 			    	if(d.data.ncancers === 0)
 				    	return opts.node_background;
 			    	return opts.diseases[i].colour; 
@@ -1469,7 +1473,7 @@
 		d2.mztwin = d1.mztwin;
 		if(d1.yob)
 			d2.yob = d1.yob;
-		if(d1.age && (d1.status === 0 || !d1.status))
+		if(d1.age && (d1.status == 0 || !d1.status))
 			d2.age = d1.age;
 		return true;
 	}
@@ -1499,7 +1503,7 @@
 				d2.sex = d1.sex;
 				if(d1.yob)
 					d2.yob = d1.yob;
-				if(d1.age && (d1.status === 0 || !d1.status))
+				if(d1.age && (d1.status == 0 || !d1.status))
 					d2.age = d1.age;
 			}
 		}
