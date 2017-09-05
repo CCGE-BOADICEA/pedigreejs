@@ -208,14 +208,17 @@
 		$("#load")[0].value = ''; // reset value
 	};
 
-	// http://www.jurgott.org/linkage/LinkageHandbook.pdf
-	// standard pre-makeped LINKAGE file format
-	// Column 1 : Pedigree identifier The identifier can be a number or a character string
-	// Column 2 : Individual's ID The identifier can be a number or a character string
-	// Column 3 : The individual's father If the person is a founder, just put a 0 in each column
-	// Column 4 : The individual's mother If the person is a founder, just put a 0 in each column
-	// Column 5 : Sex (gender) ( 1 = Male, 2 = Female )
-	// Column 6+: Genetic data (Disease and Marker Phenotypes)
+	// 
+	// https://www.cog-genomics.org/plink/1.9/formats#ped
+	// https://www.cog-genomics.org/plink/1.9/formats#fam
+	//	1. Family ID ('FID')
+	//	2. Within-family ID ('IID'; cannot be '0')
+	//	3. Within-family ID of father ('0' if father isn't in dataset)
+	//	4. Within-family ID of mother ('0' if mother isn't in dataset)
+	//	5. Sex code ('1' = male, '2' = female, '0' = unknown)
+	//	6. Phenotype value ('1' = control, '2' = case, '-9'/'0'/non-numeric = missing data if case/control)
+	//  7. Genotypes (column 7 onwards);
+	//     columns 7 & 8 are allele calls for first variant ('0' = no call); colummns 9 & 10 are calls for second variant etc.
 	io.readLinkage = function(boadicea_lines) {
 		var lines = boadicea_lines.trim().split('\n');
 		var ped = [];
@@ -224,12 +227,12 @@
 		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
 		   if(attr.length < 5)
 			   throw('unknown format');
-			   
+		   var sex = (attr[4] == '1' ? 'M' : (attr[4] == '2' ? 'F' : 'U'));
 		   var indi = {
 				'famid': attr[0],
 				'display_name': attr[1],
 				'name':	attr[1],
-				'sex': attr[4] == '1' ? 'M' : 'F' 
+				'sex': sex 
 			};
 			if(attr[2] !== "0") indi.father = attr[2];
 			if(attr[3] !== "0") indi.mother = attr[3];
@@ -238,6 +241,15 @@
 				console.error('multiple family IDs found only using famid = '+famid);
 				break;
 			}
+			if(attr[5] == "2") indi.affected = 2;
+			// add genotype columns
+			if(attr.length > 6) {
+				indi.alleles = "";
+				for(var j=6; j<attr.length; j+=2) {
+					indi.alleles += attr[j] + "/" + attr[j+1] + ";";
+				}
+			}
+			
 			ped.unshift(indi);
 			famid = attr[0];
 		}
