@@ -367,6 +367,10 @@
 	        .attr("y2", y2);
 	}
 
+	function capitaliseFirstLetter(string) {
+	    return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+	
     // if opt.edit is set true (rather than given a function) this is called to edit node attributes
     function openEditDialog(opts, d) {
 		$('#node_properties').dialog({
@@ -376,10 +380,13 @@
 		});
 
 		var table = "<table id='person_details' class='table'>";
-		table += "<tr><td style='text-align:right'>name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
+
+		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
+		(d.data.name ? d.data.name : "")+"></td></tr>";
+		table += "<tr><td style='text-align:right'>Name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
-		table += "<tr><td style='text-align:right'>age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:5em' value="+
+		table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:5em' value="+
 				(d.data.age ? d.data.age : "")+"></td></tr>";
 
 		table += '<tr><td colspan="2" id="id_sex">' +
@@ -390,12 +397,12 @@
 
 		// alive status = 0; dead status = 1
 		table += '<tr><td colspan="2" id="id_status">' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status === 0 ? "checked" : "")+'>Alive</label>' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>Deceased</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
 				 '</td></tr>';
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 		
-		var exclude = ["children", "parent_node", "top_level", "id", "age", "sex", "status", "display_name", "mother", "father"];
+		var exclude = ["children", "name", "parent_node", "top_level", "id", "level", "age", "sex", "status", "display_name", "mother", "father"];
 		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
 			exclude.push(v.type+"_diagnosis_age");
@@ -403,20 +410,23 @@
 			var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>';
 			var diagnosis_age = d.data[v.type + "_diagnosis_age"];
 
-			table += "<tr><td style='text-align:right'>"+v.type.replace("_", " ")+disease_colour+"&nbsp;</td><td>" +
-			         "<input class='form-control' id='id_" + 
-			          v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
-			          v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
-			          (diagnosis_age !== undefined ? diagnosis_age : "") +"'></td></tr>";
+			table += "<tr><td style='text-align:right'>"+capitaliseFirstLetter(v.type.replace("_", " "))+
+						disease_colour+"&nbsp;</td><td>" +
+						"<input class='form-control' id='id_" + 
+						v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
+						v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
+						(diagnosis_age !== undefined ? diagnosis_age : "") +"'></td></tr>";
 		});
 
+		table += '<tr><td colspan="2" style="line-height:1px;"></td></tr>';
 		$.each(d.data, function(k, v) {
 			if($.inArray(k, exclude) == -1) {
+				var kk = capitaliseFirstLetter(k);
 				if(v === true || v === false) {
-					table += "<tr><td>"+k+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
+					table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
 							k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
 				} else if(k.length > 0){
-					table += "<tr><td>"+k+"&nbsp;</td><td><input type='text' id='id_" +
+					table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='text' id='id_" +
 							k+"' name='"+k+"' value="+v+"></td></tr>";
 				}
 			}
@@ -426,7 +436,7 @@
 		$('#node_properties').html(table);
 		$('#node_properties').dialog('open');
 
-		$('#id_name').closest('tr').toggle();
+		//$('#id_name').closest('tr').toggle();
 		$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function() {
 	    	pedigree_form.save(opts);
 	    });
