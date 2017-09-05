@@ -402,6 +402,7 @@
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+			labels: ['alleles'],
 			background: "#EEE",
 			node_background: '#fdfdfd',
         	DEBUG: false}, options );
@@ -546,6 +547,7 @@
 			   return [$.map(cancers, function(val, i){ 
 				   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
 					   	   'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
+					   	   'affected': d.data.affected,
 					   	   'exclude': d.data.exclude};})];
 		   })
 		   .enter()
@@ -560,8 +562,11 @@
 			    .style("fill", function(d, i) {
 			    	if(d.data.exclude)
 			    		return 'lightgrey';
-			    	if(d.data.ncancers === 0)
+			    	if(d.data.ncancers === 0) {
+			    		if(d.data.affected)
+			    			return 'darkgrey';
 				    	return opts.node_background;
+			    	}
 			    	return opts.diseases[i].colour; 
 			    });
 
@@ -593,19 +598,44 @@
 		var font_size = parseInt($("body").css('font-size'));
 		addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size), (opts.symbol_size-0.4*font_size),
 				function(d) {
+					if(d.data.age || d.data.yob)
+						d.y_offset = font_size-1;
+					else 
+						d.y_offset = 0;
 					var lab = d.data.yob ? d.data.yob : '';
 					return d.data.age ? d.data.age + 'y; ' + lab : lab;
-				}, 'indi_details');		
+				}, 'indi_details');	
+		
+		// display label defined in opts.labels e.g. alleles/genotype data
+		for(var ilab=0; ilab<opts.labels.length; ilab++) {
+			var label = opts.labels[ilab];
+			addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size),
+				function(d) {
+					var y_offset = (ilab === 0 ? font_size*2 + d.y_offset : d.y_offset+font_size-1 );
+					d.y_offset = y_offset;
+					return y_offset;
+				},
+				function(d) {
+					if(d.data[label]) {
+						if(label === 'alleles') {
+							var alleles = "";
+							var vars = d.data.alleles.split(';');
+							for(var ivar = 0;ivar < vars.length;ivar++) {
+								if(vars[ivar] !== "") alleles += vars[ivar] + ';';
+							}
+							return alleles;	
+						}
+						return d.data[label];				
+				}
+			}, 'indi_details');
+		}
 
 		// individuals disease details
 		for(var i=0;i<opts.diseases.length; i++) {
 			var disease = opts.diseases[i].type;
 			addLabel(opts, node, ".25em", -(opts.symbol_size),
 					function(d) {
-						var y_offset = font_size*2;
-						if(d.data.age || d.data.yob)
-							y_offset += font_size-1;
-						
+						var y_offset = d.y_offset + font_size-1;
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
