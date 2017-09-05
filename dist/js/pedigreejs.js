@@ -208,14 +208,17 @@
 		$("#load")[0].value = ''; // reset value
 	};
 
-	// http://www.jurgott.org/linkage/LinkageHandbook.pdf
-	// standard pre-makeped LINKAGE file format
-	// Column 1 : Pedigree identifier The identifier can be a number or a character string
-	// Column 2 : Individual's ID The identifier can be a number or a character string
-	// Column 3 : The individual's father If the person is a founder, just put a 0 in each column
-	// Column 4 : The individual's mother If the person is a founder, just put a 0 in each column
-	// Column 5 : Sex (gender) ( 1 = Male, 2 = Female )
-	// Column 6+: Genetic data (Disease and Marker Phenotypes)
+	// 
+	// https://www.cog-genomics.org/plink/1.9/formats#ped
+	// https://www.cog-genomics.org/plink/1.9/formats#fam
+	//	1. Family ID ('FID')
+	//	2. Within-family ID ('IID'; cannot be '0')
+	//	3. Within-family ID of father ('0' if father isn't in dataset)
+	//	4. Within-family ID of mother ('0' if mother isn't in dataset)
+	//	5. Sex code ('1' = male, '2' = female, '0' = unknown)
+	//	6. Phenotype value ('1' = control, '2' = case, '-9'/'0'/non-numeric = missing data if case/control)
+	//  7. Genotypes (column 7 onwards);
+	//     columns 7 & 8 are allele calls for first variant ('0' = no call); colummns 9 & 10 are calls for second variant etc.
 	io.readLinkage = function(boadicea_lines) {
 		var lines = boadicea_lines.trim().split('\n');
 		var ped = [];
@@ -224,12 +227,12 @@
 		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
 		   if(attr.length < 5)
 			   throw('unknown format');
-			   
+		   var sex = (attr[4] == '1' ? 'M' : (attr[4] == '2' ? 'F' : 'U'));
 		   var indi = {
 				'famid': attr[0],
 				'display_name': attr[1],
 				'name':	attr[1],
-				'sex': attr[4] == '1' ? 'M' : 'F' 
+				'sex': sex 
 			};
 			if(attr[2] !== "0") indi.father = attr[2];
 			if(attr[3] !== "0") indi.mother = attr[3];
@@ -238,6 +241,15 @@
 				console.error('multiple family IDs found only using famid = '+famid);
 				break;
 			}
+			if(attr[5] == "2") indi.affected = 2;
+			// add genotype columns
+			if(attr.length > 6) {
+				indi.alleles = "";
+				for(var j=6; j<attr.length; j+=2) {
+					indi.alleles += attr[j] + "/" + attr[j+1] + ";";
+				}
+			}
+			
 			ped.unshift(indi);
 			famid = attr[0];
 		}
@@ -796,6 +808,7 @@
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+			labels: ['alleles'],
 			background: "#EEE",
 			node_background: '#fdfdfd',
         	DEBUG: false}, options );
@@ -940,6 +953,7 @@
 			   return [$.map(cancers, function(val, i){ 
 				   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
 					   	   'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
+					   	   'affected': d.data.affected,
 					   	   'exclude': d.data.exclude};})];
 		   })
 		   .enter()
@@ -954,8 +968,11 @@
 			    .style("fill", function(d, i) {
 			    	if(d.data.exclude)
 			    		return 'lightgrey';
-			    	if(d.data.ncancers === 0)
+			    	if(d.data.ncancers === 0) {
+			    		if(d.data.affected)
+			    			return 'darkgrey';
 				    	return opts.node_background;
+			    	}
 			    	return opts.diseases[i].colour; 
 			    });
 
@@ -987,19 +1004,44 @@
 		var font_size = parseInt($("body").css('font-size'));
 		addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size), (opts.symbol_size-0.4*font_size),
 				function(d) {
+					if(d.data.age || d.data.yob)
+						d.y_offset = font_size-1;
+					else 
+						d.y_offset = 0;
 					var lab = d.data.yob ? d.data.yob : '';
 					return d.data.age ? d.data.age + 'y; ' + lab : lab;
-				}, 'indi_details');		
+				}, 'indi_details');	
+		
+		// display label defined in opts.labels e.g. alleles/genotype data
+		for(var ilab=0; ilab<opts.labels.length; ilab++) {
+			var label = opts.labels[ilab];
+			addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size),
+				function(d) {
+					var y_offset = (ilab === 0 ? font_size*2 + d.y_offset : d.y_offset+font_size-1 );
+					d.y_offset = y_offset;
+					return y_offset;
+				},
+				function(d) {
+					if(d.data[label]) {
+						if(label === 'alleles') {
+							var alleles = "";
+							var vars = d.data.alleles.split(';');
+							for(var ivar = 0;ivar < vars.length;ivar++) {
+								if(vars[ivar] !== "") alleles += vars[ivar] + ';';
+							}
+							return alleles;	
+						}
+						return d.data[label];				
+				}
+			}, 'indi_details');
+		}
 
 		// individuals disease details
 		for(var i=0;i<opts.diseases.length; i++) {
 			var disease = opts.diseases[i].type;
 			addLabel(opts, node, ".25em", -(opts.symbol_size),
 					function(d) {
-						var y_offset = font_size*2;
-						if(d.data.age || d.data.yob)
-							y_offset += font_size-1;
-						
+						var y_offset = d.y_offset + font_size-1;
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
