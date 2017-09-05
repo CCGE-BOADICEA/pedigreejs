@@ -141,10 +141,13 @@
 			structure. So that at each step of the pedigree building process it can be undone to return
 			to previous versions.
 			</p>
-			<p>
-			Other example pages are given <a href="dist/example.html">here</a>, <a href="dist/example2.html">here</a>
-			and <a href="dist/example3.html">here</a>.
-			</p>
+			<p>Other example pages are given:</p>
+			<ul>
+				<li><a href="dist/example.html">diabetes</a></li>
+				<li><a href="dist/example2.html">change background and node colours</a></li>
+				<li><a href="dist/example3.html">change text and node size</a></li>
+				<li><a href="dist/example4.html">PED file example with genotype data</a></li>
+			</ul>
 		</div>
 	</div>
 
@@ -200,6 +203,7 @@
 			{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 			{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 			{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+		labels: ['age', 'yob'],
 		'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
 	};
 	var local_dataset = pedcache.current(opts);
@@ -228,6 +232,10 @@
   {"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer":  true, "proband": true}]</pre>
     	</div>
     </div>
+	<div class="row">
+		<div class="col-md-2 text-right"><strong>labels</strong></div>
+		<div class="col-md-10">Array of attributes to display, <i>e.g.</i> labels: ['age', 'yob', 'alleles'].</div>
+	</div>
 	<div class="row">
 		<div class="col-md-2 text-right"><strong>width</strong></div>
 		<div class="col-md-10">Width of the SVG element, <i>e.g.</i> 600.</div>
