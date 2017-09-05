@@ -808,7 +808,7 @@
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
-			labels: ['alleles'],
+			labels: ['age', 'yob', 'alleles'],
 			background: "#EEE",
 			node_background: '#fdfdfd',
         	DEBUG: false}, options );
@@ -1002,24 +1002,15 @@
 		warn.append("svg:title").text("incomplete");*/
 
 		var font_size = parseInt($("body").css('font-size'));
-		addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size), (opts.symbol_size-0.4*font_size),
-				function(d) {
-					if(d.data.age || d.data.yob)
-						d.y_offset = font_size-1;
-					else 
-						d.y_offset = 0;
-					var lab = d.data.yob ? d.data.yob : '';
-					return d.data.age ? d.data.age + 'y; ' + lab : lab;
-				}, 'indi_details');	
-		
 		// display label defined in opts.labels e.g. alleles/genotype data
 		for(var ilab=0; ilab<opts.labels.length; ilab++) {
 			var label = opts.labels[ilab];
 			addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size),
 				function(d) {
-					var y_offset = (ilab === 0 ? font_size*2 + d.y_offset : d.y_offset+font_size-1 );
-					d.y_offset = y_offset;
-					return y_offset;
+					if(!d.data[label])
+						return;
+					d.y_offset = (ilab === 0 ? font_size*2 : d.y_offset+font_size-1);
+					return d.y_offset;
 				},
 				function(d) {
 					if(d.data[label]) {
@@ -1030,6 +1021,8 @@
 								if(vars[ivar] !== "") alleles += vars[ivar] + ';';
 							}
 							return alleles;	
+						} else if(label === 'age') {
+							return d.data[label] +'y';
 						}
 						return d.data[label];				
 				}
@@ -1041,7 +1034,7 @@
 			var disease = opts.diseases[i].type;
 			addLabel(opts, node, ".25em", -(opts.symbol_size),
 					function(d) {
-						var y_offset = d.y_offset + font_size-1;
+						var y_offset = (d.y_offset ? d.y_offset+font_size-1: font_size*2);
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
