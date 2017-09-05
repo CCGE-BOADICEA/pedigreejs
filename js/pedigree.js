@@ -603,7 +603,7 @@
 				function(d) {
 					if(!d.data[label])
 						return;
-					d.y_offset = (ilab === 0 ? font_size*2 : d.y_offset+font_size-1);
+					d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2 : d.y_offset+font_size-1);
 					return d.y_offset;
 				},
 				function(d) {
