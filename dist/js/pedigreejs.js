@@ -809,6 +809,9 @@
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
 			labels: ['age', 'yob', 'alleles'],
+			font_size: '.75em',
+			font_family: 'Helvetica',
+			font_weight: 700,
 			background: "#EEE",
 			node_background: '#fdfdfd',
         	DEBUG: false}, options );
@@ -986,7 +989,7 @@
 		    .attr("y2", function(d, i) {return -0.6*opts.symbol_size;});
 
 		// names of individuals
-		addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size),
+		addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
 				function(d) {
 					if(opts.DEBUG)
 						return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
@@ -1001,7 +1004,7 @@
 		.html("\uf071");
 		warn.append("svg:title").text("incomplete");*/
 
-		var font_size = parseInt($("body").css('font-size'));
+		var font_size = parseInt(getPx(opts.font_size)) + 4;
 		// display label defined in opts.labels e.g. alleles/genotype data
 		for(var ilab=0; ilab<opts.labels.length; ilab++) {
 			var label = opts.labels[ilab];
@@ -1009,7 +1012,7 @@
 				function(d) {
 					if(!d.data[label])
 						return;
-					d.y_offset = (ilab === 0 ? font_size*2 : d.y_offset+font_size-1);
+					d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2.25 : d.y_offset+font_size);
 					return d.y_offset;
 				},
 				function(d) {
@@ -1034,7 +1037,7 @@
 			var disease = opts.diseases[i].type;
 			addLabel(opts, node, ".25em", -(opts.symbol_size),
 					function(d) {
-						var y_offset = (d.y_offset ? d.y_offset+font_size-1: font_size*2);
+						var y_offset = (d.y_offset ? d.y_offset+font_size: font_size*2.2);
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
@@ -1396,18 +1399,34 @@
         	newdataset.unshift(top_level[i-1]);
         return newdataset;
 	}
+	
+	// get height in pixels
+	function getPx(emVal){
+		if (emVal === parseInt(emVal, 10)) // test if integer
+			return emVal;
+
+		if(emVal.endsWith("px"))
+			return emVal.replace('px', '');
+		else if(!emVal.endsWith("em"))
+			return emVal;
+		var adiv = $('<div style="display: none; font-size: '+emVal+'; margin: 0; padding:0; height: auto; line-height: 1; border:0;">&nbsp;</div>').appendTo('body');
+		var hgt = adiv.height();
+		adiv.remove();
+		return hgt;
+	};
 
 	// Add label
 	function addLabel(opts, node, size, fx, fy, ftext, class_label) {
 		node.filter(function (d) {
     		return d.data.hidden && !opts.DEBUG ? false : true;
 		}).append("text")
-		.attr("class", class_label + ' label' || "label")
+		.attr("class", class_label + ' ped_label' || "ped_label")
 		.attr("x", fx)
 		.attr("y", fy)
-		.attr("dy", size)
-		.attr("font-family", 'Helvetica')
-		.attr("font-size", '12px')
+		//.attr("dy", size)
+		.attr("font-family", opts.font_family)
+		.attr("font-size", opts.font_size)
+		.attr("font-weight", opts.font_weight)
 		.text(ftext);	
     }
 
@@ -2710,6 +2729,10 @@
 	        .attr("y2", y2);
 	}
 
+	function capitaliseFirstLetter(string) {
+	    return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+	
     // if opt.edit is set true (rather than given a function) this is called to edit node attributes
     function openEditDialog(opts, d) {
 		$('#node_properties').dialog({
@@ -2719,10 +2742,13 @@
 		});
 
 		var table = "<table id='person_details' class='table'>";
-		table += "<tr><td style='text-align:right'>name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
+
+		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
+		(d.data.name ? d.data.name : "")+"></td></tr>";
+		table += "<tr><td style='text-align:right'>Name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
-		table += "<tr><td style='text-align:right'>age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:5em' value="+
+		table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:5em' value="+
 				(d.data.age ? d.data.age : "")+"></td></tr>";
 
 		table += '<tr><td colspan="2" id="id_sex">' +
@@ -2733,12 +2759,12 @@
 
 		// alive status = 0; dead status = 1
 		table += '<tr><td colspan="2" id="id_status">' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status === 0 ? "checked" : "")+'>Alive</label>' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>Deceased</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
 				 '</td></tr>';
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 		
-		var exclude = ["children", "parent_node", "top_level", "id", "age", "sex", "status", "display_name", "mother", "father"];
+		var exclude = ["children", "name", "parent_node", "top_level", "id", "level", "age", "sex", "status", "display_name", "mother", "father"];
 		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
 			exclude.push(v.type+"_diagnosis_age");
@@ -2746,20 +2772,23 @@
 			var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>';
 			var diagnosis_age = d.data[v.type + "_diagnosis_age"];
 
-			table += "<tr><td style='text-align:right'>"+v.type.replace("_", " ")+disease_colour+"&nbsp;</td><td>" +
-			         "<input class='form-control' id='id_" + 
-			          v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
-			          v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
-			          (diagnosis_age !== undefined ? diagnosis_age : "") +"'></td></tr>";
+			table += "<tr><td style='text-align:right'>"+capitaliseFirstLetter(v.type.replace("_", " "))+
+						disease_colour+"&nbsp;</td><td>" +
+						"<input class='form-control' id='id_" + 
+						v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
+						v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
+						(diagnosis_age !== undefined ? diagnosis_age : "") +"'></td></tr>";
 		});
 
+		table += '<tr><td colspan="2" style="line-height:1px;"></td></tr>';
 		$.each(d.data, function(k, v) {
 			if($.inArray(k, exclude) == -1) {
+				var kk = capitaliseFirstLetter(k);
 				if(v === true || v === false) {
-					table += "<tr><td>"+k+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
+					table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
 							k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
 				} else if(k.length > 0){
-					table += "<tr><td>"+k+"&nbsp;</td><td><input type='text' id='id_" +
+					table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='text' id='id_" +
 							k+"' name='"+k+"' value="+v+"></td></tr>";
 				}
 			}
@@ -2769,7 +2798,7 @@
 		$('#node_properties').html(table);
 		$('#node_properties').dialog('open');
 
-		$('#id_name').closest('tr').toggle();
+		//$('#id_name').closest('tr').toggle();
 		$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function() {
 	    	pedigree_form.save(opts);
 	    });
