@@ -40,7 +40,7 @@
 			'targetDiv': 'pedigrees',
 			'btn_target': 'diabetes2_history',
 			'width': svg_width,
-			'height': 500,
+			'height': 400,
 			'symbol_size': 35,
 			'edit': true,
 			'diseases': [
@@ -61,6 +61,7 @@
 </head>
 <body>
 
+<br>
 <div class="text-center">
 	<label class="btn btn-default btn-file">
 		<input id="load" type="file" style="display: none;"/>Load
@@ -77,6 +78,20 @@
 	<div id='diabetes2_history'></div>
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
+</div>
+
+<div class="container">
+<br>
+<p>The example displayed is of a loaded <a href="https://www.cog-genomics.org/plink/1.9/formats#ped">PED file</a>.</p>
+<pre style="overflow: auto;word-wrap: normal;">
+fam1 1 6 7 2 2 0 1 0 0
+fam1 2 4 5 1 1 0 0 0 0
+fam1 3 2 1 2 1 0 0 0 1
+fam1 4 0 0 1 1 0 0 0 0
+fam1 5 0 0 2 2 0 0 0 1
+fam1 6 0 0 1 1 0 0 0 0
+fam1 7 0 0 2 2 0 1 0 1
+</pre>
 </div>
 
 </body>

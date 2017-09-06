@@ -44,6 +44,7 @@
 			],
 			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
 		};
+		$('#opts').append(JSON.stringify(opts, null, 4));
 		var local_dataset = pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
@@ -56,6 +57,7 @@
 </head>
 <body>
 
+<br>
 <div class="text-center">
 	<label class="btn btn-default btn-file">
 		<input id="load" type="file" style="display: none;"/>Load
@@ -72,6 +74,12 @@
 	<div id='diabetes_history'></div>
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
+</div>
+
+<div class="container">
+<br>
+<p>This is an example of defining diabetes as the disease. These are the options used:</p>
+<pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
 </div>
 
 </body>
