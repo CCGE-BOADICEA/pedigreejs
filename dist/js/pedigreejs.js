@@ -1405,7 +1405,7 @@
 		if (emVal === parseInt(emVal, 10)) // test if integer
 			return emVal;
 
-		if(emVal.endsWith("px"))
+		if(emVal.indexOf("px")>-1)
 			return emVal.replace('px', '');
 		else if(!emVal.endsWith("em"))
 			return emVal;
