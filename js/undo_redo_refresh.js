@@ -270,10 +270,12 @@
 	};
 
 	// zoom - store translation coords
-	pedcache.setposition = function(opts, x, y) {
+	pedcache.setposition = function(opts, x, y, zoom) {
 		if(has_local_storage(opts)) {
 			localStorage.setItem(get_prefix(opts)+'_X', x);
 			localStorage.setItem(get_prefix(opts)+'_Y', y);
+			if(zoom)
+				localStorage.setItem(get_prefix(opts)+'_ZOOM', zoom);
 		} else {
 			//TODO
 		}
@@ -282,8 +284,11 @@
 	pedcache.getposition = function(opts) {
 		if(!has_local_storage(opts) || localStorage.getItem(get_prefix(opts)+'_X') === null)
 			return [null, null];
-		return [parseInt(localStorage.getItem(get_prefix(opts)+'_X')),
-				parseInt(localStorage.getItem(get_prefix(opts)+'_Y'))];
+		var pos = [parseInt(localStorage.getItem(get_prefix(opts)+'_X')),
+			   	   parseInt(localStorage.getItem(get_prefix(opts)+'_Y'))];
+		if(localStorage.getItem(get_prefix(opts)+'_ZOOM') !== null)
+			pos.push(parseFloat(localStorage.getItem(get_prefix(opts)+'_ZOOM')));
+		return pos;
 	};
 
 }(window.pedcache = window.pedcache || {}, jQuery));

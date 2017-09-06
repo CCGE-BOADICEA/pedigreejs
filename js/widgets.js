@@ -20,6 +20,8 @@
     	  return [matrix.e, matrix.f];
     	}
     
+	var dragging;
+	var last_mouseover;
 	//
 	// Add widgets to nodes and bind events
     widgets.addWidgets = function(opts, node) {
@@ -126,6 +128,10 @@
 				add_person.node.select('rect').style("opacity", 0);
 			d3.selectAll('.popup_selection').style("opacity", 0);
 		});
+
+
+		// drag line between nodes to create partners 
+		drag_handle(opts);
 
 		// rectangle used to highlight on mouse over
 		node.append("rect")
@@ -247,6 +253,7 @@
 		
 		// other mouse events
 		var highlight = [];
+		
 		node.filter(function (d) { return !d.data.hidden; })
 		.on("click", function (d) {
 			if (d3.event.ctrlKey) {
@@ -264,11 +271,24 @@
 			}
      	})
 		.on("mouseover", function(d){
-			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
+			d3.event.stopPropagation();
+			last_mouseover = d;
+			if(dragging) {
+				if(dragging.data.name !== last_mouseover.data.name &&
+				   dragging.data.sex !== last_mouseover.data.sex) {
+					d3.select(this).select('rect').style("opacity", 0.2);
+				}
+				return;
+			}
 			d3.select(this).select('rect').style("opacity", 0.2);
+			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
 			d3.select(this).selectAll('.indi_details').style("opacity", 0);
+			setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
 		})
 		.on("mouseout", function(d){
+			if(dragging)
+				return;
+
 			d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
 			if(highlight.indexOf(d) == -1)
 				d3.select(this).select('rect').style("opacity", 0);
@@ -276,9 +296,81 @@
 			// hide popup if it looks like the mouse is moving north
 	        if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
 	        	d3.selectAll('.popup_selection').style("opacity", 0);
+	        if(!dragging) {
+	        	// hide popup if it looks like the mouse is moving north, south or west
+	        	if(Math.abs(d3.mouse(this)[1]) > 0.25*opts.symbol_size ||
+	        	   Math.abs(d3.mouse(this)[1]) < -0.25*opts.symbol_size ||
+	        	   d3.mouse(this)[0] < 0.2*opts.symbol_size){
+	        		setLineDragPosition(0, 0, 0, 0);
+	        	}
+	        }
 		});
 	};
 
+	// drag line between nodes to create partners 
+	function drag_handle(opts) {
+		var line_drag_selection = d3.select('.diagram');
+		line_drag_selection.append("line").attr("class", 'line_drag_selection')
+	        .attr("stroke-width", 6)
+	        .style("stroke-dasharray", ("2, 1"))
+	        .attr("stroke","black")
+	        .call(d3.drag()
+	                .on("start", dragstart)
+	                .on("drag", drag)
+	                .on("end", dragstop));
+		setLineDragPosition(0, 0, 0, 0);
+
+		function dragstart(d) {
+			d3.event.sourceEvent.stopPropagation();
+			dragging = last_mouseover;
+			d3.selectAll('.line_drag_selection')
+				.attr("stroke","darkred");
+		}
+
+		function dragstop(d) {
+			if(last_mouseover &&
+			   dragging.data.name !== last_mouseover.data.name &&
+			   dragging.data.sex  !== last_mouseover.data.sex) {
+				// make partners
+				var child = {"name": ptree.makeid(4), "sex": 'U',
+					     "mother": (dragging.data.sex === 'F' ? dragging.data.name : last_mouseover.data.name),
+				         "father": (dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name)};
+				newdataset = ptree.copy_dataset(opts.dataset);
+				opts.dataset = newdataset;
+				
+				var idx = pedigree_util.getIdxByName(opts.dataset, dragging.data.name)+1;
+				opts.dataset.splice(idx, 0, child);
+				ptree.rebuild(opts);
+			}
+			setLineDragPosition(0, 0, 0, 0);
+			d3.selectAll('.line_drag_selection')
+				.attr("stroke","black");
+			dragging = undefined;
+			return;
+		}
+
+		function drag(d) {
+			d3.event.sourceEvent.stopPropagation();
+			var dx = d3.event.dx;
+            var xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
+            setLineDragPosition(opts.symbol_size-10, 0, xnew, 0);
+		}
+	}
+	
+	function setLineDragPosition(x1, y1, x2, y2, translate) {
+		if(translate)
+			d3.selectAll('.line_drag_selection').attr("transform", "translate("+translate+")");
+		d3.selectAll('.line_drag_selection')
+	    	.attr("x1", x1)
+	    	.attr("y1", y1)
+	    	.attr("x2", x2)
+	        .attr("y2", y2);
+	}
+
+	function capitaliseFirstLetter(string) {
+	    return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+	
     // if opt.edit is set true (rather than given a function) this is called to edit node attributes
     function openEditDialog(opts, d) {
 		$('#node_properties').dialog({
@@ -288,10 +380,13 @@
 		});
 
 		var table = "<table id='person_details' class='table'>";
-		table += "<tr><td style='text-align:right'>name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
+
+		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
+		(d.data.name ? d.data.name : "")+"></td></tr>";
+		table += "<tr><td style='text-align:right'>Name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
-		table += "<tr><td style='text-align:right'>age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:5em' value="+
+		table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:5em' value="+
 				(d.data.age ? d.data.age : "")+"></td></tr>";
 
 		table += '<tr><td colspan="2" id="id_sex">' +
@@ -302,12 +397,12 @@
 
 		// alive status = 0; dead status = 1
 		table += '<tr><td colspan="2" id="id_status">' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status === 0 ? "checked" : "")+'>Alive</label>' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>Deceased</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
 				 '</td></tr>';
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 		
-		var exclude = ["children", "parent_node", "top_level", "id", "age", "sex", "status", "display_name", "mother", "father"];
+		var exclude = ["children", "name", "parent_node", "top_level", "id", "level", "age", "sex", "status", "display_name", "mother", "father"];
 		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
 			exclude.push(v.type+"_diagnosis_age");
@@ -315,20 +410,23 @@
 			var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>';
 			var diagnosis_age = d.data[v.type + "_diagnosis_age"];
 
-			table += "<tr><td style='text-align:right'>"+v.type.replace("_", " ")+disease_colour+"&nbsp;</td><td>" +
-			         "<input class='form-control' id='id_" + 
-			          v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
-			          v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
-			          (diagnosis_age !== undefined ? diagnosis_age : "") +"'></td></tr>";
+			table += "<tr><td style='text-align:right'>"+capitaliseFirstLetter(v.type.replace("_", " "))+
+						disease_colour+"&nbsp;</td><td>" +
+						"<input class='form-control' id='id_" + 
+						v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
+						v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
+						(diagnosis_age !== undefined ? diagnosis_age : "") +"'></td></tr>";
 		});
 
+		table += '<tr><td colspan="2" style="line-height:1px;"></td></tr>';
 		$.each(d.data, function(k, v) {
 			if($.inArray(k, exclude) == -1) {
+				var kk = capitaliseFirstLetter(k);
 				if(v === true || v === false) {
-					table += "<tr><td>"+k+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
+					table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
 							k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
 				} else if(k.length > 0){
-					table += "<tr><td>"+k+"&nbsp;</td><td><input type='text' id='id_" +
+					table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='text' id='id_" +
 							k+"' name='"+k+"' value="+v+"></td></tr>";
 				}
 			}
@@ -338,7 +436,7 @@
 		$('#node_properties').html(table);
 		$('#node_properties').dialog('open');
 
-		$('#id_name').closest('tr').toggle();
+		//$('#id_name').closest('tr').toggle();
 		$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function() {
 	    	pedigree_form.save(opts);
 	    });

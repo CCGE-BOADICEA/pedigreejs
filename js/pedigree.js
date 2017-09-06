@@ -15,15 +15,13 @@
 		var partners = [];
 		$.each(person.children, function(i, child) {
 			$.each(opts.dataset, function(j, p) {
-				if (((child.name === p.mother) || (child.name === p.father)) && child.id === undefined) {
-					if (!(contains_parent(partners, child.name))) {
-						var m = pedigree_util.getNodeByName(nodes, p.mother);
-						var f = pedigree_util.getNodeByName(nodes, p.father);
-						partners.push({
-							'mother' : m !== undefined? m : pedigree_util.getNodeByName(opts.dataset, p.mother),
-							'father' : f !== undefined? f : pedigree_util.getNodeByName(opts.dataset, p.father)
-						});
-					}
+				if (((child.name === p.mother) || (child.name === p.father)) && child.id === undefined) {					
+					var m = pedigree_util.getNodeByName(nodes, p.mother);
+					var f = pedigree_util.getNodeByName(nodes, p.father);
+					m = (m !== undefined? m : pedigree_util.getNodeByName(opts.dataset, p.mother));
+					f = (f !== undefined? f : pedigree_util.getNodeByName(opts.dataset, p.father));
+					if(!contains_parent(partners, m, f))
+						partners.push({'mother': m, 'father': f});
 				}
 			});
 		});
@@ -141,11 +139,10 @@
 		return children;
 	};
 	
-	function contains_parent(arr, name) {
-		for(var i=0; i< arr.length; i++){
-			if(name === arr[i].mother.name || name === arr[i].father.name)
+	function contains_parent(arr, m, f) {
+		for(var i=0; i<arr.length; i++)
+			if(arr[i].mother === m && arr[i].father === f)
 				return true;
-		}
 		return false;
 	}
 
@@ -405,6 +402,7 @@
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+			labels: ['age', 'yob', 'alleles'],
 			background: "#EEE",
 			node_background: '#fdfdfd',
         	DEBUG: false}, options );
@@ -442,13 +440,18 @@
 		var xytransform = pedcache.getposition(opts);  // cached position
 		var xtransform = xytransform[0];
 		var ytransform = xytransform[1];
+		var zoom = 1;
+		if(xytransform.length == 3){
+			zoom = xytransform[2];
+		}
+
 		if(xtransform === null) {
 			xtransform = opts.symbol_size/2;
 			ytransform = (-opts.symbol_size*2.5);
 		}
 		var ped = svg.append("g")
 				 .attr("class", "diagram")
-	             .attr("transform", "translate("+xtransform+"," + ytransform + ")");
+	             .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+zoom+")");
 
 		var top_level = $.map(opts.dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
 		var hidden_root = {
@@ -478,6 +481,15 @@
 
 		var nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 		var flattenNodes = nodes.descendants();
+
+		// check the number of visible nodes equals the size of the pedigree dataset
+		var vis_nodes = $.map(opts.dataset, function(p, i){return p.hidden ? null : p;});
+		if(vis_nodes.length != opts.dataset.length) {
+			var err = 'NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET';
+			console.error(err, vis_nodes.length, opts.dataset.length);
+			throw new Error(err);
+		}
+
 		pedigree_util.adjust_coords(opts, nodes, flattenNodes);
 
 		var ptrLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
@@ -503,11 +515,12 @@
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
 			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}))
 			.style("stroke", function (d) {
-				return d.data.age && d.data.yob ? "#303030" : "grey";
+				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 			})
 			.style("stroke-width", function (d) {
-				return d.data.age && d.data.yob ? ".3em" : ".1em";
+				return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
 			})
+			.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
 			.style("fill", "none");
 
 		// set a clippath
@@ -533,7 +546,9 @@
 			   if(ncancers === 0) cancers = [1];
 			   return [$.map(cancers, function(val, i){ 
 				   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
-					   	   'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden};})];
+					   	   'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
+					   	   'affected': d.data.affected,
+					   	   'exclude': d.data.exclude};})];
 		   })
 		   .enter()
 		    .append("g");
@@ -545,8 +560,13 @@
 			    .attr("class", "pienode")
 			    .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
 			    .style("fill", function(d, i) {
-			    	if(d.data.ncancers === 0)
+			    	if(d.data.exclude)
+			    		return 'lightgrey';
+			    	if(d.data.ncancers === 0) {
+			    		if(d.data.affected)
+			    			return 'darkgrey';
 				    	return opts.node_background;
+			    	}
 			    	return opts.diseases[i].colour; 
 			    });
 
@@ -576,20 +596,44 @@
 		warn.append("svg:title").text("incomplete");*/
 
 		var font_size = parseInt($("body").css('font-size'));
-		addLabel(opts, node, ".25em", -(0.3 * opts.symbol_size), -(0.2 * opts.symbol_size)+font_size,
-				function(d) {return 'age' in d.data ? d.data.age : '';});		
+		// display label defined in opts.labels e.g. alleles/genotype data
+		for(var ilab=0; ilab<opts.labels.length; ilab++) {
+			var label = opts.labels[ilab];
+			addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size),
+				function(d) {
+					if(!d.data[label])
+						return;
+					d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2 : d.y_offset+font_size-1);
+					return d.y_offset;
+				},
+				function(d) {
+					if(d.data[label]) {
+						if(label === 'alleles') {
+							var alleles = "";
+							var vars = d.data.alleles.split(';');
+							for(var ivar = 0;ivar < vars.length;ivar++) {
+								if(vars[ivar] !== "") alleles += vars[ivar] + ';';
+							}
+							return alleles;	
+						} else if(label === 'age') {
+							return d.data[label] +'y';
+						}
+						return d.data[label];				
+				}
+			}, 'indi_details');
+		}
 
 		// individuals disease details
 		for(var i=0;i<opts.diseases.length; i++) {
 			var disease = opts.diseases[i].type;
 			addLabel(opts, node, ".25em", -(opts.symbol_size),
 					function(d) {
-						var y_offset = font_size*2;
+						var y_offset = (d.y_offset ? d.y_offset+font_size-1: font_size*2);
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
 							if(prefixInObj(opts.diseases[j].type, d.data))
-								y_offset += font_size;
+								y_offset += font_size-1;
 						}
 						return y_offset;
 					},
@@ -621,14 +665,21 @@
 		  			var path = "";
 		  			if(clash) {
 		  				if(d.mother.depth in clash_depth)
-		  					clash_depth[d.mother.depth] += 3;
+		  					clash_depth[d.mother.depth] += 4;
 		  				else
-		  					clash_depth[d.mother.depth] = 3;
+		  					clash_depth[d.mother.depth] = 4;
 
 		  				dy1 -= clash_depth[d.mother.depth];
-		  				var dx = 3 + clash_depth[d.mother.depth] + opts.symbol_size/2;
-		  				
-		  				var parent_node = pedigree_util.getNodeByName(flattenNodes, d.mother.data.parent_node[0].name);
+		  				var dx = clash_depth[d.mother.depth] + opts.symbol_size/2 + 2;
+
+		  				var parent_nodes = d.mother.data.parent_node;
+		  				var parent_node_name = parent_nodes[0];
+		  				for(var ii=0; ii<parent_nodes.length; ii++) {
+		  					if(parent_nodes[ii].father.name === d.father.data.name &&
+		  					   parent_nodes[ii].mother.name === d.mother.data.name)
+		  						 parent_node_name = parent_nodes[ii].name;
+		  				}
+		  				var parent_node = pedigree_util.getNodeByName(flattenNodes, parent_node_name);
 						parent_node.y = dy1; // adjust hgt of parent node
 		  				clash.sort(function (a,b) {return a - b;});
 
@@ -733,14 +784,17 @@
 		        .attr("marker-end", "url(#triangle)");
 		}
 		// drag and zoom
-		var zoom = d3.zoom()
+		zoom = d3.zoom()
 		  .scaleExtent([opts.zoomIn, opts.zoomOut])
 		  .on('zoom', zoomFn);
 
 		function zoomFn() {
 			var t = d3.event.transform;
 			var pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
-			pedcache.setposition(opts, pos[0], pos[1]);
+			if(t.k == 1)
+				pedcache.setposition(opts, pos[0], pos[1]);
+			else
+				pedcache.setposition(opts, pos[0], pos[1], t.k);
 			ped.attr('transform', 'translate(' + pos[0] + ',' + pos[1] + ') scale(' + t.k + ')');
 		}
 		svg.call(zoom);
@@ -764,8 +818,8 @@
 	ptree.unconnected = function(dataset){
 		var target = dataset[ pedigree_util.getProbandIndex(dataset) ];
 		if(!target){
-			console.error("No target defined");
-			return [];
+			console.warn("No target defined");
+			target = dataset[0];
 		}
         var connected = [target.name];
         var change = true;
@@ -954,7 +1008,12 @@
 	ptree.rebuild = function(opts) {
 		$("#"+opts.targetDiv).empty();
 		pedcache.add(opts);
-		ptree.build(opts);
+		try {
+			ptree.build(opts);
+		} catch(e) {
+			console.error(e);
+		}
+
 		try {
 			templates.update(opts);
 		} catch(e) {
@@ -1043,7 +1102,7 @@
 		d2.mztwin = d1.mztwin;
 		if(d1.yob)
 			d2.yob = d1.yob;
-		if(d1.age && (d1.status === 0 || !d1.status))
+		if(d1.age && (d1.status == 0 || !d1.status))
 			d2.age = d1.age;
 		return true;
 	}
@@ -1073,7 +1132,7 @@
 				d2.sex = d1.sex;
 				if(d1.yob)
 					d2.yob = d1.yob;
-				if(d1.age && (d1.status === 0 || !d1.status))
+				if(d1.age && (d1.status == 0 || !d1.status))
 					d2.age = d1.age;
 			}
 		}
@@ -1264,8 +1323,9 @@
 					}
 				}
 			}
-		} else
+		} else {
 			dataset.splice(pedigree_util.getIdxByName(dataset, node.name), 1);
+		}
 
 		// delete ancestors
 		console.log(deletes);
@@ -1289,6 +1349,17 @@
 		}
 		// check integrity of mztwins settings
 		checkTwins(dataset);
+
+		// check if pedigree is split
+		var unconnected = ptree.unconnected(dataset);
+		if(unconnected.length > 0) {
+			// check & warn only if this is a new split
+			if(ptree.unconnected(opts.dataset).length === 0) {
+				console.error("individuals unconnected to pedigree ", unconnected);
+				if(!confirm("Deleting this will split the pedigree. Continue?"))
+					dataset = ptree.copy_dataset(opts.dataset);
+			}
+		}
 		return dataset;
 	};
 

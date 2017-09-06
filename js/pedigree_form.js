@@ -129,9 +129,13 @@
     pedigree_form.save = function(opts) {
 		var dataset = pedcache.current(opts);
 		var name = $('#id_name').val();
-		$("#"+opts.targetDiv).empty();
 		var newdataset = ptree.copy_dataset(dataset);
 		var person = pedigree_util.getNodeByName(newdataset, name);
+		if(!person) {
+			console.warn('person not found when saving details');
+			return;
+		}
+		$("#"+opts.targetDiv).empty();
 
 		// individual's personal and clinical details
 		var yob = $('#id_yob_0').val();
