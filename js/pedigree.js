@@ -403,6 +403,9 @@
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
 			labels: ['age', 'yob', 'alleles'],
+			font_size: '.75em',
+			font_family: 'Helvetica',
+			font_weight: 700,
 			background: "#EEE",
 			node_background: '#fdfdfd',
         	DEBUG: false}, options );
@@ -580,7 +583,7 @@
 		    .attr("y2", function(d, i) {return -0.6*opts.symbol_size;});
 
 		// names of individuals
-		addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size),
+		addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
 				function(d) {
 					if(opts.DEBUG)
 						return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
@@ -595,7 +598,7 @@
 		.html("\uf071");
 		warn.append("svg:title").text("incomplete");*/
 
-		var font_size = parseInt($("body").css('font-size'));
+		var font_size = parseInt(getPx(opts.font_size)) + 4;
 		// display label defined in opts.labels e.g. alleles/genotype data
 		for(var ilab=0; ilab<opts.labels.length; ilab++) {
 			var label = opts.labels[ilab];
@@ -603,7 +606,7 @@
 				function(d) {
 					if(!d.data[label])
 						return;
-					d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2 : d.y_offset+font_size-1);
+					d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2.25 : d.y_offset+font_size);
 					return d.y_offset;
 				},
 				function(d) {
@@ -628,7 +631,7 @@
 			var disease = opts.diseases[i].type;
 			addLabel(opts, node, ".25em", -(opts.symbol_size),
 					function(d) {
-						var y_offset = (d.y_offset ? d.y_offset+font_size-1: font_size*2);
+						var y_offset = (d.y_offset ? d.y_offset+font_size: font_size*2.2);
 						for(var j=0;j<opts.diseases.length; j++) {
 							if(disease === opts.diseases[j].type)
 								break;
@@ -990,18 +993,34 @@
         	newdataset.unshift(top_level[i-1]);
         return newdataset;
 	}
+	
+	// get height in pixels
+	function getPx(emVal){
+		if (emVal === parseInt(emVal, 10)) // test if integer
+			return emVal;
+
+		if(emVal.endsWith("px"))
+			return emVal.replace('px', '');
+		else if(!emVal.endsWith("em"))
+			return emVal;
+		var adiv = $('<div style="display: none; font-size: '+emVal+'; margin: 0; padding:0; height: auto; line-height: 1; border:0;">&nbsp;</div>').appendTo('body');
+		var hgt = adiv.height();
+		adiv.remove();
+		return hgt;
+	};
 
 	// Add label
 	function addLabel(opts, node, size, fx, fy, ftext, class_label) {
 		node.filter(function (d) {
     		return d.data.hidden && !opts.DEBUG ? false : true;
 		}).append("text")
-		.attr("class", class_label + ' label' || "label")
+		.attr("class", class_label + ' ped_label' || "ped_label")
 		.attr("x", fx)
 		.attr("y", fy)
-		.attr("dy", size)
-		.attr("font-family", 'Helvetica')
-		.attr("font-size", '12px')
+		//.attr("dy", size)
+		.attr("font-family", opts.font_family)
+		.attr("font-size", opts.font_size)
+		.attr("font-weight", opts.font_weight)
 		.text(ftext);	
     }
 
