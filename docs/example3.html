@@ -33,6 +33,12 @@
 			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
 		];
 		
+		function openDialog(opts, d) {
+			$('#node_properties').html('ID: '+d.data.name);
+			$('#node_properties').dialog({
+			    title: d.data.display_name
+			});
+		}
 		var opts = {
 				'targetDiv': 'ped3',
 				'btn_target': 'cancer_history3',
@@ -42,11 +48,10 @@
 				'font_size': '1.1em',
 				'font_family': 'times',
 				'font_weight': 400,
-				'edit': true,
+				'edit': openDialog,
 				'node_background': '#fff',
 				'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
 			};
-		$('#opts').append(JSON.stringify(opts, null, 4));
 
 		var local_dataset = pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
@@ -81,8 +86,29 @@
 
 <div class="container">
 <br>
-<p>This example is using larger symbols, a larger font size and using 'times' font. These are the options used:</p>
-<pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
+<p>This example overrides the default property editor and uses larger symbols, a larger font size and using 'times' font. These are the options used:</p>
+<pre style="overflow: auto;word-wrap: normal;" id="opts">
+		function openDialog(opts, d) {
+			$('#node_properties').html('ID: '+d.data.name);
+			$('#node_properties').dialog({
+			    title: d.data.display_name
+			});
+		}
+
+		var opts = {
+			'targetDiv': 'ped3',
+			'btn_target': 'cancer_history3',
+			'width': svg_width,
+			'height': 400,
+			'symbol_size': 40,
+			'font_size': '1.1em',
+			'font_family': 'times',
+			'font_weight': 400,
+			'edit': openDialog,
+			'node_background': '#fff',
+			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
+		};
+</pre>
 </div>
 
 </body>
