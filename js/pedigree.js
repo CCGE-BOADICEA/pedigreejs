@@ -999,9 +999,9 @@
 		if (emVal === parseInt(emVal, 10)) // test if integer
 			return emVal;
 
-		if(emVal.endsWith("px"))
+		if(emVal.indexOf("px") > -1)
 			return emVal.replace('px', '');
-		else if(!emVal.endsWith("em"))
+		else if(emVal.indexOf("em") === -1)
 			return emVal;
 		var adiv = $('<div style="display: none; font-size: '+emVal+'; margin: 0; padding:0; height: auto; line-height: 1; border:0;">&nbsp;</div>').appendTo('body');
 		var hgt = adiv.height();
