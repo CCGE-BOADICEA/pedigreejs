@@ -2592,7 +2592,7 @@
 			var newdataset;
 			if(opt === 'settings') {
 				if(typeof opts.edit === 'function') { 
-					opts.edit();
+					opts.edit(opts, d);
 				} else {
 					openEditDialog(opts, d);
 				}
