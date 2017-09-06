@@ -8,14 +8,18 @@
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="css/pedigreejs.min.css" />
+	<link rel="stylesheet" href="../dist/css/pedigreejs.min.css" />
 
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
-	<script src="js/pedigreejs.min.js"></script>
-
+	<!-- <script src="../dist/js/pedigreejs.min.js"></script> -->
+    <script src="../js/io.js"></script>
+    <script src="../js/pedigree_form.js"></script>
+    <script src="../js/pedigree.js"></script>
+    <script src="../js/undo_redo_refresh.js"></script>
+    <script src="../js/widgets.js"></script>
 
 	<script type="text/javascript">
 	$( document ).ready(function() {
@@ -23,18 +27,18 @@
 		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
 		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
 
-		var dataset = [
-			{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true},
-			{"name": "m11", "display_name": "John",  "sex": "M", "diabetes_diagnosis_age": 55, "top_level": true},
-			{"name": "f12", "display_name": "Jill", "sex": "F", "top_level": true},
-			{"name": "m12", "display_name": "Jack", "sex": "M", "top_level": true},
-			{"name": "m21", "display_name": "Jim", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
-			{"name": "f21", "display_name": "Jan", "sex": "F", "mother": "f12", "father": "m12", "age": 63},
-			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
-		];
+		var pedfile = 	"fam1 1 6 7 2 2 0 1 0 0\n"+
+						"fam1 2 4 5 1 1 0 0 0 0\n"+
+						"fam1 3 2 1 2 1 0 0 0 1\n"+
+						"fam1 4 0 0 1 1 0 0 0 0\n"+
+						"fam1 5 0 0 2 2 0 0 0 1\n"+
+						"fam1 6 0 0 1 1 0 0 0 0\n"+
+						"fam1 7 0 0 2 2 0 1 0 1";
+		var dataset = io.readLinkage(pedfile);
+		
 		var opts = {
 			'targetDiv': 'pedigrees',
-			'btn_target': 'diabetes_history',
+			'btn_target': 'diabetes2_history',
 			'width': svg_width,
 			'height': 500,
 			'symbol_size': 35,
@@ -42,6 +46,7 @@
 			'diseases': [
 				{'type': 'diabetes', 'colour': '#F68F35'},
 			],
+			labels: ['famid', 'id', 'alleles'],
 			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
 		};
 		var local_dataset = pedcache.current(opts);
@@ -69,7 +74,7 @@
 	<label class="btn btn-default btn-file">
 		<input id="svg_download" type="button" style="display: none;"/>SVG
 	</label>
-	<div id='diabetes_history'></div>
+	<div id='diabetes2_history'></div>
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
 </div>

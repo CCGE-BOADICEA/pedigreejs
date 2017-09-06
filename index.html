@@ -141,12 +141,12 @@
 			structure. So that at each step of the pedigree building process it can be undone to return
 			to previous versions.
 			</p>
-			<p>Other example pages are given below:</p>
+			<p>Other example pages and configurations are given below:</p>
 			<ul>
-				<li><a href="dist/example.html">diabetes example</a></li>
-				<li><a href="dist/example2.html">change background and node colours</a></li>
-				<li><a href="dist/example3.html">change text and node size</a></li>
-				<li><a href="dist/example4.html">PED file example with genotype data</a></li>
+				<li>Example 1: <a href="docs/example.html">diabetes example</a></li>
+				<li>Example 2: <a href="docs/example2.html">change background and node colours</a></li>
+				<li>Example 3: <a href="docs/example3.html">change text and node size</a></li>
+				<li>Example 4: <a href="docs/example4.html">PED file example with genotype data</a></li>
 			</ul>
 		</div>
 	</div>
@@ -165,9 +165,15 @@
 	male <i class="fa fa-square-o" aria-hidden="true"></i>,
 	female <i class="fa fa-circle-o" aria-hidden="true"></i>,
 	unknown  <i class="fa fa-square-o fa-rotate-45" aria-hidden="true"></i>,
-	or monozygotic twin <i class="fa fa-angle-up" aria-hidden="true"></i>. Half siblings can be
-	added by creating a new partner for the parent in common to the siblings.
-	
+	or monozygotic twin <i class="fa fa-angle-up" aria-hidden="true"></i>.
+	</p>
+	<p>Half siblings can be added by creating a new partner (with <i class="fa fa-link" aria-hidden="true"></i>)
+	for the parent in common to the siblings.
+	Consanguineous partners can be created between individual's at the same level in the pedigree
+	tree, <i>e.g.</i> cousins. This is done by placing the mouse over one of the partners and clicking and dragging the
+	dashed line widget <img alt="handle" src="docs/img/handle.png"> in the direction of their new partner.
+	</p>
+	<p>
 	There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i>,
 	'redo' <i class="fa fa-repeat" aria-hidden="true"></i> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i>
 	buttons at the top and a button to enable full screen editing <i class="fa fa-arrows-alt" aria-hidden="true"></i>.
@@ -178,18 +184,25 @@
 	BOADICEA file format v4 (see the BOADICEA documentation 
 	<a href="https://pluto.srl.cam.ac.uk/bd4/v4/docs/BWA_v4_Appendix_A.pdf" target="_blank">Appendix</a>).</p>
 	
-	<p>Preliminary support for <a href="https://www.cog-genomics.org/plink/1.9/formats#ped">PED format</a>
-	has been added.<p>
+	<p>Support for <a href="https://www.cog-genomics.org/plink/1.9/formats#ped">PED file format</a>
+	has been added, see <a href="docs/example4.html">example 4</a>.<p>
 
 	<h3>Future Development</h3>
 		<p>The following will be looked at:</p>
 		<ul>
 			<li>currently the maximum number of partners an individual can be represented to have is 2.</li>
-			<li>the ability to represent consanguineous partners.</li>
+			<li>the ability to represent consanguineous partners between different levels in the tree.</li>
 		</ul>
 
-	<h3>Configuration</h3>
-	<p>The following parameters can be used to configure pedigreejs.</p>
+	<h3>Configuration and Integration Notes</h3>
+	<p>The following parameters can be used to configure pedigreejs.
+	The important parameter to configure is 'targetDiv' which defines the HTML div used for
+	drawing the pedigree. Default parameters are provided which are documented below.
+	There is a configuration parameter 'edit' which can take a function, so that a
+	customised editor can be written to view and edit an individual's attributes (e.g. name, sex).
+	Alternatively is 'edit' is set to true a default dialog will be displayed showing the
+	individual's attributes.
+	</p>
 	
 <pre>
 	var opts = {
