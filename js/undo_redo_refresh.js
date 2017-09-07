@@ -134,13 +134,15 @@
 	var max_limit = 25;
 	var dict_cache = {};
 
-	// test if local storage is supported
-	function has_local_storage(opts) {
+	// test if browser storage is supported
+	function has_browser_storage(opts) {
 	    try {
+	    	if(opts.store_type !== 'local' && opts.store_type !== 'session' && opts.store_type !== undefined)
+	    		return false;
 	    	var mod = 'test';
 	        localStorage.setItem(mod, mod);
 	        localStorage.removeItem(mod);
-	        return (opts.store_type === undefined || opts.store_type === 'local');
+	        return true;
 	    } catch(e) {
 	        return false;
 	    }
@@ -154,11 +156,32 @@
 	function get_arr(opts) {
 		return dict_cache[get_prefix(opts)];
 	}
+	
+	function get_browser_store(opts, item) {
+		if(opts.store_type === 'local')
+			return localStorage.getItem(item);
+		else
+			return sessionStorage.getItem(item);
+	}
+	
+	function set_browser_store(opts, name, item) {
+		if(opts.store_type === 'local')
+			return localStorage.setItem(name, item);
+		else
+			return sessionStorage.setItem(name, item);
+	}
+	
+	function clear_browser_store(opts) {
+		if(opts.store_type === 'local')
+			return localStorage.clear();
+		else
+			return sessionStorage.clear();
+	}
 
 	pedcache.get_count = function(opts) {
 		var count;
-		if (has_local_storage(opts))
-			count = localStorage.getItem(get_prefix(opts)+'COUNT');
+		if (has_browser_storage(opts))
+			count = get_browser_store(opts, get_prefix(opts)+'COUNT');
 		else
 			count = dict_cache[get_prefix(opts)+'COUNT'];
 		if(count !== null && count !== undefined)
@@ -167,8 +190,8 @@
 	};
 
 	function set_count(opts, count) {
-		if (has_local_storage(opts))
-			localStorage.setItem(get_prefix(opts)+'COUNT', count);
+		if (has_browser_storage(opts))
+			set_browser_store(opts, get_prefix(opts)+'COUNT', count);
 		else
 			dict_cache[get_prefix(opts)+'COUNT'] = count;
 	}
@@ -177,8 +200,8 @@
 		if(!opts.dataset)
 			return;
 		var count = pedcache.get_count(opts);
-		if (has_local_storage(opts)) {   // local storage
-			localStorage.setItem(get_prefix(opts)+count, JSON.stringify(opts.dataset));
+		if (has_browser_storage(opts)) {   // local storage
+			set_browser_store(opts, get_prefix(opts)+count, JSON.stringify(opts.dataset));
 		} else {   // TODO :: array cache
 			console.warn('Local storage not found/supported for this browser!');
 			max_limit = 500;
@@ -194,9 +217,9 @@
 	};
 
 	pedcache.nstore = function(opts) {
-		if(has_local_storage(opts)) {
+		if(has_browser_storage(opts)) {
 			for(var i=max_limit; i>0; i--) {
-				if(localStorage.getItem(get_prefix(opts)+(i-1)) !== null)
+				if(get_browser_store(opts, get_prefix(opts)+(i-1)) !== null)
 					return i;
 			}
 		} else {
@@ -209,16 +232,16 @@
 		var current = pedcache.get_count(opts)-1;
 		if(current == -1)
 			current = max_limit-1;
-		if(has_local_storage(opts))
-			return JSON.parse(localStorage.getItem(get_prefix(opts)+current));
+		if(has_browser_storage(opts))
+			return JSON.parse(get_browser_store(opts, get_prefix(opts)+current));
 		else if(get_arr(opts))
 			return JSON.parse(get_arr(opts)[current]);
 	};
 
 	pedcache.last = function(opts) {
-		if(has_local_storage(opts)) {
+		if(has_browser_storage(opts)) {
 			for(var i=max_limit; i>0; i--) {
-				var it = localStorage.getItem(get_prefix(opts)+(i-1));
+				var it = get_browser_store(opts, get_prefix(opts)+(i-1));
 				if(it !== null) {
 					set_count(opts, i);
 					return JSON.parse(it);
@@ -244,8 +267,8 @@
 				previous = max_limit - 1;
 		}
 		set_count(opts, previous + 1);
-		if(has_local_storage(opts))
-			return JSON.parse(localStorage.getItem(get_prefix(opts)+previous));
+		if(has_browser_storage(opts))
+			return JSON.parse(get_browser_store(opts, get_prefix(opts)+previous));
 		else
 			return JSON.parse(get_arr(opts)[previous]);
 	};
@@ -257,37 +280,39 @@
 			next = 0;
 
 		set_count(opts, parseInt(next) + 1);
-		if(has_local_storage(opts))
-			return JSON.parse(localStorage.getItem(get_prefix(opts)+next));
+		if(has_browser_storage(opts))
+			return JSON.parse(get_browser_store(opts, get_prefix(opts)+next));
 		else
 			return JSON.parse(get_arr(opts)[next]);
 	};
 
 	pedcache.clear = function(opts) {
-		if(has_local_storage(opts))
-			localStorage.clear();
+		if(has_browser_storage(opts))
+			clear_browser_store(opts);
 		dict_cache = {};
 	};
 
 	// zoom - store translation coords
 	pedcache.setposition = function(opts, x, y, zoom) {
-		if(has_local_storage(opts)) {
-			localStorage.setItem(get_prefix(opts)+'_X', x);
-			localStorage.setItem(get_prefix(opts)+'_Y', y);
+		if(has_browser_storage(opts)) {
+			set_browser_store(opts, get_prefix(opts)+'_X', x);
+			set_browser_store(opts, get_prefix(opts)+'_Y', y);
 			if(zoom)
-				localStorage.setItem(get_prefix(opts)+'_ZOOM', zoom);
+				set_browser_store(opts, get_prefix(opts)+'_ZOOM', zoom);
 		} else {
 			//TODO
 		}
 	};
 
 	pedcache.getposition = function(opts) {
-		if(!has_local_storage(opts) || localStorage.getItem(get_prefix(opts)+'_X') === null)
+		if(!has_browser_storage(opts) ||
+			(localStorage.getItem(get_prefix(opts)+'_X') === null &&
+			 sessionStorage.getItem(get_prefix(opts)+'_X') === null))
 			return [null, null];
-		var pos = [parseInt(localStorage.getItem(get_prefix(opts)+'_X')),
-			   	   parseInt(localStorage.getItem(get_prefix(opts)+'_Y'))];
-		if(localStorage.getItem(get_prefix(opts)+'_ZOOM') !== null)
-			pos.push(parseFloat(localStorage.getItem(get_prefix(opts)+'_ZOOM')));
+		var pos = [parseInt(get_browser_store(opts, get_prefix(opts)+'_X')),
+			   	   parseInt(get_browser_store(opts, get_prefix(opts)+'_Y'))];
+		if(get_browser_store(get_prefix(opts)+'_ZOOM') !== null)
+			pos.push(parseFloat(get_browser_store(opts, get_prefix(opts)+'_ZOOM')));
 		return pos;
 	};
 
