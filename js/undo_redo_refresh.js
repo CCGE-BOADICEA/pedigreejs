@@ -137,8 +137,12 @@
 	// test if browser storage is supported
 	function has_browser_storage(opts) {
 	    try {
+	    	if(opts.store_type === 'array')
+	    		return false;
+
 	    	if(opts.store_type !== 'local' && opts.store_type !== 'session' && opts.store_type !== undefined)
 	    		return false;
+
 	    	var mod = 'test';
 	        localStorage.setItem(mod, mod);
 	        localStorage.removeItem(mod);
@@ -203,7 +207,7 @@
 		if (has_browser_storage(opts)) {   // local storage
 			set_browser_store(opts, get_prefix(opts)+count, JSON.stringify(opts.dataset));
 		} else {   // TODO :: array cache
-			console.warn('Local storage not found/supported for this browser!');
+			console.warn('Local storage not found/supported for this browser!', opts.store_type);
 			max_limit = 500;
 			if(get_arr(opts) === undefined)
 				dict_cache[get_prefix(opts)] = [];
