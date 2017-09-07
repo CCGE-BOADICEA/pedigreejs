@@ -104,7 +104,7 @@
 <div class="container">
 	<div class="row">
 <!-- EXAMPLE -->
-		<div class="col-md-7 col-md-push-5">
+		<div class="col-md-6 col-md-push-6">
 			<div class="text-center">
 				<label class="btn btn-default btn-file">
 						<input id="load" type="file" style="display: none;"/>Load
@@ -126,7 +126,7 @@
 				<div id="node_properties"></div>
 			</div>
 		</div>
-		<div class="col-md-5 col-md-pull-7">
+		<div class="col-md-6 col-md-pull-6">
 			<h3>Overview</h3>
 			<p class="text-justify">
 			<strong>pedigreejs</strong> is a JavaScript library used to draw family trees using
@@ -145,9 +145,10 @@
 			<p>Other example pages and configurations are given below:</p>
 			<ul>
 				<li>Example 1: <a href="docs/example.html">diabetes example</a></li>
-				<li>Example 2: <a href="docs/example2.html">change background and node colours</a></li>
+				<li>Example 2: <a href="docs/example2.html">change background, node colours and using local storage</a></li>
 				<li>Example 3: <a href="docs/example3.html">change text and node size</a></li>
 				<li>Example 4: <a href="docs/example4.html">PED file example with genotype data</a></li>
+				<li>Example 5: <a href="docs/example5.html">consanguineous partners and first and last name labels</a></li>
 			</ul>
 		</div>
 	</div>
@@ -195,8 +196,10 @@
 			<li>the ability to represent consanguineous partners between different levels in the tree.</li>
 		</ul>
 
-	<h3>Configuration and Integration Notes</h3>
+	<h3 id="config">Configuration and Integration Notes</h3>
 	<p>The following parameters can be used to configure pedigreejs.
+	Please also see the <a href="docs/developer.html">developer notes</a> for more details about
+	programmatically interacting with pedigreejs.
 	The important parameter to configure is 'targetDiv' which defines the HTML div used for
 	drawing the pedigree. Default parameters are provided which are documented below.
 	There is a configuration parameter 'edit' which can take a function, so that a
@@ -233,15 +236,20 @@
 	opts= ptree.build(opts);
 </pre>
 
-	<div class="row">
+	<div class="row" id="opts">
+		<div class="col-md-2 text-right"><h4>Options:</h4></div>
+		<div class="col-md-10"></div>
+	</div>
+
+	<div class="row" id="targetDiv">
 		<div class="col-md-2 text-right"><strong>targetDiv</strong></div>
 		<div class="col-md-10">This is the id of the HTML div used for drawing the pedigree, <i>e.g.</i> 'pedigree_edit'.</div>
 	</div>
-	<div class="row">
+	<div class="row" id="btn_target">
 		<div class="col-md-2 text-right"><strong>btn_target</strong></div>
 		<div class="col-md-10">This is the id of the HTML div used for the buttons, <i>e.g.</i> 'pedigree_history'.</div>
 	</div>
-	<div class="row">
+	<div class="row" id="dataset">
 		<div class="col-md-2 text-right"><strong>dataset</strong></div>
 		<div class="col-md-10">The pedigree data to be displayed, <i>e.g.</i>
 <pre>
@@ -250,35 +258,35 @@
   {"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer":  true, "proband": true}]</pre>
     	</div>
     </div>
-	<div class="row">
+	<div class="row" id="labels">
 		<div class="col-md-2 text-right"><strong>labels</strong></div>
 		<div class="col-md-10">Array of attributes to display under the individual's symbol, <i>e.g.</i> labels: ['age', 'yob', 'alleles'].</div>
 	</div>
-	<div class="row">
+	<div class="row" id="font_size">
 		<div class="col-md-2 text-right"><strong>font_size</strong></div>
 		<div class="col-md-10">Define the font-size of the labels, <i>e.g.</i> '0.75em' or '10px'.</div>
 	</div>
-	<div class="row">
+	<div class="row" id="font_family">
 		<div class="col-md-2 text-right"><strong>font_family</strong></div>
 		<div class="col-md-10">Define the font-family of the labels, <i>e.g.</i> 'times'.</div>
 	</div>
-	<div class="row">
+	<div class="row" id="font_weight">
 		<div class="col-md-2 text-right"><strong>font_weight</strong></div>
 		<div class="col-md-10">Define the font-weight of the labels, <i>e.g.</i> 400, 700.</div>
 	</div>
-	<div class="row">
+	<div class="row" id="width">
 		<div class="col-md-2 text-right"><strong>width</strong></div>
 		<div class="col-md-10">Width of the SVG element, <i>e.g.</i> 600.</div>
 	</div>
-	<div class="row">
+	<div class="row" id="height">
 		<div class="col-md-2 text-right"><strong>height</strong></div>
 		<div class="col-md-10">Height of the SVG element, <i>e.g.</i> 400.</div>
     </div>
-	<div class="row">
+	<div class="row id="symbol_size">
 		<div class="col-md-2 text-right"><strong>symbol_size</strong></div>
 		<div class="col-md-10">Size of the nodes, <i>e.g.</i> 35.</div>
     </div>
-    <div class="row">
+    <div class="row" id="store_type">
 		<div class="col-md-2 text-right"><strong>store_type</strong></div>
 		<div class="col-md-10">Pedigree storage (for undo, redo functions) set to 'session', 'local' or 'array'.
 		Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp">session</a>' browser storage.
@@ -286,19 +294,19 @@
 		Using 'local' will store the data with no expiration date.
 		If session/local storage is not supported then it switches automatically to 'array' (JavaScript array store).</div>
     </div>
-	<div class="row">
+	<div class="row" id="zoomIn">
 		<div class="col-md-2 text-right"><strong>zoomIn</strong></div>
 		<div class="col-md-10">The factor by which the svg size can be scaled down to, default 1 (no zoom in).</div>
     </div>
-	<div class="row">
+	<div class="row" id="zoomOut">
 		<div class="col-md-2 text-right"><strong>zoomOut</strong></div>
 		<div class="col-md-10">The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
     </div>
-	<div class="row">
+	<div class="row" id="edit">
 		<div class="col-md-2 text-right"><strong>edit</strong></div>
 		<div class="col-md-10">Set to true for a button to display an individual's details (<i>e.g.</i> age, sex) in a dialog or provide a funtion to handle editing.</div>
     </div>
-	<div class="row">
+	<div class="row" id="diseases">
 		<div class="col-md-2 text-right"><strong>diseases</strong></div>
 		<div class="col-md-10">Diseases and their colour representation, <i>e.g.</i>
 <pre>
@@ -309,18 +317,18 @@
  {'type': 'prostate_cancer', 'colour': '#D5494A'}]</pre>
 		</div>
 	</div>
-	<div class="row">
+	<div class="row" id="background">
 		<div class="col-md-2 text-right"><strong>background</strong></div>
 		<div class="col-md-10">SVG background colour, <i>e.g.</i> #d3d3d3.</div>
 	</div>
-	<div class="row">
+	<div class="row" id="node_background">
 		<div class="col-md-2 text-right"><strong>node_background</strong></div>
 		<div class="col-md-10">Individual's background colour, <i>e.g.</i> #fff.</div>
 	</div>
-	<div class="row">
+	<div class="row" id="DEBUG">
 		<div class="col-md-2 text-right"><strong>DEBUG</strong></div>
 		<div class="col-md-10">Debug mode, <i>e.g.</i> false.</div>
-    </div>
+    </div>  
 </div>
 
 <p></p>
