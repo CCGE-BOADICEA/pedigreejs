@@ -280,9 +280,11 @@
     </div>
     <div class="row">
 		<div class="col-md-2 text-right"><strong>store_type</strong></div>
-		<div class="col-md-10">Pedigree storage (for undo, redo functions) set to 'local' or 'array'.
-		Default is local browser storage ('local'). If local storage is not supported
-		then it switches to 'array'.</div>
+		<div class="col-md-10">Pedigree storage (for undo, redo functions) set to 'session', 'local' or 'array'.
+		Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp">session</a>' browser storage.
+		Using 'session' will store the data for one session (data is lost when the browser tab is closed).
+		Using 'local' will store the data with no expiration date.
+		If session/local storage is not supported then it switches automatically to 'array' (JavaScript array store).</div>
     </div>
 	<div class="row">
 		<div class="col-md-2 text-right"><strong>zoomIn</strong></div>
