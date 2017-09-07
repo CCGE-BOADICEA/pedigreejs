@@ -35,6 +35,7 @@
 		var opts = {
 			'targetDiv': 'pedigrees',
 			'btn_target': 'diabetes_history',
+			'store_type': 'session',
 			'width': svg_width,
 			'height': 500,
 			'symbol_size': 35,
@@ -78,7 +79,10 @@
 
 <div class="container">
 <br>
-<p>This is an example of defining diabetes as the disease. These are the options used:</p>
+<p>This is an example of defining diabetes as the disease. It is using the browsers
+<a href="https://www.w3schools.com/html/html5_webstorage.asp">session storage</a> (if available)
+to record the history and it stores for one session (data is lost when the browser tab is closed).
+These are the options used:</p> 
 <pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
 </div>
 
