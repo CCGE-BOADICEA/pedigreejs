@@ -336,7 +336,7 @@ describe('Test pedigree SVG ', function() {
 		it('can be stored as an array', function() {
 			pedcache.clear();
 			var newopts = $.extend({}, opts);
-			opts.store_type = "array";
+			newopts.store_type = "array";
 			ptree.rebuild(newopts);
 			expect(parseInt(pedcache.get_count(newopts))).toBe(1);
 			var current = pedcache.current(newopts);
