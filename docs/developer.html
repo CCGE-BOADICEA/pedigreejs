@@ -51,17 +51,34 @@
 
 <div class="container">
 	<div class="row">
-		<h3>Developer Notes</h3>
+		<h2>Developer Notes</h2>
 		<p>
-		The pedigree data is stored in the browser window as HTML 
-		<a href="https://www.w3schools.com/html/html5_webstorage.asp">local or session storage</a>
-		or as an JS array. This is defined by the <a href="../index.html#opts">'store_type' configuration
-		settings</a>. The pedigree data displayed can be accessed by calling the JavaScript routine:
+		To embed pedigreejs in your application, you will need to either download or link to a CDN for
+		<a href="https://jquery.com/">JQuery</a>, <a href="http://fontawesome.io/">Font Awesome</a> and
+		<a href="https://d3js.org/">d3</a>. Font Awesome is used to display some of the widgets for
+		building the pedigree. The d3-hierarchy module is used to assist in the layout of the pedigree 
+		tree. The pedigreejs JavaScript and CSS files can be found under the projects GitHub
+		<a href="https://github.com/CCGE-BOADICEA/pedigreejs/tree/master/dist">'dist'</a> directory.
+		The examples show how the options can be used to provide a suitable pedigree display and can
+		be used as templates to experiment with.
+		</p>
+		<h3>Storing and Retrieving Pedigree Data</h3>
+		<p>
+		The <a href="../index.html#opts">‘store_type’</a> options in the configuration allows the data
+		to be store in the browser in 3 ways. The default is to use <strong>‘session’</strong> storage which is used in 
+		<a href="https://www.w3schools.com/html/html5_webstorage.asp">HTML5</a> to store data for a session.
+		So if the browser or tab is closed the data is lost. The second option is to use <strong>‘local’</strong>
+		storage which again is used in HTML but persists and has no expiration date. The last option is
+		<strong>‘array’</strong> which just holds the data in JavaScript array and disappears if the page is
+		refreshed or the browser closed.
+		</p>
+		<p>
+		The current pedigree data displayed can be accessed by calling the JavaScript routine:
 		</p>
 		<pre>var pedigree = pedcache.current(opts);</pre>
 		<p>
-		This returns the pedigree data in JSON format. A search routine, for example, can then be implemented
-		to interogate this.
+		Where 'opts' is the options used to intialise pedigreejs. This returns the pedigree data in JSON format.
+		A search routine, for example, can then be implemented to interogate this.
 		</p>
 	</div>  
 </div>
