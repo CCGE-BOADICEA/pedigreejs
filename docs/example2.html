@@ -34,6 +34,7 @@
 		var opts = {
 			'targetDiv': 'ped',
 			'btn_target': 'cancer_history',
+			'store_type': 'local',
 			'width': svg_width,
 			'height': 500,
 			'symbol_size': 35,
@@ -76,7 +77,9 @@
 
 <div class="container">
 <br>
-<p>This example is using different background and node colours. These are the options used:</p>
+<p>This example is using different background and node colours. It is using the browsers
+<a href="https://www.w3schools.com/html/html5_webstorage.asp">local storage</a> (if available)
+to record the history and it stores this with no expiration date. These are the options used:</p>
 <pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
 </div>
 
