@@ -19,9 +19,18 @@
 
 	<script type="text/javascript">
 	$( document ).ready(function() {
-		var parent_width = $('#pedigrees').parent().width();
+		var parent_width = $('#ped').parent().width();
 		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
 		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
+		function validate(options) {
+			$.each(options.dataset, function( idx, person ) {
+				  if(person.mother || person.father){
+					  if(!person.mother || !person.father) {
+						  throw new Error("ONLY ONE PARENT DEFINED");
+					  }
+				  }
+			});
+		}
 
 		var dataset = [
 			{"name":"f11","first_name":"Jane","last_name":"Brown","sex":"F","status":1,"top_level":true},
@@ -37,26 +46,31 @@
 			{"name":"m31","first_name":"Mark","last_name":"Brown","sex":"M","mother":"f22","father":"m22"}]
 		
 		var opts = {
-			'targetDiv': 'pedigrees',
-			'btn_target': 'diabetes_history_ex5',
+			'targetDiv': 'ped',
+			'btn_target': 'diabetes_history_ex6',
 			'width': svg_width,
 			'height': 500,
 			'symbol_size': 35,
 			'edit': true,
-			'diseases': [
-				{'type': 'diabetes', 'colour': '#F68F35'},
-			],
-			labels: ['name', 'first_name', 'last_name'],
+			'diseases': [{'type': 'diabetes', 'colour': '#F68F35'}],
+			validate: validate,
 			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
 		};
-		$('#opts').append(JSON.stringify(opts, null, 4));
+		
+		$('#validate').append("" + validate + "\n");
+		
+		
+		$('#opts').append(JSON.stringify(opts, function(key, val) {
+			        return (typeof val === 'function') ? key : val;
+			}, 4).replace(": \"validate\"",": validate"));
+		
 		var local_dataset = pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		} else {
 			opts.dataset = dataset;
 		}
-		opts= ptree.build(opts);
+		opts = ptree.build(opts);
 	});
 	</script>
 </head>
@@ -76,15 +90,16 @@
 	<label class="btn btn-default btn-file">
 		<input id="svg_download" type="button" style="display: none;"/>SVG
 	</label>
-	<div id='diabetes_history_ex5'></div>
-	<div id="pedigrees"></div>
+	<div id='diabetes_history_ex6'></div>
+	<div id="ped"></div>
 	<div id="node_properties"></div>
 </div>
 
 <div class="container">
 <br>
-<p>This shows consanguineous partners (f31-m31) and the use of the 'labels' configuration option to display first and last names.
-These are the options used:</p> 
+<p>An example validation function, defined in the configuration options, that checks both parents are defined:</p>
+<pre style="overflow: auto;word-wrap: normal;" id="validate"></pre>
+<p>These are the configuration options used:</p> 
 <pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
 </div>
 

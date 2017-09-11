@@ -408,6 +408,7 @@
 			font_weight: 700,
 			background: "#EEE",
 			node_background: '#fdfdfd',
+			validate: true,
         	DEBUG: false}, options );
 
         if ( $( "#fullscreen" ).length === 0 ) {
@@ -420,9 +421,12 @@
         	pedcache.add(opts);
 
         pbuttons.updateButtons(opts);
- 
+
+        // validate pedigree data
+        validate_pedigree(opts);
         // group top level nodes by partners
         opts.dataset = group_top_level(opts.dataset);
+
         if(opts.DEBUG)
         	pedigree_util.print_opts(opts);
         var svg_dimensions = get_svg_dimensions(opts);
@@ -488,19 +492,13 @@
 		// check the number of visible nodes equals the size of the pedigree dataset
 		var vis_nodes = $.map(opts.dataset, function(p, i){return p.hidden ? null : p;});
 		if(vis_nodes.length != opts.dataset.length) {
-			var err = 'NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET';
-			console.error(err, vis_nodes.length, opts.dataset.length);
-			throw new Error(err);
+			throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 		}
 
 		pedigree_util.adjust_coords(opts, nodes, flattenNodes);
 
 		var ptrLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
-
 		check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines
-		var unconnected = ptree.unconnected(opts.dataset);
-		if(unconnected.length > 0)
-			console.error("individuals unconnected to pedigree ", unconnected);
 
 		var node = ped.selectAll(".node")
 					  .data(nodes.descendants())
@@ -803,6 +801,50 @@
 		svg.call(zoom);
 		return opts;
 	};
+	
+	// validate pedigree data
+	function validate_pedigree(opts) {
+		if(opts.validate) {
+			if (typeof opts.validate == 'function') {
+				if(opts.DEBUG)
+					console.log('CALLING CONFIGURED VALIDATION FUNCTION');
+				return opts.validate.call(this, opts);;
+		    }
+
+			function create_err(err) {
+				console.error(err);
+				return new Error(err);
+			}
+
+			// check consistency of parents sex
+			for(var p=0; p<opts.dataset.length; p++) {
+				if(!p.hidden) {
+					if(opts.dataset[p].mother || opts.dataset[p].father) {
+						var name = opts.dataset[p].name;
+						var mother = opts.dataset[p].mother;
+						var father = opts.dataset[p].father;
+						if(!mother || !father) {
+							throw create_err('MISSING PARENT FOR '+name);
+						}
+						
+						var midx = pedigree_util.getIdxByName(opts.dataset, mother);
+						var fidx = pedigree_util.getIdxByName(opts.dataset, father);
+						if(midx === -1)
+							throw create_err('MISSING MOTHER FOR '+name);
+						if(fidx === -1)
+							throw create_err('MISSING FATHER FOR '+name);
+						if(opts.dataset[midx].sex !== "F")
+							throw create_err('MOTHERS SEX NOT FEMALE: '+opts.dataset[p].sex);
+						if(opts.dataset[fidx].sex !== "M")
+							throw create_err('FATHERS SEX NOT MALE: '+opts.dataset[p].sex);
+					}
+				}
+			}
+			// warn if there is a break in the pedigree
+			if(ptree.unconnected(opts.dataset).length > 0)
+				console.warn("individuals unconnected to pedigree ", unconnected);
+		}
+	}
 	
 	// check if the object contains a key with a given prefix
 	function prefixInObj(prefix, obj) {
