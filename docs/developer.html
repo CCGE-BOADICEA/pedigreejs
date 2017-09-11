@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,maximum-scale=2">
+
+	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
+	<link rel="stylesheet" href="dist/css/pedigreejs.min.css" />
+
+	<style>
+		a[href^="http://"][target=_blank]:after, 
+		a[href^="https://"][target=_blank]:after, 
+		a[href^="ftp://"][target=_blank]:after {
+		  content: "\f08e";
+		  font-family: FontAwesome;
+		  font-weight: normal;
+		  font-style: normal;
+		  display: inline-block;
+		  text-decoration: none;
+		  padding: 0px 2px;
+		  display:inline;
+		}
+
+		.fa-rotate-45 {
+			-webkit-transform:rotate(45deg); 
+			-moz-transform:rotate(45deg); 
+			-ms-transform:rotate(45deg); 
+			-o-transform:rotate(45deg);
+			transform:rotate(45deg);
+		}
+	</style>
+
+	<script src="https://code.jquery.com/jquery-3.2.0.min.js"></script> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="jumbotron" style="background-color:#DDD1C1">
+	<div class="container">
+	          <a class="btn btn-primary btn-lg pull-right" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs">View on GitHub</a>
+	          <h1><a href="../index.html">pedigreejs</a></h1>
+	          <h2>A web tool for building and displaying pedigrees.</h2>
+	</div>
+</div>
+
+<div class="container">
+	<div class="row">
+		<h2>Developer Notes</h2>
+		<p>
+		To embed pedigreejs in your application, you will need to either download or link to a CDN for
+		<a href="https://jquery.com/">JQuery</a>, <a href="http://fontawesome.io/">Font Awesome</a> and
+		<a href="https://d3js.org/">d3</a>. Font Awesome is used to display some of the widgets for
+		building the pedigree. The d3-hierarchy module is used to assist in the layout of the pedigree 
+		tree. The pedigreejs JavaScript and CSS files can be found under the projects GitHub
+		<a href="https://github.com/CCGE-BOADICEA/pedigreejs/tree/master/dist">'dist'</a> directory.
+		The examples show how the options can be used to provide a suitable pedigree display and can
+		be used as templates to experiment with.
+		</p>
+		<h3>Storing and Retrieving Pedigree Data</h3>
+		<p>
+		The <a href="../index.html#opts">‘store_type’</a> options in the configuration allows the data
+		to be store in the browser in 3 ways. The default is to use <strong>‘session’</strong> storage which is used in 
+		<a href="https://www.w3schools.com/html/html5_webstorage.asp">HTML5</a> to store data for a session.
+		So if the browser or tab is closed the data is lost. The second option is to use <strong>‘local’</strong>
+		storage which again is used in HTML but persists and has no expiration date. The last option is
+		<strong>‘array’</strong> which just holds the data in JavaScript array and disappears if the page is
+		refreshed or the browser closed.
+		</p>
+		<p>
+		The current pedigree data displayed can be accessed by calling the JavaScript routine:
+		</p>
+		<pre>var pedigree = pedcache.current(opts);</pre>
+		<p>
+		Where 'opts' is the options used to intialise pedigreejs. This returns the pedigree data in JSON format.
+		A search routine, for example, can then be implemented to interogate this.
+		</p>
+	</div>  
+</div>
+</body>	

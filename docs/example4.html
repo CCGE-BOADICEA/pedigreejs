@@ -49,6 +49,7 @@
 			labels: ['famid', 'id', 'alleles'],
 			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
 		};
+		$('#opts').append(JSON.stringify(opts, null, 4));
 		var local_dataset = pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
@@ -92,6 +93,8 @@ fam1 5 0 0 2 2 0 0 0 1
 fam1 6 0 0 1 1 0 0 0 0
 fam1 7 0 0 2 2 0 1 0 1
 </pre>
+<p>These are the options used:</p> 
+<pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
 </div>
 
 </body>
