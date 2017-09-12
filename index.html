@@ -149,6 +149,7 @@
 				<li>Example 3: <a href="docs/example3.html">change text and node size</a></li>
 				<li>Example 4: <a href="docs/example4.html">PED file example with genotype data</a></li>
 				<li>Example 5: <a href="docs/example5.html">consanguineous partners and first and last name labels</a></li>
+				<li>Example 6: <a href="docs/example5.html">example pedigree validation</a></li>
 			</ul>
 		</div>
 	</div>
@@ -282,7 +283,7 @@
 		<div class="col-md-2 text-right"><strong>height</strong></div>
 		<div class="col-md-10">Height of the SVG element, <i>e.g.</i> 400.</div>
     </div>
-	<div class="row id="symbol_size">
+	<div class="row" id="symbol_size">
 		<div class="col-md-2 text-right"><strong>symbol_size</strong></div>
 		<div class="col-md-10">Size of the nodes, <i>e.g.</i> 35.</div>
     </div>
@@ -325,6 +326,21 @@
 		<div class="col-md-2 text-right"><strong>node_background</strong></div>
 		<div class="col-md-10">Individual's background colour, <i>e.g.</i> #fff.</div>
 	</div>
+	<div class="row" id="validate">
+		<div class="col-md-2 text-right"><strong>validate</strong></div>
+		<div class="col-md-10">Pedigree data validation (default true). This can also take a validation
+		function to override the in-built validation. The in-built validation throws an error if any
+		of the following are not true:
+		<ul>
+			<li>parents, when defined, exist in the pedigree</li>
+			<li>mother is female</li>
+			<li>father is male</li>
+		</ul>
+		A warning message it sent to the console if there are any individuals that are not connected
+		(i.e. a break in the pedigree). See the <a href="docs/developer.html">developer notes</a> for
+		more details.
+		</div>
+    </div>
 	<div class="row" id="DEBUG">
 		<div class="col-md-2 text-right"><strong>DEBUG</strong></div>
 		<div class="col-md-10">Debug mode, <i>e.g.</i> false.</div>

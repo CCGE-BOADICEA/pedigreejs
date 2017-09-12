@@ -80,6 +80,13 @@
 		Where 'opts' is the options used to intialise pedigreejs. This returns the pedigree data in JSON format.
 		A search routine, for example, can then be implemented to interogate this.
 		</p>
+		<h3>Pedigree Data Validation</h3>
+		<p>
+		'pedigreejs' will validate the pedigree data loaded into the interface by default. It will check
+		the existence of parents and that the sex of the mother is female and the father is male. Alternatively
+		a function can be passed to the 'validate' configuration option (see <a href="example6.html">example 6</a>)
+		and define any validation requirements necessary.
+		</p>
 	</div>  
 </div>
 </body>	
