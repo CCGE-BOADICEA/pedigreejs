@@ -638,6 +638,37 @@
 		return links;
 	};
 
+	// get ancestors of a node
+	pedigree_util.ancestors = function(dataset, node) {
+		var ancestors = [];
+		function recurse(node) {
+			if(node.data) node = node.data;
+			if('mother' in node && 'father' in node && !('noparents' in node)){
+				recurse(pedigree_util.getNodeByName(dataset, node.mother));
+				recurse(pedigree_util.getNodeByName(dataset, node.father));
+			}
+			ancestors.push(node);
+		}
+		recurse(node);
+		return ancestors;
+	}
+
+	// test if two nodes are consanguinous partners
+	pedigree_util.consanguity = function(node1, node2, opts) {
+		var ancestors1 = pedigree_util.ancestors(opts.dataset, node1);
+		var ancestors2 = pedigree_util.ancestors(opts.dataset, node2);
+		var names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
+		var names2 = $.map(ancestors2, function(ancestor, i){return ancestor.name;});
+  		var consanguity = false;
+  		$.each(names1, function( index, name ) {
+  			if($.inArray(name, names2) !== -1){
+  				consanguity = true;
+  				return false;
+  			}
+  		});
+  		return consanguity;
+	}
+
 	// return a flattened representation of the tree
 	pedigree_util.flatten = function(root) {
 		var flat = [];
@@ -814,6 +845,7 @@
 			font_weight: 700,
 			background: "#EEE",
 			node_background: '#fdfdfd',
+			validate: true,
         	DEBUG: false}, options );
 
         if ( $( "#fullscreen" ).length === 0 ) {
@@ -826,9 +858,12 @@
         	pedcache.add(opts);
 
         pbuttons.updateButtons(opts);
- 
+
+        // validate pedigree data
+        validate_pedigree(opts);
         // group top level nodes by partners
         opts.dataset = group_top_level(opts.dataset);
+
         if(opts.DEBUG)
         	pedigree_util.print_opts(opts);
         var svg_dimensions = get_svg_dimensions(opts);
@@ -894,19 +929,13 @@
 		// check the number of visible nodes equals the size of the pedigree dataset
 		var vis_nodes = $.map(opts.dataset, function(p, i){return p.hidden ? null : p;});
 		if(vis_nodes.length != opts.dataset.length) {
-			var err = 'NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET';
-			console.error(err, vis_nodes.length, opts.dataset.length);
-			throw new Error(err);
+			throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 		}
 
 		pedigree_util.adjust_coords(opts, nodes, flattenNodes);
 
 		var ptrLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
-
 		check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines
-		var unconnected = ptree.unconnected(opts.dataset);
-		if(unconnected.length > 0)
-			console.error("individuals unconnected to pedigree ", unconnected);
 
 		var node = ped.selectAll(".node")
 					  .data(nodes.descendants())
@@ -1065,6 +1094,10 @@
 		  		.attr("stroke", "#000")
 		  		.attr("shape-rendering", "auto")
 		  		.attr('d', function(d, i) {
+		  			var node1 = pedigree_util.getNodeByName(flattenNodes, d.mother.data.name);
+		  			var node2 = pedigree_util.getNodeByName(flattenNodes, d.father.data.name);
+		  			var consanguity = pedigree_util.consanguity(node1, node2, opts);
+
 		  			var x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
 	  				var x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
 	  				var dy1 = d.mother.y;
@@ -1092,27 +1125,38 @@
 						parent_node.y = dy1; // adjust hgt of parent node
 		  				clash.sort(function (a,b) {return a - b;});
 
-		  				extend = function(i, l) {
-		  					if(i+1 < l)   //  && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
-		  						return extend(++i);
-		  					return i;
-		  				};
-
 		  				var dy2 = (dy1-opts.symbol_size/2-3);
-		  				// loop over node(s)
-		  				for(var j=0; j<clash.length; j++) {
-		  					var k = extend(j, clash.length);
-		  					var dx1 = clash[j] - dx;
-		  					var dx2 = clash[k] + dx;
-		  					if(parent_node.x > dx1 && parent_node.x < dx2)
-		  						parent_node.y = dy2;
-
-	  						path += "L" + dx1 + "," +  dy1 +
-		  					        "L" + dx1 + "," +  dy2 +
-		  					        "L" + dx2 + "," +  dy2 +
-		  					        "L" + dx2 + "," +  dy1;
-	  						j = k;
+		  				// get path looping over node(s)
+		  				draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
+			  				extend = function(i, l) {
+			  					if(i+1 < l)   //  && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
+			  						return extend(++i);
+			  					return i;
+			  				};
+		  					var path = "";
+			  				for(var j=0; j<clash.length; j++) {
+			  					var k = extend(j, clash.length);
+			  					var dx1 = clash[j] - dx - cshift;
+			  					var dx2 = clash[k] + dx + cshift;
+			  					if(parent_node.x > dx1 && parent_node.x < dx2)
+			  						parent_node.y = dy2;
+	
+		  						path += "L" + dx1 + "," +  (dy1 - cshift) +
+			  					        "L" + dx1 + "," +  (dy2 - cshift) +
+			  					        "L" + dx2 + "," +  (dy2 - cshift) +
+			  					        "L" + dx2 + "," +  (dy1 - cshift);
+		  						j = k;
+			  				}
+			  				return path;
 		  				}
+		  				path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
+		  			}
+
+		  			if(consanguity) {  // consanguinous, draw double line between partners
+		  				var cshift = 3;
+		  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
+		  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
+		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift);
 		  			}
 		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1;
 		  		});
@@ -1209,6 +1253,50 @@
 		svg.call(zoom);
 		return opts;
 	};
+	
+	// validate pedigree data
+	function validate_pedigree(opts) {
+		if(opts.validate) {
+			if (typeof opts.validate == 'function') {
+				if(opts.DEBUG)
+					console.log('CALLING CONFIGURED VALIDATION FUNCTION');
+				return opts.validate.call(this, opts);;
+		    }
+
+			function create_err(err) {
+				console.error(err);
+				return new Error(err);
+			}
+
+			// check consistency of parents sex
+			for(var p=0; p<opts.dataset.length; p++) {
+				if(!p.hidden) {
+					if(opts.dataset[p].mother || opts.dataset[p].father) {
+						var name = opts.dataset[p].name;
+						var mother = opts.dataset[p].mother;
+						var father = opts.dataset[p].father;
+						if(!mother || !father) {
+							throw create_err('MISSING PARENT FOR '+name);
+						}
+						
+						var midx = pedigree_util.getIdxByName(opts.dataset, mother);
+						var fidx = pedigree_util.getIdxByName(opts.dataset, father);
+						if(midx === -1)
+							throw create_err('MISSING MOTHER FOR '+name);
+						if(fidx === -1)
+							throw create_err('MISSING FATHER FOR '+name);
+						if(opts.dataset[midx].sex !== "F")
+							throw create_err('MOTHERS SEX NOT FEMALE: '+opts.dataset[p].sex);
+						if(opts.dataset[fidx].sex !== "M")
+							throw create_err('FATHERS SEX NOT MALE: '+opts.dataset[p].sex);
+					}
+				}
+			}
+			// warn if there is a break in the pedigree
+			if(ptree.unconnected(opts.dataset).length > 0)
+				console.warn("individuals unconnected to pedigree ", unconnected);
+		}
+	}
 	
 	// check if the object contains a key with a given prefix
 	function prefixInObj(prefix, obj) {
@@ -2204,8 +2292,12 @@
 	// test if browser storage is supported
 	function has_browser_storage(opts) {
 	    try {
+	    	if(opts.store_type === 'array')
+	    		return false;
+
 	    	if(opts.store_type !== 'local' && opts.store_type !== 'session' && opts.store_type !== undefined)
 	    		return false;
+
 	    	var mod = 'test';
 	        localStorage.setItem(mod, mod);
 	        localStorage.removeItem(mod);
@@ -2270,7 +2362,7 @@
 		if (has_browser_storage(opts)) {   // local storage
 			set_browser_store(opts, get_prefix(opts)+count, JSON.stringify(opts.dataset));
 		} else {   // TODO :: array cache
-			console.warn('Local storage not found/supported for this browser!');
+			console.warn('Local storage not found/supported for this browser!', opts.store_type);
 			max_limit = 500;
 			if(get_arr(opts) === undefined)
 				dict_cache[get_prefix(opts)] = [];

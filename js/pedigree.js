@@ -232,6 +232,37 @@
 		return links;
 	};
 
+	// get ancestors of a node
+	pedigree_util.ancestors = function(dataset, node) {
+		var ancestors = [];
+		function recurse(node) {
+			if(node.data) node = node.data;
+			if('mother' in node && 'father' in node && !('noparents' in node)){
+				recurse(pedigree_util.getNodeByName(dataset, node.mother));
+				recurse(pedigree_util.getNodeByName(dataset, node.father));
+			}
+			ancestors.push(node);
+		}
+		recurse(node);
+		return ancestors;
+	}
+
+	// test if two nodes are consanguinous partners
+	pedigree_util.consanguity = function(node1, node2, opts) {
+		var ancestors1 = pedigree_util.ancestors(opts.dataset, node1);
+		var ancestors2 = pedigree_util.ancestors(opts.dataset, node2);
+		var names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
+		var names2 = $.map(ancestors2, function(ancestor, i){return ancestor.name;});
+  		var consanguity = false;
+  		$.each(names1, function( index, name ) {
+  			if($.inArray(name, names2) !== -1){
+  				consanguity = true;
+  				return false;
+  			}
+  		});
+  		return consanguity;
+	}
+
 	// return a flattened representation of the tree
 	pedigree_util.flatten = function(root) {
 		var flat = [];
@@ -657,6 +688,10 @@
 		  		.attr("stroke", "#000")
 		  		.attr("shape-rendering", "auto")
 		  		.attr('d', function(d, i) {
+		  			var node1 = pedigree_util.getNodeByName(flattenNodes, d.mother.data.name);
+		  			var node2 = pedigree_util.getNodeByName(flattenNodes, d.father.data.name);
+		  			var consanguity = pedigree_util.consanguity(node1, node2, opts);
+
 		  			var x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
 	  				var x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
 	  				var dy1 = d.mother.y;
@@ -684,27 +719,38 @@
 						parent_node.y = dy1; // adjust hgt of parent node
 		  				clash.sort(function (a,b) {return a - b;});
 
-		  				extend = function(i, l) {
-		  					if(i+1 < l)   //  && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
-		  						return extend(++i);
-		  					return i;
-		  				};
-
 		  				var dy2 = (dy1-opts.symbol_size/2-3);
-		  				// loop over node(s)
-		  				for(var j=0; j<clash.length; j++) {
-		  					var k = extend(j, clash.length);
-		  					var dx1 = clash[j] - dx;
-		  					var dx2 = clash[k] + dx;
-		  					if(parent_node.x > dx1 && parent_node.x < dx2)
-		  						parent_node.y = dy2;
-
-	  						path += "L" + dx1 + "," +  dy1 +
-		  					        "L" + dx1 + "," +  dy2 +
-		  					        "L" + dx2 + "," +  dy2 +
-		  					        "L" + dx2 + "," +  dy1;
-	  						j = k;
+		  				// get path looping over node(s)
+		  				draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
+			  				extend = function(i, l) {
+			  					if(i+1 < l)   //  && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
+			  						return extend(++i);
+			  					return i;
+			  				};
+		  					var path = "";
+			  				for(var j=0; j<clash.length; j++) {
+			  					var k = extend(j, clash.length);
+			  					var dx1 = clash[j] - dx - cshift;
+			  					var dx2 = clash[k] + dx + cshift;
+			  					if(parent_node.x > dx1 && parent_node.x < dx2)
+			  						parent_node.y = dy2;
+	
+		  						path += "L" + dx1 + "," +  (dy1 - cshift) +
+			  					        "L" + dx1 + "," +  (dy2 - cshift) +
+			  					        "L" + dx2 + "," +  (dy2 - cshift) +
+			  					        "L" + dx2 + "," +  (dy1 - cshift);
+		  						j = k;
+			  				}
+			  				return path;
 		  				}
+		  				path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
+		  			}
+
+		  			if(consanguity) {  // consanguinous, draw double line between partners
+		  				var cshift = 3;
+		  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
+		  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
+		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift);
 		  			}
 		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1;
 		  		});
