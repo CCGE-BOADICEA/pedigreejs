@@ -34,7 +34,7 @@
     							.attr("ry", 6)
     							.attr("transform", "translate(-1000,-100)")
     							.style("opacity", 0)
-    							.attr("width",  font_size*6.2)
+    							.attr("width",  font_size*7.9)
     							.attr("height", font_size*2)
     							.style("stroke", "darkgrey")
     							.attr("fill", "white");
@@ -70,14 +70,24 @@
 			.text("\uf096 ");
 		var unspecified_title = unspecified.append("svg:title").text("add unspecified");
 
-		var mztwin = popup_selection.append("text")  // monozygotic twins
+		var dztwin = popup_selection.append("text")  // dizygotic twins
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr("transform", "translate(-1000,-100)")
-			.attr("class", "popup_selection fa-2x fa-angle-up persontype mztwin")
+			.attr("class", "popup_selection fa-2x fa-angle-up persontype dztwin")
 			.attr("x", font_size*4.6)
 			.attr("y", font_size*1.5)
 			.text("\uf106 ");
+		var dztwin_title = dztwin.append("svg:title").text("add dizygotic twins");
+
+		var mztwin = popup_selection.append("text")  // monozygotic twins
+		.attr('font-family', 'FontAwesome')
+		.style("opacity", 0)
+		.attr("transform", "translate(-1000,-100)")
+		.attr("class", "popup_selection fa-2x fa-caret-up persontype mztwin")
+		.attr("x", font_size*6.2)
+		.attr("y", font_size*1.5)
+		.text("\uf0d8");
 		var mztwin_title = mztwin.append("svg:title").text("add monozygotic twins");
 
 		var add_person = {};
@@ -86,16 +96,20 @@
 		  .on("click", function () {
 			var newdataset = ptree.copy_dataset(opts.dataset);
 			var mztwin = d3.select(this).classed("mztwin");
+			var dztwin = d3.select(this).classed("dztwin");
+			var twin_type;
 			var sex;
-			if(mztwin)
+			if(mztwin || dztwin) {
 				sex = add_person.node.datum().data.sex;
-			else
+				twin_type = (mztwin ? "mztwin" : "dztwin");
+			} else {
 				sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
+			}
 
 			if(add_person.type === 'addsibling')
-				ptree.addsibling(newdataset, add_person.node.datum().data, sex, false, mztwin);
+				ptree.addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);
 			else if(add_person.type === 'addchild')
-				ptree.addchild(newdataset, add_person.node.datum().data, (mztwin ? 'U' : sex), (mztwin ? 2 : 1), mztwin);
+				ptree.addchild(newdataset, add_person.node.datum().data, (twin_type ? 'U' : sex), (twin_type ? 2 : 1), twin_type);
 			else
 				return;
 			opts.dataset = newdataset;	
