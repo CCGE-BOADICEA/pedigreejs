@@ -790,13 +790,32 @@
 						var twins = pedigree_util.getMzTwins(opts.dataset, d.target.data);
 						if(twins.length >= 1) {
 							var twinx = 0;
+							var xmin = d.target.x;
+							var xmax = d.target.x;
 							for(var t=0; t<twins.length; t++) {
-								twinx += pedigree_util.getNodeByName(flattenNodes, twins[t].name).x;
+								var thisx = pedigree_util.getNodeByName(flattenNodes, twins[t].name).x;
+								if(xmin > thisx) xmin = thisx;
+								if(xmax < thisx) xmax = thisx;
+								twinx += thisx;
 							}
+
+							var xmid = ((d.target.x + twinx) / (twins.length+1));
+							var ymid = ((d.source.y + d.target.y) / 2);
+
+							var xhbar = "";
+							if(xmin === d.target.x && d.target.data.mztwin) {
+								// horizontal bar for mztwins
+								var xx = (xmid + d.target.x)/2;
+								var yy = (ymid + (d.target.y-opts.symbol_size/2))/2;
+								xhbar = "M" + xx + "," + yy +
+								     	"L" + (xmid + (xmid-xx)) + " " + yy;
+							}
+							
 							return "M" + (d.source.x) + "," + (d.source.y ) +
-						           "V" + ((d.source.y + d.target.y) / 2) +
-						           "H" + ((d.target.x + twinx) / (twins.length+1)) +
-						           "L" + (d.target.x) + " " + (d.target.y-opts.symbol_size/2) ;
+						           "V" + ymid +
+						           "H" + xmid +
+						           "L" + (d.target.x) + " " + (d.target.y-opts.symbol_size/2) +
+						           xhbar;
 						}
 					}
 					return "M" + (d.source.x) + "," + (d.source.y ) +
