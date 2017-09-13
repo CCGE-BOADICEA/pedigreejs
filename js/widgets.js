@@ -78,7 +78,7 @@
 			.attr("x", font_size*4.6)
 			.attr("y", font_size*1.5)
 			.text("\uf106 ");
-		var dztwin_title = dztwin.append("svg:title").text("add dizygotic twins");
+		var dztwin_title = dztwin.append("svg:title").text("add dizygotic/fraternal twins");
 
 		var mztwin = popup_selection.append("text")  // monozygotic twins
 		.attr('font-family', 'FontAwesome')
@@ -88,7 +88,7 @@
 		.attr("x", font_size*6.2)
 		.attr("y", font_size*1.5)
 		.text("\uf0d8");
-		var mztwin_title = mztwin.append("svg:title").text("add monozygotic twins");
+		var mztwin_title = mztwin.append("svg:title").text("add monozygotic/identical twins");
 
 		var add_person = {};
 		// click the person type selection
