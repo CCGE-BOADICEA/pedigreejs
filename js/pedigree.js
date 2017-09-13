@@ -1170,6 +1170,9 @@
 	
 	// add children to a given node
 	ptree.addchild = function(dataset, node, sex, nchild, twin_type) {
+		if(twin_type && $.inArray(twin_type, [ "mztwin", "dztwin" ] ) === -1)
+			return new Error("INVALID TWIN TYPE SET: "+twin_type);
+		
 		if (typeof nchild === typeof undefined)
 			nchild = 1;
 		var children = pedigree_util.getAllChildren(dataset, node);
@@ -1200,6 +1203,9 @@
 
 	//
 	ptree.addsibling = function(dataset, node, sex, add_lhs, twin_type) {
+		if(twin_type && $.inArray(twin_type, [ "mztwin", "dztwin" ] ) === -1)
+			return new Error("INVALID TWIN TYPE SET: "+twin_type);
+
 		var newbie = {"name": ptree.makeid(4), "sex": sex};
 		if(node.top_level) {
 			newbie.top_level = true;

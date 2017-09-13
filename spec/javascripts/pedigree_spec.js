@@ -207,7 +207,7 @@ describe('Test pedigree SVG ', function() {
 
 		it('should be possible as twins for the proband', function() {
 			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
-			ptree.addchild(newopts.dataset, ch1, 'U', 2, true);
+			ptree.addchild(newopts.dataset, ch1, 'U', 2, "mztwin");
 			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
 
 			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
@@ -241,14 +241,14 @@ describe('Test pedigree SVG ', function() {
 
 		it('should be possible to add twins', function() {
 			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
-			ptree.addsibling(newopts.dataset, ch1, ch1.sex, false, true);
+			ptree.addsibling(newopts.dataset, ch1, ch1.sex, false, "dztwin");
 			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
 			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts)
 			expect(newopts.dataset.length).toBe(ncount+1);
-			expect(ch1.mztwin).toBeDefined();
+			expect(ch1.dztwin).toBeDefined();
 		});
 	});
 
