@@ -53,7 +53,7 @@
 			],
 			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
 		};
-		$('#opts').append(JSON.stringify(opts, null, 4));
+		//$('#opts').append(JSON.stringify(opts, null, 4));
 		var local_dataset = pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
@@ -86,12 +86,20 @@
 </div>
 
 <div class="container">
+<div class="row">
 <br>
-<p>This is an example of defining diabetes as the disease. It is using the browsers
-<a href="https://www.w3schools.com/html/html5_webstorage.asp">session storage</a> (if available)
-to record the history and it stores for one session (data is lost when the browser tab is closed).
-These are the options used:</p> 
-<pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
+<p>
+Using <a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430" target="_blank">standard pedigree nomenclature</a>:</p>
+<div class="col-md-4">
+<table class="table" >
+	<tr><td class="text-right">miscarriage</td><td><img src="img/miscarriage.png"></td></tr>
+	<tr><td class="text-right">termination</td><td><img src="img/termination.png"></td></tr>
+	<tr><td class="text-right">stillbirth </td><td><img src="img/stillbirth.png"></td></tr>
+	<tr><td class="text-right">adopted    </td><td><img src="img/adoption.png"></td></tr>
+</table>
+</div>
+</div>
+
 </div>
 
 </body>
