@@ -436,7 +436,7 @@
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
-			labels: ['age', 'yob', 'alleles'],
+			labels: ['stillbirth', 'age', 'yob', 'alleles'],
 			font_size: '.75em',
 			font_family: 'Helvetica',
 			font_weight: 700,
@@ -548,7 +548,10 @@
 			.attr("shape-rendering", "geometricPrecision")
 			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
-			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}))
+					.type(function(d) {
+						if(d.data.miscarriage || d.data.termination)
+							return d3.symbolTriangle;
+						return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;}))
 			.style("stroke", function (d) {
 				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 			})
@@ -557,7 +560,7 @@
 			})
 			.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
 			.style("fill", "none");
-
+		
 		// set a clippath
 		node.append("clipPath")
 			.attr("id", function (d) {return d.data.name;}).append("path")
@@ -565,11 +568,14 @@
 			.attr("class", "node")
 			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
 			.attr("d", d3.symbol().size(function(d) {
-				if (d.data.hidden)
-					return opts.symbol_size * opts.symbol_size / 5;
-				return opts.symbol_size * opts.symbol_size;
-			})
-			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}));
+					if (d.data.hidden)
+						return opts.symbol_size * opts.symbol_size / 5;
+					return opts.symbol_size * opts.symbol_size;
+				})
+				.type(function(d) {
+					if(d.data.miscarriage || d.data.termination)
+						return d3.symbolTriangle;
+					return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}));
 
 		// pie plots for disease colours
 		var pienode = node.selectAll("pienode")
@@ -604,6 +610,32 @@
 			    	}
 			    	return opts.diseases[i].colour; 
 			    });
+		
+		// adopted
+		node.append("path")
+			.filter(function (d) {return !d.data.hidden && d.data.adopted;})
+			.attr("d", function(d) { {			
+				function get_bracket(dx, dy, indent) {
+					return 	"M" + (dx+indent) + "," + dy +
+							"L" + dx + " " + dy +
+							"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
+							"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
+							"L" + (dx+indent) + "," + (dy+(opts.symbol_size *  1.28))
+				}
+				var dx = -(opts.symbol_size * 0.66);
+				var dy = -(opts.symbol_size * 0.64);
+				var indent = opts.symbol_size/4;
+				return get_bracket(dx, dy, indent)+get_bracket(-dx, dy, -indent);
+				}})
+			.style("stroke", function (d) {
+				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
+			})
+			.style("stroke-width", function (d) {
+				return ".1em";
+			})
+			.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
+			.style("fill", "none");
+
 
 		// alive status = 0; dead status = 1
 		var status = node.append('line')
@@ -652,10 +684,12 @@
 							return alleles;	
 						} else if(label === 'age') {
 							return d.data[label] +'y';
+						} else if(label === 'stillbirth') {
+							return "SB";
 						}
 						return d.data[label];				
-				}
-			}, 'indi_details');
+					}
+				}, 'indi_details');
 		}
 
 		// individuals disease details
