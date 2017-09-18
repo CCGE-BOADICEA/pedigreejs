@@ -483,8 +483,8 @@
 			p.parent_node = [parent];
 
 		// check twins lie next to each other
-		if(p.mztwin) {
-			var twins = pedigree_util.getMzTwins(opts.dataset, p);
+		if(p.mztwin || p.dztwins) {
+			var twins = pedigree_util.getTwins(opts.dataset, p);
 			for(var i=0; i<twins.length; i++) {
 				var twin = pedigree_util.getNodeByName(nodes, twins[i].name);
 				if(twin)
@@ -499,7 +499,9 @@
 		children.sort(function(a, b) {
 			if(a.mztwin && b.mztwin && a.mztwin == b.mztwin)
 				return 0;
-			else if(a.mztwin || b.mztwin)
+			else if(a.dztwin && b.dztwin && a.dztwin == b.dztwin)
+				return 0;
+			else if(a.mztwin || b.mztwin || a.dztwin || b.dztwin)
 				return 1;
 			return 0;
 		});
@@ -574,11 +576,12 @@
 		});
 	};
 	
-	// get the monozygotic twin(s)
-	pedigree_util.getMzTwins = function(dataset, person) {
+	// get the mono/di-zygotic twin(s)
+	pedigree_util.getTwins = function(dataset, person) {
 		var sibs = pedigree_util.getSiblings(dataset, person);
+		var twin_type = (person.mztwin ? "mztwin" : "dztwin");
 		return $.map(sibs, function(p, i){
-			return p.name !== person.name && p.mztwin == person.mztwin ? p : null;
+			return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
 		});
 	};
 	
@@ -1183,7 +1186,7 @@
 					return "#000";
 				})
 				.attr("shape-rendering", function(d, i) {
-					if(d.target.data.mztwin) 
+					if(d.target.data.mztwin || d.target.data.dztwin) 
 						return "geometricPrecision";
 					return "auto";
 				})
@@ -1191,18 +1194,37 @@
 					if(!opts.DEBUG &&
 					   (d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden))
 						return;
-					if(d.target.data.mztwin) {
+					if(d.target.data.mztwin || d.target.data.dztwin) {
 						// get twin position
-						var twins = pedigree_util.getMzTwins(opts.dataset, d.target.data);
+						var twins = pedigree_util.getTwins(opts.dataset, d.target.data);
 						if(twins.length >= 1) {
 							var twinx = 0;
+							var xmin = d.target.x;
+							var xmax = d.target.x;
 							for(var t=0; t<twins.length; t++) {
-								twinx += pedigree_util.getNodeByName(flattenNodes, twins[t].name).x;
+								var thisx = pedigree_util.getNodeByName(flattenNodes, twins[t].name).x;
+								if(xmin > thisx) xmin = thisx;
+								if(xmax < thisx) xmax = thisx;
+								twinx += thisx;
 							}
+
+							var xmid = ((d.target.x + twinx) / (twins.length+1));
+							var ymid = ((d.source.y + d.target.y) / 2);
+
+							var xhbar = "";
+							if(xmin === d.target.x && d.target.data.mztwin) {
+								// horizontal bar for mztwins
+								var xx = (xmid + d.target.x)/2;
+								var yy = (ymid + (d.target.y-opts.symbol_size/2))/2;
+								xhbar = "M" + xx + "," + yy +
+								     	"L" + (xmid + (xmid-xx)) + " " + yy;
+							}
+							
 							return "M" + (d.source.x) + "," + (d.source.y ) +
-						           "V" + ((d.source.y + d.target.y) / 2) +
-						           "H" + ((d.target.x + twinx) / (twins.length+1)) +
-						           "L" + (d.target.x) + " " + (d.target.y-opts.symbol_size/2) ;
+						           "V" + ymid +
+						           "H" + xmid +
+						           "L" + (d.target.x) + " " + (d.target.y-opts.symbol_size/2) +
+						           xhbar;
 						}
 					}
 					return "M" + (d.source.x) + "," + (d.source.y ) +
@@ -1553,7 +1575,10 @@
 	};
 	
 	// add children to a given node
-	ptree.addchild = function(dataset, node, sex, nchild, mztwin) {
+	ptree.addchild = function(dataset, node, sex, nchild, twin_type) {
+		if(twin_type && $.inArray(twin_type, [ "mztwin", "dztwin" ] ) === -1)
+			return new Error("INVALID TWIN TYPE SET: "+twin_type);
+		
 		if (typeof nchild === typeof undefined)
 			nchild = 1;
 		var children = pedigree_util.getAllChildren(dataset, node);
@@ -1569,21 +1594,24 @@
 			idx = pedigree_util.getIdxByName(dataset, c.name);
 		}
 
-		if(mztwin)
-			mztwin = getUniqueTwinID(dataset);
+		if(twin_type)
+			var twin_id = getUniqueTwinID(dataset, twin_type);
 		for (var i = 0; i < nchild; i++) {
 			var child = {"name": ptree.makeid(4), "sex": sex,
 					     "mother": (node.sex === 'F' ? node.name : ptr_name),
 				         "father": (node.sex === 'F' ? ptr_name : node.name)};
 			dataset.splice(idx, 0, child);
 
-			if(mztwin)
-				child.mztwin = mztwin;
+			if(twin_type)
+				child[twin_type] = twin_id;
 		}
 	};
 
 	//
-	ptree.addsibling = function(dataset, node, sex, add_lhs, mztwin) {
+	ptree.addsibling = function(dataset, node, sex, add_lhs, twin_type) {
+		if(twin_type && $.inArray(twin_type, [ "mztwin", "dztwin" ] ) === -1)
+			return new Error("INVALID TWIN TYPE SET: "+twin_type);
+
 		var newbie = {"name": ptree.makeid(4), "sex": sex};
 		if(node.top_level) {
 			newbie.top_level = true;
@@ -1593,8 +1621,8 @@
 		}
 		var idx = pedigree_util.getIdxByName(dataset, node.name);
 		
-		if(mztwin) {
-			setMzTwin(dataset, dataset[idx], newbie);
+		if(twin_type) {
+			setMzTwin(dataset, dataset[idx], newbie, twin_type);
 		}
 
 		if(add_lhs) { // add to LHS
@@ -1606,13 +1634,13 @@
 	};
 
 	// set two siblings as twins 
-	function setMzTwin(dataset, d1, d2) {
-		if(!d1.mztwin) {
-			d1.mztwin = getUniqueTwinID(dataset);
-			if(!d1.mztwin)
+	function setMzTwin(dataset, d1, d2, twin_type) {
+		if(!d1[twin_type]) {
+			d1[twin_type] = getUniqueTwinID(dataset, twin_type);
+			if(!d1[twin_type])
 				return false;
 		}
-		d2.mztwin = d1.mztwin;
+		d2[twin_type] = d1[twin_type];
 		if(d1.yob)
 			d2.yob = d1.yob;
 		if(d1.age && (d1.status == 0 || !d1.status))
@@ -1621,11 +1649,11 @@
 	}
 	
 	// get a new unique twins ID, max of 10 twins in a pedigree
-	function getUniqueTwinID(dataset) {
+	function getUniqueTwinID(dataset, twin_type) {
 		var mz = [1, 2, 3, 4, 5, 6, 7, 8, 9, "A"];
 		for(var i=0; i<dataset.length; i++) {
-			if(dataset[i].mztwin) {
-				var idx = mz.indexOf(dataset[i].mztwin);
+			if(dataset[i][twin_type]) {
+				var idx = mz.indexOf(dataset[i][twin_type]);
 				if (idx > -1)
 					mz.splice(idx, 1);
 			}
@@ -1637,12 +1665,14 @@
 
 	// sync attributes of twins
 	ptree.syncTwins = function(dataset, d1) {
-		if(!d1.mztwin)
+		if(!d1.mztwin && !d1.dztwin)
 			return;
+		var twin_type = (d1.mztwin ? "mztwin" : "dztwin");
 		for(var i=0; i<dataset.length; i++) {
 			var d2 = dataset[i];
-			if(d2.mztwin && d1.mztwin == d2.mztwin && d2.name !== d1.name) {
-				d2.sex = d1.sex;
+			if(d2[twin_type] && d1[twin_type] == d2[twin_type] && d2.name !== d1.name) {
+				if(twin_type === "mztwin")
+				  d2.sex = d1.sex;
 				if(d1.yob)
 					d2.yob = d1.yob;
 				if(d1.age && (d1.status == 0 || !d1.status))
@@ -1653,15 +1683,19 @@
 
 	// check integrity twin settings
 	function checkTwins(dataset) {
+		var twin_types = ["mztwin", "dztwin"];
 		for(var i=0; i<dataset.length; i++) {
-			if(dataset[i].mztwin) {
-				var count = 0;
-				for(var j=0; j<dataset.length; j++) {
-					if(dataset[j].mztwin == dataset[i].mztwin)
-						count++;
+			for(var j=0; j<twin_types.length; j++) {
+				var twin_type = twin_types[j];
+				if(dataset[i][twin_type]) {
+					var count = 0;
+					for(var j=0; j<dataset.length; j++) {
+						if(dataset[j][twin_type] == dataset[i][twin_type])
+							count++;
+					}
+					if(count < 2)
+						delete dataset[i][[twin_type]];
 				}
-				if(count < 2)
-					delete dataset[i].mztwin;
 			}
 		}
 	}
@@ -2513,7 +2547,7 @@
     							.attr("ry", 6)
     							.attr("transform", "translate(-1000,-100)")
     							.style("opacity", 0)
-    							.attr("width",  font_size*6.2)
+    							.attr("width",  font_size*7.9)
     							.attr("height", font_size*2)
     							.style("stroke", "darkgrey")
     							.attr("fill", "white");
@@ -2549,15 +2583,25 @@
 			.text("\uf096 ");
 		var unspecified_title = unspecified.append("svg:title").text("add unspecified");
 
-		var mztwin = popup_selection.append("text")  // monozygotic twins
+		var dztwin = popup_selection.append("text")  // dizygotic twins
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
 			.attr("transform", "translate(-1000,-100)")
-			.attr("class", "popup_selection fa-2x fa-angle-up persontype mztwin")
+			.attr("class", "popup_selection fa-2x fa-angle-up persontype dztwin")
 			.attr("x", font_size*4.6)
 			.attr("y", font_size*1.5)
 			.text("\uf106 ");
-		var mztwin_title = mztwin.append("svg:title").text("add monozygotic twins");
+		var dztwin_title = dztwin.append("svg:title").text("add dizygotic/fraternal twins");
+
+		var mztwin = popup_selection.append("text")  // monozygotic twins
+		.attr('font-family', 'FontAwesome')
+		.style("opacity", 0)
+		.attr("transform", "translate(-1000,-100)")
+		.attr("class", "popup_selection fa-2x fa-caret-up persontype mztwin")
+		.attr("x", font_size*6.2)
+		.attr("y", font_size*1.5)
+		.text("\uf0d8");
+		var mztwin_title = mztwin.append("svg:title").text("add monozygotic/identical twins");
 
 		var add_person = {};
 		// click the person type selection
@@ -2565,16 +2609,20 @@
 		  .on("click", function () {
 			var newdataset = ptree.copy_dataset(opts.dataset);
 			var mztwin = d3.select(this).classed("mztwin");
+			var dztwin = d3.select(this).classed("dztwin");
+			var twin_type;
 			var sex;
-			if(mztwin)
+			if(mztwin || dztwin) {
 				sex = add_person.node.datum().data.sex;
-			else
+				twin_type = (mztwin ? "mztwin" : "dztwin");
+			} else {
 				sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
+			}
 
 			if(add_person.type === 'addsibling')
-				ptree.addsibling(newdataset, add_person.node.datum().data, sex, false, mztwin);
+				ptree.addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);
 			else if(add_person.type === 'addchild')
-				ptree.addchild(newdataset, add_person.node.datum().data, (mztwin ? 'U' : sex), (mztwin ? 2 : 1), mztwin);
+				ptree.addchild(newdataset, add_person.node.datum().data, (twin_type ? 'U' : sex), (twin_type ? 2 : 1), twin_type);
 			else
 				return;
 			opts.dataset = newdataset;	

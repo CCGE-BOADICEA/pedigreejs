@@ -60,7 +60,8 @@
 		tree. The pedigreejs JavaScript and CSS files can be found under the projects GitHub
 		<a href="https://github.com/CCGE-BOADICEA/pedigreejs/tree/master/dist">'dist'</a> directory.
 		The examples show how the options can be used to provide a suitable pedigree display and can
-		be used as templates to experiment with.
+		be used as templates to experiment with. The 'dataset' option in the initialisation and configuration
+		of pedigreejs defines the pedigree to be rendered,
 		</p>
 		<h3>Storing and Retrieving Pedigree Data</h3>
 		<p>
@@ -86,6 +87,19 @@
 		the existence of parents and that the sex of the mother is female and the father is male. Alternatively
 		a function can be passed to the 'validate' configuration option (see <a href="example6.html">example 6</a>)
 		and define any validation requirements necessary.
+		</p>
+		<h3>Display and Editing of Individual's Attributes</h3>
+		<p>
+		The 'labels' configuration option is used to determine what annotations are displayed
+		under each of the individuals in the pedigree. So that it is possible to customise different attributes
+		to be shown.
+		</p>
+		<p>
+		A default data dialog is displayed when clicking on the <i class="fa fa-cog" aria-hidden="true"></i> icon.
+		It shows the individual's details (<i>e.g.</i> name, age, sex). It is possible to implement and customise
+		a data editor specific to the data set of interest by passing a function to as an option when configuring
+		pedigreejs. See <a href="example3.html">example 3</a>. Alternatively set 'edit' in the configuration to false
+		to disable and hide the data dialog.
 		</p>
 	</div>  
 </div>
