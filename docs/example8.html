@@ -116,16 +116,20 @@
 
 <div class="container">
 <br>
-<p>This example shows how a case sensitive search of the individual's attributes can be implemented. 
-This is the search method:</p> 
+<p>This example shows how a case sensitive search of the individual's attributes (<i>e.g.</i> age, name) can be implemented.
+A more sophisticated search could be based on this (<i>e.g.</i> example providing a 'case insensitive' search option and
+a 'search and replace' option).
+When the 'Search' button is clicked or 'enter' pressed in the 'Search for...' text box the search method is called:</p> 
 <pre>
+
+// search pedigree data with the given search text
 function search_pedigree_data(search) {
-	var pedigree = pedcache.current(opts);		// current pedigree data
+	var pedigree = pedcache.current(opts);		// current pedigree data displayed
 	var html = "";
-	for(var p=0; p&lt;pedigree.length; p++){
+	for(var p=0; p&lt;pedigree.length; p++){		// loop over each person in the pedigree
 		var found = false;
 		var attr = '';
-		$.each(pedigree[p], function(key, value) {
+		$.each(pedigree[p], function(key, value) {	// loop over individual's data
 			if(search == key || search == value || 
 			   key.indexOf(search) !== -1 || (""+value).indexOf(search) !== -1) {
 				found = true;
@@ -139,9 +143,9 @@ function search_pedigree_data(search) {
 		}
 	}
 	if(html !== '') {
-		$('#search_result').html(html);
+		$('#search_result').html(html);		// display matches found
 	} else {
-		$('#search_result').html("No matches");
+		$('#search_result').html("No matches");	// no matches found
 	}
 }
 </pre>
