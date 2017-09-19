@@ -23,14 +23,15 @@
 		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
 
 		var dataset = [
-			{"famid":"XXXX","display_name":"8","name":"ch1","sex":"F","status":"0","proband":true,"father":"m21","mother":"f21","age":"41","yob":"1976"},
-			{"famid":"XXXX","display_name":"7","name":"m21","sex":"M","status":"0","father":"iHTp","mother":"DVEO","age":"67","yob":"1950","level":1},
-			{"famid":"XXXX","display_name":"6","name":"f21","sex":"F","status":"0","father":"AhyZ","mother":"WJaM","age":"68","yob":"1949","breast_cancer_diagnosis_age":"67","ovarian_cancer_diagnosis_age":"63","brca1_gene_test":{"type":"S","result":"N"},"er_bc_pathology":"P","level":1},
-			{"famid":"XXXX","display_name":"5","name":"lXPO","sex":"F","status":"0","father":"UzQw","mother":"f21","age":"50","yob":"1967","breast_cancer_diagnosis_age":"49"},{"famid":"XXXX","display_name":"4","name":"UzQw","sex":"M","status":"0","age":"72","yob":"1945","level":1,"noparents":true,"mother":"WJaM","father":"AhyZ"},
-			{"famid":"XXXX","display_name":"3","name":"DVEO","sex":"F","status":"0","age":"87","yob":"1930","level":2,"top_level":true},
-			{"famid":"XXXX","display_name":"2","name":"iHTp","sex":"M","status":"1","age":"75","yob":"1955","breast_cancer_diagnosis_age":"72","breast_cancer2_diagnosis_age":"73","level":2,"top_level":true},
-			{"famid":"XXXX","display_name":"1","name":"AhyZ","sex":"M","status":"0","age":"88","yob":"1929","level":2,"top_level":true},
-			{"famid":"XXXX","display_name":"0","name":"WJaM","sex":"F","status":"0","age":"85","yob":"1932","breast_cancer_diagnosis_age":"55","pancreatic_cancer_diagnosis_age":"53","level":2,"top_level":true}];
+			{"famid":"FAM1","name":"ch1","sex":"F","status":"0","proband":true,"father":"m21","mother":"f21","age":"41","yob":"1976"},
+			{"famid":"FAM1","name":"m21","sex":"M","status":"0","father":"iHTp","mother":"DVEO","age":"67","yob":"1950","level":1},
+			{"famid":"FAM1","name":"f21","sex":"F","status":"0","father":"AhyZ","mother":"WJaM","age":"68","yob":"1949","breast_cancer_diagnosis_age":"67","ovarian_cancer_diagnosis_age":"63"},
+			{"famid":"FAM1","name":"lXPO","sex":"F","status":"0","father":"UzQw","mother":"f21","age":"50","yob":"1967","breast_cancer_diagnosis_age":"49"},
+			{"famid":"FAM1","name":"UzQw","sex":"M","status":"0","age":"72","yob":"1945","level":1,"noparents":true,"mother":"WJaM","father":"AhyZ"},
+			{"famid":"FAM1","name":"DVEO","sex":"F","status":"0","age":"87","yob":"1930","level":2,"top_level":true},
+			{"famid":"FAM1","name":"iHTp","sex":"M","status":"1","age":"75","yob":"1955","breast_cancer_diagnosis_age":"72","breast_cancer2_diagnosis_age":"73","level":2,"top_level":true},
+			{"famid":"FAM1","name":"AhyZ","sex":"M","status":"0","age":"88","yob":"1929","level":2,"top_level":true},
+			{"famid":"FAM1","name":"WJaM","sex":"F","status":"0","age":"85","yob":"1932","breast_cancer_diagnosis_age":"55","pancreatic_cancer_diagnosis_age":"53","level":2,"top_level":true}];
 		var opts = {
 			'targetDiv': 'ped',
 			'btn_target': 'cancer_history',
