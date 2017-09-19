@@ -79,12 +79,18 @@
 		<pre>var pedigree = pedcache.current(opts);</pre>
 		<p>
 		Where 'opts' is the options used to intialise pedigreejs. This returns the pedigree data in JSON format.
-		A search routine, for example, can then be implemented to interogate this.
+		A search routine can then be implemented to interogate this, see <a href="example8.html">example 8</a>.
 		</p>
 		<h3>Pedigree Data Validation</h3>
 		<p>
 		'pedigreejs' will validate the pedigree data loaded into the interface by default. It will check
-		the existence of parents and that the sex of the mother is female and the father is male. Alternatively
+		the existence of parents and that the sex of the mother is female and the father is male. Also it checks
+		that the unique name exists and is unique for each individual in the pedigree. Errors are returned, e.g.
+		</p>
+<pre>NON-UNIQUE NAME: f21
+MOTHERS SEX NOT FEMALE: M
+MISSING FATHER FOR ch1</pre>
+		<p>Alternatively
 		a function can be passed to the 'validate' configuration option (see <a href="example6.html">example 6</a>)
 		and define any validation requirements necessary.
 		</p>
@@ -100,6 +106,15 @@
 		a data editor specific to the data set of interest by passing a function to as an option when configuring
 		pedigreejs. See <a href="example3.html">example 3</a>. Alternatively set 'edit' in the configuration to false
 		to disable and hide the data dialog.
+		</p>
+		<h3>Test Suite</h3>
+		<p>
+		The <a href="https://jasmine.github.io/">Jasmine</a> test framework is used to provide tests for the
+		JavaScript. It can be installed and run from the root directory as follows:</p>
+<pre>pip install jasmine
+jasmine</pre>
+		<p>
+		Then visit 0.0.0.0:8888 in a web-browser to run the tests.
 		</p>
 	</div>  
 </div>
