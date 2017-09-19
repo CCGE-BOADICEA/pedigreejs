@@ -15,6 +15,11 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
 	<script src="../dist/js/pedigreejs.min.js"></script>
+<!--    <script src="../js/io.js"></script>
+    	<script src="../js/pedigree_form.js"></script>
+    	<script src="../js/pedigree.js"></script>
+    	<script src="../js/undo_redo_refresh.js"></script>
+    	<script src="../js/widgets.js"></script> -->
 	
 	<script type="text/javascript">
 	$( document ).ready(function() {
@@ -24,20 +29,31 @@
 			(parent_width*8/12 - margin)*0.8) : parent_width- margin);
 
 		var dataset = [
-			{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true, "breast_cancer_diagnosis_age":67, "ovarian_cancer_diagnosis_age":63},
+			{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true, "breast_cancer":true, "ovarian_cancer":true},
 			{"name": "m11", "sex": "M", "top_level": true},
-			{"name": "f12", "sex": "F", "top_level": true, "breast_cancer_diagnosis_age":55},
+			{"name": "f12", "sex": "F", "top_level": true, "breast_cancer":true},
 			{"name": "m12", "sex": "M", "top_level": true},
 			{"name": "m21", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
-			{"name": "f21", "display_name": "Joy", "sex": "F", "mother": "f12", "father": "m12", "breast_cancer_diagnosis_age":55, "breast_cancer2_diagnosis_age": 60, "ovarian_cancer_diagnosis_age":58, "age": 63},
+			{"name": "f21", "display_name": "Joy", "sex": "F", "mother": "f12", "father": "m12", "breast_cancer":true, "breast_cancer2": true, "ovarian_cancer":true, "age": 63},
 			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
 		];
 		
-		function openDialog(opts, d) {
-			$('#node_properties').html('ID: '+d.data.name);
-			$('#node_properties').dialog({
-			    title: d.data.display_name
+		function openDialog(opts, d) {	
+			var table = "<table id='person_details' class='table'>";
+			table += "<tr><td style='text-align:right'>ID</td><td><input class='form-control' type='text' id='id_name' value="+
+						d.data.name+"></td></tr>";
+ 			$.each(opts.diseases, function(k, v) {
+				var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>';
+				table += '<tr><td colspan="2">' +
+					 	 '<label class="checkbox-inline"><input type="checkbox" id="id_'+v.type +
+					    	'" name="'+v.type+'" value="0" '+(d.data[v.type] ? "checked" : "")+'>'+disease_colour+'&thinsp;' +
+					        v.type.replace("_", " ")+'</label></td></tr>'
 			});
+ 			$('#node_properties').html(table);
+			$('#node_properties').dialog({title: d.data.display_name});
+			$('#node_properties input[type=checkbox]').change(function() {
+		    	pedigree_form.save(opts);
+		    });
 		}
 		var opts = {
 				'targetDiv': 'ped3',
@@ -88,11 +104,22 @@
 <br>
 <p>This example overrides the default property editor and uses larger symbols, a larger font size and using 'times' font. These are the options used:</p>
 <pre style="overflow: auto;word-wrap: normal;" id="opts">
-		function openDialog(opts, d) {
-			$('#node_properties').html('ID: '+d.data.name);
-			$('#node_properties').dialog({
-			    title: d.data.display_name
+		function openDialog(opts, d) {	
+			var table = "&lt;table id='person_details' class='table'>";
+			table += "&lt;tr>&lt;td style='text-align:right'>ID&lt;/td>&lt;td>&lt;input class='form-control' type='text' id='id_name' value="+
+						d.data.name+">&lt;/td>&lt;/tr>";
+ 			$.each(opts.diseases, function(k, v) {
+				var disease_colour = '&thinsp;&lt;span style="padding-left:5px;background:'+opts.diseases[k].colour+'">&lt;/span>';
+				table += '&lt;tr>&lt;td colspan="2">' +
+					 	 '&lt;label class="checkbox-inline">&lt;input type="checkbox" id="id_'+v.type +
+					    	'" name="'+v.type+'" value="0" '+(d.data[v.type] ? "checked" : "")+'>'+disease_colour+'&thinsp;' +
+					        v.type.replace("_", " ")+'&lt;/label>&lt;/td>&lt;/tr>'
 			});
+ 			$('#node_properties').html(table);
+			$('#node_properties').dialog({title: d.data.display_name});
+			$('#node_properties input[type=checkbox]').change(function() {
+		    	pedigree_form.save(opts);
+		    });
 		}
 
 		var opts = {

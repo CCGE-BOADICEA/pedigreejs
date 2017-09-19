@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,maximum-scale=2">
+	
+	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
+	<link rel="stylesheet" href="../dist/css/pedigreejs.min.css" />
+
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+	<!-- <script src="../dist/js/pedigreejs.min.js"></script> -->
+    <script src="../js/io.js"></script>
+    <script src="../js/pedigree_form.js"></script>
+    <script src="../js/pedigree.js"></script>
+    <script src="../js/undo_redo_refresh.js"></script>
+    <script src="../js/widgets.js"></script>
+
+	<script type="text/javascript">
+	$( document ).ready(function() {
+		var parent_width = $('#pedigrees_ex7').parent().width();
+		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
+		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
+
+		var dataset = [
+			{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true},
+			{"name": "m11", "display_name": "John",  "sex": "M", "diabetes_diagnosis_age": 55, "top_level": true},
+			{"name": "f12", "display_name": "Jill", "sex": "F", "top_level": true},
+			{"name": "m12", "display_name": "Jack", "sex": "M", "top_level": true},
+			{"name": "m21", "display_name": "Jim", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
+			{"name": "f21", "display_name": "Jan", "sex": "F", "mother": "f12", "father": "m12", "age": 63},
+			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25},
+			{"name": "ch2", "display_name": "Bet", "sex": "F", "mother": "f21", "father": "m21", "adopted": true},
+			{"name": "ch3", "display_name": "Adam", "sex": "M", "mother": "f21", "father": "m21", "stillbirth": true, "status": 1},
+			{"name": "ch4", "display_name": "Sam", "sex": "M", "mother": "f21", "father": "m21", "miscarriage": true},
+			{"name": "ch5", "mother": "f21", "father": "m21", "termination": true, "status": 1}
+		];
+		var opts = {
+			'targetDiv': 'pedigrees_ex7',
+			'btn_target': 'diabetes_history_ex7',
+			'store_type': 'session',
+			'width': svg_width,
+			'height': 500,
+			'symbol_size': 35,
+			'edit': true,
+			'diseases': [
+				{'type': 'diabetes', 'colour': '#F68F35'},
+			],
+			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
+		};
+		//$('#opts').append(JSON.stringify(opts, null, 4));
+		var local_dataset = pedcache.current(opts);
+		if (local_dataset !== undefined && local_dataset !== null) {
+			opts.dataset = local_dataset;
+		} else {
+			opts.dataset = dataset;
+		}
+		opts= ptree.build(opts);
+	});
+	</script>
+</head>
+<body>
+
+<br>
+<div class="text-center">
+	<label class="btn btn-default btn-file">
+		<input id="load" type="file" style="display: none;"/>Load
+	</label>	
+	<label class="btn btn-default btn-file">
+		<input id="save" type="button" style="display: none;"/>Save
+	</label>
+	<label class="btn btn-default btn-file">
+		<input id="print" type="button" style="display: none;"/>Print
+	</label>
+	<label class="btn btn-default btn-file">
+		<input id="svg_download" type="button" style="display: none;"/>SVG
+	</label>
+	<div id='diabetes_history_ex7'></div>
+	<div id="pedigrees_ex7"></div>
+	<div id="node_properties"></div>
+</div>
+
+<div class="container">
+<div class="row">
+<br>
+<p>
+Using <a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430" target="_blank">standard pedigree nomenclature</a>:</p>
+<div class="col-md-4">
+<table class="table" >
+	<tr><td class="text-right">miscarriage</td><td><img src="img/miscarriage.png"></td></tr>
+	<tr><td class="text-right">termination</td><td><img src="img/termination.png"></td></tr>
+	<tr><td class="text-right">stillbirth </td><td><img src="img/stillbirth.png"></td></tr>
+	<tr><td class="text-right">adopted    </td><td><img src="img/adoption.png"></td></tr>
+</table>
+</div>
+</div>
+
+</div>
+
+</body>

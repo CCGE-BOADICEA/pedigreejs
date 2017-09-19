@@ -842,7 +842,7 @@
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
-			labels: ['age', 'yob', 'alleles'],
+			labels: ['stillbirth', 'age', 'yob', 'alleles'],
 			font_size: '.75em',
 			font_family: 'Helvetica',
 			font_weight: 700,
@@ -954,7 +954,10 @@
 			.attr("shape-rendering", "geometricPrecision")
 			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
-			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}))
+					.type(function(d) {
+						if(d.data.miscarriage || d.data.termination)
+							return d3.symbolTriangle;
+						return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;}))
 			.style("stroke", function (d) {
 				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 			})
@@ -963,7 +966,7 @@
 			})
 			.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
 			.style("fill", "none");
-
+		
 		// set a clippath
 		node.append("clipPath")
 			.attr("id", function (d) {return d.data.name;}).append("path")
@@ -971,11 +974,14 @@
 			.attr("class", "node")
 			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
 			.attr("d", d3.symbol().size(function(d) {
-				if (d.data.hidden)
-					return opts.symbol_size * opts.symbol_size / 5;
-				return opts.symbol_size * opts.symbol_size;
-			})
-			.type(function(d) {return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}));
+					if (d.data.hidden)
+						return opts.symbol_size * opts.symbol_size / 5;
+					return opts.symbol_size * opts.symbol_size;
+				})
+				.type(function(d) {
+					if(d.data.miscarriage || d.data.termination)
+						return d3.symbolTriangle;
+					return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}));
 
 		// pie plots for disease colours
 		var pienode = node.selectAll("pienode")
@@ -1010,6 +1016,32 @@
 			    	}
 			    	return opts.diseases[i].colour; 
 			    });
+		
+		// adopted
+		node.append("path")
+			.filter(function (d) {return !d.data.hidden && d.data.adopted;})
+			.attr("d", function(d) { {			
+				function get_bracket(dx, dy, indent) {
+					return 	"M" + (dx+indent) + "," + dy +
+							"L" + dx + " " + dy +
+							"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
+							"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
+							"L" + (dx+indent) + "," + (dy+(opts.symbol_size *  1.28))
+				}
+				var dx = -(opts.symbol_size * 0.66);
+				var dy = -(opts.symbol_size * 0.64);
+				var indent = opts.symbol_size/4;
+				return get_bracket(dx, dy, indent)+get_bracket(-dx, dy, -indent);
+				}})
+			.style("stroke", function (d) {
+				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
+			})
+			.style("stroke-width", function (d) {
+				return ".1em";
+			})
+			.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
+			.style("fill", "none");
+
 
 		// alive status = 0; dead status = 1
 		var status = node.append('line')
@@ -1058,10 +1090,12 @@
 							return alleles;	
 						} else if(label === 'age') {
 							return d.data[label] +'y';
+						} else if(label === 'stillbirth') {
+							return "SB";
 						}
 						return d.data[label];				
-				}
-			}, 'indi_details');
+					}
+				}, 'indi_details');
 		}
 
 		// individuals disease details
@@ -2073,6 +2107,20 @@
 			person.status = status.val();
 		}
 
+		// booleans switches
+		var switches = ["miscarriage", "adopted", "termination", "stillbirth"];
+		for(var iswitch=0; iswitch<switches.length; iswitch++){
+			var attr = switches[iswitch];
+			var s = $('#id_'+attr);
+			if(s.length > 0){
+				console.log(s.is(":checked"));
+				if(s.is(":checked"))
+					person[attr] = true;
+				else
+					delete person[attr];
+			}
+		}
+
 		// current sex
 		var sex = $('#id_sex').find("input[type='radio']:checked");
 		if(sex.length > 0){
@@ -2903,7 +2951,7 @@
 		$('#node_properties').dialog({
 		    autoOpen: false,
 		    title: d.data.display_name,
-		    width: ($(window).width() > 400 ? 430 : $(window).width()- 30)
+		    width: ($(window).width() > 400 ? 450 : $(window).width()- 30)
 		});
 
 		var table = "<table id='person_details' class='table'>";
@@ -2928,8 +2976,23 @@
 				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
 				 '</td></tr>';
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
-		
+
+		// switches
+		var switches = ["adopted", "miscarriage", "stillbirth", "termination"];
+		table += '<tr><td colspan="2"><strong>Reproduction:</strong></td></tr>';
+		table += '<tr><td colspan="2">';
+		for(var iswitch=0; iswitch<switches.length; iswitch++){
+			var attr = switches[iswitch];
+			table += 
+			 '<label class="checkbox-inline"><input type="checkbox" id="id_'+attr +
+			    '" name="'+attr+'" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;' +
+			    capitaliseFirstLetter(attr)+'</label>'
+		}
+		table += '</td></tr>';
+
+		// 
 		var exclude = ["children", "name", "parent_node", "top_level", "id", "level", "age", "sex", "status", "display_name", "mother", "father"];
+		$.merge(exclude, switches);
 		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
 			exclude.push(v.type+"_diagnosis_age");

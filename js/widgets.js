@@ -390,7 +390,7 @@
 		$('#node_properties').dialog({
 		    autoOpen: false,
 		    title: d.data.display_name,
-		    width: ($(window).width() > 400 ? 430 : $(window).width()- 30)
+		    width: ($(window).width() > 400 ? 450 : $(window).width()- 30)
 		});
 
 		var table = "<table id='person_details' class='table'>";
@@ -415,8 +415,23 @@
 				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
 				 '</td></tr>';
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
-		
+
+		// switches
+		var switches = ["adopted", "miscarriage", "stillbirth", "termination"];
+		table += '<tr><td colspan="2"><strong>Reproduction:</strong></td></tr>';
+		table += '<tr><td colspan="2">';
+		for(var iswitch=0; iswitch<switches.length; iswitch++){
+			var attr = switches[iswitch];
+			table += 
+			 '<label class="checkbox-inline"><input type="checkbox" id="id_'+attr +
+			    '" name="'+attr+'" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;' +
+			    capitaliseFirstLetter(attr)+'</label>'
+		}
+		table += '</td></tr>';
+
+		// 
 		var exclude = ["children", "name", "parent_node", "top_level", "id", "level", "age", "sex", "status", "display_name", "mother", "father"];
+		$.merge(exclude, switches);
 		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
 			exclude.push(v.type+"_diagnosis_age");
