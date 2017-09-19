@@ -189,11 +189,11 @@ describe('Test pedigree SVG ', function() {
 		});
 
 		it('should expect mothers to be female', function() {
-			expect(function() {ptree.build(newopts)}).not.toThrow(new Error("MOTHERS SEX NOT FEMALE: F"));
+			expect(function() {ptree.build(newopts)}).not.toThrow(new Error("MOTHERS SEX NOT FEMALE: M"));
 			var f21 = pedigree_util.getNodeByName(newopts.dataset, 'f21');
 			f21.sex = 'M';
 			newopts.dataset = ptree.copy_dataset(newopts.dataset);
-			expect(function() {ptree.build(newopts)}).toThrow(new Error("MOTHERS SEX NOT FEMALE: F"));
+			expect(function() {ptree.build(newopts)}).toThrow(new Error("MOTHERS SEX NOT FEMALE: M"));
 		});
 	});
 
