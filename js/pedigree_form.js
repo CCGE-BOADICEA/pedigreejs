@@ -151,6 +151,20 @@
 			person.status = status.val();
 		}
 
+		// booleans switches
+		var switches = ["miscarriage", "adopted", "termination", "stillbirth"];
+		for(var iswitch=0; iswitch<switches.length; iswitch++){
+			var attr = switches[iswitch];
+			var s = $('#id_'+attr);
+			if(s.length > 0){
+				console.log(s.is(":checked"));
+				if(s.is(":checked"))
+					person[attr] = true;
+				else
+					delete person[attr];
+			}
+		}
+
 		// current sex
 		var sex = $('#id_sex').find("input[type='radio']:checked");
 		if(sex.length > 0){
