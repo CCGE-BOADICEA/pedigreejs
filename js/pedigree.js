@@ -784,14 +784,19 @@
 		  				path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
 		  			}
 
+		  			var divorce_path = "";
+		  			if(divorced && !clash)
+		  				divorce_path = "M" + (x1+((x2-x1)*.66)+6) + "," + (dy1-6) +
+		  				               "L"+  (x1+((x2-x1)*.66)-6) + "," + (dy1+6) +
+		  				               "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
+		  				               "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
 		  			if(consanguity) {  // consanguinous, draw double line between partners
 		  				var cshift = 3;
 		  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
 		  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
-		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift);
+		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
 		  			}
-
-		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1;
+		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + divorce_path;
 		  		});
 
 		// links to children
@@ -823,7 +828,6 @@
 					if(twins.length >= 1) dash_len = dash_len * 3;
 					for(var usedlen = 0; usedlen < dash_len; usedlen += 10)
 						$.merge(dash_array, [5, 5]);
-					console.log(dash_array);
 					return dash_array;
 				})
 				.attr("shape-rendering", function(d, i) {
