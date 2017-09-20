@@ -35,7 +35,7 @@
 			{"name": "m21", "display_name": "Jim", "divorced": "f21", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
 			{"name": "f21", "display_name": "Jan", "divorced": "m21", "sex": "F", "mother": "f12", "father": "m12", "age": 63},
 			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25},
-			{"name": "ch2", "display_name": "", "sex": "F", "mother": "f21", "father": "m21", "adopted_in": true},
+			{"name": "ch2", "display_name": "Bet", "sex": "F", "mother": "f21", "father": "m21", "adopted_in": true},
 			{"name": "ch3", "display_name": "Adam", "sex": "M", "mother": "f21", "father": "m21", "stillbirth": true, "status": 1},
 			{"name": "ch4", "display_name": "Sam", "sex": "M", "mother": "f21", "father": "m21", "miscarriage": true},
 			{"name": "ch5", "mother": "f21", "father": "m21", "termination": true, "status": 1}
@@ -48,7 +48,6 @@
 			'height': 500,
 			'symbol_size': 35,
 			'edit': true,
-			'background': 'white',
 			'diseases': [
 				{'type': 'diabetes', 'colour': '#F68F35'},
 			],
@@ -93,10 +92,10 @@
 More examples using <a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430" target="_blank">standard pedigree nomenclature</a>:</p>
 <div class="col-md-4">
 <table class="table" >
-	<tr><td class="text-right">miscarriage</td><td><img src="img/miscarriage.png"></td><td></td><td></td></tr>
-	<tr><td class="text-right">termination</td><td><img src="img/termination.png"></td><td></td><td></td></tr>
-	<tr><td class="text-right">stillbirth </td><td><img src="img/stillbirth.png"></td><td></td><td></td></tr>
-	<tr><td class="text-right">adopted in </td><td><img src="img/adopted_in.png"></td><td class="text-right">adopted out</td><td><td><img src="img/adopted_out.png"></td></tr>
+	<tr><td class="text-right">miscarriage</td><td><img src="img/miscarriage.png"></td><td rowspan="3">divorced</td><td rowspan="3"><img src="img/divorce.png"></td></tr>
+	<tr><td class="text-right">termination</td><td><img src="img/termination.png"></td></tr>
+	<tr><td class="text-right">stillbirth </td><td><img src="img/stillbirth.png"> </td></tr>
+	<tr><td class="text-right">adopted in </td><td><img src="img/adopted_in.png"> </td><td class="text-right">adopted out</td><td><img src="img/adopted_out.png"></td></tr>
 </table>
 </div>
 </div>
