@@ -1325,6 +1325,7 @@
 			}
 
 			// check consistency of parents sex
+			var uniquenames = [];
 			for(var p=0; p<opts.dataset.length; p++) {
 				if(!p.hidden) {
 					if(opts.dataset[p].mother || opts.dataset[p].father) {
@@ -1342,11 +1343,16 @@
 						if(fidx === -1)
 							throw create_err('MISSING FATHER FOR '+name);
 						if(opts.dataset[midx].sex !== "F")
-							throw create_err('MOTHERS SEX NOT FEMALE: '+opts.dataset[p].sex);
+							throw create_err('MOTHERS SEX NOT FEMALE: '+opts.dataset[midx].sex);
 						if(opts.dataset[fidx].sex !== "M")
-							throw create_err('FATHERS SEX NOT MALE: '+opts.dataset[p].sex);
+							throw create_err('FATHERS SEX NOT MALE: '+opts.dataset[fidx].sex);
 					}
 				}
+				if(!opts.dataset[p].name)
+					throw create_err('NO UNIQUE NAME');
+				if($.inArray(opts.dataset[p].name, uniquenames) > -1)
+					throw create_err('NON-UNIQUE NAME: '+opts.dataset[p].name);
+				uniquenames.push(opts.dataset[p].name);
 			}
 			// warn if there is a break in the pedigree
 			if(ptree.unconnected(opts.dataset).length > 0)
@@ -2991,7 +2997,8 @@
 		table += '</td></tr>';
 
 		// 
-		var exclude = ["children", "name", "parent_node", "top_level", "id", "level", "age", "sex", "status", "display_name", "mother", "father"];
+		var exclude = ["children", "name", "parent_node", "top_level", "id", "noparents",
+			           "level", "age", "sex", "status", "display_name", "mother", "father"];
 		$.merge(exclude, switches);
 		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
