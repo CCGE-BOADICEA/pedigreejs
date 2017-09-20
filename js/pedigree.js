@@ -611,9 +611,9 @@
 			    	return opts.diseases[i].colour; 
 			    });
 		
-		// adopted
+		// adopted in/out brackets
 		node.append("path")
-			.filter(function (d) {return !d.data.hidden && d.data.adopted;})
+			.filter(function (d) {return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);})
 			.attr("d", function(d) { {			
 				function get_bracket(dx, dy, indent) {
 					return 	"M" + (dx+indent) + "," + dy +
@@ -728,6 +728,7 @@
 		  			var node1 = pedigree_util.getNodeByName(flattenNodes, d.mother.data.name);
 		  			var node2 = pedigree_util.getNodeByName(flattenNodes, d.father.data.name);
 		  			var consanguity = pedigree_util.consanguity(node1, node2, opts);
+		  			var divorced = (d.mother.data.divorced &&  d.mother.data.divorced === d.father.data.name);
 
 		  			var x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
 	  				var x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
@@ -789,6 +790,7 @@
 		  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
 		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift);
 		  			}
+
 		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1;
 		  		});
 
@@ -813,15 +815,23 @@
 						return 'pink';
 					return "#000";
 				})
+				.attr("stroke-dasharray", function(d, i) {
+					if(!d.target.data.adopted_in) return null;
+					var dash_len = Math.abs(d.source.y-((d.source.y + d.target.y) / 2));
+					var dash_array = [dash_len, 0, Math.abs(d.source.x-d.target.x), 0];
+					var twins = pedigree_util.getTwins(opts.dataset, d.target.data);
+					if(twins.length >= 1) dash_len = dash_len * 3;
+					for(var usedlen = 0; usedlen < dash_len; usedlen += 10)
+						$.merge(dash_array, [5, 5]);
+					console.log(dash_array);
+					return dash_array;
+				})
 				.attr("shape-rendering", function(d, i) {
 					if(d.target.data.mztwin || d.target.data.dztwin) 
 						return "geometricPrecision";
 					return "auto";
 				})
 				.attr("d", function(d, i) {
-					if(!opts.DEBUG &&
-					   (d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden))
-						return;
 					if(d.target.data.mztwin || d.target.data.dztwin) {
 						// get twin position
 						var twins = pedigree_util.getTwins(opts.dataset, d.target.data);
@@ -847,7 +857,7 @@
 								xhbar = "M" + xx + "," + yy +
 								     	"L" + (xmid + (xmid-xx)) + " " + yy;
 							}
-							
+
 							return "M" + (d.source.x) + "," + (d.source.y ) +
 						           "V" + ymid +
 						           "H" + xmid +
