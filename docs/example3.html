@@ -102,7 +102,11 @@
 
 <div class="container">
 <br>
-<p>This example overrides the default property editor and uses larger symbols, a larger font size and using 'times' font. These are the options used:</p>
+<p>This example uses larger symbols, a larger font size and using 'times' font.
+It also demonstrates how using the 'edit' parameter in the configuration can be used to override the default
+property editor/dialog for displaying and editing individual's attributes. This gets displayed when placing the mouse over an individual in
+the pedigree and selecting the <i class="fa fa-cog" aria-hidden="true"></i> widget.
+Below is the funtion used to display attributes and the configuration options used:</p>
 <pre style="overflow: auto;word-wrap: normal;" id="opts">
 		function openDialog(opts, d) {	
 			var table = "&lt;table id='person_details' class='table'>";
