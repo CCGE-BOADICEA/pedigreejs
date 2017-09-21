@@ -1017,9 +1017,9 @@
 			    	return opts.diseases[i].colour; 
 			    });
 		
-		// adopted
+		// adopted in/out brackets
 		node.append("path")
-			.filter(function (d) {return !d.data.hidden && d.data.adopted;})
+			.filter(function (d) {return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);})
 			.attr("d", function(d) { {			
 				function get_bracket(dx, dy, indent) {
 					return 	"M" + (dx+indent) + "," + dy +
@@ -1134,6 +1134,7 @@
 		  			var node1 = pedigree_util.getNodeByName(flattenNodes, d.mother.data.name);
 		  			var node2 = pedigree_util.getNodeByName(flattenNodes, d.father.data.name);
 		  			var consanguity = pedigree_util.consanguity(node1, node2, opts);
+		  			var divorced = (d.mother.data.divorced &&  d.mother.data.divorced === d.father.data.name);
 
 		  			var x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
 	  				var x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
@@ -1189,13 +1190,19 @@
 		  				path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
 		  			}
 
+		  			var divorce_path = "";
+		  			if(divorced && !clash)
+		  				divorce_path = "M" + (x1+((x2-x1)*.66)+6) + "," + (dy1-6) +
+		  				               "L"+  (x1+((x2-x1)*.66)-6) + "," + (dy1+6) +
+		  				               "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
+		  				               "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
 		  			if(consanguity) {  // consanguinous, draw double line between partners
 		  				var cshift = 3;
 		  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
 		  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
-		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift);
+		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
 		  			}
-		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1;
+		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + divorce_path;
 		  		});
 
 		// links to children
@@ -1219,15 +1226,22 @@
 						return 'pink';
 					return "#000";
 				})
+				.attr("stroke-dasharray", function(d, i) {
+					if(!d.target.data.adopted_in) return null;
+					var dash_len = Math.abs(d.source.y-((d.source.y + d.target.y) / 2));
+					var dash_array = [dash_len, 0, Math.abs(d.source.x-d.target.x), 0];
+					var twins = pedigree_util.getTwins(opts.dataset, d.target.data);
+					if(twins.length >= 1) dash_len = dash_len * 3;
+					for(var usedlen = 0; usedlen < dash_len; usedlen += 10)
+						$.merge(dash_array, [5, 5]);
+					return dash_array;
+				})
 				.attr("shape-rendering", function(d, i) {
 					if(d.target.data.mztwin || d.target.data.dztwin) 
 						return "geometricPrecision";
 					return "auto";
 				})
 				.attr("d", function(d, i) {
-					if(!opts.DEBUG &&
-					   (d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden))
-						return;
 					if(d.target.data.mztwin || d.target.data.dztwin) {
 						// get twin position
 						var twins = pedigree_util.getTwins(opts.dataset, d.target.data);
@@ -1253,7 +1267,7 @@
 								xhbar = "M" + xx + "," + yy +
 								     	"L" + (xmid + (xmid-xx)) + " " + yy;
 							}
-							
+
 							return "M" + (d.source.x) + "," + (d.source.y ) +
 						           "V" + ymid +
 						           "H" + xmid +
@@ -2114,7 +2128,7 @@
 		}
 
 		// booleans switches
-		var switches = ["miscarriage", "adopted", "termination", "stillbirth"];
+		var switches = ["miscarriage", "adopted_in", "adopted_out", "termination", "stillbirth"];
 		for(var iswitch=0; iswitch<switches.length; iswitch++){
 			var attr = switches[iswitch];
 			var s = $('#id_'+attr);
@@ -2984,15 +2998,17 @@
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
 		// switches
-		var switches = ["adopted", "miscarriage", "stillbirth", "termination"];
+		var switches = ["adopted_in", "adopted_out", "miscarriage", "stillbirth", "termination"];
 		table += '<tr><td colspan="2"><strong>Reproduction:</strong></td></tr>';
 		table += '<tr><td colspan="2">';
 		for(var iswitch=0; iswitch<switches.length; iswitch++){
 			var attr = switches[iswitch];
+			if(iswitch === 2)
+				table += '</td></tr><tr><td colspan="2">';
 			table += 
 			 '<label class="checkbox-inline"><input type="checkbox" id="id_'+attr +
 			    '" name="'+attr+'" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;' +
-			    capitaliseFirstLetter(attr)+'</label>'
+			    capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
 		}
 		table += '</td></tr>';
 
