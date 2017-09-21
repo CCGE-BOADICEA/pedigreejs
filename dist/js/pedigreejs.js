@@ -1369,7 +1369,8 @@
 				uniquenames.push(opts.dataset[p].name);
 			}
 			// warn if there is a break in the pedigree
-			if(ptree.unconnected(opts.dataset).length > 0)
+			var unconnected = ptree.unconnected(opts.dataset);
+			if(unconnected.length > 0)
 				console.warn("individuals unconnected to pedigree ", unconnected);
 		}
 	}
