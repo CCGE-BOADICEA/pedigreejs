@@ -3015,7 +3015,8 @@
 
 		// 
 		var exclude = ["children", "name", "parent_node", "top_level", "id", "noparents",
-			           "level", "age", "sex", "status", "display_name", "mother", "father"];
+			           "level", "age", "sex", "status", "display_name", "mother", "father",
+			           "mztwin", "dztwin"];
 		$.merge(exclude, switches);
 		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
