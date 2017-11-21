@@ -87,16 +87,17 @@
 
 		var tree_dimensions = ptree.get_tree_dimensions(opts);
 		var svg_div = $('#'+opts.targetDiv).find('svg').parent();
-		if(opts.width < tree_dimensions.width || opts.height < tree_dimensions.height) {
-		    var wid = tree_dimensions.width;
+		if(opts.width < tree_dimensions.width || opts.height < tree_dimensions.height ||
+		   tree_dimensions.width > 595 || tree_dimensions.height > 842) {
+			var wid = tree_dimensions.width;
 		    var hgt = tree_dimensions.height + 100;
 		    var scale = 1.0;
 
 		    if(tree_dimensions.width > 595 || tree_dimensions.height > 842) {   // scale to fit A4
-		    	wid = 595;
-		    	hgt = 842;
-		    	var xscale = 595/tree_dimensions.width;
-		    	var yscale = 842/tree_dimensions.height;
+		    	if(tree_dimensions.width > 595)  wid = 595;
+		    	if(tree_dimensions.height > 842) hgt = 842;
+		    	var xscale = wid/tree_dimensions.width;
+		    	var yscale = hgt/tree_dimensions.height;
 		    	scale = (xscale < yscale ? xscale : yscale);
 		    }
 			svg_div = $('<div></div>');  				// create a new div
