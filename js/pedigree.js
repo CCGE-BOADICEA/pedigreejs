@@ -513,11 +513,7 @@
 					    ' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
 
 		var treemap = d3.tree().separation(function(a, b) {
-				if(a.data.hidden || b.data.hidden)
-					return 1.2;
-				if(a.parent === b.parent && ('noparents' in a.data || 'noparents' in b.data || 'top_level' in a.data))
-					return 1.2;			
-				return a.parent === b.parent ? 1 : 1.2;
+			return a.parent === b.parent || a.data.hidden || b.data.hidden ? 1.2 : 2.2;
 		}).size([tree_dimensions.width, tree_dimensions.height]);
 
 		var nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
