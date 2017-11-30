@@ -61,7 +61,7 @@
 		$('#fh_edit_settings').on( "click", function() {
 			$('#fh_settings').dialog({
 			    autoOpen: false,
-			    title: "Configuration",
+			    title: "Disease Configuration",
 			    buttons: [
 			        {
 			        	text: "RESET",
@@ -130,7 +130,8 @@
 			}
 
 			function update_diseases() {
-				var tab = "<table class='table table-condensed table-striped table-bordered'>";;
+				var tab = "<table class='table table-condensed table-striped table-bordered'>" +
+							"<thead><tr><th>Disease</th><th>Colour</th><th></th></tr></thead>";
 				$.each(opts.diseases, function(k, v) {
 					var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>';
 					tab += "<tr>" +
