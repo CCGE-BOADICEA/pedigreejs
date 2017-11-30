@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,maximum-scale=2">
+	
+	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
+	<link rel="stylesheet" href="../dist/css/pedigreejs.min.css" />
+
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+	<script src="../dist/js/pedigreejs.min.js"></script>
+
+
+	<script type="text/javascript">
+	function capitaliseFirstLetter(string) {
+	    return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+	$( document ).ready(function() {
+		var parent_width = $('#pedigrees').parent().width();
+		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
+		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
+
+		var opts = {
+			'targetDiv': 'pedigrees',
+			'btn_target': 'demo_history',
+			'store_type': 'session',
+			'width': svg_width,
+			'height': 500,
+			'symbol_size': 35,
+			'edit': true,
+        	'diseases': [
+        		 {'type': 'breast_cancer', 'colour': '#F68F35'},
+				 {'type': 'breast_cancer2', 'colour': 'pink'},
+				 {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
+				 {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
+				 {'type': 'prostate_cancer', 'colour': '#D5494A'},
+				 {'type': 'colon_cancer', 'colour': 'brown'},
+				 {'type': 'gastric_cancer','colour': 'green'},
+				 {'type': 'endometrial_cancer','colour': 'yellow'},
+				 {'type': 'melanoma_cancer', 'colour': 'blue'}
+			],
+			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
+		};
+		$('#opts').append(JSON.stringify(opts, null, 4));
+		var local_dataset = pedcache.current(opts);
+		if (local_dataset !== undefined && local_dataset !== null) {
+			opts.dataset = local_dataset;
+		}
+
+		var dis = localStorage.getItem('diseases');
+		if(dis !== undefined && dis !== null){
+			opts.diseases = JSON.parse(dis);
+		}
+		opts= ptree.build(opts);
+		
+		<!-- edit disease configuration -->
+		$('#fh_edit_settings').on( "click", function() {
+			$('#fh_settings').dialog({
+			    autoOpen: false,
+			    title: "Configuration",
+			    buttons: [
+			        {
+			          text: "OK",
+			          click: function() {
+			            $( this ).dialog( "close" );
+			          }
+			        }
+			      ],
+			    width: ($(window).width() > 400 ? 450 : $(window).width()- 30)
+			});
+			var html_dis =
+				'<br><div class="row">'+
+					'<div class="col-md-4 text-right">'+
+				  		'<label for="dis_name">Add Disease:</label>' +
+					'</div>' +
+					'<div class="col-md-6">'+
+			  			'<input type="text" class="form-control" id="dis_name">' +
+					'</div>' +
+					'<div class="col-md-2">'+
+						'<label class="btn btn-default btn-file">' +
+							'<input id="add_disease" type="button" style="display: none;"/><i class="fa fa-plus" aria-hidden="true"></i>' +
+						'</label>' +
+					'</div>' +
+				'</div><br><div id="disease_table"></div>';
+
+			function update_diseases() {
+				var tab = "<table class='table table-condensed table-striped table-bordered'>";;
+				$.each(opts.diseases, function(k, v) {
+					var disease_colour = '&thinsp;<span style="padding-left:5px;background:'+opts.diseases[k].colour+'"></span>';
+					tab += "<tr><td style='text-align:right'>"+capitaliseFirstLetter(v.type.replace(/_/g , " "))+
+								disease_colour+"&nbsp;</td>" +
+								"<td>"+
+								"<label class='btn btn-default btn-sm'>" +
+									"<input id='delete_disease-"+v.type+"' type='button' style='display: none;'/>" +
+										"<i class='fa fa-times' aria-hidden='true' style='color:#8B0000'></i>" +
+								"</label>" +
+								"</td></tr>";
+				});
+				tab += "</table>";
+				$('#disease_table').html(tab);
+			}
+
+			$('#fh_settings').html(html_dis);
+			update_diseases();
+			$('#fh_settings').dialog('open');
+			
+			$('#add_disease').on( "click", function() {
+				if($('#dis_name').val() == "")
+					return;
+				var new_diseases = opts.diseases.slice();
+				new_diseases.push({'type': $('#dis_name').val().replace(/\s/g , "_"), 'colour': 'red'});
+				opts.diseases = new_diseases;
+				localStorage.setItem('diseases', JSON.stringify(opts.diseases));
+				update_diseases();
+			});
+
+			$("input[id^='delete_disease-']").on( "click", function() {
+				var this_disease = $(this).attr('id').replace('delete_disease-', '');
+				var new_diseases = opts.diseases.slice();
+				new_diseases = new_diseases.filter(function(el) {
+				    return el.type !== this_disease;
+				});
+				opts.diseases = new_diseases;
+				localStorage.setItem('diseases', JSON.stringify(opts.diseases));
+				update_diseases();
+			});
+		});
+	});
+	</script>
+</head>
+<body>
+
+<br>
+<div class="text-center">
+	<h3>Family History</h3>
+	<label class="btn btn-default btn-file">
+		<input id="load" type="file" style="display: none;"/>Load
+	</label>	
+	<label class="btn btn-default btn-file">
+		<input id="save" type="button" style="display: none;"/>Save
+	</label>
+	<label class="btn btn-default btn-file">
+		<input id="print" type="button" style="display: none;"/>Print
+	</label>
+	<label class="btn btn-default btn-file">
+		<input id="svg_download" type="button" style="display: none;"/>SVG
+	</label>
+	<label class="btn btn-default btn-file">
+		<input id="fh_edit_settings" type="button" style="display: none;"/><i class="fa fa-cog" aria-hidden="true"></i>
+	</label>
+	<div id='demo_history'></div>
+	<div id="pedigrees"></div>
+	<div id="node_properties"></div>
+	<div id="fh_settings"></div>
+</div>
+
+</body>
