@@ -795,6 +795,24 @@
 		return {'midx': gmidx, 'fidx': gfidx};
 	};
 
+	// Set or remove proband attributes. 
+	// If a value is not provided the attribute is removed from the proband.
+	pedigree_util.proband_attr = function(opts, key, value){
+		var newdataset = ptree.copy_dataset(opts.dataset);
+		var proband = newdataset[ pedigree_util.getProbandIndex(newdataset) ];
+		if(!proband){
+			console.warn("No proband defined");
+			return;
+		}
+		if(value)
+			proband[key] = value;
+		else
+			delete proband[key]; 
+        ptree.syncTwins(newdataset, proband);
+		opts.dataset = newdataset;
+		ptree.rebuild(opts);
+	}
+
 	// print options and dataset
 	pedigree_util.print_opts = function(opts){
     	$("#pedigree_data").remove();
