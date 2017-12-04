@@ -70,7 +70,7 @@
 			          	        modal: true,
 			          	        buttons: {
 			          	          Yes: function() {
-							      	newdataset = ptree.copy_dataset(opts.dataset);
+							      	newdataset = ptree.copy_dataset(pedcache.current(opts));
 							        opts.dataset = newdataset;
 							        opts.diseases = $.extend(true, [], DEFAULT_DISEASES);
 							        ptree.rebuild(opts);
@@ -89,7 +89,7 @@
 			          text: "OK",
 			          click: function() {
 			            $( this ).dialog( "close" );
-			            newdataset = ptree.copy_dataset(opts.dataset);
+			            newdataset = ptree.copy_dataset(pedcache.current(opts));
 			            opts.dataset = newdataset;
 			            ptree.rebuild(opts);
 			          }
@@ -218,6 +218,9 @@
 	</label>
 	<label class="btn btn-default btn-file">
 		<input id="svg_download" type="button" style="display: none;"/>SVG
+	</label>
+	<label class="btn btn-default btn-file">
+		<input id="png_download" type="button" style="display: none;"/>PNG
 	</label>
 	<label class="btn btn-default btn-file">
 		<input id="fh_edit_settings" type="button" style="display: none;"/><i class="fa fa-cog" aria-hidden="true"></i>
