@@ -397,10 +397,17 @@
 			console.warn("No proband defined");
 			return;
 		}
-		if(value)
+		if(value) {
+			if(key in proband && proband[key] === value)
+				return;
 			proband[key] = value;
-		else
-			delete proband[key]; 
+		} else {
+			console.log(key, (key in proband));
+			if(key in proband)
+				delete proband[key];
+			else
+				return;
+		}
         ptree.syncTwins(newdataset, proband);
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
