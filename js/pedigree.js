@@ -398,11 +398,16 @@
 			return;
 		}
 		if(value) {
-			if(key in proband && proband[key] === value)
-				return;
+			if(key in proband) {
+				if(proband[key] === value)
+					return;
+				try{
+				   if(JSON.stringify(proband[key]) === JSON.stringify(value))
+					   return;
+				} catch(e){}
+			}
 			proband[key] = value;
 		} else {
-			console.log(key, (key in proband));
 			if(key in proband)
 				delete proband[key];
 			else
