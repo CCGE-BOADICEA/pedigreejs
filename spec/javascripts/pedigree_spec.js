@@ -69,6 +69,7 @@ describe('Test pedigree SVG ', function() {
 	afterEach(function() {
 		d3.selectAll('svg').remove();
 		localStorage.clear();
+		sessionStorage.clear();
 	});
 
 	function getGlobals() {
@@ -171,31 +172,31 @@ describe('Test pedigree SVG ', function() {
 		});
 	});
 
-	// test validation
-	describe('the pedigree data', function() {
-		beforeEach(function() {
-			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds1);
-			ptree.rebuild(newopts);
-			ncount = newopts.dataset.length;
-		});
-		
-		it('should have unique names', function() {
-			expect(function() {ptree.build(newopts)}).not.toThrow(new Error("NON-UNIQUE NAME: f21"));
-			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
-			ch1.name = 'f21';
-			newopts.dataset = ptree.copy_dataset(newopts.dataset);
-			expect(function() {ptree.build(newopts)}).toThrow(new Error("NON-UNIQUE NAME: f21"));
-		});
+    // test validation
+    describe('the pedigree data', function() {
+            beforeEach(function() {
+                    newopts = $.extend({}, opts);
+                    newopts.dataset = ptree.copy_dataset(ds1);
+                    ptree.rebuild(newopts);
+                    ncount = newopts.dataset.length;
+            });
 
-		it('should expect mothers to be female', function() {
-			expect(function() {ptree.build(newopts)}).not.toThrow(new Error("MOTHERS SEX NOT FEMALE: M"));
-			var f21 = pedigree_util.getNodeByName(newopts.dataset, 'f21');
-			f21.sex = 'M';
-			newopts.dataset = ptree.copy_dataset(newopts.dataset);
-			expect(function() {ptree.build(newopts)}).toThrow(new Error("MOTHERS SEX NOT FEMALE: M"));
-		});
-	});
+            it('should have unique names', function() {
+                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error("NON-UNIQUE NAME: f21"));
+                    var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
+                    ch1.name = 'f21';
+                    newopts.dataset = ptree.copy_dataset(newopts.dataset);
+                    expect(function() {ptree.build(newopts)}).toThrow(new Error("NON-UNIQUE NAME: f21"));
+            });
+
+            it('should expect mothers to be female', function() {
+                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error("MOTHERS SEX NOT FEMALE: M"));
+                    var f21 = pedigree_util.getNodeByName(newopts.dataset, 'f21');
+                    f21.sex = 'M';
+                    newopts.dataset = ptree.copy_dataset(newopts.dataset);
+                    expect(function() {ptree.build(newopts)}).toThrow(new Error("MOTHERS SEX NOT FEMALE: M"));
+            });
+    });
 
 	describe('the addition of children', function() {
 		var newopts, ncount;
@@ -347,9 +348,8 @@ describe('Test pedigree SVG ', function() {
 
 		it('should be able to append updates to', function() {
 			var ncache = pedcache.get_count(opts);
-			var current = pedcache.current(opts);
-			var idx = pedigree_util.getProbandIndex(current);
-			var newdataset = ptree.copy_dataset(current);
+			var idx = pedigree_util.getProbandIndex(ds3);
+			var newdataset = ptree.copy_dataset(ds3); 
 			ptree.addsibling(newdataset, newdataset[idx], 'F');
 			var newopts = $.extend({}, opts);
 			newopts.dataset = newdataset;

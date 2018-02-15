@@ -34,7 +34,7 @@
 
 		$('#id_mutation_frequencies').change(function() {
 			$("input[id$='_mut_frequency']").prop('disabled', (this.value !== 'Custom'));
-			// note pedigree_form.mutation_frequencies is set in the view see pedigree.html
+			// note pedigree_form.mutation_frequencies is set in the view see pedigree_section_js.html
 			if(pedigree_form.mutation_frequencies && this.value !== 'Custom') {
 				var mfreq = pedigree_form.mutation_frequencies[this.value];
 				for (var gene in mfreq)
