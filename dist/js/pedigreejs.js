@@ -798,17 +798,43 @@
 	// Set or remove proband attributes. 
 	// If a value is not provided the attribute is removed from the proband.
 	pedigree_util.proband_attr = function(opts, key, value){
-		var newdataset = ptree.copy_dataset(opts.dataset);
+		var newdataset = ptree.copy_dataset(pedcache.current(opts));
 		var proband = newdataset[ pedigree_util.getProbandIndex(newdataset) ];
 		if(!proband){
 			console.warn("No proband defined");
 			return;
 		}
-		if(value)
+		if(value) {
+			if(key in proband) {
+				if(proband[key] === value)
+					return;
+				try{
+				   if(JSON.stringify(proband[key]) === JSON.stringify(value))
+					   return;
+				} catch(e){}
+			}
 			proband[key] = value;
-		else
-			delete proband[key]; 
+		} else {
+			if(key in proband)
+				delete proband[key];
+			else
+				return;
+		}
         ptree.syncTwins(newdataset, proband);
+		opts.dataset = newdataset;
+		ptree.rebuild(opts);
+	}
+	
+	// add a child to the proband
+	pedigree_util.proband_add_child = function(opts, sex, age){
+		var newdataset = ptree.copy_dataset(pedcache.current(opts));
+		var proband = newdataset[ pedigree_util.getProbandIndex(newdataset) ];
+		if(!proband){
+			console.warn("No proband defined");
+			return;
+		}
+		var newchild = ptree.addchild(newdataset, proband, sex, 1)[0];
+	    if(newchild) newchild.age = age;
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
 	}
@@ -1666,6 +1692,7 @@
 
 		if(twin_type)
 			var twin_id = getUniqueTwinID(dataset, twin_type);
+		var newchildren = [];
 		for (var i = 0; i < nchild; i++) {
 			var child = {"name": ptree.makeid(4), "sex": sex,
 					     "mother": (node.sex === 'F' ? node.name : ptr_name),
@@ -1674,7 +1701,9 @@
 
 			if(twin_type)
 				child[twin_type] = twin_id;
+			newchildren.push(child);
 		}
+		return newchildren;
 	};
 
 	//
@@ -2026,7 +2055,7 @@
 
 		$('#id_mutation_frequencies').change(function() {
 			$("input[id$='_mut_frequency']").prop('disabled', (this.value !== 'Custom'));
-			// note pedigree_form.mutation_frequencies is set in the view see pedigree.html
+			// note pedigree_form.mutation_frequencies is set in the view see pedigree_section_js.html
 			if(pedigree_form.mutation_frequencies && this.value !== 'Custom') {
 				var mfreq = pedigree_form.mutation_frequencies[this.value];
 				for (var gene in mfreq)
