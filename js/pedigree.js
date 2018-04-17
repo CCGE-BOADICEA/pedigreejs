@@ -418,8 +418,8 @@
 		ptree.rebuild(opts);
 	}
 	
-	// add a child to the proband
-	pedigree_util.proband_add_child = function(opts, sex, age){
+	// add a child to the proband; giveb sex, age, yob and breastfeeding months (optional)
+	pedigree_util.proband_add_child = function(opts, sex, age, yob, breastfeeding){
 		var newdataset = ptree.copy_dataset(pedcache.current(opts));
 		var proband = newdataset[ pedigree_util.getProbandIndex(newdataset) ];
 		if(!proband){
@@ -427,11 +427,20 @@
 			return;
 		}
 		var newchild = ptree.addchild(newdataset, proband, sex, 1)[0];
-	    if(newchild) newchild.age = age;
+	    newchild.age = age;
+	    newchild.yob = yob;
+	    if(breastfeeding !== undefined)
+	    	newchild.breastfeeding = breastfeeding;
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
+		return newchild.name;
 	}
 
+	// check by name if the individual exists
+	pedigree_util.exists = function(opts, name){
+		return pedigree_util.getNodeByName(pedcache.current(opts), name) !== undefined;
+	}
+	
 	// print options and dataset
 	pedigree_util.print_opts = function(opts){
     	$("#pedigree_data").remove();
@@ -1524,6 +1533,13 @@
 		var fnodes = pedigree_util.flatten(root);
 		var deletes = [];
 		var i, j;
+
+		// get d3 data node
+		if(node.id === undefined) {
+			var d3node = pedigree_util.getNodeByName(fnodes, node.name);
+			if(d3node !== undefined)
+				node = d3node.data;
+		}
 
 		if(node.parent_node) {
 			for(i=0; i<node.parent_node.length; i++){
