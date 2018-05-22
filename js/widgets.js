@@ -235,6 +235,7 @@
 		// handle widget clicks	
 		d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
 		  .on("click", function () {
+			d3.event.stopPropagation();
 			var opt = d3.select(this).attr('class');
 			var d = d3.select(this.parentNode).datum();
 			if(opts.DEBUG) {
@@ -263,6 +264,8 @@
 				opts.dataset = newdataset;
 				ptree.rebuild(opts);				
 			}
+			// trigger fhChange event
+			$(document).trigger('fhChange', [opts]);
 		});
 		
 		// other mouse events
