@@ -986,29 +986,32 @@
 			for(var p=0; p<opts.dataset.length; p++) {
 				if(!p.hidden) {
 					if(opts.dataset[p].mother || opts.dataset[p].father) {
-						var name = opts.dataset[p].name;
+						var display_name = opts.dataset[p].display_name;
+						if(!display_name)
+							display_name = 'UNNAMED INDIVIDUAL';
+						display_name += ' (IndivID: '+opts.dataset[p].name+')';
 						var mother = opts.dataset[p].mother;
 						var father = opts.dataset[p].father;
 						if(!mother || !father) {
-							throw create_err('MISSING PARENT FOR '+name);
+							throw create_err('MISSING PARENT FOR '+display_name);
 						}
 						
 						var midx = pedigree_util.getIdxByName(opts.dataset, mother);
 						var fidx = pedigree_util.getIdxByName(opts.dataset, father);
 						if(midx === -1)
-							throw create_err('MISSING MOTHER FOR '+name);
+							throw create_err('MISSING MOTHER FOR '+display_name);
 						if(fidx === -1)
-							throw create_err('MISSING FATHER FOR '+name);
+							throw create_err('MISSING FATHER FOR '+display_name);
 						if(opts.dataset[midx].sex !== "F")
-							throw create_err('MOTHERS SEX NOT FEMALE: '+opts.dataset[midx].sex);
+							throw create_err(display_name+' MOTHER NOT FEMALE (SEX: '+opts.dataset[midx].sex+')');
 						if(opts.dataset[fidx].sex !== "M")
-							throw create_err('FATHERS SEX NOT MALE: '+opts.dataset[fidx].sex);
+							throw create_err(display_name+' FATHER NOT MALE (SEX : '+opts.dataset[fidx].sex+')');
 					}
 				}
 				if(!opts.dataset[p].name)
-					throw create_err('NO UNIQUE NAME');
+					throw create_err(display_name+' NO UNIQUE NAME');
 				if($.inArray(opts.dataset[p].name, uniquenames) > -1)
-					throw create_err('NON-UNIQUE NAME: '+opts.dataset[p].name);
+					throw create_err(display_name+' NON-UNIQUE NAME');
 				uniquenames.push(opts.dataset[p].name);
 			}
 			// warn if there is a break in the pedigree
@@ -1245,6 +1248,7 @@
 			ptree.build(opts);
 		} catch(e) {
 			console.error(e);
+			throw e;
 		}
 
 		try {
