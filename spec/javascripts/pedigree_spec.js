@@ -182,19 +182,19 @@ describe('Test pedigree SVG ', function() {
             });
 
             it('should have unique names', function() {
-                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error("NON-UNIQUE NAME: f21"));
+                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error("UNNAMED INDIVIDUAL (IndivID: f21) NON-UNIQUE NAME"));
                     var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
                     ch1.name = 'f21';
                     newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                    expect(function() {ptree.build(newopts)}).toThrow(new Error("NON-UNIQUE NAME: f21"));
+                    expect(function() {ptree.build(newopts)}).toThrow(new Error("UNNAMED INDIVIDUAL (IndivID: f21) NON-UNIQUE NAME"));
             });
 
             it('should expect mothers to be female', function() {
-                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error("MOTHERS SEX NOT FEMALE: M"));
+                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error("UNNAMED INDIVIDUAL (IndivID: ch1) MOTHER NOT FEMALE (SEX: M)"));
                     var f21 = pedigree_util.getNodeByName(newopts.dataset, 'f21');
                     f21.sex = 'M';
                     newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                    expect(function() {ptree.build(newopts)}).toThrow(new Error("MOTHERS SEX NOT FEMALE: M"));
+                    expect(function() {ptree.build(newopts)}).toThrow(new Error("UNNAMED INDIVIDUAL (IndivID: ch1) MOTHER NOT FEMALE (SEX: M)"));
             });
     });
 
