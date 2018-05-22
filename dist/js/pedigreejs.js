@@ -186,21 +186,30 @@
 			reader.onload = function(e) {
 				if(opts.DEBUG)
 					console.log(e.target.result);
-
-				if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
-					opts.dataset = io.readBoadiceaV4(e.target.result);
-				else {
-					try {
-						opts.dataset = JSON.parse(e.target.result);
-					} catch(err) {
-						opts.dataset = io.readLinkage(e.target.result);
-				    }
+				try {
+					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
+						opts.dataset = io.readBoadiceaV4(e.target.result);
+					else {
+						try {
+							opts.dataset = JSON.parse(e.target.result);
+						} catch(err) {
+							opts.dataset = io.readLinkage(e.target.result);
+					    }
+					}
+				} catch(err1) {
+					console.error(err1);
+					io.error("There was a problem loading this file. Please check the file format.");
+					return;
 				}
 				console.log(opts.dataset);
-				ptree.rebuild(opts);
+				try{
+					ptree.rebuild(opts);
+				} catch(err2) {
+					io.error(err2);
+				}
 			};
 			reader.onerror = function(event) {
-			    console.error("File could not be read! Code " + event.target.error.code);
+			    io.error("File could not be read! Code " + event.target.error.code);
 			};
 			reader.readAsText(f);
 		} else {
@@ -208,6 +217,19 @@
 		}
 		$("#load")[0].value = ''; // reset value
 	};
+
+	// file reader error messages
+	io.error = function(msg) {
+		console.log(msg);
+		$('<div id="newDialog">'+msg+'</div>').dialog({
+    		title: "Problem Reading File",
+    		width: 400,
+    		buttons: [{
+    			text: "OK",
+    			click: function() { $( this ).dialog( "close" );}
+    		}]
+		});
+	}
 
 	// 
 	// https://www.cog-genomics.org/plink/1.9/formats#ped
@@ -1393,29 +1415,32 @@
 			for(var p=0; p<opts.dataset.length; p++) {
 				if(!p.hidden) {
 					if(opts.dataset[p].mother || opts.dataset[p].father) {
-						var name = opts.dataset[p].name;
+						var display_name = opts.dataset[p].display_name;
+						if(!display_name)
+							display_name = 'UNNAMED INDIVIDUAL';
+						display_name += ' (IndivID: '+opts.dataset[p].name+')';
 						var mother = opts.dataset[p].mother;
 						var father = opts.dataset[p].father;
 						if(!mother || !father) {
-							throw create_err('MISSING PARENT FOR '+name);
+							throw create_err('MISSING PARENT FOR '+display_name);
 						}
 						
 						var midx = pedigree_util.getIdxByName(opts.dataset, mother);
 						var fidx = pedigree_util.getIdxByName(opts.dataset, father);
 						if(midx === -1)
-							throw create_err('MISSING MOTHER FOR '+name);
+							throw create_err('MISSING MOTHER FOR '+display_name);
 						if(fidx === -1)
-							throw create_err('MISSING FATHER FOR '+name);
+							throw create_err('MISSING FATHER FOR '+display_name);
 						if(opts.dataset[midx].sex !== "F")
-							throw create_err('MOTHERS SEX NOT FEMALE: '+opts.dataset[midx].sex);
+							throw create_err(display_name+' MOTHER NOT FEMALE (SEX: '+opts.dataset[midx].sex+')');
 						if(opts.dataset[fidx].sex !== "M")
-							throw create_err('FATHERS SEX NOT MALE: '+opts.dataset[fidx].sex);
+							throw create_err(display_name+' FATHER NOT MALE (SEX : '+opts.dataset[fidx].sex+')');
 					}
 				}
 				if(!opts.dataset[p].name)
-					throw create_err('NO UNIQUE NAME');
+					throw create_err(display_name+' NO UNIQUE NAME');
 				if($.inArray(opts.dataset[p].name, uniquenames) > -1)
-					throw create_err('NON-UNIQUE NAME: '+opts.dataset[p].name);
+					throw create_err(display_name+' NON-UNIQUE NAME');
 				uniquenames.push(opts.dataset[p].name);
 			}
 			// warn if there is a break in the pedigree
@@ -1652,6 +1677,7 @@
 			ptree.build(opts);
 		} catch(e) {
 			console.error(e);
+			throw e;
 		}
 
 		try {
@@ -2080,8 +2106,22 @@
 		});
 	};
 	
+	// handle family history change events (undo/redo/delete)
+	$(document).on('fhChange', function(e, opts){
+		try {
+			var id = $('#id_name').val();  // get name from hidden field
+			var node = pedigree_util.getNodeByName(pedcache.current(opts), id)
+			if(node === undefined)
+				$('form > fieldset').prop("disabled", true);
+			else
+				$('form > fieldset').prop('disabled', false);
+		} catch(err) {
+			console.warn(err);
+		}
+    })
+
 	pedigree_form.nodeclick = function(node) {
-		$('form > fieldset').removeAttr('disabled');
+		$('form > fieldset').prop('disabled', false);
 		// clear values
 		$('#person_details').find("input[type=text], input[type=number]").val("");
 		$('#person_details select').val('').prop('selected', true);
@@ -2388,6 +2428,8 @@
 			} else if ($(e.target).hasClass('fa-refresh')) {
 				pbuttons.reset(opts);
 			}
+			// trigger fhChange event
+			$(document).trigger('fhChange', [opts]);
 		});
 	}
 
@@ -2882,6 +2924,7 @@
 		// handle widget clicks	
 		d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
 		  .on("click", function () {
+			d3.event.stopPropagation();
 			var opt = d3.select(this).attr('class');
 			var d = d3.select(this.parentNode).datum();
 			if(opts.DEBUG) {
@@ -2910,6 +2953,8 @@
 				opts.dataset = newdataset;
 				ptree.rebuild(opts);				
 			}
+			// trigger fhChange event
+			$(document).trigger('fhChange', [opts]);
 		});
 		
 		// other mouse events
