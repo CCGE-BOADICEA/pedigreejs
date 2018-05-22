@@ -186,21 +186,30 @@
 			reader.onload = function(e) {
 				if(opts.DEBUG)
 					console.log(e.target.result);
-
-				if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
-					opts.dataset = io.readBoadiceaV4(e.target.result);
-				else {
-					try {
-						opts.dataset = JSON.parse(e.target.result);
-					} catch(err) {
-						opts.dataset = io.readLinkage(e.target.result);
-				    }
+				try {
+					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
+						opts.dataset = io.readBoadiceaV4(e.target.result);
+					else {
+						try {
+							opts.dataset = JSON.parse(e.target.result);
+						} catch(err) {
+							opts.dataset = io.readLinkage(e.target.result);
+					    }
+					}
+				} catch(err1) {
+					console.error(err1);
+					io.error("There was a problem loading this file. Please check the file format.");
+					return;
 				}
 				console.log(opts.dataset);
-				ptree.rebuild(opts);
+				try{
+					ptree.rebuild(opts);
+				} catch(err2) {
+					io.error(err2);
+				}
 			};
 			reader.onerror = function(event) {
-			    console.error("File could not be read! Code " + event.target.error.code);
+			    io.error("File could not be read! Code " + event.target.error.code);
 			};
 			reader.readAsText(f);
 		} else {
@@ -208,6 +217,19 @@
 		}
 		$("#load")[0].value = ''; // reset value
 	};
+
+	// file reader error messages
+	io.error = function(msg) {
+		console.log(msg);
+		$('<div id="newDialog">'+msg+'</div>').dialog({
+    		title: "Problem Reading File",
+    		width: 400,
+    		buttons: [{
+    			text: "OK",
+    			click: function() { $( this ).dialog( "close" );}
+    		}]
+		});
+	}
 
 	// 
 	// https://www.cog-genomics.org/plink/1.9/formats#ped
