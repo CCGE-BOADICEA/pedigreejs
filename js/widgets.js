@@ -251,8 +251,12 @@
 				}
 			} else if(opt === 'delete') {
 				newdataset = ptree.copy_dataset(opts.dataset);
-				opts.dataset = ptree.delete_node_dataset(newdataset, d.data, opts);
-				ptree.rebuild(opts);
+				function onDone(opts, dataset) {
+					// assign new dataset and rebuild pedigree
+					opts.dataset = dataset;
+					ptree.rebuild(opts);
+				}
+				ptree.delete_node_dataset(newdataset, d.data, opts, onDone);
 			} else if(opt === 'addparents') {
 				newdataset = ptree.copy_dataset(opts.dataset);
 				opts.dataset = newdataset;
