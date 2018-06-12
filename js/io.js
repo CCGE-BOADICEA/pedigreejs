@@ -1,4 +1,40 @@
 
+
+// pedigree utils
+(function(utils, $, undefined) {
+
+	// show message or confirmation dialog
+	utils.messages = function(title, msg, onConfirm, opts, dataset) {
+		if(onConfirm) {
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
+			        modal: true,
+			        title: title,
+			        width: 350,
+			        buttons: {
+			        	"Yes": function () {
+			                $(this).dialog('close');
+			                onConfirm(opts, dataset);
+			            },
+			            "No": function () {
+			                $(this).dialog('close');
+			            }
+			        }
+			    });
+		} else {
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
+	    		title: title,
+	    		width: 350,
+	    		buttons: [{
+	    			text: "OK",
+	    			click: function() { $( this ).dialog( "close" );}
+	    		}]
+			});
+		}
+	}
+
+}(window.utils = window.utils || {}, jQuery));
+
+
 // pedigree I/O 
 (function(io, $, undefined) {
 
@@ -196,20 +232,21 @@
 							opts.dataset = io.readLinkage(e.target.result);
 					    }
 					}
+					ptree.validate_pedigree(opts);
 				} catch(err1) {
 					console.error(err1);
-					io.error("There was a problem loading this file. Please check the file format.");
+					utils.messages("File Error", ( err1.message ? err1.message : err1));
 					return;
 				}
 				console.log(opts.dataset);
 				try{
 					ptree.rebuild(opts);
 				} catch(err2) {
-					io.error(err2);
+					utils.messages("File Error", ( err2.message ? err2.message : err2));
 				}
 			};
 			reader.onerror = function(event) {
-			    io.error("File could not be read! Code " + event.target.error.code);
+			    utils.messages("File Error", "File could not be read! Code " + event.target.error.code);
 			};
 			reader.readAsText(f);
 		} else {
@@ -217,19 +254,6 @@
 		}
 		$("#load")[0].value = ''; // reset value
 	};
-
-	// file reader error messages
-	io.error = function(msg) {
-		console.log(msg);
-		$('<div id="newDialog">'+msg+'</div>').dialog({
-    		title: "Problem Reading File",
-    		width: 400,
-    		buttons: [{
-    			text: "OK",
-    			click: function() { $( this ).dialog( "close" );}
-    		}]
-		});
-	}
 
 	// 
 	// https://www.cog-genomics.org/plink/1.9/formats#ped
@@ -336,7 +360,13 @@
 				ped.unshift(indi);
 			}
 		}
-		return process_ped(ped);
+
+		try {
+			return process_ped(ped);
+		} catch(e) {
+			console.error(e);
+			return ped;
+		}
 	};
 
 	function process_ped(ped) {
