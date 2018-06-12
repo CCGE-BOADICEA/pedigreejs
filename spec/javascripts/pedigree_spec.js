@@ -5,7 +5,8 @@ describe('Test pedigree SVG ', function() {
 			targetDiv : 'pedigree_edit',
 			width : wid,
 			height : hgt,
-			symbol_size: 35
+			symbol_size: 35,
+			validate: true
 		}
 	
 	var ds1 = [
@@ -39,9 +40,9 @@ describe('Test pedigree SVG ', function() {
 		{"name":"CbB","sex":"M","mother":"f21","father":"m21"},
 		{"name":"Ana","sex":"F","mother":"f21","father":"m21","noparents":true},
 		{"name":"ch1","sex":"F","mother":"f21","father":"m21","bc1":true,"proband":true},
-		{"name":"dGS","sex":"M","mother":"YlJ","father":"qLM"},
+		{"name":"Dan","sex":"M","mother":"YlJ","father":"qLM"},
 		{"name":"rie","sex":"M","mother":"Ana","father":"CbB"},
-		{"name":"tzk","sex":"M","mother":"ch1","father":"dGS"},
+		{"name":"Tom","sex":"M","mother":"ch1","father":"Dan"},
 		{"name":"qLM","sex":"M","mother":"KSc","father":"cMy","noparents":true},
 		{"name":"YlJ","sex":"F","mother":"KSc","father":"cMy","noparents":true}];
  
@@ -182,19 +183,56 @@ describe('Test pedigree SVG ', function() {
             });
 
             it('should have unique names', function() {
-                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error("UNNAMED INDIVIDUAL (IndivID: f21) NON-UNIQUE NAME"));
+            	    var err = "IndivID for family member unnamed (IndivID: f21) is not unique.";
+                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
                     var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
                     ch1.name = 'f21';
                     newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                    expect(function() {ptree.build(newopts)}).toThrow(new Error("UNNAMED INDIVIDUAL (IndivID: f21) NON-UNIQUE NAME"));
+                    expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
             });
 
             it('should expect mothers to be female', function() {
-                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error("UNNAMED INDIVIDUAL (IndivID: ch1) MOTHER NOT FEMALE (SEX: M)"));
+            		var err = "The mother of family member unnamed (IndivID: ch1) is not specified as female. All mothers in the pedigree must have sex specified as 'F'.";
+                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
                     var f21 = pedigree_util.getNodeByName(newopts.dataset, 'f21');
                     f21.sex = 'M';
                     newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                    expect(function() {ptree.build(newopts)}).toThrow(new Error("UNNAMED INDIVIDUAL (IndivID: ch1) MOTHER NOT FEMALE (SEX: M)"));
+                    expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+            });
+
+            it('should expect fathers to be male', function() {
+        		var err = "The father of family member unnamed (IndivID: ch1) is not specified as male. All fathers in the pedigree must have sex specified as 'M'.";
+                expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                var m21 = pedigree_util.getNodeByName(newopts.dataset, 'm21');
+                m21.sex = 'F';
+                newopts.dataset = ptree.copy_dataset(newopts.dataset);
+                expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+            });
+
+            it('should expect father to present', function() {
+        		var err = "The father (IndivID: m21) of family member unnamed (IndivID: ch1) is missing from the pedigree.";
+                expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                newopts.dataset.splice(pedigree_util.getIdxByName(newopts.dataset, 'm21'), 1)   // remove father
+                newopts.dataset = ptree.copy_dataset(newopts.dataset);
+                expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+            });
+
+            it('should expect mother to present', function() {
+        		var err = "The mother (IndivID: f21) of family member unnamed (IndivID: ch1) is missing from the pedigree.";
+                expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                newopts.dataset.splice(pedigree_util.getIdxByName(newopts.dataset, 'f21'), 1)   // remove mother
+                newopts.dataset = ptree.copy_dataset(newopts.dataset);
+                expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+            });
+
+            it('should expect IndivID', function() {
+        		var err = "Me (IndivID: undefined) has no IndivID.";
+                expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
+                ch1.display_name = 'Me';
+                delete ch1.name;
+                newopts.dataset = ptree.copy_dataset(newopts.dataset);
+                expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
             });
     });
 
@@ -306,6 +344,55 @@ describe('Test pedigree SVG ', function() {
 			newopts = $.extend({}, opts);
 			newopts.dataset = ptree.copy_dataset(ds3);
 			ptree.rebuild(newopts);
+		});
+
+		afterEach(function() {
+			pedcache.clear();
+			$('#msgDialog').remove();
+		});
+		
+		it('should show message dialog if disallowed', function() {
+			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
+			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+			var dan = pedigree_util.getNodeByName(fnodes, 'Dan');
+
+			var err = "The mother (IndivID: KSc) of family member unnamed (IndivID: f21) is missing from the pedigree.";
+			expect($('#msgDialog').length).toBe(0);
+            expect(function() {ptree.delete_node_dataset(newopts.dataset, dan.data, newopts)}).toThrow(new Error(err));
+			// message dialog
+			expect($('#msgDialog').length).toBe(1);
+			expect($('#msgDialog').text()).toBe("Deletion of this pedigree member is disallowed.");
+		});
+		
+		it('should show confirmation dialog if splitting pedigree', function() {
+			newdataset = ptree.copy_dataset(newopts.dataset);
+			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+			var tom = pedigree_util.getNodeByName(fnodes, 'Tom');
+
+			spyOn(utils, "messages");
+            ptree.delete_node_dataset(newdataset, tom.data, newopts);
+            expect(utils.messages).toHaveBeenCalled();   // message dialog
+		});
+
+		it('should be allowed', function() {
+			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
+			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+			var ana = pedigree_util.getNodeByName(fnodes, 'Ana');
+			ptree.delete_node_dataset(newopts.dataset, ana.data, newopts);
+			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			expect(check_clashing_partner_links(newopts)).toBe(false);
+			check_nodes_overlapping(newopts);
+			check_unconnected(newopts);
+		});
+	});
+
+
+	describe('after the deletion of an individual', function() {
+		var newopts;
+		beforeEach(function() {
+			newopts = $.extend({}, opts);
+			newopts.dataset = ptree.copy_dataset(ds3);
+			ptree.rebuild(newopts);
 			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
 			var ana = pedigree_util.getNodeByName(fnodes, 'Ana');
 			ptree.delete_node_dataset(newopts.dataset, ana.data, newopts);
@@ -408,7 +495,8 @@ describe('Test pedigree SVG ', function() {
 		for(var i=0; i<kids.length; i++)
 			addParentTest(kids[i]);
 	});
-
+	
+	
 	describe('the pedigree test data (2)', function() {
 		var newopts;
 		beforeEach(function() {
@@ -436,17 +524,6 @@ describe('Test pedigree SVG ', function() {
 			expect(pedigree_util.overlap(newopts, fn, n1.x, n1.depth, [n1.data.name])).toBe(true);
 		});
 		
-		it('should be able to delete an individual', function() {
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
-			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
-			var ana = pedigree_util.getNodeByName(fnodes, 'Ana');
-			ptree.delete_node_dataset(newopts.dataset, ana.data, newopts);
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
-			expect(check_clashing_partner_links(newopts)).toBe(false);
-			check_nodes_overlapping(newopts);
-			check_unconnected(newopts);
-		});
-
 		// add a parent and test for clashes
 	    function addParentTest(name, clashExpected) {
 	    	it( (clashExpected ? 'should have' : 'should not have any')+
