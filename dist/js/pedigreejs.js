@@ -1,4 +1,40 @@
 
+
+// pedigree utils
+(function(utils, $, undefined) {
+
+	// show message or confirmation dialog
+	utils.messages = function(title, msg, onConfirm, opts, dataset) {
+		if(onConfirm) {
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
+			        modal: true,
+			        title: title,
+			        width: 350,
+			        buttons: {
+			        	"Yes": function () {
+			                $(this).dialog('close');
+			                onConfirm(opts, dataset);
+			            },
+			            "No": function () {
+			                $(this).dialog('close');
+			            }
+			        }
+			    });
+		} else {
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
+	    		title: title,
+	    		width: 350,
+	    		buttons: [{
+	    			text: "OK",
+	    			click: function() { $( this ).dialog( "close" );}
+	    		}]
+			});
+		}
+	}
+
+}(window.utils = window.utils || {}, jQuery));
+
+
 // pedigree I/O 
 (function(io, $, undefined) {
 
@@ -196,20 +232,21 @@
 							opts.dataset = io.readLinkage(e.target.result);
 					    }
 					}
+					ptree.validate_pedigree(opts);
 				} catch(err1) {
 					console.error(err1);
-					io.error("There was a problem loading this file. Please check the file format.");
+					utils.messages("File Error", ( err1.message ? err1.message : err1));
 					return;
 				}
 				console.log(opts.dataset);
 				try{
 					ptree.rebuild(opts);
 				} catch(err2) {
-					io.error(err2);
+					utils.messages("File Error", ( err2.message ? err2.message : err2));
 				}
 			};
 			reader.onerror = function(event) {
-			    io.error("File could not be read! Code " + event.target.error.code);
+			    utils.messages("File Error", "File could not be read! Code " + event.target.error.code);
 			};
 			reader.readAsText(f);
 		} else {
@@ -217,19 +254,6 @@
 		}
 		$("#load")[0].value = ''; // reset value
 	};
-
-	// file reader error messages
-	io.error = function(msg) {
-		console.log(msg);
-		$('<div id="newDialog">'+msg+'</div>').dialog({
-    		title: "Problem Reading File",
-    		width: 400,
-    		buttons: [{
-    			text: "OK",
-    			click: function() { $( this ).dialog( "close" );}
-    		}]
-		});
-	}
 
 	// 
 	// https://www.cog-genomics.org/plink/1.9/formats#ped
@@ -336,7 +360,13 @@
 				ped.unshift(indi);
 			}
 		}
-		return process_ped(ped);
+
+		try {
+			return process_ped(ped);
+		} catch(e) {
+			console.error(e);
+			return ped;
+		}
 	};
 
 	function process_ped(ped) {
@@ -939,7 +969,7 @@
         pbuttons.updateButtons(opts);
 
         // validate pedigree data
-        validate_pedigree(opts);
+        ptree.validate_pedigree(opts);
         // group top level nodes by partners
         opts.dataset = group_top_level(opts.dataset);
 
@@ -1397,7 +1427,7 @@
 	};
 	
 	// validate pedigree data
-	function validate_pedigree(opts) {
+	ptree.validate_pedigree = function(opts){
 		if(opts.validate) {
 			if (typeof opts.validate == 'function') {
 				if(opts.DEBUG)
@@ -1417,30 +1447,34 @@
 					if(opts.dataset[p].mother || opts.dataset[p].father) {
 						var display_name = opts.dataset[p].display_name;
 						if(!display_name)
-							display_name = 'UNNAMED INDIVIDUAL';
+							display_name = 'unnamed';
 						display_name += ' (IndivID: '+opts.dataset[p].name+')';
 						var mother = opts.dataset[p].mother;
 						var father = opts.dataset[p].father;
 						if(!mother || !father) {
-							throw create_err('MISSING PARENT FOR '+display_name);
+							throw create_err('Missing parent for '+display_name);
 						}
 						
 						var midx = pedigree_util.getIdxByName(opts.dataset, mother);
 						var fidx = pedigree_util.getIdxByName(opts.dataset, father);
 						if(midx === -1)
-							throw create_err('MISSING MOTHER FOR '+display_name);
+							throw create_err('The mother (IndivID: '+mother+') of family member '+
+									         display_name+' is missing from the pedigree.');
 						if(fidx === -1)
-							throw create_err('MISSING FATHER FOR '+display_name);
+							throw create_err('The father (IndivID: '+father+') of family member '+
+									         display_name+' is missing from the pedigree.');
 						if(opts.dataset[midx].sex !== "F")
-							throw create_err(display_name+' MOTHER NOT FEMALE (SEX: '+opts.dataset[midx].sex+')');
+							throw create_err("The mother of family member "+display_name+
+									" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
 						if(opts.dataset[fidx].sex !== "M")
-							throw create_err(display_name+' FATHER NOT MALE (SEX : '+opts.dataset[fidx].sex+')');
+							throw create_err("The father of family member "+display_name+
+									" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
 					}
 				}
 				if(!opts.dataset[p].name)
-					throw create_err(display_name+' NO UNIQUE NAME');
+					throw create_err(display_name+' has no IndivID.');
 				if($.inArray(opts.dataset[p].name, uniquenames) > -1)
-					throw create_err(display_name+' NON-UNIQUE NAME');
+					throw create_err('IndivID for family member '+display_name+' is not unique.');
 				uniquenames.push(opts.dataset[p].name);
 			}
 			// warn if there is a break in the pedigree
@@ -1468,6 +1502,9 @@
 		var target = dataset[ pedigree_util.getProbandIndex(dataset) ];
 		if(!target){
 			console.warn("No target defined");
+			if(dataset.length == 0) {
+				throw "empty pedigree data set";
+			}
 			target = dataset[0];
 		}
         var connected = [target.name];
@@ -1961,7 +1998,7 @@
 	}
 	
 	// delete a node and descendants
-	ptree.delete_node_dataset = function(dataset, node, opts) {
+	ptree.delete_node_dataset = function(dataset, node, opts, onDone) {
 		var root = ptree.roots[opts.targetDiv];
 		var fnodes = pedigree_util.flatten(root);
 		var deletes = [];
@@ -1993,7 +2030,7 @@
 					var child = pedigree_util.getNodeByName(dataset, children[j].name);
 					if(child){
 						child.noparents = true;
-						ptrs = get_partners(dataset, child);
+						var ptrs = get_partners(dataset, child);
 						var ptr;
 						if(ptrs.length > 0)
 							ptr = pedigree_util.getNodeByName(dataset, ptrs[0]);
@@ -2038,15 +2075,28 @@
 		// check integrity of mztwins settings
 		checkTwins(dataset);
 
-		// check if pedigree is split
-		var unconnected = ptree.unconnected(dataset);
+		try	{
+			// validate new pedigree dataset
+			var newopts = $.extend({}, opts);
+			newopts.dataset = ptree.copy_dataset(dataset);
+			ptree.validate_pedigree(newopts);
+			// check if pedigree is split
+			var unconnected = ptree.unconnected(dataset);
+		} catch(err) {
+			utils.messages('Warning', 'Deletion of this pedigree member is disallowed.')
+			throw err;
+		}
 		if(unconnected.length > 0) {
 			// check & warn only if this is a new split
 			if(ptree.unconnected(opts.dataset).length === 0) {
-				console.error("individuals unconnected to pedigree ", unconnected);
-				if(!confirm("Deleting this will split the pedigree. Continue?"))
-					dataset = ptree.copy_dataset(opts.dataset);
+				console.error("individuals unconnected to pedigree ", unconnected);				
+				utils.messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
+				return;
 			}
+		}
+		
+		if(onDone) {
+			onDone(opts, dataset);
 		}
 		return dataset;
 	};
@@ -2940,8 +2990,12 @@
 				}
 			} else if(opt === 'delete') {
 				newdataset = ptree.copy_dataset(opts.dataset);
-				opts.dataset = ptree.delete_node_dataset(newdataset, d.data, opts);
-				ptree.rebuild(opts);
+				function onDone(opts, dataset) {
+					// assign new dataset and rebuild pedigree
+					opts.dataset = dataset;
+					ptree.rebuild(opts);
+				}
+				ptree.delete_node_dataset(newdataset, d.data, opts, onDone);
 			} else if(opt === 'addparents') {
 				newdataset = ptree.copy_dataset(opts.dataset);
 				opts.dataset = newdataset;
