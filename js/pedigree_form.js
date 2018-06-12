@@ -43,8 +43,22 @@
 		});
 	};
 	
+	// handle family history change events (undo/redo/delete)
+	$(document).on('fhChange', function(e, opts){
+		try {
+			var id = $('#id_name').val();  // get name from hidden field
+			var node = pedigree_util.getNodeByName(pedcache.current(opts), id)
+			if(node === undefined)
+				$('form > fieldset').prop("disabled", true);
+			else
+				$('form > fieldset').prop('disabled', false);
+		} catch(err) {
+			console.warn(err);
+		}
+    })
+
 	pedigree_form.nodeclick = function(node) {
-		$('form > fieldset').removeAttr('disabled');
+		$('form > fieldset').prop('disabled', false);
 		// clear values
 		$('#person_details').find("input[type=text], input[type=number]").val("");
 		$('#person_details select').val('').prop('selected', true);

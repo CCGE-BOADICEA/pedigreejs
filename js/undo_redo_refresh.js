@@ -70,6 +70,8 @@
 			} else if ($(e.target).hasClass('fa-refresh')) {
 				pbuttons.reset(opts);
 			}
+			// trigger fhChange event
+			$(document).trigger('fhChange', [opts]);
 		});
 	}
 

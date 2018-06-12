@@ -1,4 +1,40 @@
 
+
+// pedigree utils
+(function(utils, $, undefined) {
+
+	// show message or confirmation dialog
+	utils.messages = function(title, msg, onConfirm, opts, dataset) {
+		if(onConfirm) {
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
+			        modal: true,
+			        title: title,
+			        width: 350,
+			        buttons: {
+			        	"Yes": function () {
+			                $(this).dialog('close');
+			                onConfirm(opts, dataset);
+			            },
+			            "No": function () {
+			                $(this).dialog('close');
+			            }
+			        }
+			    });
+		} else {
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
+	    		title: title,
+	    		width: 350,
+	    		buttons: [{
+	    			text: "OK",
+	    			click: function() { $( this ).dialog( "close" );}
+	    		}]
+			});
+		}
+	}
+
+}(window.utils = window.utils || {}, jQuery));
+
+
 // pedigree I/O 
 (function(io, $, undefined) {
 
@@ -186,21 +222,31 @@
 			reader.onload = function(e) {
 				if(opts.DEBUG)
 					console.log(e.target.result);
-
-				if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
-					opts.dataset = io.readBoadiceaV4(e.target.result);
-				else {
-					try {
-						opts.dataset = JSON.parse(e.target.result);
-					} catch(err) {
-						opts.dataset = io.readLinkage(e.target.result);
-				    }
+				try {
+					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
+						opts.dataset = io.readBoadiceaV4(e.target.result);
+					else {
+						try {
+							opts.dataset = JSON.parse(e.target.result);
+						} catch(err) {
+							opts.dataset = io.readLinkage(e.target.result);
+					    }
+					}
+					ptree.validate_pedigree(opts);
+				} catch(err1) {
+					console.error(err1);
+					utils.messages("File Error", ( err1.message ? err1.message : err1));
+					return;
 				}
 				console.log(opts.dataset);
-				ptree.rebuild(opts);
+				try{
+					ptree.rebuild(opts);
+				} catch(err2) {
+					utils.messages("File Error", ( err2.message ? err2.message : err2));
+				}
 			};
 			reader.onerror = function(event) {
-			    console.error("File could not be read! Code " + event.target.error.code);
+			    utils.messages("File Error", "File could not be read! Code " + event.target.error.code);
 			};
 			reader.readAsText(f);
 		} else {
@@ -314,7 +360,13 @@
 				ped.unshift(indi);
 			}
 		}
-		return process_ped(ped);
+
+		try {
+			return process_ped(ped);
+		} catch(e) {
+			console.error(e);
+			return ped;
+		}
 	};
 
 	function process_ped(ped) {
