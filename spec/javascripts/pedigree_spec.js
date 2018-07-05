@@ -561,5 +561,47 @@ describe('Test pedigree SVG ', function() {
 			check_unconnected(newopts);
 		});
 	});
+	
+	// utils
+	describe('the age and year of birth', function() {
+		var year = new Date().getFullYear();
+		var age = 48;
+		var yob = year - age;
+		it('should be consistent with current year for alive individuals', function() {
+			var status = 0;       // status - 0 = alive, 1 = dead
+			expect(utils.validate_age_yob(age, yob, status)).toBe(true);
+			expect(utils.validate_age_yob(age-1, yob, status)).toBe(true);
+			expect(utils.validate_age_yob(age+1, yob, status)).toBe(false); 
+			expect(utils.validate_age_yob(age+2, yob, status)).toBe(false);
+		});
+
+		it('should be consistent with current year for decesased individuals', function() {
+			var status = 1;       // status - 0 = alive, 1 = dead
+			expect(utils.validate_age_yob(age, yob, status)).toBe(true);
+			expect(utils.validate_age_yob(age-2, yob, status)).toBe(true);
+			expect(utils.validate_age_yob(age+1, yob, status)).toBe(false);
+		});
+	});
+
+	describe('the dialog window', function() {
+		afterEach(function() {
+			$('#msgDialog').remove();
+		});
+		it('should be displayed', function() {
+			expect($('#msgDialog').length).toBe(0);
+			utils.messages('title', 'hello');
+			expect($('#msgDialog').length).toBe(1);
+			expect($('#msgDialog').text()).toBe("hello");
+		});
+		
+		it('should show confirmation dialog', function() {
+			expect($('#msgDialog').length).toBe(0);
+			var newopts = $.extend({}, opts);
+			newopts.dataset = ptree.copy_dataset(ds1);
+			var onConfirm = function(){return};
+            utils.messages('title', 'hello', onConfirm, newopts, ds1);
+			expect($('#msgDialog').length).toBe(1);
+		});
+	});
 
 });
