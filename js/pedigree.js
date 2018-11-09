@@ -391,29 +391,36 @@
 	// Set or remove proband attributes. 
 	// If a value is not provided the attribute is removed from the proband.
 	pedigree_util.proband_attr = function(opts, key, value){
+		var proband = opts.dataset[ pedigree_util.getProbandIndex(opts.dataset) ];
+		pedigree_util.node_attr(opts, proband.name, key, value);
+	}
+
+	// Set or remove node attributes. 
+	// If a value is not provided the attribute is removed.
+	pedigree_util.node_attr = function(opts, name, key, value){
 		var newdataset = ptree.copy_dataset(pedcache.current(opts));
-		var proband = newdataset[ pedigree_util.getProbandIndex(newdataset) ];
-		if(!proband){
-			console.warn("No proband defined");
+		var node = pedigree_util.getNodeByName(newdataset, name);
+		if(!node){
+			console.warn("No person defined");
 			return;
 		}
 		if(value) {
-			if(key in proband) {
-				if(proband[key] === value)
+			if(key in node) {
+				if(node[key] === value)
 					return;
 				try{
-				   if(JSON.stringify(proband[key]) === JSON.stringify(value))
+				   if(JSON.stringify(node[key]) === JSON.stringify(value))
 					   return;
 				} catch(e){}
 			}
-			proband[key] = value;
+			node[key] = value;
 		} else {
-			if(key in proband)
-				delete proband[key];
+			if(key in node)
+				delete node[key];
 			else
 				return;
 		}
-        ptree.syncTwins(newdataset, proband);
+        ptree.syncTwins(newdataset, node);
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
 	}
@@ -434,6 +441,22 @@
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
 		return newchild.name;
+	}
+
+	// delete node using the name
+	pedigree_util.delete_node_by_name = function(opts, name){
+		function onDone(opts, dataset) {
+			// assign new dataset and rebuild pedigree
+			opts.dataset = dataset;
+			ptree.rebuild(opts);
+		}
+		var newdataset = ptree.copy_dataset(pedcache.current(opts));
+		var node = pedigree_util.getNodeByName(pedcache.current(opts), name);
+		if(!node){
+			console.warn("No node defined");
+			return;
+		}
+		ptree.delete_node_dataset(newdataset, node, opts, onDone);
 	}
 
 	// check by name if the individual exists
@@ -490,6 +513,7 @@
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
 			labels: ['stillbirth', 'age', 'yob', 'alleles'],
+			keep_proband_on_reset: false,
 			font_size: '.75em',
 			font_family: 'Helvetica',
 			font_weight: 700,
