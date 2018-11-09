@@ -1,5 +1,4 @@
 
-
 // pedigree utils
 (function(utils, $, undefined) {
 
@@ -10,7 +9,7 @@
 	 * @param onConfirm - function to call in a confirmation dialog
 	 * @param opts      - pedigreejs options
 	 * @param dataset    - pedigree dataset
-	 */ 
+	 */
 	utils.messages = function(title, msg, onConfirm, opts, dataset) {
 		if(onConfirm) {
 			$('<div id="msgDialog">'+msg+'</div>').dialog({
@@ -38,7 +37,7 @@
 			});
 		}
 	}
-	
+
 	/**
 	 * Validate age and yob is consistent with current year. The sum of age and
 	 * yob should not be greater than or equal to current year. If alive the
@@ -60,7 +59,7 @@
 }(window.utils = window.utils || {}, jQuery));
 
 
-// pedigree I/O 
+// pedigree I/O
 (function(io, $, undefined) {
 
 	// cancers, genetic & pathology tests
@@ -73,8 +72,8 @@
 		};
 	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d',	'rad51c', 'brip1'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
-	
-	
+
+
 	io.add = function(opts) {
 		$('#load').change(function(e) {
 			io.load(e, opts);
@@ -206,7 +205,7 @@
             	if(html.indexOf('href="http') !== -1)
             		headContent2 += html;
             }
-            headContent2 += html;          
+            headContent2 += html;
             var scripts = document.getElementsByTagName('script');
             for(var i=0;i<scripts.length; i++) {
             	var html = scripts[i].outerHTML;
@@ -282,7 +281,7 @@
 		$("#load")[0].value = ''; // reset value
 	};
 
-	// 
+	//
 	// https://www.cog-genomics.org/plink/1.9/formats#ped
 	// https://www.cog-genomics.org/plink/1.9/formats#fam
 	//	1. Family ID ('FID')
@@ -306,11 +305,11 @@
 				'famid': attr[0],
 				'display_name': attr[1],
 				'name':	attr[1],
-				'sex': sex 
+				'sex': sex
 			};
 			if(attr[2] !== "0") indi.father = attr[2];
 			if(attr[3] !== "0") indi.mother = attr[3];
-			
+
 			if (typeof famid != 'undefined' && famid !== indi.famid) {
 				console.error('multiple family IDs found only using famid = '+famid);
 				break;
@@ -323,7 +322,7 @@
 					indi.alleles += attr[j] + "/" + attr[j+1] + ";";
 				}
 			}
-			
+
 			ped.unshift(indi);
 			famid = attr[0];
 		}
@@ -524,7 +523,7 @@
 		}
 		return -1;
 	}
-	
+
 	// for a given individual assign levels to a parents ancestors
 	function getLevel(dataset, name) {
 		var idx = pedigree_util.getIdxByName(dataset, name);
@@ -532,7 +531,7 @@
 		update_parents_level(idx, level, dataset);
 	}
 
-	// recursively update parents levels 
+	// recursively update parents levels
 	function update_parents_level(idx, level, dataset) {
 		var parents = ['mother', 'father'];
 		level++;

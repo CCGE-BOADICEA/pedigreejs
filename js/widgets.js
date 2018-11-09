@@ -4,7 +4,7 @@
 
 	function getTranslation(transform) {
     	  // Create a dummy g for calculation purposes only. This will never
-    	  // be appended to the DOM and will be discarded once this function 
+    	  // be appended to the DOM and will be discarded once this function
     	  // returns.
     	  var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
@@ -13,13 +13,13 @@
 
     	  // consolidate the SVGTransformList containing all transformations
     	  // to a single SVGTransform of type SVG_TRANSFORM_MATRIX and get
-    	  // its SVGMatrix. 
+    	  // its SVGMatrix.
     	  var matrix = g.transform.baseVal.consolidate().matrix;
 
     	  // As per definition values e and f are the ones for the translation.
     	  return [matrix.e, matrix.f];
     	}
-    
+
 	var dragging;
 	var last_mouseover;
 	//
@@ -49,7 +49,7 @@
 			.attr("y", font_size*1.5)
 			.text("\uf096 ");
 		var square_title = square.append("svg:title").text("add male");
-		
+
 		var circle = popup_selection.append("text")  // female
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
@@ -112,7 +112,7 @@
 				ptree.addchild(newdataset, add_person.node.datum().data, (twin_type ? 'U' : sex), (twin_type ? 2 : 1), twin_type);
 			else
 				return;
-			opts.dataset = newdataset;	
+			opts.dataset = newdataset;
 			ptree.rebuild(opts);
 			d3.selectAll('.popup_selection').style("opacity", 0);
 			add_person = {};
@@ -125,13 +125,13 @@
 			  if(add_person.type === 'addsibling'){
 				 if(d3.select(this).classed("fa-square"))
 					  square_title.text("add brother");
-				  else 
+				  else
 					  circle_title.text("add sister");
 			  } else if(add_person.type === 'addchild'){
 				  if(d3.select(this).classed("fa-square"))
 					  square_title.text("add son");
 				  else
-					  circle_title.text("add daughter");				  
+					  circle_title.text("add daughter");
 			  }
 		  });
 
@@ -144,7 +144,7 @@
 		});
 
 
-		// drag line between nodes to create partners 
+		// drag line between nodes to create partners
 		drag_handle(opts);
 
 		// rectangle used to highlight on mouse over
@@ -184,7 +184,7 @@
 				'styles': {"font-weight": "bold", "fill": "darkred", "font-family": "monospace"}
 			}
 		};
-		
+
 		if(opts.edit) {
 			widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
 		}
@@ -232,7 +232,7 @@
 			  	.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
 		  });
 
-		// handle widget clicks	
+		// handle widget clicks
 		d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
 		  .on("click", function () {
 			d3.event.stopPropagation();
@@ -244,7 +244,7 @@
 
 			var newdataset;
 			if(opt === 'settings') {
-				if(typeof opts.edit === 'function') { 
+				if(typeof opts.edit === 'function') {
 					opts.edit(opts, d);
 				} else {
 					openEditDialog(opts, d);
@@ -266,15 +266,15 @@
 				newdataset = ptree.copy_dataset(opts.dataset);
 				ptree.addpartner(opts, newdataset, d.data.name);
 				opts.dataset = newdataset;
-				ptree.rebuild(opts);				
+				ptree.rebuild(opts);
 			}
 			// trigger fhChange event
 			$(document).trigger('fhChange', [opts]);
 		});
-		
+
 		// other mouse events
 		var highlight = [];
-		
+
 		node.filter(function (d) { return !d.data.hidden; })
 		.on("click", function (d) {
 			if (d3.event.ctrlKey) {
@@ -284,7 +284,7 @@
 					highlight.splice(highlight.indexOf(d), 1);
 			} else
 				highlight = [d];
-			
+
 			if('nodeclick' in opts) {
 				opts.nodeclick(d.data);
 				d3.selectAll(".indi_rect").style("opacity", 0);
@@ -328,7 +328,7 @@
 		});
 	};
 
-	// drag line between nodes to create partners 
+	// drag line between nodes to create partners
 	function drag_handle(opts) {
 		var line_drag_selection = d3.select('.diagram');
 		line_drag_selection.append("line").attr("class", 'line_drag_selection')
@@ -358,7 +358,7 @@
 				         "father": (dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name)};
 				newdataset = ptree.copy_dataset(opts.dataset);
 				opts.dataset = newdataset;
-				
+
 				var idx = pedigree_util.getIdxByName(opts.dataset, dragging.data.name)+1;
 				opts.dataset.splice(idx, 0, child);
 				ptree.rebuild(opts);
@@ -377,7 +377,7 @@
             setLineDragPosition(opts.symbol_size-10, 0, xnew, 0);
 		}
 	}
-	
+
 	function setLineDragPosition(x1, y1, x2, y2, translate) {
 		if(translate)
 			d3.selectAll('.line_drag_selection').attr("transform", "translate("+translate+")");
@@ -391,7 +391,7 @@
 	function capitaliseFirstLetter(string) {
 	    return string.charAt(0).toUpperCase() + string.slice(1);
 	}
-	
+
     // if opt.edit is set true (rather than given a function) this is called to edit node attributes
     function openEditDialog(opts, d) {
 		$('#node_properties').dialog({
@@ -409,7 +409,7 @@
 
 		table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:7em' value="+
 				(d.data.age ? d.data.age : "")+"></td></tr>";
-		
+
 		table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value="+
 			(d.data.yob ? d.data.yob : "")+"></td></tr>";
 
@@ -434,14 +434,14 @@
 			var attr = switches[iswitch];
 			if(iswitch === 2)
 				table += '</td></tr><tr><td colspan="2">';
-			table += 
+			table +=
 			 '<label class="checkbox-inline"><input type="checkbox" id="id_'+attr +
 			    '" name="'+attr+'" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;' +
 			    capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
 		}
 		table += '</td></tr>';
 
-		// 
+		//
 		var exclude = ["children", "name", "parent_node", "top_level", "id", "noparents",
 			           "level", "age", "sex", "status", "display_name", "mother", "father",
 			           "yob", "mztwin", "dztwin"];
@@ -455,8 +455,8 @@
 
 			table += "<tr><td style='text-align:right'>"+capitaliseFirstLetter(v.type.replace("_", " "))+
 						disease_colour+"&nbsp;</td><td>" +
-						"<input class='form-control' id='id_" + 
-						v.type + "_diagnosis_age_0' max='110' min='0' name='" + 
+						"<input class='form-control' id='id_" +
+						v.type + "_diagnosis_age_0' max='110' min='0' name='" +
 						v.type + "_diagnosis_age_0' style='width:5em' type='number' value='" +
 						(diagnosis_age !== undefined ? diagnosis_age : "") +"'></td></tr>";
 		});

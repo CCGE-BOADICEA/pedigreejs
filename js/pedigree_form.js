@@ -6,7 +6,7 @@
 		$('.node_save').click(function() {
 			pedigree_form.save(opts);
 		});
-		
+
 		$('#id_proband, #id_exclude').click(function(e) {
 			var dataset = pedcache.current(opts);
 			opts.dataset = ptree.copy_dataset(dataset);
@@ -46,7 +46,7 @@
 			}
 		});
 	};
-	
+
 	// handle family history change events (undo/redo/delete)
 	$(document).on('fhChange', function(e, opts){
 		try {
@@ -73,7 +73,7 @@
 		else
 			$('input[name=sex]').prop('checked', false);
 		update_cancer_by_sex(node);
-		
+
 		if(!('status' in node))
 			node.status = 0;
 		$('input[name=status][value="'+node.status+'"]').prop('checked', true);
@@ -83,19 +83,19 @@
 		} else {
 			$('#id_proband').prop('checked', false);
 		}
-		
+
 		if('exclude' in node) {
 			$('#id_exclude').prop('checked', node.exclude);
 		} else {
 			$('#id_exclude').prop('checked', false);
 		}
-		
+
 /*		if('ashkenazi' in node) {
 			$('#id_ashkenazi').prop('checked', (node.proband == 1 ? true: false));
 		} else {
 			$('#id_ashkenazi').prop('checked', false);
 		}*/
-		
+
 		// year of both
 		if('yob' in node) {
 			$('#id_yob_0').val(node.yob);
@@ -143,7 +143,7 @@
 			console.warn('valid() not found');
 		}
 	};
-	
+
     pedigree_form.save = function(opts) {
 		var dataset = pedcache.current(opts);
 		var name = $('#id_name').val();
@@ -213,7 +213,7 @@
 				delete person[name];
 			}
         });
-		
+
 		// cancer checkboxes
 		$('#person_details input[type="checkbox"][name$="cancer"],input[type="checkbox"][name$="cancer2"]').each(function() {
 			if(this.checked)
@@ -240,13 +240,13 @@
 				delete person[$(this).attr('name')];
 			}
 		});
-		
+
 		try {
 			$('#person_details').find('form').valid();
 		} catch(err) {
 			console.warn('valid() not found');
 		}
-		
+
 
 		ptree.syncTwins(newdataset, person);
 		opts.dataset = newdataset;
@@ -276,7 +276,7 @@
 			$("[id$='_diagnosis_age_1']").hide();
 		}
     };
- 
+
     // males should not have ovarian cancer and females should not have prostate cancer
     function update_cancer_by_sex(node) {
 		$('#cancer .row').show();
@@ -288,7 +288,7 @@
 			$("[id^='id_prostate_cancer_diagnosis_age']").closest('.row').hide();
 		}
     }
-    
+
     // round to 5, 15, 25, 35 ....
     function round5(x1) {
     	var x2 = (Math.round((x1-1) / 10) * 10);

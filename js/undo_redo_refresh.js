@@ -62,11 +62,11 @@
 			if($(e.target).hasClass('fa-undo')) {
 				opts.dataset = pedcache.previous(opts);
 				$("#"+opts.targetDiv).empty();
-				ptree.build(opts);				
+				ptree.build(opts);
 			} else if ($(e.target).hasClass('fa-repeat')) {
 				opts.dataset = pedcache.next(opts);
 				$("#"+opts.targetDiv).empty();
-				ptree.build(opts);				
+				ptree.build(opts);
 			} else if ($(e.target).hasClass('fa-refresh')) {
 				pbuttons.reset(opts, opts.keep_proband_on_reset);
 			}
@@ -128,7 +128,7 @@
 				{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
 				{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"}];
 		} else {
-			opts.dataset = [ 
+			opts.dataset = [
 				{"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
     		    {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
     		    proband];
@@ -186,14 +186,14 @@
 	function get_arr(opts) {
 		return dict_cache[get_prefix(opts)];
 	}
-	
+
 	function get_browser_store(opts, item) {
 		if(opts.store_type === 'local')
 			return localStorage.getItem(item);
 		else
 			return sessionStorage.getItem(item);
 	}
-	
+
 	function set_browser_store(opts, name, item) {
 		if(opts.store_type === 'local')
 			return localStorage.setItem(name, item);
