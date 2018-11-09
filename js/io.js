@@ -71,7 +71,7 @@
 			'prostate_cancer': 'prostate_cancer_diagnosis_age',
 			'pancreatic_cancer': 'pancreatic_cancer_diagnosis_age'
 		};
-	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
+	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d',	'rad51c', 'brip1'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 	
 	
@@ -190,7 +190,7 @@
         var width = $(window).width()*2/3;
         var height = $(window).height()-40;
         var cssFiles = [
-        	'/static/css/output.css',
+        	'/static/css/canrisk.css',
         	'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
         ];
         var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
@@ -250,6 +250,8 @@
 				try {
 					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
 						opts.dataset = io.readBoadiceaV4(e.target.result);
+					else if(e.target.result.startsWith("CanRisk pedigree file format 1.0"))
+						opts.dataset = io.readCanRiskV1(e.target.result);
 					else {
 						try {
 							opts.dataset = JSON.parse(e.target.result);
@@ -328,6 +330,72 @@
 		return process_ped(ped);
 	};
 
+	io.readCanRiskV1 = function(boadicea_lines) {
+		var lines = boadicea_lines.trim().split('\n');
+		var ped = [];
+		// assumes two line header
+		for(var i = 2;i < lines.length;i++){
+		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
+			if(attr.length > 1) {
+				var indi = {
+					'famid': attr[0],
+					'display_name': attr[1],
+					'name':	attr[3],
+					'sex': attr[6],
+					'status': attr[8]
+				};
+				if(attr[2] == 1) indi.proband = true;
+				if(attr[4] !== "0") indi.father = attr[4];
+				if(attr[5] !== "0") indi.mother = attr[5];
+				if(attr[7] !== "0") indi.mztwin = attr[7];
+				if(attr[9] !== "0") indi.age = attr[9];
+				if(attr[10] !== "0") indi.yob = attr[10];
+
+				var idx = 11;
+				$.each(io.cancers, function(cancer, diagnosis_age) {
+					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
+					if(attr[idx] !== "0") {
+						indi[diagnosis_age] = attr[idx];
+					}
+					idx++;
+				});
+
+				if(attr[idx++] !== "0") indi.ashkenazi = 1;
+				// BRCA1, BRCA2, PALB2, ATM, CHEK2, .... genetic tests
+				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
+				// genetic test result, 0 = untested, P = positive, N = negative
+				for(var j=0; j<io.genetic_test.length; j++) {
+					var gene_test = attr[idx].split(":");
+					if(gene_test[0] !== '0') {
+						if((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N'))
+							indi[io.genetic_test[j] + '_gene_test'] = {'type': gene_test[0], 'result': gene_test[1]};
+						else
+							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + gene_test[0] + " " + gene_test[1]);
+					}
+					idx++;
+				}
+				// status, 0 = unspecified, N = negative, P = positive
+				var path_test = attr[idx].split(":");
+				for(j=0; j<path_test.length; j++) {
+					if(path_test[j] !== '0') {
+						if(path_test[j] === 'N' || path_test[j] === 'P')
+							indi[io.pathology_tests[j] + '_bc_pathology'] = path_test[j];
+						else
+							console.warn('UNRECOGNISED PATHOLOGY ON LINE '+ (i+1) + ": " +io.pathology_tests[j] + " " +path_test[j]);
+					}
+				}
+				ped.unshift(indi);
+			}
+		}
+
+		try {
+			return process_ped(ped);
+		} catch(e) {
+			console.error(e);
+			return ped;
+		}
+	};
+
 	// read boadicea format v4
 	io.readBoadiceaV4 = function(boadicea_lines) {
 		var lines = boadicea_lines.trim().split('\n');
@@ -363,7 +431,7 @@
 				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
 				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
 				// genetic test result, 0 = untested, P = positive, N = negative
-				for(var j=0; j<io.genetic_test.length; j++) {
+				for(var j=0; j<5; j++) {
 					idx+=2;
 					if(attr[idx-2] !== '0') {
 						if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
