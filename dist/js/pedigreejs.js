@@ -71,7 +71,7 @@
 			'prostate_cancer': 'prostate_cancer_diagnosis_age',
 			'pancreatic_cancer': 'pancreatic_cancer_diagnosis_age'
 		};
-	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
+	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d',	'rad51c', 'brip1'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 	
 	
@@ -190,7 +190,7 @@
         var width = $(window).width()*2/3;
         var height = $(window).height()-40;
         var cssFiles = [
-        	'/static/css/output.css',
+        	'/static/css/canrisk.css',
         	'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
         ];
         var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
@@ -250,6 +250,8 @@
 				try {
 					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
 						opts.dataset = io.readBoadiceaV4(e.target.result);
+					else if(e.target.result.startsWith("CanRisk pedigree file format 1.0"))
+						opts.dataset = io.readCanRiskV1(e.target.result);
 					else {
 						try {
 							opts.dataset = JSON.parse(e.target.result);
@@ -328,6 +330,72 @@
 		return process_ped(ped);
 	};
 
+	io.readCanRiskV1 = function(boadicea_lines) {
+		var lines = boadicea_lines.trim().split('\n');
+		var ped = [];
+		// assumes two line header
+		for(var i = 2;i < lines.length;i++){
+		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
+			if(attr.length > 1) {
+				var indi = {
+					'famid': attr[0],
+					'display_name': attr[1],
+					'name':	attr[3],
+					'sex': attr[6],
+					'status': attr[8]
+				};
+				if(attr[2] == 1) indi.proband = true;
+				if(attr[4] !== "0") indi.father = attr[4];
+				if(attr[5] !== "0") indi.mother = attr[5];
+				if(attr[7] !== "0") indi.mztwin = attr[7];
+				if(attr[9] !== "0") indi.age = attr[9];
+				if(attr[10] !== "0") indi.yob = attr[10];
+
+				var idx = 11;
+				$.each(io.cancers, function(cancer, diagnosis_age) {
+					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
+					if(attr[idx] !== "0") {
+						indi[diagnosis_age] = attr[idx];
+					}
+					idx++;
+				});
+
+				if(attr[idx++] !== "0") indi.ashkenazi = 1;
+				// BRCA1, BRCA2, PALB2, ATM, CHEK2, .... genetic tests
+				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
+				// genetic test result, 0 = untested, P = positive, N = negative
+				for(var j=0; j<io.genetic_test.length; j++) {
+					var gene_test = attr[idx].split(":");
+					if(gene_test[0] !== '0') {
+						if((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N'))
+							indi[io.genetic_test[j] + '_gene_test'] = {'type': gene_test[0], 'result': gene_test[1]};
+						else
+							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + gene_test[0] + " " + gene_test[1]);
+					}
+					idx++;
+				}
+				// status, 0 = unspecified, N = negative, P = positive
+				var path_test = attr[idx].split(":");
+				for(j=0; j<path_test.length; j++) {
+					if(path_test[j] !== '0') {
+						if(path_test[j] === 'N' || path_test[j] === 'P')
+							indi[io.pathology_tests[j] + '_bc_pathology'] = path_test[j];
+						else
+							console.warn('UNRECOGNISED PATHOLOGY ON LINE '+ (i+1) + ": " +io.pathology_tests[j] + " " +path_test[j]);
+					}
+				}
+				ped.unshift(indi);
+			}
+		}
+
+		try {
+			return process_ped(ped);
+		} catch(e) {
+			console.error(e);
+			return ped;
+		}
+	};
+
 	// read boadicea format v4
 	io.readBoadiceaV4 = function(boadicea_lines) {
 		var lines = boadicea_lines.trim().split('\n');
@@ -363,7 +431,7 @@
 				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
 				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
 				// genetic test result, 0 = untested, P = positive, N = negative
-				for(var j=0; j<io.genetic_test.length; j++) {
+				for(var j=0; j<5; j++) {
 					idx+=2;
 					if(attr[idx-2] !== '0') {
 						if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
@@ -875,29 +943,36 @@
 	// Set or remove proband attributes. 
 	// If a value is not provided the attribute is removed from the proband.
 	pedigree_util.proband_attr = function(opts, key, value){
+		var proband = opts.dataset[ pedigree_util.getProbandIndex(opts.dataset) ];
+		pedigree_util.node_attr(opts, proband.name, key, value);
+	}
+
+	// Set or remove node attributes. 
+	// If a value is not provided the attribute is removed.
+	pedigree_util.node_attr = function(opts, name, key, value){
 		var newdataset = ptree.copy_dataset(pedcache.current(opts));
-		var proband = newdataset[ pedigree_util.getProbandIndex(newdataset) ];
-		if(!proband){
-			console.warn("No proband defined");
+		var node = pedigree_util.getNodeByName(newdataset, name);
+		if(!node){
+			console.warn("No person defined");
 			return;
 		}
 		if(value) {
-			if(key in proband) {
-				if(proband[key] === value)
+			if(key in node) {
+				if(node[key] === value)
 					return;
 				try{
-				   if(JSON.stringify(proband[key]) === JSON.stringify(value))
+				   if(JSON.stringify(node[key]) === JSON.stringify(value))
 					   return;
 				} catch(e){}
 			}
-			proband[key] = value;
+			node[key] = value;
 		} else {
-			if(key in proband)
-				delete proband[key];
+			if(key in node)
+				delete node[key];
 			else
 				return;
 		}
-        ptree.syncTwins(newdataset, proband);
+        ptree.syncTwins(newdataset, node);
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
 	}
@@ -918,6 +993,22 @@
 		opts.dataset = newdataset;
 		ptree.rebuild(opts);
 		return newchild.name;
+	}
+
+	// delete node using the name
+	pedigree_util.delete_node_by_name = function(opts, name){
+		function onDone(opts, dataset) {
+			// assign new dataset and rebuild pedigree
+			opts.dataset = dataset;
+			ptree.rebuild(opts);
+		}
+		var newdataset = ptree.copy_dataset(pedcache.current(opts));
+		var node = pedigree_util.getNodeByName(pedcache.current(opts), name);
+		if(!node){
+			console.warn("No node defined");
+			return;
+		}
+		ptree.delete_node_dataset(newdataset, node, opts, onDone);
 	}
 
 	// check by name if the individual exists
@@ -974,6 +1065,7 @@
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
 			labels: ['stillbirth', 'age', 'yob', 'alleles'],
+			keep_proband_on_reset: false,
 			font_size: '.75em',
 			font_family: 'Helvetica',
 			font_weight: 700,
@@ -2173,10 +2265,14 @@
 		$('#id_mutation_frequencies').change(function() {
 			$("input[id$='_mut_frequency']").prop('disabled', (this.value !== 'Custom'));
 			// note pedigree_form.mutation_frequencies is set in the view see pedigree_section_js.html
-			if(pedigree_form.mutation_frequencies && this.value !== 'Custom') {
-				var mfreq = pedigree_form.mutation_frequencies[this.value];
-				for (var gene in mfreq)
-					$('#id_'+gene.toLowerCase()+'_mut_frequency').val(mfreq[gene]);
+			if(pedigree_form.bc_mutation_frequencies && this.value !== 'Custom') {
+				var bcmfreq = pedigree_form.bc_mutation_frequencies[this.value];
+				for (var gene in bcmfreq)
+					$('#id_'+gene.toLowerCase()+'_bc_mut_frequency').val(bcmfreq[gene]);
+
+				var obcmfreq = pedigree_form.oc_mutation_frequencies[this.value];
+				for (var gene in obcmfreq)
+					$('#id_'+gene.toLowerCase()+'_oc_mut_frequency').val(obcmfreq[gene]);
 			}
 		});
 	};
@@ -2501,7 +2597,7 @@
 				$("#"+opts.targetDiv).empty();
 				ptree.build(opts);				
 			} else if ($(e.target).hasClass('fa-refresh')) {
-				pbuttons.reset(opts);
+				pbuttons.reset(opts, opts.keep_proband_on_reset);
 			}
 			// trigger fhChange event
 			$(document).trigger('fhChange', [opts]);
@@ -2509,8 +2605,24 @@
 	}
 
 	// reset pedigree and clear the history
-	pbuttons.reset = function(opts) {
-		pedcache.clear(opts);
+	pbuttons.reset = function(opts, keep_proband) {
+		if(keep_proband) {
+			var local_dataset = pedcache.current(opts);
+			var newdataset =  ptree.copy_dataset(local_dataset);
+			var proband = newdataset[pedigree_util.getProbandIndex(newdataset)];
+			//var children = pedigree_util.getChildren(newdataset, proband);
+			proband.name = "ch1";
+			proband.mother = "f21";
+			proband.father = "m21";
+			// clear pedigree data but keep proband data and risk factors
+			pedcache.clear_pedigree_data(opts)
+		} else {
+			var proband = {
+				"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"
+			};
+			pedcache.clear(opts); // clear all storage data
+		}
+
 		delete opts.dataset;
 
 		var selected = $("input[name='default_fam']:checked");
@@ -2526,7 +2638,8 @@
         		{"name":"f21","sex":"F","mother":"dOH","father":"zwB","status":"0","display_name":"mother"},
         		{"name":"aOH","sex":"F","mother":"f21","father":"m21","status":"0","display_name":"sister"},
         		{"name":"Vha","sex":"M","mother":"f21","father":"m21","status":"0","display_name":"brother"},
-        		{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
+        		proband,
+        		//{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
         		{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
         		{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
         		{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"},
@@ -2538,7 +2651,8 @@
 				{"name":"f21","sex":"F","mother":null,"father":null,"status":"0","display_name":"mother","noparents":true},
 				{"name":"aOH","sex":"F","mother":"f21","father":"m21","status":"0","display_name":"sister"},
 				{"name":"Vha","sex":"M","mother":"f21","father":"m21","status":"0","display_name":"brother"},
-				{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
+				proband,
+				//{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
 				{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
 				{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
 				{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"}];
@@ -2546,7 +2660,8 @@
 			opts.dataset = [ 
 				{"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
     		    {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
-    			{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}];
+    		    proband];
+    			//{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}];
 		}
 		ptree.rebuild(opts);
 	}
@@ -2614,12 +2729,26 @@
 		else
 			return sessionStorage.setItem(name, item);
 	}
-	
+
+	// clear all storage items
 	function clear_browser_store(opts) {
 		if(opts.store_type === 'local')
 			return localStorage.clear();
 		else
 			return sessionStorage.clear();
+	}
+
+	// remove all storage items with keys that have the pedigree history prefix
+	pedcache.clear_pedigree_data = function(opts) {
+		var prefix = get_prefix(opts);
+		var store = (opts.store_type === 'local' ? localStorage : sessionStorage);
+		var items = [];
+		for(var i = 0; i < store.length; i++){
+			if(store.key(i).indexOf(prefix) == 0)
+				items.push(store.key(i));
+		}
+		for(var i = 0; i < items.length; i++)
+			store.removeItem(items[i]);
 	}
 
 	pedcache.get_count = function(opts) {
