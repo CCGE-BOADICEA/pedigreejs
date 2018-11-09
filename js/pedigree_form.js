@@ -35,10 +35,14 @@
 		$('#id_mutation_frequencies').change(function() {
 			$("input[id$='_mut_frequency']").prop('disabled', (this.value !== 'Custom'));
 			// note pedigree_form.mutation_frequencies is set in the view see pedigree_section_js.html
-			if(pedigree_form.mutation_frequencies && this.value !== 'Custom') {
-				var mfreq = pedigree_form.mutation_frequencies[this.value];
-				for (var gene in mfreq)
-					$('#id_'+gene.toLowerCase()+'_mut_frequency').val(mfreq[gene]);
+			if(pedigree_form.bc_mutation_frequencies && this.value !== 'Custom') {
+				var bcmfreq = pedigree_form.bc_mutation_frequencies[this.value];
+				for (var gene in bcmfreq)
+					$('#id_'+gene.toLowerCase()+'_bc_mut_frequency').val(bcmfreq[gene]);
+
+				var obcmfreq = pedigree_form.oc_mutation_frequencies[this.value];
+				for (var gene in obcmfreq)
+					$('#id_'+gene.toLowerCase()+'_oc_mut_frequency').val(obcmfreq[gene]);
 			}
 		});
 	};
