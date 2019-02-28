@@ -1,7 +1,7 @@
 import SearchComp from './SearchComp';
 import React, {Component} from 'react'
 import ReactDOM from 'react-dom';
-
+import * as d3 from '../node_modules/d3'
 
 // pedigree utils
 (function(utils, $, undefined) {
