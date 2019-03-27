@@ -44,6 +44,12 @@
 				for (var gene in obcmfreq)
 					$('#id_'+gene.toLowerCase()+'_oc_mut_frequency').val(obcmfreq[gene]);
 			}
+
+			if(this.value === 'Ashkenazi') {  // update canrisk FH radio settings
+				$('#orig_ashk').prop( "checked", true );
+			} else {
+				$('#orig_unk').prop( "checked", true );
+			}
 		});
 	};
 
