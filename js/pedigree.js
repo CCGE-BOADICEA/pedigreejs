@@ -889,11 +889,11 @@
 
 		  				var cshift = 3;
 		  				if(Math.abs(dy1-dy2) > 0.1) {      // DIFFERENT LEVEL
-		  					return	"M" + x1 + "," + dy1 + "L" + x2 + "," + dy2 + "," +
+		  					return	"M" + x1 + "," + dy1 + "L" + x2 + "," + dy2 +
 	  				                "M" + x1 + "," + (dy1 - cshift) + "L" + x2 + "," + (dy2 - cshift);
 		  				} else {                           // SAME LEVEL
 			  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
-			  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
+			  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 +
 			  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
 		  				}
 		  			}
