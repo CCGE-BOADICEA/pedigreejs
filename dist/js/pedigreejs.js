@@ -73,6 +73,28 @@
 	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d',	'rad51c', 'brip1'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
+	io.get_surgical_ops = function() {
+		var meta = "";
+		if(!$('#A6_4_1_check').parent().hasClass("off")) {
+			meta += ";HYST="+$('#A6_4_1_input').val();
+		}
+		if(!$('#A6_4_2_check').parent().hasClass("off")) {
+			meta += ";OVARY1="+$('#A6_4_2_input').val();
+		}
+		if(!$('#A6_4_3_check').parent().hasClass("off")) {
+			meta += ";OVARY2="+$('#A6_4_3_input').val();
+		}
+		if(!$('#A6_4_4_check').parent().hasClass("off")) {
+			meta += ";SALP="+$('#A6_4_4_input').val();
+		}
+		if(!$('#A6_4_6_check').parent().hasClass("off")) {
+			meta += ";MAST1="+$('#A6_4_6_input').val();
+		}
+		if(!$('#A6_4_7_check').parent().hasClass("off")) {
+			meta += ";MAST2="+$('#A6_4_7_input').val();
+		}
+		return meta;
+	};
 
 	io.add = function(opts) {
 		$('#load').change(function(e) {
@@ -81,6 +103,11 @@
 
 		$('#save').click(function(e) {
 			io.save(opts);
+		});
+
+		$('#save_canrisk').click(function(e) {
+			var meta = io.get_surgical_ops();
+			io.save_canrisk(opts, meta);
 		});
 
 		$('#print').click(function(e) {
@@ -129,12 +156,30 @@
     	var svg_html = io.get_printable_svg(opts).html();
     	// find all url's to make unique
     	var myRegexp = /url\(\#(.*?)\)/g;
-		var match = myRegexp.exec(svg_html);
-		while (match !== null) {
-			var val = match[1];  // replace all url id's with new unique id's
-			svg_html = svg_html.replace(new RegExp(val, 'g'), val+ptree.makeid(2));
-			match = myRegexp.exec(svg_html);
-		}
+	    var matches = [];
+	    var match;
+	    var c = 0;
+	    myRegexp.lastIndex = 0;
+	    while (match = myRegexp.exec(svg_html)) {
+	    	c++;
+	    	if(c > 800) {
+	    		console.error("io.copy_svg_html: counter exceeded 800");
+	    		return "ERROR DISPLAYING PEDIGREE";
+	    	}
+	        matches.push(match);
+	        if (myRegexp.lastIndex === match.index) {
+	        	myRegexp.lastIndex++;
+	        }
+	    }
+
+    	for(var i=0; i<matches.length; i++) {
+    		var val = matches[i][1];
+    		var val1 = "id=\"" + val + "\"";
+    		var val2 = "url\\(\#" + val + "\\)";
+    		var newval = val+ptree.makeid(2);
+    		svg_html = svg_html.replace(new RegExp(val1, 'g'), "id=\""+newval+"\"" );
+    		svg_html = svg_html.replace(new RegExp(val2, 'g'), "url(#"+newval+")" );
+    	}
 		return svg_html;
 	};
 
@@ -161,7 +206,7 @@
 		    	scale = (xscale < yscale ? xscale : yscale);
 		    }
 			svg_div = $('<div></div>');  				// create a new div
-			svg_div.append($('svg').parent().html());	// copy svg html to new div
+			svg_div.append($('#'+opts.targetDiv).find('svg').parent().html());	// copy svg html to new div
 		    var svg = svg_div.find( "svg" );
 		    svg.attr('width', wid);		// adjust dimensions
 		    svg.attr('height', hgt);
@@ -186,8 +231,8 @@
         if(el.constructor !== Array)
         	el = [el];
 
-        var width = $(window).width()*2/3;
-        var height = $(window).height()-40;
+        var width = $(window).width()*0.9;
+        var height = $(window).height()-10;
         var cssFiles = [
         	'/static/css/canrisk.css',
         	'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
@@ -239,6 +284,14 @@
 		window.open(uriContent, 'boadicea_pedigree');
 	};
 
+	io.save_canrisk = function(opts, meta){
+		var content = run_prediction.get_pedigree(pedcache.current(opts), undefined, meta);
+		if(opts.DEBUG)
+			console.log(content);
+		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
+		window.open(uriContent, 'boadicea_pedigree');
+	};
+
 	io.load = function(e, opts) {
 	    var f = e.target.files[0];
 		if(f) {
@@ -248,10 +301,14 @@
 					console.log(e.target.result);
 				try {
 					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
-						opts.dataset = io.readBoadiceaV4(e.target.result);
-					else if(e.target.result.startsWith("CanRisk pedigree file format 1.0"))
-						opts.dataset = io.readCanRiskV1(e.target.result);
-					else {
+						opts.dataset = io.readBoadiceaV4(e.target.result, 4);
+					else if(e.target.result.startsWith("BOADICEA import pedigree file format 2.0"))
+						opts.dataset = io.readBoadiceaV4(e.target.result, 2);
+					else if(e.target.result.startsWith("##") && e.target.result.indexOf("CanRisk") !== -1) {
+						var canrisk_data = io.readCanRiskV1(e.target.result);
+						var risk_factors = canrisk_data[0];
+						opts.dataset = canrisk_data[1];
+					} else {
 						try {
 							opts.dataset = JSON.parse(e.target.result);
 						} catch(err) {
@@ -260,13 +317,19 @@
 					}
 					ptree.validate_pedigree(opts);
 				} catch(err1) {
-					console.error(err1);
+					console.error(err1, e.target.result);
 					utils.messages("File Error", ( err1.message ? err1.message : err1));
 					return;
 				}
 				console.log(opts.dataset);
 				try{
 					ptree.rebuild(opts);
+					if(risk_factors !== undefined) {
+						console.log(risk_factors);
+						// load risk factors - fire riskfactorChange event
+						$(document).trigger('riskfactorChange', [opts, risk_factors]);
+					}
+					$(document).trigger('fhChange', [opts]); 	// trigger fhChange event
 				} catch(err2) {
 					utils.messages("File Error", ( err2.message ? err2.message : err2));
 				}
@@ -332,9 +395,25 @@
 	io.readCanRiskV1 = function(boadicea_lines) {
 		var lines = boadicea_lines.trim().split('\n');
 		var ped = [];
+		var hdr = [];  // collect risk factor header lines
 		// assumes two line header
-		for(var i = 2;i < lines.length;i++){
-		   var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
+		for(var i = 0;i < lines.length;i++){
+		    if(lines[i].startsWith("##")) {
+		    	if(lines[i].startsWith("##CanRisk") && lines[i].indexOf(";") > -1) {   // contains surgical op data
+		    		var ops = lines[i].split(";");
+		    		for(var j=1; j<ops.length; j++) {
+		    			var opdata = ops[j].split("=");
+		    			if(opdata.length === 2) {
+		    				hdr.push(ops[j]);
+		    			}
+		    		}
+		    	}
+		    	if(lines[i].indexOf("CanRisk") === -1 && !lines[i].startsWith("##FamID")) {
+		    		hdr.push(lines[i].replace("##", ""));
+		    	}
+		    	continue;
+		    }
+		    var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
 			if(attr.length > 1) {
 				var indi = {
 					'famid': attr[0],
@@ -388,15 +467,15 @@
 		}
 
 		try {
-			return process_ped(ped);
+			return [hdr, process_ped(ped)];
 		} catch(e) {
 			console.error(e);
-			return ped;
+			return [hdr, ped];
 		}
 	};
 
-	// read boadicea format v4
-	io.readBoadiceaV4 = function(boadicea_lines) {
+	// read boadicea format v4 & v2
+	io.readBoadiceaV4 = function(boadicea_lines, version) {
 		var lines = boadicea_lines.trim().split('\n');
 		var ped = [];
 		// assumes two line header
@@ -426,19 +505,47 @@
 					idx++;
 				});
 
-				if(attr[idx++] !== "0") indi.ashkenazi = 1;
-				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
-				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
-				// genetic test result, 0 = untested, P = positive, N = negative
-				for(var j=0; j<5; j++) {
-					idx+=2;
-					if(attr[idx-2] !== '0') {
-						if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
-							indi[io.genetic_test[j] + '_gene_test'] = {'type': attr[idx-2], 'result': attr[idx-1]};
-						else
-							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
+				if(version === 4) {
+					if(attr[idx++] !== "0") indi.ashkenazi = 1;
+					// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
+					// genetic test type, 0 = untested, S = mutation search, T = direct gene test
+					// genetic test result, 0 = untested, P = positive, N = negative
+					for(var j=0; j<5; j++) {
+						idx+=2;
+						if(attr[idx-2] !== '0') {
+							if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
+								indi[io.genetic_test[j] + '_gene_test'] = {'type': attr[idx-2], 'result': attr[idx-1]};
+							else
+								console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
+						}
 					}
+				} else if (version === 2) {
+					// genetic test BRCA1, BRCA2
+					// type, 0 = untested, S = mutation search, T = direct gene test
+					// result, 0 = untested, N = no mutation, 1 = BRCA1 positive, 2 = BRCA2 positive, 3 = BRCA1/2 positive
+					idx+=2; 	// gtest
+					if(attr[idx-2] !== '0') {
+						if((attr[idx-2] === 'S' || attr[idx-2] === 'T')) {
+							if(attr[idx-1] === 'N') {
+								indi['brca1_gene_test'] = {'type': attr[idx-2], 'result': 'N'};
+								indi['brca2_gene_test'] = {'type': attr[idx-2], 'result': 'N'};
+							} else if(attr[idx-1] === '1') {
+								indi['brca1_gene_test'] = {'type': attr[idx-2], 'result': 'P'};
+								indi['brca2_gene_test'] = {'type': attr[idx-2], 'result': 'N'};
+							} else if(attr[idx-1] === '2') {
+								indi['brca1_gene_test'] = {'type': attr[idx-2], 'result': 'N'};
+								indi['brca2_gene_test'] = {'type': attr[idx-2], 'result': 'P'};
+							} else if(attr[idx-1] === '3') {
+								indi['brca1_gene_test'] = {'type': attr[idx-2], 'result': 'P'};
+								indi['brca2_gene_test'] = {'type': attr[idx-2], 'result': 'P'};
+							}
+						} else {
+							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
+						}
+					}
+					if(attr[idx++] !== "0") indi.ashkenazi = 1;
 				}
+
 				// status, 0 = unspecified, N = negative, P = positive
 				for(j=0; j<io.pathology_tests.length; j++) {
 					if(attr[idx] !== '0') {
@@ -702,7 +809,7 @@
 	// get the siblings of a given individual - sex is an optional parameter
 	// for only returning brothers or sisters
 	pedigree_util.getSiblings = function(dataset, person, sex) {
-		if(!person.mother || person.noparents)
+		if(person === undefined || !person.mother || person.noparents)
 			return [];
 
 		return $.map(dataset, function(p, i){
@@ -803,6 +910,8 @@
 
 	// test if two nodes are consanguinous partners
 	pedigree_util.consanguity = function(node1, node2, opts) {
+		if(node1.depth !== node2.depth) // parents at different depths
+			return true;
 		var ancestors1 = pedigree_util.ancestors(opts.dataset, node1);
 		var ancestors2 = pedigree_util.ancestors(opts.dataset, node2);
 		var names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
@@ -941,34 +1050,52 @@
 
 	// Set or remove proband attributes.
 	// If a value is not provided the attribute is removed from the proband.
-	pedigree_util.proband_attr = function(opts, key, value){
+	// 'key' can be a list of keys or a single key.
+	pedigree_util.proband_attr = function(opts, keys, value){
 		var proband = opts.dataset[ pedigree_util.getProbandIndex(opts.dataset) ];
-		pedigree_util.node_attr(opts, proband.name, key, value);
+		pedigree_util.node_attr(opts, proband.name, keys, value);
 	}
 
 	// Set or remove node attributes.
 	// If a value is not provided the attribute is removed.
-	pedigree_util.node_attr = function(opts, name, key, value){
+	// 'key' can be a list of keys or a single key.
+	pedigree_util.node_attr = function(opts, name, keys, value){
 		var newdataset = ptree.copy_dataset(pedcache.current(opts));
 		var node = pedigree_util.getNodeByName(newdataset, name);
 		if(!node){
 			console.warn("No person defined");
 			return;
 		}
+
+		if(!$.isArray(keys)) {
+			keys = [keys];
+		}
+
 		if(value) {
-			if(key in node) {
-				if(node[key] === value)
-					return;
-				try{
-				   if(JSON.stringify(node[key]) === JSON.stringify(value))
-					   return;
-				} catch(e){}
+			for(var i=0; i<keys.length; i++) {
+				var k = keys[i];
+				//console.log('VALUE PROVIDED', k, value, (k in node));
+				if(k in node && keys.length === 1) {
+					if(node[k] === value)
+						return;
+					try{
+					   if(JSON.stringify(node[k]) === JSON.stringify(value))
+						   return;
+					} catch(e){}
+				}
+				node[k] = value;
 			}
-			node[key] = value;
 		} else {
-			if(key in node)
-				delete node[key];
-			else
+			var found = false;
+			for(var i=0; i<keys.length; i++) {
+				var k = keys[i];
+				//console.log('NO VALUE PROVIDED', k, (k in node));
+				if(k in node) {
+					delete node[k];
+					found = true;
+				}
+			}
+			if(!found)
 				return;
 		}
         ptree.syncTwins(newdataset, node);
@@ -1415,10 +1542,18 @@
 		  				               "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
 		  				               "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
 		  			if(consanguity) {  // consanguinous, draw double line between partners
+		  				dy1 = (d.mother.x < d.father.x ? d.mother.y : d.father.y);
+		  				dy2 = (d.mother.x < d.father.x ? d.father.y : d.mother.y);
+
 		  				var cshift = 3;
-		  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
-		  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
-		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
+		  				if(Math.abs(dy1-dy2) > 0.1) {      // DIFFERENT LEVEL
+		  					return	"M" + x1 + "," + dy1 + "L" + x2 + "," + dy2 + "," +
+	  				                "M" + x1 + "," + (dy1 - cshift) + "L" + x2 + "," + (dy2 - cshift);
+		  				} else {                           // SAME LEVEL
+			  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
+			  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
+			  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
+		  				}
 		  			}
 		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + divorce_path;
 		  		});
@@ -1493,6 +1628,18 @@
 						           xhbar;
 						}
 					}
+
+					if(d.source.data.mother) {   // check parents depth to see if they are at the same level in the tree
+						var ma = pedigree_util.getNodeByName(flattenNodes, d.source.data.mother.name);
+						var pa = pedigree_util.getNodeByName(flattenNodes, d.source.data.father.name);
+
+						if(ma.depth !== pa.depth) {
+							return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
+							       "H" + (d.target.x) +
+						           "V" + (d.target.y);
+						}
+					}
+
 					return "M" + (d.source.x) + "," + (d.source.y ) +
 					       "V" + ((d.source.y + d.target.y) / 2) +
 					       "H" + (d.target.x) +
@@ -1558,6 +1705,7 @@
 
 			// check consistency of parents sex
 			var uniquenames = [];
+			var famids = [];
 			for(var p=0; p<opts.dataset.length; p++) {
 				if(!p.hidden) {
 					if(opts.dataset[p].mother || opts.dataset[p].father) {
@@ -1592,6 +1740,14 @@
 				if($.inArray(opts.dataset[p].name, uniquenames) > -1)
 					throw create_err('IndivID for family member '+display_name+' is not unique.');
 				uniquenames.push(opts.dataset[p].name);
+
+				if($.inArray(opts.dataset[p].famid, famids) === -1 && opts.dataset[p].famid) {
+					famids.push(opts.dataset[p].famid);
+				}
+			}
+
+			if(famids.length > 1) {
+				throw create_err('More than one family found: '+famids.join(", ")+'.');
 			}
 			// warn if there is a break in the pedigree
 			var unconnected = ptree.unconnected(opts.dataset);
@@ -2272,6 +2428,12 @@
 				var obcmfreq = pedigree_form.oc_mutation_frequencies[this.value];
 				for (var gene in obcmfreq)
 					$('#id_'+gene.toLowerCase()+'_oc_mut_frequency').val(obcmfreq[gene]);
+			}
+
+			if(this.value === 'Ashkenazi') {  // update canrisk FH radio settings
+				$('#orig_ashk').prop( "checked", true );
+			} else {
+				$('#orig_unk').prop( "checked", true );
 			}
 		});
 	};
@@ -3265,8 +3427,10 @@
 		function drag(d) {
 			d3.event.sourceEvent.stopPropagation();
 			var dx = d3.event.dx;
+			var dy = d3.event.dy;
             var xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
-            setLineDragPosition(opts.symbol_size-10, 0, xnew, 0);
+            var ynew = parseFloat(d3.select(this).attr('y2'))+ dy;
+            setLineDragPosition(opts.symbol_size-10, 0, xnew, ynew);
 		}
 	}
 
