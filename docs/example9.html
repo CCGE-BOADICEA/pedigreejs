@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,maximum-scale=2">
+	
+	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
+	<link rel="stylesheet" href="../dist/css/pedigreejs.min.css" />
+
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://unpkg.com/d3@4.13.0/build/d3.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+	<script src="../dist/js/pedigreejs.min.js"></script>
+
+
+	<script type="text/javascript">
+	$( document ).ready(function() {
+		var parent_width = $('#pedigrees').parent().width();
+		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
+		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
+
+		var dataset = [
+		    {"name":"f11","display_name":"Jane","sex":"F","status":1,"top_level":true},
+		    {"name":"m11","sex":"M","top_level":true},
+		    {"name":"f12","sex":"F","top_level":true,"breast_cancer_diagnosis_age":55},
+		    {"name":"m12","sex":"M","top_level":true},
+		    {"name":"WCd", "display_name":"L1", "sex":"M","mother":"f11","father":"m11"},
+		    {"name":"m21","sex":"M","mother":"f11","father":"m11","age":56},
+		    {"name":"f21","sex":"F","mother":"f12","father":"m12","age":63},
+		    {"name":"ch2","display_name":"L2","sex":"F","mother":"f21","father":"m21"},
+		    {"name":"WRq","display_name":"L3", "sex":"M","mother":"ch2","father":"WCd"},
+		    {"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"age":25}];
+		
+		var opts = {
+			'targetDiv': 'pedigrees',
+			'btn_target': 'im_history_ex9',
+			'width': svg_width,
+			'height': 500,
+			'symbol_size': 30,
+			'edit': true,
+			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
+		};
+		$('#opts').append(JSON.stringify(opts, null, 4));
+		var local_dataset = pedcache.current(opts);
+		if (local_dataset !== undefined && local_dataset !== null) {
+			opts.dataset = local_dataset;
+		} else {
+			opts.dataset = dataset;
+		}
+		opts= ptree.build(opts);
+	});
+	</script>
+</head>
+<body>
+
+<br>
+<div class="text-center">
+	<h3>Example 9</h3>
+	<label class="btn btn-default btn-file">
+		<input id="load" type="file" style="display: none;"/>Load
+	</label>	
+	<label class="btn btn-default btn-file">
+		<input id="save" type="button" style="display: none;"/>Save
+	</label>
+	<label class="btn btn-default btn-file">
+		<input id="print" type="button" style="display: none;"/>Print
+	</label>
+	<label class="btn btn-default btn-file">
+		<input id="svg_download" type="button" style="display: none;"/>SVG
+	</label>
+	<div id='im_history_ex9'></div>
+	<div id="pedigrees"></div>
+	<div id="node_properties"></div>
+</div>
+
+<div class="container">
+<br>
+<p>This example shows the inclusion of consanguineous partners (L1 and L2).
+These are the options used:</p> 
+<pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
+</div>
+
+</body>

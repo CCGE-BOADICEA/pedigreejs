@@ -62,13 +62,13 @@
 			if($(e.target).hasClass('fa-undo')) {
 				opts.dataset = pedcache.previous(opts);
 				$("#"+opts.targetDiv).empty();
-				ptree.build(opts);				
+				ptree.build(opts);
 			} else if ($(e.target).hasClass('fa-repeat')) {
 				opts.dataset = pedcache.next(opts);
 				$("#"+opts.targetDiv).empty();
-				ptree.build(opts);				
+				ptree.build(opts);
 			} else if ($(e.target).hasClass('fa-refresh')) {
-				pbuttons.reset(opts);
+				pbuttons.reset(opts, opts.keep_proband_on_reset);
 			}
 			// trigger fhChange event
 			$(document).trigger('fhChange', [opts]);
@@ -76,8 +76,24 @@
 	}
 
 	// reset pedigree and clear the history
-	pbuttons.reset = function(opts) {
-		pedcache.clear(opts);
+	pbuttons.reset = function(opts, keep_proband) {
+		if(keep_proband) {
+			var local_dataset = pedcache.current(opts);
+			var newdataset =  ptree.copy_dataset(local_dataset);
+			var proband = newdataset[pedigree_util.getProbandIndex(newdataset)];
+			//var children = pedigree_util.getChildren(newdataset, proband);
+			proband.name = "ch1";
+			proband.mother = "f21";
+			proband.father = "m21";
+			// clear pedigree data but keep proband data and risk factors
+			pedcache.clear_pedigree_data(opts)
+		} else {
+			var proband = {
+				"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"
+			};
+			pedcache.clear(opts); // clear all storage data
+		}
+
 		delete opts.dataset;
 
 		var selected = $("input[name='default_fam']:checked");
@@ -93,7 +109,8 @@
         		{"name":"f21","sex":"F","mother":"dOH","father":"zwB","status":"0","display_name":"mother"},
         		{"name":"aOH","sex":"F","mother":"f21","father":"m21","status":"0","display_name":"sister"},
         		{"name":"Vha","sex":"M","mother":"f21","father":"m21","status":"0","display_name":"brother"},
-        		{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
+        		proband,
+        		//{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
         		{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
         		{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
         		{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"},
@@ -105,15 +122,17 @@
 				{"name":"f21","sex":"F","mother":null,"father":null,"status":"0","display_name":"mother","noparents":true},
 				{"name":"aOH","sex":"F","mother":"f21","father":"m21","status":"0","display_name":"sister"},
 				{"name":"Vha","sex":"M","mother":"f21","father":"m21","status":"0","display_name":"brother"},
-				{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
+				proband,
+				//{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
 				{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
 				{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
 				{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"}];
 		} else {
-			opts.dataset = [ 
+			opts.dataset = [
 				{"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
     		    {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
-    			{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}];
+    		    proband];
+    			//{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}];
 		}
 		ptree.rebuild(opts);
 	}
@@ -167,26 +186,40 @@
 	function get_arr(opts) {
 		return dict_cache[get_prefix(opts)];
 	}
-	
+
 	function get_browser_store(opts, item) {
 		if(opts.store_type === 'local')
 			return localStorage.getItem(item);
 		else
 			return sessionStorage.getItem(item);
 	}
-	
+
 	function set_browser_store(opts, name, item) {
 		if(opts.store_type === 'local')
 			return localStorage.setItem(name, item);
 		else
 			return sessionStorage.setItem(name, item);
 	}
-	
+
+	// clear all storage items
 	function clear_browser_store(opts) {
 		if(opts.store_type === 'local')
 			return localStorage.clear();
 		else
 			return sessionStorage.clear();
+	}
+
+	// remove all storage items with keys that have the pedigree history prefix
+	pedcache.clear_pedigree_data = function(opts) {
+		var prefix = get_prefix(opts);
+		var store = (opts.store_type === 'local' ? localStorage : sessionStorage);
+		var items = [];
+		for(var i = 0; i < store.length; i++){
+			if(store.key(i).indexOf(prefix) == 0)
+				items.push(store.key(i));
+		}
+		for(var i = 0; i < items.length; i++)
+			store.removeItem(items[i]);
 	}
 
 	pedcache.get_count = function(opts) {

@@ -1,5 +1,4 @@
 
-
 // pedigree utils
 (function(utils, $, undefined) {
 
@@ -10,7 +9,7 @@
 	 * @param onConfirm - function to call in a confirmation dialog
 	 * @param opts      - pedigreejs options
 	 * @param dataset    - pedigree dataset
-	 */ 
+	 */
 	utils.messages = function(title, msg, onConfirm, opts, dataset) {
 		if(onConfirm) {
 			$('<div id="msgDialog">'+msg+'</div>').dialog({
@@ -38,7 +37,7 @@
 			});
 		}
 	}
-	
+
 	/**
 	 * Validate age and yob is consistent with current year. The sum of age and
 	 * yob should not be greater than or equal to current year. If alive the
@@ -60,7 +59,7 @@
 }(window.utils = window.utils || {}, jQuery));
 
 
-// pedigree I/O 
+// pedigree I/O
 (function(io, $, undefined) {
 
 	// cancers, genetic & pathology tests
@@ -71,10 +70,32 @@
 			'prostate_cancer': 'prostate_cancer_diagnosis_age',
 			'pancreatic_cancer': 'pancreatic_cancer_diagnosis_age'
 		};
-	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
+	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d',	'rad51c', 'brip1'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
-	
-	
+
+	io.get_surgical_ops = function() {
+		var meta = "";
+		if(!$('#A6_4_1_check').parent().hasClass("off")) {
+			meta += ";HYST="+$('#A6_4_1_input').val();
+		}
+		if(!$('#A6_4_2_check').parent().hasClass("off")) {
+			meta += ";OVARY1="+$('#A6_4_2_input').val();
+		}
+		if(!$('#A6_4_3_check').parent().hasClass("off")) {
+			meta += ";OVARY2="+$('#A6_4_3_input').val();
+		}
+		if(!$('#A6_4_4_check').parent().hasClass("off")) {
+			meta += ";SALP="+$('#A6_4_4_input').val();
+		}
+		if(!$('#A6_4_6_check').parent().hasClass("off")) {
+			meta += ";MAST1="+$('#A6_4_6_input').val();
+		}
+		if(!$('#A6_4_7_check').parent().hasClass("off")) {
+			meta += ";MAST2="+$('#A6_4_7_input').val();
+		}
+		return meta;
+	};
+
 	io.add = function(opts) {
 		$('#load').change(function(e) {
 			io.load(e, opts);
@@ -82,6 +103,11 @@
 
 		$('#save').click(function(e) {
 			io.save(opts);
+		});
+
+		$('#save_canrisk').click(function(e) {
+			var meta = io.get_surgical_ops();
+			io.save_canrisk(opts, meta);
 		});
 
 		$('#print').click(function(e) {
@@ -130,12 +156,30 @@
     	var svg_html = io.get_printable_svg(opts).html();
     	// find all url's to make unique
     	var myRegexp = /url\(\#(.*?)\)/g;
-		var match = myRegexp.exec(svg_html);
-		while (match !== null) {
-			var val = match[1];  // replace all url id's with new unique id's
-			svg_html = svg_html.replace(new RegExp(val, 'g'), val+ptree.makeid(2));
-			match = myRegexp.exec(svg_html);
-		}
+	    var matches = [];
+	    var match;
+	    var c = 0;
+	    myRegexp.lastIndex = 0;
+	    while (match = myRegexp.exec(svg_html)) {
+	    	c++;
+	    	if(c > 800) {
+	    		console.error("io.copy_svg_html: counter exceeded 800");
+	    		return "ERROR DISPLAYING PEDIGREE";
+	    	}
+	        matches.push(match);
+	        if (myRegexp.lastIndex === match.index) {
+	        	myRegexp.lastIndex++;
+	        }
+	    }
+
+    	for(var i=0; i<matches.length; i++) {
+    		var val = matches[i][1];
+    		var val1 = "id=\"" + val + "\"";
+    		var val2 = "url\\(\#" + val + "\\)";
+    		var newval = val+ptree.makeid(2);
+    		svg_html = svg_html.replace(new RegExp(val1, 'g'), "id=\""+newval+"\"" );
+    		svg_html = svg_html.replace(new RegExp(val2, 'g'), "url(#"+newval+")" );
+    	}
 		return svg_html;
 	};
 
@@ -162,7 +206,7 @@
 		    	scale = (xscale < yscale ? xscale : yscale);
 		    }
 			svg_div = $('<div></div>');  				// create a new div
-			svg_div.append($('svg').parent().html());	// copy svg html to new div
+			svg_div.append($('#'+opts.targetDiv).find('svg').parent().html());	// copy svg html to new div
 		    var svg = svg_div.find( "svg" );
 		    svg.attr('width', wid);		// adjust dimensions
 		    svg.attr('height', hgt);
@@ -187,10 +231,10 @@
         if(el.constructor !== Array)
         	el = [el];
 
-        var width = $(window).width()*2/3;
-        var height = $(window).height()-40;
+        var width = $(window).width()*0.9;
+        var height = $(window).height()-10;
         var cssFiles = [
-        	'/static/css/output.css',
+        	'/static/css/canrisk.css',
         	'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
         ];
         var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
@@ -206,7 +250,7 @@
             	if(html.indexOf('href="http') !== -1)
             		headContent2 += html;
             }
-            headContent2 += html;          
+            headContent2 += html;
             var scripts = document.getElementsByTagName('script');
             for(var i=0;i<scripts.length; i++) {
             	var html = scripts[i].outerHTML;
@@ -240,6 +284,14 @@
 		window.open(uriContent, 'boadicea_pedigree');
 	};
 
+	io.save_canrisk = function(opts, meta){
+		var content = run_prediction.get_pedigree(pedcache.current(opts), undefined, meta);
+		if(opts.DEBUG)
+			console.log(content);
+		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
+		window.open(uriContent, 'boadicea_pedigree');
+	};
+
 	io.load = function(e, opts) {
 	    var f = e.target.files[0];
 		if(f) {
@@ -249,8 +301,14 @@
 					console.log(e.target.result);
 				try {
 					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
-						opts.dataset = io.readBoadiceaV4(e.target.result);
-					else {
+						opts.dataset = io.readBoadiceaV4(e.target.result, 4);
+					else if(e.target.result.startsWith("BOADICEA import pedigree file format 2.0"))
+						opts.dataset = io.readBoadiceaV4(e.target.result, 2);
+					else if(e.target.result.startsWith("##") && e.target.result.indexOf("CanRisk") !== -1) {
+						var canrisk_data = io.readCanRiskV1(e.target.result);
+						var risk_factors = canrisk_data[0];
+						opts.dataset = canrisk_data[1];
+					} else {
 						try {
 							opts.dataset = JSON.parse(e.target.result);
 						} catch(err) {
@@ -259,13 +317,19 @@
 					}
 					ptree.validate_pedigree(opts);
 				} catch(err1) {
-					console.error(err1);
+					console.error(err1, e.target.result);
 					utils.messages("File Error", ( err1.message ? err1.message : err1));
 					return;
 				}
 				console.log(opts.dataset);
 				try{
 					ptree.rebuild(opts);
+					if(risk_factors !== undefined) {
+						console.log(risk_factors);
+						// load risk factors - fire riskfactorChange event
+						$(document).trigger('riskfactorChange', [opts, risk_factors]);
+					}
+					$(document).trigger('fhChange', [opts]); 	// trigger fhChange event
 				} catch(err2) {
 					utils.messages("File Error", ( err2.message ? err2.message : err2));
 				}
@@ -280,7 +344,7 @@
 		$("#load")[0].value = ''; // reset value
 	};
 
-	// 
+	//
 	// https://www.cog-genomics.org/plink/1.9/formats#ped
 	// https://www.cog-genomics.org/plink/1.9/formats#fam
 	//	1. Family ID ('FID')
@@ -304,11 +368,11 @@
 				'famid': attr[0],
 				'display_name': attr[1],
 				'name':	attr[1],
-				'sex': sex 
+				'sex': sex
 			};
 			if(attr[2] !== "0") indi.father = attr[2];
 			if(attr[3] !== "0") indi.mother = attr[3];
-			
+
 			if (typeof famid != 'undefined' && famid !== indi.famid) {
 				console.error('multiple family IDs found only using famid = '+famid);
 				break;
@@ -321,15 +385,97 @@
 					indi.alleles += attr[j] + "/" + attr[j+1] + ";";
 				}
 			}
-			
+
 			ped.unshift(indi);
 			famid = attr[0];
 		}
 		return process_ped(ped);
 	};
 
-	// read boadicea format v4
-	io.readBoadiceaV4 = function(boadicea_lines) {
+	io.readCanRiskV1 = function(boadicea_lines) {
+		var lines = boadicea_lines.trim().split('\n');
+		var ped = [];
+		var hdr = [];  // collect risk factor header lines
+		// assumes two line header
+		for(var i = 0;i < lines.length;i++){
+		    if(lines[i].startsWith("##")) {
+		    	if(lines[i].startsWith("##CanRisk") && lines[i].indexOf(";") > -1) {   // contains surgical op data
+		    		var ops = lines[i].split(";");
+		    		for(var j=1; j<ops.length; j++) {
+		    			var opdata = ops[j].split("=");
+		    			if(opdata.length === 2) {
+		    				hdr.push(ops[j]);
+		    			}
+		    		}
+		    	}
+		    	if(lines[i].indexOf("CanRisk") === -1 && !lines[i].startsWith("##FamID")) {
+		    		hdr.push(lines[i].replace("##", ""));
+		    	}
+		    	continue;
+		    }
+		    var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
+			if(attr.length > 1) {
+				var indi = {
+					'famid': attr[0],
+					'display_name': attr[1],
+					'name':	attr[3],
+					'sex': attr[6],
+					'status': attr[8]
+				};
+				if(attr[2] == 1) indi.proband = true;
+				if(attr[4] !== "0") indi.father = attr[4];
+				if(attr[5] !== "0") indi.mother = attr[5];
+				if(attr[7] !== "0") indi.mztwin = attr[7];
+				if(attr[9] !== "0") indi.age = attr[9];
+				if(attr[10] !== "0") indi.yob = attr[10];
+
+				var idx = 11;
+				$.each(io.cancers, function(cancer, diagnosis_age) {
+					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
+					if(attr[idx] !== "0") {
+						indi[diagnosis_age] = attr[idx];
+					}
+					idx++;
+				});
+
+				if(attr[idx++] !== "0") indi.ashkenazi = 1;
+				// BRCA1, BRCA2, PALB2, ATM, CHEK2, .... genetic tests
+				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
+				// genetic test result, 0 = untested, P = positive, N = negative
+				for(var j=0; j<io.genetic_test.length; j++) {
+					var gene_test = attr[idx].split(":");
+					if(gene_test[0] !== '0') {
+						if((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N'))
+							indi[io.genetic_test[j] + '_gene_test'] = {'type': gene_test[0], 'result': gene_test[1]};
+						else
+							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + gene_test[0] + " " + gene_test[1]);
+					}
+					idx++;
+				}
+				// status, 0 = unspecified, N = negative, P = positive
+				var path_test = attr[idx].split(":");
+				for(j=0; j<path_test.length; j++) {
+					if(path_test[j] !== '0') {
+						if(path_test[j] === 'N' || path_test[j] === 'P')
+							indi[io.pathology_tests[j] + '_bc_pathology'] = path_test[j];
+						else
+							console.warn('UNRECOGNISED PATHOLOGY ON LINE '+ (i+1) + ": " +io.pathology_tests[j] + " " +path_test[j]);
+					}
+				}
+				ped.unshift(indi);
+			}
+		}
+
+		try {
+			return [hdr, process_ped(ped)];
+		} catch(e) {
+			console.error(e);
+			return [hdr, ped];
+		}
+	};
+
+	// read boadicea format v4 & v2
+	io.readBoadiceaV4 = function(boadicea_lines, version) {
 		var lines = boadicea_lines.trim().split('\n');
 		var ped = [];
 		// assumes two line header
@@ -359,19 +505,47 @@
 					idx++;
 				});
 
-				if(attr[idx++] !== "0") indi.ashkenazi = 1;
-				// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
-				// genetic test type, 0 = untested, S = mutation search, T = direct gene test
-				// genetic test result, 0 = untested, P = positive, N = negative
-				for(var j=0; j<io.genetic_test.length; j++) {
-					idx+=2;
-					if(attr[idx-2] !== '0') {
-						if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
-							indi[io.genetic_test[j] + '_gene_test'] = {'type': attr[idx-2], 'result': attr[idx-1]};
-						else
-							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
+				if(version === 4) {
+					if(attr[idx++] !== "0") indi.ashkenazi = 1;
+					// BRCA1, BRCA2, PALB2, ATM, CHEK2 genetic tests
+					// genetic test type, 0 = untested, S = mutation search, T = direct gene test
+					// genetic test result, 0 = untested, P = positive, N = negative
+					for(var j=0; j<5; j++) {
+						idx+=2;
+						if(attr[idx-2] !== '0') {
+							if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
+								indi[io.genetic_test[j] + '_gene_test'] = {'type': attr[idx-2], 'result': attr[idx-1]};
+							else
+								console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
+						}
 					}
+				} else if (version === 2) {
+					// genetic test BRCA1, BRCA2
+					// type, 0 = untested, S = mutation search, T = direct gene test
+					// result, 0 = untested, N = no mutation, 1 = BRCA1 positive, 2 = BRCA2 positive, 3 = BRCA1/2 positive
+					idx+=2; 	// gtest
+					if(attr[idx-2] !== '0') {
+						if((attr[idx-2] === 'S' || attr[idx-2] === 'T')) {
+							if(attr[idx-1] === 'N') {
+								indi['brca1_gene_test'] = {'type': attr[idx-2], 'result': 'N'};
+								indi['brca2_gene_test'] = {'type': attr[idx-2], 'result': 'N'};
+							} else if(attr[idx-1] === '1') {
+								indi['brca1_gene_test'] = {'type': attr[idx-2], 'result': 'P'};
+								indi['brca2_gene_test'] = {'type': attr[idx-2], 'result': 'N'};
+							} else if(attr[idx-1] === '2') {
+								indi['brca1_gene_test'] = {'type': attr[idx-2], 'result': 'N'};
+								indi['brca2_gene_test'] = {'type': attr[idx-2], 'result': 'P'};
+							} else if(attr[idx-1] === '3') {
+								indi['brca1_gene_test'] = {'type': attr[idx-2], 'result': 'P'};
+								indi['brca2_gene_test'] = {'type': attr[idx-2], 'result': 'P'};
+							}
+						} else {
+							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
+						}
+					}
+					if(attr[idx++] !== "0") indi.ashkenazi = 1;
 				}
+
 				// status, 0 = unspecified, N = negative, P = positive
 				for(j=0; j<io.pathology_tests.length; j++) {
 					if(attr[idx] !== '0') {
@@ -456,7 +630,7 @@
 		}
 		return -1;
 	}
-	
+
 	// for a given individual assign levels to a parents ancestors
 	function getLevel(dataset, name) {
 		var idx = pedigree_util.getIdxByName(dataset, name);
@@ -464,7 +638,7 @@
 		update_parents_level(idx, level, dataset);
 	}
 
-	// recursively update parents levels 
+	// recursively update parents levels
 	function update_parents_level(idx, level, dataset) {
 		var parents = ['mother', 'father'];
 		level++;
