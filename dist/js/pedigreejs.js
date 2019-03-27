@@ -2286,11 +2286,19 @@ import * as d3 from '../node_modules/d3'
 		var name = $('#id_name').val();
 		var newdataset = ptree.copy_dataset(dataset);
 		var person = pedigree_util.getNodeByName(newdataset, name);
+
+		var dataset = opts.dataset
+		var newdataset = ptree.copy_dataset(dataset);
+		var person = pedigree_util.getNodeByName(newdataset, name);
+
+
 		if(!person) {
 			console.warn('person not found when saving details');
 			return;
 		}
 		$("#"+opts.targetDiv).empty();
+
+
 
 		// individual's personal and clinical details
 		var yob = $('#id_yob_0').val();
@@ -2319,6 +2327,21 @@ import * as d3 from '../node_modules/d3'
 					delete person[attr];
 			}
 		}
+
+
+		// affected booleans switches
+		var switches2 = ["affected","healthy"];
+		for(var iswitch=0; iswitch<switches2.length; iswitch++){
+					var attr = switches2[iswitch];
+					var s = $('#id_'+attr);
+					if(s.length > 0){
+						console.log(s.is(":checked"));
+						if(s.is(":checked"))
+							person[attr] = true;
+						else
+							delete person[attr];
+					}
+		 }
 
 		// current sex
 		var sex = $('#id_sex').find("input[type='radio']:checked");
@@ -3159,6 +3182,7 @@ import * as d3 from '../node_modules/d3'
 	    return string.charAt(0).toUpperCase() + string.slice(1);
 	}
 
+
     // if opt.edit is set true (rather than given a function) this is called to edit node attributes
     function openEditDialog(opts, d) {
 		$('#node_properties').dialog({
@@ -3167,18 +3191,51 @@ import * as d3 from '../node_modules/d3'
 		    width: ($(window).width() > 400 ? 600 : $(window).width()- 30)
 		});
 
+		//document.body.innerHTML +='<input type="text" id="myInput"  title="Type in a name">';
+
+
 		var table = "<table id='person_details' class='table'>";
 
-		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
+		table += '<div id="test" style="text-align:left"> Search: </div>';
+
+		table += "<tr style='display:none'><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
 		(d.data.name ? d.data.name : "")+"></td></tr>";
-		table += "<tr><td style='text-align:right'>Name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
+
+
+		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' disabled value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
+		table += "<tr><td style='text-align:right'>External id</td><td><input class='form-control' type='text' id='id_external' name='external_name' value="+
+						(d.data.external_name ? d.data.external_name : "")+"></td></tr>";
+
+
+		table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1800' max='2050' name='yob' style='width:7em' value="+
+							(d.data.yob ? d.data.yob : "")+"></td></tr>";
+
+
+		table += "<tr><td style='text-align:right'>Year Of Death</td><td><input class='form-control' type='number' id='id_yod' min='1800' max='2050' name='yod' style='width:7em' value="+
+												(d.data.yod ? d.data.yod : "")+"></td></tr>";
+
+
+		// affected
+		var switches2 = ["affected", "healthy"];
+			table += '<tr><td colspan="2">';
+			for(var iswitch=0; iswitch<switches2.length; iswitch++){
+				 var attr = switches2[iswitch];
+						if(iswitch === 2)
+								table += '</td></tr><tr><td colspan="2">';
+								table +=
+								 '<label class="radio-inline"><input type="radio" id="id_'+attr +
+										'" name="attr" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;'  +
+								    capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
+		 }
+
+
+    //Fro now on probably for removing
 		table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:7em' value="+
 				(d.data.age ? d.data.age : "")+"></td></tr>";
 
-		table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value="+
-			(d.data.yob ? d.data.yob : "")+"></td></tr>";
+
 
 		table += '<tr><td colspan="2" id="id_sex">' +
 				 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
@@ -3206,12 +3263,14 @@ import * as d3 from '../node_modules/d3'
 			    '" name="'+attr+'" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;' +
 			    capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
 		}
+
+
 		table += '</td></tr>';
 
 		//
 		var exclude = ["children", "name", "parent_node", "top_level", "id", "noparents",
 			           "level", "age", "sex", "status", "display_name", "mother", "father",
-			           "yob", "mztwin", "dztwin"];
+			           "yob",  "mztwin", "dztwin" , "yod", "affected", "healthy", "external_name", "famid"];
 		$.merge(exclude, switches);
 		table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 		$.each(opts.diseases, function(k, v) {
@@ -3246,6 +3305,17 @@ import * as d3 from '../node_modules/d3'
 		$('#node_properties').html(table);
 		$('#node_properties').dialog('open');
 
+
+		function call_pedigree () {
+			pedigree_form.save(opts);
+			return opts
+		}
+
+		ReactDOM.render(
+		<SearchComp   savefunction={call_pedigree} />,
+		document.getElementById('test')
+		);
+
 		//$('#id_name').closest('tr').toggle();
 		$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function() {
 	    	pedigree_form.save(opts);
@@ -3253,6 +3323,8 @@ import * as d3 from '../node_modules/d3'
 		pedigree_form.update(opts);
 		return;
     }
+
+
 
 }(window.widgets = window.widgets || {}, jQuery));
 
