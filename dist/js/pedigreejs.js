@@ -3188,7 +3188,7 @@ import * as d3 from '../node_modules/d3'
 		$('#node_properties').dialog({
 		    autoOpen: false,
 		    title: d.data.display_name,
-		    width: ($(window).width() > 400 ? 450 : $(window).width()- 30)
+		    width: ($(window).width() > 400 ? 600 : $(window).width()- 30)
 		});
 
 		//document.body.innerHTML +='<input type="text" id="myInput"  title="Type in a name">';
