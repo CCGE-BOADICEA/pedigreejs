@@ -373,8 +373,10 @@
 		function drag(d) {
 			d3.event.sourceEvent.stopPropagation();
 			var dx = d3.event.dx;
+			var dy = d3.event.dy;
             var xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
-            setLineDragPosition(opts.symbol_size-10, 0, xnew, 0);
+            var ynew = parseFloat(d3.select(this).attr('y2'))+ dy;
+            setLineDragPosition(opts.symbol_size-10, 0, xnew, ynew);
 		}
 	}
 

@@ -151,7 +151,7 @@
 	// get the siblings of a given individual - sex is an optional parameter
 	// for only returning brothers or sisters
 	pedigree_util.getSiblings = function(dataset, person, sex) {
-		if(!person.mother || person.noparents)
+		if(person === undefined || !person.mother || person.noparents)
 			return [];
 
 		return $.map(dataset, function(p, i){
@@ -252,6 +252,8 @@
 
 	// test if two nodes are consanguinous partners
 	pedigree_util.consanguity = function(node1, node2, opts) {
+		if(node1.depth !== node2.depth) // parents at different depths
+			return true;
 		var ancestors1 = pedigree_util.ancestors(opts.dataset, node1);
 		var ancestors2 = pedigree_util.ancestors(opts.dataset, node2);
 		var names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
@@ -390,34 +392,52 @@
 
 	// Set or remove proband attributes.
 	// If a value is not provided the attribute is removed from the proband.
-	pedigree_util.proband_attr = function(opts, key, value){
+	// 'key' can be a list of keys or a single key.
+	pedigree_util.proband_attr = function(opts, keys, value){
 		var proband = opts.dataset[ pedigree_util.getProbandIndex(opts.dataset) ];
-		pedigree_util.node_attr(opts, proband.name, key, value);
+		pedigree_util.node_attr(opts, proband.name, keys, value);
 	}
 
 	// Set or remove node attributes.
 	// If a value is not provided the attribute is removed.
-	pedigree_util.node_attr = function(opts, name, key, value){
+	// 'key' can be a list of keys or a single key.
+	pedigree_util.node_attr = function(opts, name, keys, value){
 		var newdataset = ptree.copy_dataset(pedcache.current(opts));
 		var node = pedigree_util.getNodeByName(newdataset, name);
 		if(!node){
 			console.warn("No person defined");
 			return;
 		}
+
+		if(!$.isArray(keys)) {
+			keys = [keys];
+		}
+
 		if(value) {
-			if(key in node) {
-				if(node[key] === value)
-					return;
-				try{
-				   if(JSON.stringify(node[key]) === JSON.stringify(value))
-					   return;
-				} catch(e){}
+			for(var i=0; i<keys.length; i++) {
+				var k = keys[i];
+				//console.log('VALUE PROVIDED', k, value, (k in node));
+				if(k in node && keys.length === 1) {
+					if(node[k] === value)
+						return;
+					try{
+					   if(JSON.stringify(node[k]) === JSON.stringify(value))
+						   return;
+					} catch(e){}
+				}
+				node[k] = value;
 			}
-			node[key] = value;
 		} else {
-			if(key in node)
-				delete node[key];
-			else
+			var found = false;
+			for(var i=0; i<keys.length; i++) {
+				var k = keys[i];
+				//console.log('NO VALUE PROVIDED', k, (k in node));
+				if(k in node) {
+					delete node[k];
+					found = true;
+				}
+			}
+			if(!found)
 				return;
 		}
         ptree.syncTwins(newdataset, node);
@@ -864,10 +884,18 @@
 		  				               "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
 		  				               "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
 		  			if(consanguity) {  // consanguinous, draw double line between partners
+		  				dy1 = (d.mother.x < d.father.x ? d.mother.y : d.father.y);
+		  				dy2 = (d.mother.x < d.father.x ? d.father.y : d.mother.y);
+
 		  				var cshift = 3;
-		  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
-		  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
-		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
+		  				if(Math.abs(dy1-dy2) > 0.1) {      // DIFFERENT LEVEL
+		  					return	"M" + x1 + "," + dy1 + "L" + x2 + "," + dy2 + "," +
+	  				                "M" + x1 + "," + (dy1 - cshift) + "L" + x2 + "," + (dy2 - cshift);
+		  				} else {                           // SAME LEVEL
+			  				var path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
+			  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + "," +
+			  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
+		  				}
 		  			}
 		  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + divorce_path;
 		  		});
@@ -942,6 +970,18 @@
 						           xhbar;
 						}
 					}
+
+					if(d.source.data.mother) {   // check parents depth to see if they are at the same level in the tree
+						var ma = pedigree_util.getNodeByName(flattenNodes, d.source.data.mother.name);
+						var pa = pedigree_util.getNodeByName(flattenNodes, d.source.data.father.name);
+
+						if(ma.depth !== pa.depth) {
+							return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
+							       "H" + (d.target.x) +
+						           "V" + (d.target.y);
+						}
+					}
+
 					return "M" + (d.source.x) + "," + (d.source.y ) +
 					       "V" + ((d.source.y + d.target.y) / 2) +
 					       "H" + (d.target.x) +
@@ -1007,6 +1047,7 @@
 
 			// check consistency of parents sex
 			var uniquenames = [];
+			var famids = [];
 			for(var p=0; p<opts.dataset.length; p++) {
 				if(!p.hidden) {
 					if(opts.dataset[p].mother || opts.dataset[p].father) {
@@ -1041,6 +1082,14 @@
 				if($.inArray(opts.dataset[p].name, uniquenames) > -1)
 					throw create_err('IndivID for family member '+display_name+' is not unique.');
 				uniquenames.push(opts.dataset[p].name);
+
+				if($.inArray(opts.dataset[p].famid, famids) === -1 && opts.dataset[p].famid) {
+					famids.push(opts.dataset[p].famid);
+				}
+			}
+
+			if(famids.length > 1) {
+				throw create_err('More than one family found: '+famids.join(", ")+'.');
 			}
 			// warn if there is a break in the pedigree
 			var unconnected = ptree.unconnected(opts.dataset);
