@@ -2024,7 +2024,7 @@
 		var children = pedigree_util.getAllChildren(dataset, node);
 		var ptr_name, idx;
 		if (children.length === 0) {
-			var partner = ptree.addsibling(dataset, node, node.sex === 'F' ? 'M': 'F');
+			var partner = ptree.addsibling(dataset, node, node.sex === 'F' ? 'M': 'F', node.sex === 'F');
 			partner.noparents = true;
 			ptr_name = partner.name;
 			idx = pedigree_util.getIdxByName(dataset, node.name)+1;
@@ -2164,8 +2164,8 @@
 		if(depth == 1) {
 			mother = {"name": ptree.makeid(4), "sex": "F", "top_level": true};
 			father = {"name": ptree.makeid(4), "sex": "M", "top_level": true};
-			dataset.splice(0, 0, father);
 			dataset.splice(0, 0, mother);
+			dataset.splice(0, 0, father);
 
 			for(i=0; i<dataset.length; i++){
 				if(dataset[i].top_level && dataset[i].name !== mother.name && dataset[i].name !== father.name){
@@ -2201,8 +2201,16 @@
 				midx = pedigree_util.getIdxByName(dataset, node.mother);
 
 			var parent = dataset[midx];
-			mother = ptree.addsibling(dataset, parent, 'F', add_lhs);
 			father = ptree.addsibling(dataset, parent, 'M', add_lhs);
+			mother = ptree.addsibling(dataset, parent, 'F', add_lhs);
+			
+			var faidx = pedigree_util.getIdxByName(dataset, father.name);
+			var moidx = pedigree_util.getIdxByName(dataset, mother.name);
+			if(faidx > moidx) {                   // switch to ensure father on lhs of mother
+				var tmpfa = dataset[faidx];
+				dataset[faidx] = dataset[moidx];
+				dataset[moidx] = tmpfa;
+			}
 
 			var orphans = pedigree_util.getAdoptedSiblings(dataset, node);
 			var nid = tree_node.data.id;
@@ -2245,7 +2253,7 @@
 		var flat_tree = pedigree_util.flatten(root);
 		var tree_node = pedigree_util.getNodeByName(flat_tree, name);
 
-		var partner = ptree.addsibling(dataset, tree_node.data, tree_node.data.sex=== 'F' ? 'M' : 'F');
+		var partner = ptree.addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 		partner.noparents = true;
 
 		var child = {"name": ptree.makeid(4), "sex": "M"};
@@ -2791,17 +2799,17 @@
         	opts.dataset = [
         		{"name":"wZA","sex":"M","top_level":true,"status":"0","display_name":"paternal grandfather"},
         		{"name":"MAk","sex":"F","top_level":true,"status":"0","display_name":"paternal grandmother"},
-        		{"name":"dOH","sex":"F","top_level":true,"status":"0","display_name":"maternal grandmother"},
         		{"name":"zwB","sex":"M","top_level":true,"status":"0","display_name":"maternal grandfather"},
+        		{"name":"dOH","sex":"F","top_level":true,"status":"0","display_name":"maternal grandmother"},
         		{"name":"MKg","sex":"F","mother":"MAk","father":"wZA","status":"0","display_name":"paternal aunt"},
         		{"name":"xsm","sex":"M","mother":"MAk","father":"wZA","status":"0","display_name":"paternal uncle"},
         		{"name":"m21","sex":"M","mother":"MAk","father":"wZA","status":"0","display_name":"father"},
         		{"name":"f21","sex":"F","mother":"dOH","father":"zwB","status":"0","display_name":"mother"},
         		{"name":"aOH","sex":"F","mother":"f21","father":"m21","status":"0","display_name":"sister"},
         		{"name":"Vha","sex":"M","mother":"f21","father":"m21","status":"0","display_name":"brother"},
+        		{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
         		proband,
         		//{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
-        		{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
         		{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
         		{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"},
         		{"name":"uuc","display_name":"maternal aunt","sex":"F","mother":"dOH","father":"zwB","status":"0"},
@@ -2812,9 +2820,9 @@
 				{"name":"f21","sex":"F","mother":null,"father":null,"status":"0","display_name":"mother","noparents":true},
 				{"name":"aOH","sex":"F","mother":"f21","father":"m21","status":"0","display_name":"sister"},
 				{"name":"Vha","sex":"M","mother":"f21","father":"m21","status":"0","display_name":"brother"},
+				{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
 				proband,
 				//{"name":"ch1","sex":"F","mother":"f21","father":"m21","proband":true,"status":"0","display_name":"me"},
-				{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
 				{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
 				{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"}];
 		} else {
