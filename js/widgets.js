@@ -94,7 +94,7 @@
 		// click the person type selection
 		d3.selectAll(".persontype")
 		  .on("click", function () {
-			var newdataset = ptree.copy_dataset(opts.dataset);
+			var newdataset = ptree.copy_dataset(pedcache.current(opts));
 			var mztwin = d3.select(this).classed("mztwin");
 			var dztwin = d3.select(this).classed("dztwin");
 			var twin_type;
@@ -250,7 +250,7 @@
 					openEditDialog(opts, d);
 				}
 			} else if(opt === 'delete') {
-				newdataset = ptree.copy_dataset(opts.dataset);
+				newdataset = ptree.copy_dataset(pedcache.current(opts));
 				function onDone(opts, dataset) {
 					// assign new dataset and rebuild pedigree
 					opts.dataset = dataset;
@@ -258,12 +258,12 @@
 				}
 				ptree.delete_node_dataset(newdataset, d.data, opts, onDone);
 			} else if(opt === 'addparents') {
-				newdataset = ptree.copy_dataset(opts.dataset);
+				newdataset = ptree.copy_dataset(pedcache.current(opts));
 				opts.dataset = newdataset;
 				ptree.addparents(opts, newdataset, d.data.name);
 				ptree.rebuild(opts);
 			} else if(opt === 'addpartner') {
-				newdataset = ptree.copy_dataset(opts.dataset);
+				newdataset = ptree.copy_dataset(pedcache.current(opts));
 				ptree.addpartner(opts, newdataset, d.data.name);
 				opts.dataset = newdataset;
 				ptree.rebuild(opts);
