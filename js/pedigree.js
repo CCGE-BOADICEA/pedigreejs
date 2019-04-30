@@ -132,11 +132,16 @@
 
 	pedigree_util.getChildren = function(dataset, mother, father) {
 		var children = [];
+		var names = [];
 		if(mother.sex === 'F')
 			$.each(dataset, function(i, p) {
 				if(mother.name === p.mother)
-					if(!father || father.name == p.father)
-						children.push(p);
+					if(!father || father.name == p.father) {
+						if($.inArray(p.name, names) === -1){
+							children.push(p);
+							names.push(p.name);
+						}
+					}
 			});
 		return children;
 	};

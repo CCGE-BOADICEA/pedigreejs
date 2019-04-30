@@ -227,7 +227,7 @@
 	};
 
 	// open print window for a given element
-	io.print = function(el){
+	io.print = function(el, id){
         if(el.constructor !== Array)
         	el = [el];
 
@@ -260,6 +260,8 @@
 
         html = "";
         for(i=0; i<el.length; i++) {
+        	if(i === 0 && id)
+        		html += id;
         	html += $(el[i]).html();
         	if(i < el.length-1)
         		html += '<div style="page-break-before:always"> </div>';

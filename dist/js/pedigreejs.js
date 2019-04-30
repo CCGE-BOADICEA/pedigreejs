@@ -227,7 +227,7 @@
 	};
 
 	// open print window for a given element
-	io.print = function(el){
+	io.print = function(el, id){
         if(el.constructor !== Array)
         	el = [el];
 
@@ -260,6 +260,8 @@
 
         html = "";
         for(i=0; i<el.length; i++) {
+        	if(i === 0 && id)
+        		html += id;
         	html += $(el[i]).html();
         	if(i < el.length-1)
         		html += '<div style="page-break-before:always"> </div>';
@@ -790,11 +792,16 @@
 
 	pedigree_util.getChildren = function(dataset, mother, father) {
 		var children = [];
+		var names = [];
 		if(mother.sex === 'F')
 			$.each(dataset, function(i, p) {
 				if(mother.name === p.mother)
-					if(!father || father.name == p.father)
-						children.push(p);
+					if(!father || father.name == p.father) {
+						if($.inArray(p.name, names) === -1){
+							children.push(p);
+							names.push(p.name);
+						}
+					}
 			});
 		return children;
 	};
@@ -3156,7 +3163,7 @@
 		// click the person type selection
 		d3.selectAll(".persontype")
 		  .on("click", function () {
-			var newdataset = ptree.copy_dataset(opts.dataset);
+			var newdataset = ptree.copy_dataset(pedcache.current(opts));
 			var mztwin = d3.select(this).classed("mztwin");
 			var dztwin = d3.select(this).classed("dztwin");
 			var twin_type;
@@ -3312,7 +3319,7 @@
 					openEditDialog(opts, d);
 				}
 			} else if(opt === 'delete') {
-				newdataset = ptree.copy_dataset(opts.dataset);
+				newdataset = ptree.copy_dataset(pedcache.current(opts));
 				function onDone(opts, dataset) {
 					// assign new dataset and rebuild pedigree
 					opts.dataset = dataset;
@@ -3320,12 +3327,12 @@
 				}
 				ptree.delete_node_dataset(newdataset, d.data, opts, onDone);
 			} else if(opt === 'addparents') {
-				newdataset = ptree.copy_dataset(opts.dataset);
+				newdataset = ptree.copy_dataset(pedcache.current(opts));
 				opts.dataset = newdataset;
 				ptree.addparents(opts, newdataset, d.data.name);
 				ptree.rebuild(opts);
 			} else if(opt === 'addpartner') {
-				newdataset = ptree.copy_dataset(opts.dataset);
+				newdataset = ptree.copy_dataset(pedcache.current(opts));
 				ptree.addpartner(opts, newdataset, d.data.name);
 				opts.dataset = newdataset;
 				ptree.rebuild(opts);
