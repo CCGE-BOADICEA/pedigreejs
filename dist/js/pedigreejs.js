@@ -3274,12 +3274,19 @@ import * as d3 from '../node_modules/d3';
 			}
 	    });
 
+		table += '<tr><td style="text-align:right"></td><td><button id="close_but" style="font-size:1.4em" class="ui-button ui-widget ui-corner-all">Close</button></td></tr>';
 
 		table += "</table>";
 
 
 		$('#node_properties').html(table);
 		$('#node_properties').dialog('open');
+
+		$(document).ready(function(){
+		$("#close_but").click(function(){
+			$('#node_properties').dialog('close');
+		  });
+  	});
 
 
 		function call_pedigree () {
