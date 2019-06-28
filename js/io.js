@@ -2,6 +2,27 @@
 // pedigree utils
 (function(utils, $, undefined) {
 
+	utils.isIE = function() {
+		 var ua = navigator.userAgent;
+		 /* MSIE used to detect old browsers and Trident used to newer ones*/
+		 return ua.indexOf("MSIE ") > -1 || ua.indexOf("Trident/") > -1;
+	}
+
+	utils.isEdge = function() {
+		 return navigator.userAgent.match(/Edge/g);
+	}
+
+	/**
+	 *  Get formatted time or data & time
+	 */
+	utils.getFormattedDate = function(time){
+	    var d = new Date();
+	    if(time)
+	    	return ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + ":" + ('0' + d.getSeconds()).slice(-2);
+	    else
+	    	return d.getFullYear() + "-" + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + ('0' + d.getDate()).slice(-2) + " " + ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + ":" + ('0' + d.getSeconds()).slice(-2);
+	 }
+
 	/**
 	 * Show message or confirmation dialog.
 	 * @param title     - dialog window title
@@ -75,23 +96,11 @@
 
 	io.get_surgical_ops = function() {
 		var meta = "";
-		if(!$('#A6_4_1_check').parent().hasClass("off")) {
-			meta += ";HYST="+$('#A6_4_1_input').val();
-		}
-		if(!$('#A6_4_2_check').parent().hasClass("off")) {
-			meta += ";OVARY1="+$('#A6_4_2_input').val();
-		}
 		if(!$('#A6_4_3_check').parent().hasClass("off")) {
-			meta += ";OVARY2="+$('#A6_4_3_input').val();
-		}
-		if(!$('#A6_4_4_check').parent().hasClass("off")) {
-			meta += ";SALP="+$('#A6_4_4_input').val();
-		}
-		if(!$('#A6_4_6_check').parent().hasClass("off")) {
-			meta += ";MAST1="+$('#A6_4_6_input').val();
+			meta += ";OVARY2=y";
 		}
 		if(!$('#A6_4_7_check').parent().hasClass("off")) {
-			meta += ";MAST2="+$('#A6_4_7_input').val();
+			meta += ";MAST2=y";
 		}
 		return meta;
 	};
@@ -273,26 +282,47 @@
 
         printWindow.focus();
         setTimeout(function() {
-            printWindow.print();
+        	printWindow.print();
             printWindow.close();
-        }, 100);
+        }, 300);
 	};
+
+	io.save_file = function(opts, content){
+		if(opts.DEBUG)
+			console.log(content);
+		if(utils.isIE() || utils.isEdge()) {
+			var blobObj = new Blob([content]);
+			window.navigator.msSaveOrOpenBlob(blobObj, 'canrisk.txt');
+		} else {
+			var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
+			window.open(uriContent, 'canrisk');
+		}
+	}
 
 	io.save = function(opts){
 		var content = JSON.stringify(pedcache.current(opts));
-		if(opts.DEBUG)
-			console.log(content);
-		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
-		window.open(uriContent, 'boadicea_pedigree');
+		io.save_file(opts, content);
 	};
 
 	io.save_canrisk = function(opts, meta){
 		var content = run_prediction.get_pedigree(pedcache.current(opts), undefined, meta);
-		if(opts.DEBUG)
-			console.log(content);
-		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
-		window.open(uriContent, 'boadicea_pedigree');
+		io.save_file(opts, content);
 	};
+
+	io.canrisk_validation = function(opts) {
+		$.each(opts.dataset, function(idx, p) {
+			if(!p.hidden && p.sex === 'M' && !pedigree_util.isProband(p)) {
+				if(p[io.cancers['breast_cancer2']]) {
+					var msg = 'Male family member ('+p.display_name+') with contralateral breast cancer found. '+
+					          'Please note that as the risk models do not take this into account the second '+
+					          'breast cancer is ignored.'
+					console.error(msg);
+					delete p[io.cancers['breast_cancer2']];
+					utils.messages("Warning", msg);
+				}
+			}
+		});
+	}
 
 	io.load = function(e, opts) {
 	    var f = e.target.files[0];
@@ -302,14 +332,17 @@
 				if(opts.DEBUG)
 					console.log(e.target.result);
 				try {
-					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0"))
+					if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0")) {
 						opts.dataset = io.readBoadiceaV4(e.target.result, 4);
-					else if(e.target.result.startsWith("BOADICEA import pedigree file format 2.0"))
+						io.canrisk_validation(opts);
+					} else if(e.target.result.startsWith("BOADICEA import pedigree file format 2.0")) {
 						opts.dataset = io.readBoadiceaV4(e.target.result, 2);
-					else if(e.target.result.startsWith("##") && e.target.result.indexOf("CanRisk") !== -1) {
+						io.canrisk_validation(opts);
+					} else if(e.target.result.startsWith("##") && e.target.result.indexOf("CanRisk") !== -1) {
 						var canrisk_data = io.readCanRiskV1(e.target.result);
 						var risk_factors = canrisk_data[0];
 						opts.dataset = canrisk_data[1];
+						io.canrisk_validation(opts);
 					} else {
 						try {
 							opts.dataset = JSON.parse(e.target.result);

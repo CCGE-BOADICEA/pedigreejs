@@ -331,7 +331,7 @@
 	// drag line between nodes to create partners
 	function drag_handle(opts) {
 		var line_drag_selection = d3.select('.diagram');
-		line_drag_selection.append("line").attr("class", 'line_drag_selection')
+		var dline = line_drag_selection.append("line").attr("class", 'line_drag_selection')
 	        .attr("stroke-width", 6)
 	        .style("stroke-dasharray", ("2, 1"))
 	        .attr("stroke","black")
@@ -339,6 +339,8 @@
 	                .on("start", dragstart)
 	                .on("drag", drag)
 	                .on("end", dragstop));
+		dline.append("svg:title").text("drag to create consanguineous partners");
+
 		setLineDragPosition(0, 0, 0, 0);
 
 		function dragstart(d) {

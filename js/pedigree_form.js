@@ -289,9 +289,11 @@
 		if(node.sex === 'M') {
 			delete node.ovarian_cancer_diagnosis_age;
 			$("[id^='id_ovarian_cancer_diagnosis_age']").closest('.row').hide();
+			$("[id^='id_breast_cancer2_diagnosis_age']").prop('disabled', true);
 		} else if(node.sex === 'F') {
 			delete node.prostate_cancer_diagnosis_age;
 			$("[id^='id_prostate_cancer_diagnosis_age']").closest('.row').hide();
+			$("[id^='id_breast_cancer2_diagnosis_age']").prop('disabled', false);
 		}
     }
 

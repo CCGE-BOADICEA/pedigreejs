@@ -588,7 +588,7 @@
 			zoom = xytransform[2];
 		}
 
-		if(xtransform === null) {
+		if(xtransform === null || ytransform === null) {
 			xtransform = opts.symbol_size/2;
 			ytransform = (-opts.symbol_size*2.5);
 		}
@@ -1025,11 +1025,14 @@
 
 		function zoomFn() {
 			var t = d3.event.transform;
+			if(d3.event, t.x.toString().length > 10)	// IE fix for drag off screen
+				return;
 			var pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
-			if(t.k == 1)
+			if(t.k == 1) {
 				pedcache.setposition(opts, pos[0], pos[1]);
-			else
+			} else {
 				pedcache.setposition(opts, pos[0], pos[1], t.k);
+			}
 			ped.attr('transform', 'translate(' + pos[0] + ',' + pos[1] + ') scale(' + t.k + ')');
 		}
 		svg.call(zoom);
@@ -1550,7 +1553,7 @@
 			var parent = dataset[midx];
 			father = ptree.addsibling(dataset, parent, 'M', add_lhs);
 			mother = ptree.addsibling(dataset, parent, 'F', add_lhs);
-			
+
 			var faidx = pedigree_util.getIdxByName(dataset, father.name);
 			var moidx = pedigree_util.getIdxByName(dataset, mother.name);
 			if(faidx > moidx) {                   // switch to ensure father on lhs of mother
