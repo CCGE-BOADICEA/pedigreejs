@@ -148,14 +148,19 @@
 		    img.onload = function() {
 		        ctx.drawImage(img, 0, 0);
 		        var imgsrc = canvas.toDataURL("image/png");
-				var a      = document.createElement('a');
-				a.href     = imgsrc;
-				a.download = 'plot.png';
-				a.target   = '_blank';
-				document.body.appendChild(a); a.click(); document.body.removeChild(a);
-		        setTimeout(function() {
-		        	wrapper.remove();
-		        }, 200);
+		        if(utils.isIE() || utils.isEdge()) {
+					var blobObj = new Blob([imgsrc]);
+					window.navigator.msSaveOrOpenBlob(blobObj, 'canrisk.txt');
+		        } else {
+					var a      = document.createElement('a');
+					a.href     = imgsrc;
+					a.download = 'plot.png';
+					a.target   = '_blank';
+					document.body.appendChild(a); a.click(); document.body.removeChild(a);
+			        setTimeout(function() {
+			        	wrapper.remove();
+			        }, 200);
+		        }
 		    };
 		});
 	};
