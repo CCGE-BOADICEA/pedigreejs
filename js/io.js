@@ -136,6 +136,7 @@
 		    } else if (typeof svg.xml != "undefined") {
 		        svgData = svg.xml;
 		    }
+		    svgData = io.copy_svg(svgData);
 
 		    var canvas = document.createElement("canvas");
 		    var svgSize = svg.getBoundingClientRect();
@@ -148,9 +149,9 @@
 		    img.onload = function() {
 		        ctx.drawImage(img, 0, 0);
 		        var imgsrc = canvas.toDataURL("image/png");
-		        if(utils.isIE() || utils.isEdge()) {
+		        if(utils.isEdge()) {
 					var html="<img src='"+imgsrc+"' alt='canvas image'/>";
-			        var newTab=window.open();
+			        var newTab = window.open();
 			        newTab.document.write(html);
 		        } else {
 					var a      = document.createElement('a');
