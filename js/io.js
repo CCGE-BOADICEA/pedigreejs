@@ -160,11 +160,16 @@
 		});
 	};
 
-	// return a copy of svg html with unique url references (e.g. for clippath)
+	// return a copy pedigree svg
 	io.copy_svg_html = function(opts) {
     	var svg_html = io.get_printable_svg(opts).html();
+    	return io.copy_svg(svg_html);
+	}
+
+	// return a copy of svg html with unique url references (e.g. for clippath)
+    io.copy_svg = function(svg_html) {
     	// find all url's to make unique
-    	var myRegexp = /url\(\#(.*?)\)/g;
+    	var myRegexp = /url\((&quot;|"|'){0,1}\#(.*?)(&quot;|"|'){0,1}\)/g;
 	    var matches = [];
 	    var match;
 	    var c = 0;
@@ -182,12 +187,14 @@
 	    }
 
     	for(var i=0; i<matches.length; i++) {
-    		var val = matches[i][1];
-    		var val1 = "id=\"" + val + "\"";
-    		var val2 = "url\\(\#" + val + "\\)";
+    		var quote = (matches[i][1] ? matches[i][1] : "");
+    		var val = matches[i][2];
+    		var m1 = "id=\"" + val + "\"";
+    		var m2 = "url\\(" + quote + "\#" + val + quote + "\\)";
+
     		var newval = val+ptree.makeid(2);
-    		svg_html = svg_html.replace(new RegExp(val1, 'g'), "id=\""+newval+"\"" );
-    		svg_html = svg_html.replace(new RegExp(val2, 'g'), "url(#"+newval+")" );
+    		svg_html = svg_html.replace(new RegExp(m1, 'g'), "id=\""+newval+"\"" );
+    		svg_html = svg_html.replace(new RegExp(m2, 'g'), "url(#"+newval+")" );
     	}
 		return svg_html;
 	};
