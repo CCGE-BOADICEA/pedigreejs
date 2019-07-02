@@ -150,7 +150,7 @@
 		        var imgsrc = canvas.toDataURL("image/png");
 		        if(utils.isIE() || utils.isEdge()) {
 					var blobObj = new Blob([imgsrc]);
-					window.navigator.msSaveOrOpenBlob(blobObj, 'canrisk.txt');
+					window.navigator.msSaveOrOpenBlob(blobObj, 'ped.png');
 		        } else {
 					var a      = document.createElement('a');
 					a.href     = imgsrc;
