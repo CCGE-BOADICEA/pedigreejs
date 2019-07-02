@@ -149,8 +149,9 @@
 		        ctx.drawImage(img, 0, 0);
 		        var imgsrc = canvas.toDataURL("image/png");
 		        if(utils.isIE() || utils.isEdge()) {
-					var blobObj = new Blob([imgsrc]);
-					window.navigator.msSaveOrOpenBlob(blobObj, 'ped.png');
+					var html="<img src='"+imgsrc+"' alt='canvas image'/>";
+			        var newTab=window.open();
+			        newTab.document.write(html);
 		        } else {
 					var a      = document.createElement('a');
 					a.href     = imgsrc;
