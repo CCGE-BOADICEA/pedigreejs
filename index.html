@@ -43,9 +43,13 @@
     <script src="js/pedigree.js"></script>
     <script src="js/undo_redo_refresh.js"></script>
     <script src="js/widgets.js"></script>
-        
-	
+
 	<script type="text/javascript">
+	if(utils.isIE() || utils.isEdge()) {
+		<!-- canvg used to convert svf to png image -->
+		document.write('<script src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"><\/script>');
+	}
+
 	$( document ).ready(function() {
 		var DEBUG = (pedigree_util.urlParam('debug') === null ? false : true);
 
