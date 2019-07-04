@@ -128,44 +128,68 @@
 		});
 
 		$('#png_download').click(function(e) {
-			var wrapper = $(io.get_printable_svg(opts)).appendTo('body')[0];
-			var svg = wrapper.querySelector("svg");
-			var svgData;
-		    if (typeof window.XMLSerializer != "undefined") {
-		        svgData = (new XMLSerializer()).serializeToString(svg);
-		    } else if (typeof svg.xml != "undefined") {
-		        svgData = svg.xml;
-		    }
-		    svgData = io.copy_svg(svgData);
+			var deferred = io.svg2Img($('svg').get(0), "pedigree", utils.isEdge()||utils.isIE());
+		    $.when.apply($,[deferred]).done(function() {
+		    	var obj = getByName(arguments, "pedigree");
 
-		    var canvas = document.createElement("canvas");
-		    var svgSize = svg.getBoundingClientRect();
-		    canvas.width = svgSize.width;
-		    canvas.height = svgSize.height;
-		    var ctx = canvas.getContext("2d");
-
-		    var img = document.createElement("img");
-		    img.setAttribute("src", "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData))) );
-		    img.onload = function() {
-		        ctx.drawImage(img, 0, 0);
-		        var imgsrc = canvas.toDataURL("image/png");
-		        if(utils.isEdge()) {
-					var html="<img src='"+imgsrc+"' alt='canvas image'/>";
+		        if(utils.isEdge() || utils.isIE()) {
+		        	var html="<img src='"+obj.img+"' alt='canvas image'/>";
 			        var newTab = window.open();
 			        newTab.document.write(html);
 		        } else {
 					var a      = document.createElement('a');
-					a.href     = imgsrc;
+					a.href     = obj.img;
 					a.download = 'plot.png';
 					a.target   = '_blank';
 					document.body.appendChild(a); a.click(); document.body.removeChild(a);
-			        setTimeout(function() {
-			        	wrapper.remove();
-			        }, 200);
 		        }
-		    };
+		    });
 		});
 	};
+
+	/**
+	 * Get object from array by the name attribute.
+	 */
+	function getByName(arr, name) {
+		return $.grep(arr, function(o){ return o && o.name == name; })[0];
+	}
+	
+	/**
+	 * Given a SVG document element convert to PNG.
+	 */
+    io.svg2Img = function(svg, deferred_name, iscanvg) {
+    	var deferred = $.Deferred();
+    	var svgStr;
+	    if (typeof window.XMLSerializer != "undefined") {
+	    	svgStr = (new XMLSerializer()).serializeToString(svg);
+	    } else if (typeof svg.xml != "undefined") {
+	    	svgStr = svg.xml;
+	    }
+	    var imgsrc = 'data:image/svg+xml;base64,'+ btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
+    	var canvas = document.createElement("canvas");
+    	var context = canvas.getContext("2d");
+	    var svgSize = svg.getBoundingClientRect();
+	    canvas.width = svgSize.width;
+	    canvas.height = svgSize.height;
+	    var ctx = canvas.getContext("2d");
+
+	    var img = document.createElement("img");
+	    img.onload = function() {
+	        if(utils.isIE() || iscanvg) {
+	        	canvg(canvas, svgStr, {
+	    			  scaleWidth: svgSize.width,
+	    			  scaleHeight: svgSize.height,
+	    			  ignoreDimensions: true
+	        	});
+	        } else {
+    			context.clearRect (0, 0, svgSize.width, svgSize.height);
+        		context.drawImage(img, 0, 0, svgSize.width, svgSize.height);
+    		}
+    		deferred.resolve({'name': deferred_name, 'img':canvas.toDataURL("image/png"), 'w':svgSize.width, 'h':svgSize.height});
+    	};
+    	img.src = imgsrc;
+    	return deferred.promise();
+    }
 
 	// return a copy pedigree svg
 	io.copy_svg_html = function(opts) {
