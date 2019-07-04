@@ -128,7 +128,7 @@
 		});
 
 		$('#png_download').click(function(e) {
-			var deferred = io.svg2Img($('svg').get(0), "pedigree", utils.isEdge()||utils.isIE());
+			var deferred = io.svg2Img($('svg'), "pedigree", utils.isEdge()||utils.isIE());
 		    $.when.apply($,[deferred]).done(function() {
 		    	var obj = getByName(arguments, "pedigree");
 
@@ -153,7 +153,7 @@
 	function getByName(arr, name) {
 		return $.grep(arr, function(o){ return o && o.name == name; })[0];
 	}
-	
+
 	/**
 	 * Given a SVG document element convert to PNG.
 	 */
@@ -161,31 +161,29 @@
     	var deferred = $.Deferred();
     	var svgStr;
 	    if (typeof window.XMLSerializer != "undefined") {
-	    	svgStr = (new XMLSerializer()).serializeToString(svg);
+	    	svgStr = (new XMLSerializer()).serializeToString(svg.get(0));
 	    } else if (typeof svg.xml != "undefined") {
-	    	svgStr = svg.xml;
+	    	svgStr = svg.get(0).xml;
 	    }
+
 	    var imgsrc = 'data:image/svg+xml;base64,'+ btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
     	var canvas = document.createElement("canvas");
     	var context = canvas.getContext("2d");
-	    var svgSize = svg.getBoundingClientRect();
-	    canvas.width = svgSize.width;
-	    canvas.height = svgSize.height;
-	    var ctx = canvas.getContext("2d");
-
+	    canvas.width = svg.width();
+	    canvas.height = svg.height();
 	    var img = document.createElement("img");
 	    img.onload = function() {
 	        if(utils.isIE() || iscanvg) {
 	        	canvg(canvas, svgStr, {
-	    			  scaleWidth: svgSize.width,
-	    			  scaleHeight: svgSize.height,
+	    			  scaleWidth: svg.width(),
+	    			  scaleHeight: svg.height(),
 	    			  ignoreDimensions: true
 	        	});
 	        } else {
-    			context.clearRect (0, 0, svgSize.width, svgSize.height);
-        		context.drawImage(img, 0, 0, svgSize.width, svgSize.height);
+    			context.clearRect (0, 0, svg.width(), svg.height());
+        		context.drawImage(img, 0, 0, svg.width(), svg.height());
     		}
-    		deferred.resolve({'name': deferred_name, 'img':canvas.toDataURL("image/png"), 'w':svgSize.width, 'h':svgSize.height});
+	        deferred.resolve({'name': deferred_name, 'img':canvas.toDataURL("image/png"), 'w':svg.width(), 'h':svg.height()});
     	};
     	img.src = imgsrc;
     	return deferred.promise();
