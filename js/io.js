@@ -128,10 +128,9 @@
 		});
 
 		$('#png_download').click(function(e) {
-			var deferred = io.svg2Img($('svg'), "pedigree", utils.isEdge()||utils.isIE());
+			var deferred = io.svg2png($('svg'), "pedigree", utils.isEdge()||utils.isIE());
 		    $.when.apply($,[deferred]).done(function() {
 		    	var obj = getByName(arguments, "pedigree");
-
 		        if(utils.isEdge() || utils.isIE()) {
 		        	var html="<img src='"+obj.img+"' alt='canvas image'/>";
 			        var newTab = window.open();
@@ -157,7 +156,7 @@
 	/**
 	 * Given a SVG document element convert to PNG.
 	 */
-    io.svg2Img = function(svg, deferred_name, iscanvg) {
+    io.svg2png = function(svg, deferred_name, iscanvg) {
     	var deferred = $.Deferred();
     	var svgStr;
 	    if (typeof window.XMLSerializer != "undefined") {
@@ -179,6 +178,7 @@
 	    			  scaleHeight: svg.height(),
 	    			  ignoreDimensions: true
 	        	});
+	        	console.log(deferred_name, "use canvg to create PNG");
 	        } else {
     			context.clearRect (0, 0, svg.width(), svg.height());
         		context.drawImage(img, 0, 0, svg.width(), svg.height());
