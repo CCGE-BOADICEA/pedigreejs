@@ -3146,7 +3146,7 @@ import * as d3 from '../node_modules/d3';
 				var child = {"name": ptree.makeid(4), "sex": 'U',
 					     "mother": (dragging.data.sex === 'F' ? dragging.data.name : last_mouseover.data.name),
 				         "father": (dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name)};
-				newdataset = ptree.copy_dataset(opts.dataset);
+				var newdataset = ptree.copy_dataset(opts.dataset);
 				opts.dataset = newdataset;
 
 				var idx = pedigree_util.getIdxByName(opts.dataset, dragging.data.name)+1;
@@ -3232,10 +3232,10 @@ import * as d3 from '../node_modules/d3';
 
 
     //Fro now on probably for removing
-		table += '<tr style="display:none"><td colspan="2" id="id_sex">' +
+		table += '<tr><td colspan="2" id="id_sex">' +
 				 '<label class="radio-inline"><input type="radio" name="sex" value="M" id="id_male"'+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
 				 '<label class="radio-inline"><input type="radio" name="sex" value="F" id="id_female"'+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
-				 '<label class="radio-inline"><input type="radio" name="sex" value="U" id="id_female">Unknown</label>' +
+				 '<label class="radio-inline"><input type="radio" name="sex" value="U" id="id_unknown">Unknown</label>' +
 				 '</td></tr>';
 
 		// alive status = 0; dead status = 1
