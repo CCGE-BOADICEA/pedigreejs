@@ -1295,8 +1295,8 @@ import * as d3 from '../node_modules/d3';
 
 		  				var dy2 = (dy1-opts.symbol_size/2-3);
 		  				// get path looping over node(s)
-		  				draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
-			  				extend = function(i, l) {
+		  				var draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
+			  			var	extend = function(i, l) {
 			  					if(i+1 < l)   //  && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
 			  						return extend(++i);
 			  					return i;
