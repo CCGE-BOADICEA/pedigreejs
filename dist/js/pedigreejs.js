@@ -144,7 +144,9 @@ import * as d3 from '../node_modules/d3';
 
 	// get printable svg div, adjust size to tree dimensions and scale to fit
 	io.get_printable_svg = function(opts) {
-		var local_dataset = pedcache.current(opts); // get current dataset
+		//var local_dataset = pedcache.current(opts); // get current dataset
+		var local_dataset = opts.dataset; // get current dataset
+
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		}
@@ -217,7 +219,7 @@ import * as d3 from '../node_modules/d3';
             		headContent += html;
             }*/
 
-        html = "";
+        var html = "";
         for(i=0; i<el.length; i++) {
         	html += $(el[i]).html();
         	if(i < el.length-1)
@@ -236,7 +238,15 @@ import * as d3 from '../node_modules/d3';
 	};
 
 	io.save = function(opts){
-		var content = JSON.stringify(pedcache.current(opts));
+
+		for (var i=0; i < opts.dataset.length; i++) {
+        if ("parent_node" in opts.dataset[i]) {
+            delete opts.dataset[i].parent_node;
+        }
+    }
+
+		var content = JSON.stringify(opts.dataset);
+
 		if(opts.DEBUG)
 			console.log(content);
 		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
@@ -1295,8 +1305,8 @@ import * as d3 from '../node_modules/d3';
 
 		  				var dy2 = (dy1-opts.symbol_size/2-3);
 		  				// get path looping over node(s)
-		  				var draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
-			  			var	extend = function(i, l) {
+		  				draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
+			  				extend = function(i, l) {
 			  					if(i+1 < l)   //  && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
 			  						return extend(++i);
 			  					return i;
@@ -1465,6 +1475,9 @@ import * as d3 from '../node_modules/d3';
 
 			function create_err(err) {
 				console.error(err);
+
+				utils.messages('Warning', err)
+
 				return new Error(err);
 			}
 
@@ -1494,9 +1507,12 @@ import * as d3 from '../node_modules/d3';
 						if(opts.dataset[midx].sex !== "F")
 							throw create_err("The mother of family member "+display_name+
 									" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
-						if(opts.dataset[fidx].sex !== "M")
+						if(opts.dataset[fidx].sex !== "M") {
 							throw create_err("The father of family member "+display_name+
 									" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
+
+								}
+
 					}
 				}
 				if(!opts.dataset[p].name)
@@ -2004,7 +2020,7 @@ import * as d3 from '../node_modules/d3';
 		var partner = ptree.addsibling(dataset, tree_node.data, tree_node.data.sex=== 'F' ? 'M' : 'F');
 		partner.noparents = true;
 
-		var child = {"name": ptree.makeid(4), "sex": "M"};
+		var child = {"name": ptree.makeid(4), "sex": "U"};
 		child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
 		child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
@@ -2330,7 +2346,7 @@ import * as d3 from '../node_modules/d3';
 
 
 		// affected booleans switches
-		var switches2 = ["affected","healthy"];
+		var switches2 = ["affected","unaffected"];
 		for(var iswitch=0; iswitch<switches2.length; iswitch++){
 					var attr = switches2[iswitch];
 					var s = $('#id_'+attr);
@@ -2467,14 +2483,12 @@ import * as d3 from '../node_modules/d3';
 			btn_target: 'pedigree_history'
         }, options );
 
-		var btns = [{"fa": "fa-undo", "title": "undo"},
-					{"fa": "fa-repeat", "title": "redo"},
-					{"fa": "fa-refresh", "title": "reset"},
+		var btns = [
 					{"fa": "fa-arrows-alt", "title": "fullscreen"}];
 		var lis = "";
 		for(var i=0; i<btns.length; i++) {
 			lis += '<li">';
-			lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' +
+			lis += '&nbsp; Fullscreen<i class="fa fa-lg ' + btns[i].fa + '" ' +
 			               (btns[i].fa == "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
 			               ' aria-hidden="true" title="'+ btns[i].title +'"></i>';
 			lis += '</li>';
@@ -2537,10 +2551,10 @@ import * as d3 from '../node_modules/d3';
 	// reset pedigree and clear the history
 	pbuttons.reset = function(opts) {
 		pedcache.clear(opts);
-		delete opts.dataset;
+		//delete opts.dataset;
 
 		var selected = $("input[name='default_fam']:checked");
-		if(selected.length > 0 && selected.val() == 'extended2') {    // secondary relatives
+		/*if(selected.length > 0 && selected.val() == 'extended2') {    // secondary relatives
         	opts.dataset = [
         		{"name":"wZA","sex":"M","top_level":true,"status":"0","display_name":"paternal grandfather"},
         		{"name":"MAk","sex":"F","top_level":true,"status":"0","display_name":"paternal grandmother"},
@@ -2573,8 +2587,13 @@ import * as d3 from '../node_modules/d3';
 				{"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
     		    {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
     			{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}];
+		}*/
+
+		for (var i=0; i < opts.dataset.length; i++) {
+				if ("parent_node" in opts.dataset[i]) {
+						delete opts.dataset[i].parent_node;
+				}
 		}
-		ptree.rebuild(opts);
 	}
 
 	pbuttons.updateButtons = function(opts) {
@@ -3189,7 +3208,7 @@ import * as d3 from '../node_modules/d3';
 		    autoOpen: false,
 		    title: d.data.display_name,
 		    width: ($(window).width() > 400 ? 600 : $(window).width()- 30)
-		});
+		 });
 
 		//document.body.innerHTML +='<input type="text" id="myInput"  title="Type in a name">';
 
@@ -3218,7 +3237,7 @@ import * as d3 from '../node_modules/d3';
 
 
 		// affected
-		var switches2 = ["affected", "healthy"];
+		var switches2 = ["affected", "unaffected"];
 			table += '<tr><td colspan="2">';
 			for(var iswitch=0; iswitch<switches2.length; iswitch++){
 				 var attr = switches2[iswitch];
@@ -3256,7 +3275,7 @@ import * as d3 from '../node_modules/d3';
 		//
 		var exclude = ["children", "name", "parent_node", "top_level", "id", "noparents",
 			           "level", "age", "sex", "status", "display_name", "mother", "father",
-			           "yob",  "mztwin", "dztwin" , "yod", "affected", "healthy", "external_name", "famid"];
+			           "yob",  "mztwin", "dztwin" , "yod", "affected", "unaffected", "external_name", "famid"];
 		$.merge(exclude, switches);
 
 
