@@ -2346,7 +2346,7 @@ import * as d3 from '../node_modules/d3';
 
 
 		// affected booleans switches
-		var switches2 = ["affected","unaffected"];
+		var switches2 = ["affected","unaffected","unknown"];
 		for(var iswitch=0; iswitch<switches2.length; iswitch++){
 					var attr = switches2[iswitch];
 					var s = $('#id_'+attr);
@@ -3237,11 +3237,11 @@ import * as d3 from '../node_modules/d3';
 
 
 		// affected
-		var switches2 = ["affected", "unaffected"];
+		var switches2 = ["affected", "unaffected","unknown"];
 			table += '<tr><td colspan="2">';
 			for(var iswitch=0; iswitch<switches2.length; iswitch++){
 				 var attr = switches2[iswitch];
-						if(iswitch === 2)
+						if(iswitch === 3)
 								table += '</td></tr><tr><td colspan="2">';
 								table +=
 								 '<label class="radio-inline"><input type="radio" id="id_'+attr +
