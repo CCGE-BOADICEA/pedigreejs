@@ -2346,7 +2346,7 @@ import * as d3 from '../node_modules/d3';
 
 
 		// affected booleans switches
-		var switches2 = ["affected","unaffected","unknown"];
+		var switches2 = ["affected","unaffected", "unknown"];
 		for(var iswitch=0; iswitch<switches2.length; iswitch++){
 					var attr = switches2[iswitch];
 					var s = $('#id_'+attr);
@@ -3237,7 +3237,7 @@ import * as d3 from '../node_modules/d3';
 
 
 		// affected
-		var switches2 = ["affected", "unaffected","unknown"];
+		var switches2 = ["affected", "unaffected", "unknown"];
 			table += '<tr><td colspan="2">';
 			for(var iswitch=0; iswitch<switches2.length; iswitch++){
 				 var attr = switches2[iswitch];
@@ -3254,7 +3254,7 @@ import * as d3 from '../node_modules/d3';
 		table += '<tr><td colspan="2" id="id_sex">' +
 				 '<label class="radio-inline"><input type="radio" name="sex" value="M" id="id_male"'+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
 				 '<label class="radio-inline"><input type="radio" name="sex" value="F" id="id_female"'+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
-				 '<label class="radio-inline"><input type="radio" name="sex" value="U" id="id_unknown">Unknown</label>' +
+				 '<label class="radio-inline"><input type="radio" name="sex" value="U" id="id_sex_unknown"'+(d.data.sex === 'U' ? "checked" : "")+'>Unknown</label>' +
 				 '</td></tr>';
 
 		// alive status = 0; dead status = 1
@@ -3275,7 +3275,7 @@ import * as d3 from '../node_modules/d3';
 		//
 		var exclude = ["children", "name", "parent_node", "top_level", "id", "noparents",
 			           "level", "age", "sex", "status", "display_name", "mother", "father",
-			           "yob",  "mztwin", "dztwin" , "yod", "affected", "unaffected", "external_name", "famid"];
+			           "yob",  "mztwin", "dztwin" , "yod", "affected", "unaffected", "unknown", "breast_cancer","external_name", "famid"];
 		$.merge(exclude, switches);
 
 
