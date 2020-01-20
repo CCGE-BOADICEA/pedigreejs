@@ -341,8 +341,7 @@
 	};
 
 	io.save_canrisk = function(opts, meta){
-		var content = run_prediction.get_pedigree(pedcache.current(opts), undefined, meta);
-		io.save_file(opts, content);
+		io.save_file(opts, run_prediction.get_non_anon_pedigree(pedcache.current(opts), meta));
 	};
 
 	io.canrisk_validation = function(opts) {
@@ -401,6 +400,13 @@
 						$(document).trigger('riskfactorChange', [opts, risk_factors]);
 					}
 					$(document).trigger('fhChange', [opts]); 	// trigger fhChange event
+
+					try {
+						// update FH section
+						acc_FamHist_ticked();
+						acc_FamHist_Leave();
+						RESULT.FLAG_FAMILY_MODAL = true;
+					} catch(err3) {}
 				} catch(err2) {
 					utils.messages("File Error", ( err2.message ? err2.message : err2));
 				}
@@ -484,7 +490,14 @@
 		    	}
 		    	continue;
 		    }
-		    var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
+
+		    var delim = /\t/;
+		    if(lines[i].indexOf('\t') < 0) {
+		    	delim = /\s+/;
+		    	console.log("NOT TAB DELIM");
+		    }
+		    var attr = $.map(lines[i].trim().split(delim), function(val, i){return val.trim();});
+
 			if(attr.length > 1) {
 				var indi = {
 					'famid': attr[0],
@@ -641,8 +654,10 @@
 
 	function process_ped(ped) {
 		// find the level of individuals in the pedigree
-		for(var i=0;i<ped.length;i++) {
-			getLevel(ped, ped[i].name);
+		for(var j=0;j<2;j++) {
+			for(var i=0;i<ped.length;i++) {
+				getLevel(ped, ped[i].name);
+			}
 		}
 
 		// find the max level (i.e. top_level)
@@ -716,9 +731,17 @@
 		for(var i=0; i<parents.length; i++) {
 			var pidx = pedigree_util.getIdxByName(dataset, dataset[idx][parents[i]]);
 			if(pidx >= 0) {
+				var ma = dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)];
+				var pa = dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)];
 				if(!dataset[pidx].level || dataset[pidx].level < level) {
-					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)].level = level;
-					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)].level = level;
+					ma.level = level;
+					pa.level = level;
+				}
+
+				if(ma.level < pa.level) {
+					ma.level = pa.level;
+				} else if(pa.level < ma.level) {
+					pa.level = ma.level;
 				}
 				update_parents_level(pidx, level, dataset);
 			}

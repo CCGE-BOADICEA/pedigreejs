@@ -50,6 +50,7 @@
 			} else {
 				$('#orig_unk').prop( "checked", true );
 			}
+			pedigree_form.save_ashkn(opts); // save ashkenazi updates
 		});
 	};
 
@@ -83,6 +84,9 @@
 		if(!('status' in node))
 			node.status = 0;
 		$('input[name=status][value="'+node.status+'"]').prop('checked', true);
+		// show lock symbol for age and yob synchronisation
+		$('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
+		(node.status == 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock'))
 
 		if('proband' in node) {
 			$('#id_proband').prop('checked', node.proband);
@@ -118,7 +122,9 @@
 		$("input[id^='id_sex_']").prop("disabled", (node.parent_node && node.sex !== 'U' ? true : false));
 
 		// disable pathology for male relatives (as not used by model)
-		$("select[id$='_bc_pathology']").prop("disabled", (node.sex === 'M' ? true : false));
+		// and if no breast cancer age of diagnosis
+		$("select[id$='_bc_pathology']").prop("disabled",
+				(node.sex === 'M' || (node.sex === 'F' && !('breast_cancer_diagnosis_age' in node)) ? true : false));
 
 		// approximate diagnosis age
 		$('#id_approx').prop('checked', (node.approx_diagnosis_age ? true: false));
@@ -149,6 +155,29 @@
 			console.warn('valid() not found');
 		}
 	};
+
+	function update_ashkn(newdataset) {
+		// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
+		if($('#orig_ashk').is(':checked')) {
+			$.each(newdataset, function(i, p) {
+				if(p.proband)
+					p.ashkenazi = 1;
+			});
+		} else {
+			$.each(newdataset, function(i, p) {
+				delete p.ashkenazi;
+			});
+		}
+	}
+
+	// Save Ashkenazi status
+	pedigree_form.save_ashkn = function(opts) {
+		var dataset = pedcache.current(opts);
+		var newdataset = ptree.copy_dataset(dataset);
+		update_ashkn(newdataset);
+		opts.dataset = newdataset;
+		ptree.rebuild(opts);
+	}
 
     pedigree_form.save = function(opts) {
 		var dataset = pedcache.current(opts);
@@ -197,10 +226,7 @@
 		}
 
 		// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
-/*		if($('#id_ashkenazi').is(':checked'))
-			person.ashkenazi = 1;
-		else
-			delete person.ashkenazi;*/
+		update_ashkn(newdataset);
 
 		if($('#id_approx').is(':checked')) // approximate diagnosis age
 			person.approx_diagnosis_age = true;
@@ -252,7 +278,6 @@
 		} catch(err) {
 			console.warn('valid() not found');
 		}
-
 
 		ptree.syncTwins(newdataset, person);
 		opts.dataset = newdataset;
