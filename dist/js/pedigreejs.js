@@ -341,8 +341,7 @@
 	};
 
 	io.save_canrisk = function(opts, meta){
-		var content = run_prediction.get_pedigree(pedcache.current(opts), undefined, meta);
-		io.save_file(opts, content);
+		io.save_file(opts, run_prediction.get_non_anon_pedigree(pedcache.current(opts), meta));
 	};
 
 	io.canrisk_validation = function(opts) {
@@ -401,6 +400,13 @@
 						$(document).trigger('riskfactorChange', [opts, risk_factors]);
 					}
 					$(document).trigger('fhChange', [opts]); 	// trigger fhChange event
+
+					try {
+						// update FH section
+						acc_FamHist_ticked();
+						acc_FamHist_Leave();
+						RESULT.FLAG_FAMILY_MODAL = true;
+					} catch(err3) {}
 				} catch(err2) {
 					utils.messages("File Error", ( err2.message ? err2.message : err2));
 				}
@@ -484,7 +490,14 @@
 		    	}
 		    	continue;
 		    }
-		    var attr = $.map(lines[i].trim().split(/\s+/), function(val, i){return val.trim();});
+
+		    var delim = /\t/;
+		    if(lines[i].indexOf('\t') < 0) {
+		    	delim = /\s+/;
+		    	console.log("NOT TAB DELIM");
+		    }
+		    var attr = $.map(lines[i].trim().split(delim), function(val, i){return val.trim();});
+
 			if(attr.length > 1) {
 				var indi = {
 					'famid': attr[0],
@@ -641,8 +654,10 @@
 
 	function process_ped(ped) {
 		// find the level of individuals in the pedigree
-		for(var i=0;i<ped.length;i++) {
-			getLevel(ped, ped[i].name);
+		for(var j=0;j<2;j++) {
+			for(var i=0;i<ped.length;i++) {
+				getLevel(ped, ped[i].name);
+			}
 		}
 
 		// find the max level (i.e. top_level)
@@ -716,9 +731,17 @@
 		for(var i=0; i<parents.length; i++) {
 			var pidx = pedigree_util.getIdxByName(dataset, dataset[idx][parents[i]]);
 			if(pidx >= 0) {
+				var ma = dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)];
+				var pa = dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)];
 				if(!dataset[pidx].level || dataset[pidx].level < level) {
-					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)].level = level;
-					dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)].level = level;
+					ma.level = level;
+					pa.level = level;
+				}
+
+				if(ma.level < pa.level) {
+					ma.level = pa.level;
+				} else if(pa.level < ma.level) {
+					pa.level = ma.level;
 				}
 				update_parents_level(pidx, level, dataset);
 			}
@@ -2522,6 +2545,7 @@
 			} else {
 				$('#orig_unk').prop( "checked", true );
 			}
+			pedigree_form.save_ashkn(opts); // save ashkenazi updates
 		});
 	};
 
@@ -2555,6 +2579,9 @@
 		if(!('status' in node))
 			node.status = 0;
 		$('input[name=status][value="'+node.status+'"]').prop('checked', true);
+		// show lock symbol for age and yob synchronisation
+		$('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
+		(node.status == 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock'))
 
 		if('proband' in node) {
 			$('#id_proband').prop('checked', node.proband);
@@ -2590,7 +2617,9 @@
 		$("input[id^='id_sex_']").prop("disabled", (node.parent_node && node.sex !== 'U' ? true : false));
 
 		// disable pathology for male relatives (as not used by model)
-		$("select[id$='_bc_pathology']").prop("disabled", (node.sex === 'M' ? true : false));
+		// and if no breast cancer age of diagnosis
+		$("select[id$='_bc_pathology']").prop("disabled",
+				(node.sex === 'M' || (node.sex === 'F' && !('breast_cancer_diagnosis_age' in node)) ? true : false));
 
 		// approximate diagnosis age
 		$('#id_approx').prop('checked', (node.approx_diagnosis_age ? true: false));
@@ -2621,6 +2650,29 @@
 			console.warn('valid() not found');
 		}
 	};
+
+	function update_ashkn(newdataset) {
+		// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
+		if($('#orig_ashk').is(':checked')) {
+			$.each(newdataset, function(i, p) {
+				if(p.proband)
+					p.ashkenazi = 1;
+			});
+		} else {
+			$.each(newdataset, function(i, p) {
+				delete p.ashkenazi;
+			});
+		}
+	}
+
+	// Save Ashkenazi status
+	pedigree_form.save_ashkn = function(opts) {
+		var dataset = pedcache.current(opts);
+		var newdataset = ptree.copy_dataset(dataset);
+		update_ashkn(newdataset);
+		opts.dataset = newdataset;
+		ptree.rebuild(opts);
+	}
 
     pedigree_form.save = function(opts) {
 		var dataset = pedcache.current(opts);
@@ -2669,10 +2721,7 @@
 		}
 
 		// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
-/*		if($('#id_ashkenazi').is(':checked'))
-			person.ashkenazi = 1;
-		else
-			delete person.ashkenazi;*/
+		update_ashkn(newdataset);
 
 		if($('#id_approx').is(':checked')) // approximate diagnosis age
 			person.approx_diagnosis_age = true;
@@ -2724,7 +2773,6 @@
 		} catch(err) {
 			console.warn('valid() not found');
 		}
-
 
 		ptree.syncTwins(newdataset, person);
 		opts.dataset = newdataset;
@@ -2847,7 +2895,23 @@
 				$("#"+opts.targetDiv).empty();
 				ptree.build(opts);
 			} else if ($(e.target).hasClass('fa-refresh')) {
-				pbuttons.reset(opts, opts.keep_proband_on_reset);
+				$('<div id="msgDialog">Resetting the pedigree may result in loss of some data.</div>').dialog({
+					title: 'Confirm Reset',
+					resizable: false,
+					height: "auto",
+					width: 400,
+					modal: true,
+					buttons: {
+						Continue: function() {
+					    	pbuttons.reset(opts, opts.keep_proband_on_reset);
+					    	$(this).dialog( "close" );
+						},
+						Cancel: function() {
+							$(this).dialog( "close" );
+							return;
+					    }
+					}
+				});
 			}
 			// trigger fhChange event
 			$(document).trigger('fhChange', [opts]);

@@ -68,7 +68,23 @@
 				$("#"+opts.targetDiv).empty();
 				ptree.build(opts);
 			} else if ($(e.target).hasClass('fa-refresh')) {
-				pbuttons.reset(opts, opts.keep_proband_on_reset);
+				$('<div id="msgDialog">Resetting the pedigree may result in loss of some data.</div>').dialog({
+					title: 'Confirm Reset',
+					resizable: false,
+					height: "auto",
+					width: 400,
+					modal: true,
+					buttons: {
+						Continue: function() {
+					    	pbuttons.reset(opts, opts.keep_proband_on_reset);
+					    	$(this).dialog( "close" );
+						},
+						Cancel: function() {
+							$(this).dialog( "close" );
+							return;
+					    }
+					}
+				});
 			}
 			// trigger fhChange event
 			$(document).trigger('fhChange', [opts]);
