@@ -3206,7 +3206,7 @@ import * as d3 from '../node_modules/d3';
     function openEditDialog(opts, d) {
 		$('#node_properties').dialog({
 		    autoOpen: false,
-		    title: d.data.display_name,
+		    title: "Add pedigree info and/or create a new entry",
 		    width: ($(window).width() > 400 ? 600 : $(window).width()- 30)
 		 });
 
@@ -3215,7 +3215,7 @@ import * as d3 from '../node_modules/d3';
 
 		var table = "<table id='person_details' class='table'>";
 
-		table += '<div id="test" style="text-align:left"> Search: </div>';
+		table += '<div id="search_comp" style="text-align:left"> Search: </div>';
 
 		table += "<tr style='display:none'><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
 		(d.data.name ? d.data.name : "")+"></td></tr>";
@@ -3224,7 +3224,7 @@ import * as d3 from '../node_modules/d3';
 		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' disabled value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
-		table += "<tr><td style='text-align:right'>External id</td><td><input class='form-control' type='text' id='id_external' name='external_name' value="+
+		table += "<tr><td style='text-align:right'>Local ID</td><td><input class='form-control' type='text' id='id_external' name='external_name' value="+
 						(d.data.external_name ? d.data.external_name : "")+"></td></tr>";
 
 
@@ -3293,7 +3293,7 @@ import * as d3 from '../node_modules/d3';
 			}
 	    });
 
-		table += '<tr><td style="text-align:right"></td><td><button id="close_but" style="font-size:1.4em" class="ui-button ui-widget ui-corner-all">Close</button></td></tr>';
+		table += '<tr><td style="text-align:right"></td><td><button id="close_but" style="font-size:1.4em;display:none" class="ui-button ui-widget ui-corner-all">Close</button></td></tr>';
 
 		table += "</table>";
 
@@ -3315,7 +3315,7 @@ import * as d3 from '../node_modules/d3';
 
 		ReactDOM.render(
 		<SearchComp   savefunction={call_pedigree} />,
-		document.getElementById('test')
+		document.getElementById('search_comp')
 		);
 
 		//$('#id_name').closest('tr').toggle();
