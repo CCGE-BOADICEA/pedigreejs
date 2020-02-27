@@ -1504,14 +1504,16 @@ import * as d3 from '../node_modules/d3';
 						if(fidx === -1)
 							throw create_err('The father (IndivID: '+father+') of family member '+
 									         display_name+' is missing from the pedigree.');
-						if(opts.dataset[midx].sex !== "F")
+
+						//Checks if the two parents have the same gender
+						/*if(opts.dataset[midx].sex !== "F")
 							throw create_err("The mother of family member "+display_name+
 									" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
 						if(opts.dataset[fidx].sex !== "M") {
 							throw create_err("The father of family member "+display_name+
 									" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
 
-								}
+								}*/
 
 					}
 				}
@@ -3224,11 +3226,11 @@ import * as d3 from '../node_modules/d3';
 		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' disabled value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
-		table += "<tr><td style='text-align:right'>Local ID</td><td><input class='form-control' type='text' id='id_external' name='external_name' value="+
+		table += "<tr><td style='text-align:right'>*Local ID</td><td><input class='form-control' type='text' id='id_external' name='external_name' value="+
 						(d.data.external_name ? d.data.external_name : "")+"></td></tr>";
 
 
-		table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1800' max='2050' name='yob' style='width:7em' value="+
+		table += "<tr><td style='text-align:right'>*Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1800' max='2050' name='yob' style='width:7em' value="+
 							(d.data.yob ? d.data.yob : "")+"></td></tr>";
 
 
@@ -3238,7 +3240,7 @@ import * as d3 from '../node_modules/d3';
 
 		// affected
 		var switches2 = ["affected", "unaffected", "unknown"];
-			table += '<tr><td colspan="2">';
+			table += '<tr><td colspan="2"> *';
 			for(var iswitch=0; iswitch<switches2.length; iswitch++){
 				 var attr = switches2[iswitch];
 						if(iswitch === 3)
@@ -3278,8 +3280,10 @@ import * as d3 from '../node_modules/d3';
 			           "yob",  "mztwin", "dztwin" , "yod", "affected", "unaffected", "unknown", "breast_cancer","external_name", "famid"];
 		$.merge(exclude, switches);
 
+		table += "<tr><td colspan='2' style='font-style:italic'>*Mandatory in case of creating a new entry </td></tr>";
 
-		table += '<tr><td colspan="2" style="line-height:1px;"></td></tr>';
+
+		/*table += '<tr><td colspan="2" style="line-height:0px;"></td></tr>';
 		$.each(d.data, function(k, v) {
 			if($.inArray(k, exclude) == -1) {
 				var kk = capitaliseFirstLetter(k);
@@ -3291,7 +3295,7 @@ import * as d3 from '../node_modules/d3';
 							k+"' name='"+k+"' value="+v+"></td></tr>";
 				}
 			}
-	    });
+		});*/
 
 		table += '<tr><td style="text-align:right"></td><td><button id="close_but" style="font-size:1.4em;display:none" class="ui-button ui-widget ui-corner-all">Close</button></td></tr>';
 
