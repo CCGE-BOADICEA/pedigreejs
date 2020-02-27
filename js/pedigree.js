@@ -644,7 +644,7 @@
 		node.append("path")
 			.filter(function (d) {return !d.data.hidden;})
 			.attr("shape-rendering", "geometricPrecision")
-			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
+			.attr("transform", function(d) {return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
 					.type(function(d) {
 						if(d.data.miscarriage || d.data.termination)
@@ -664,7 +664,7 @@
 			.attr("id", function (d) {return d.data.name;}).append("path")
 			.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);})
 			.attr("class", "node")
-			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
+			.attr("transform", function(d) {return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
 			.attr("d", d3.symbol().size(function(d) {
 					if (d.data.hidden)
 						return opts.symbol_size * opts.symbol_size / 5;
@@ -995,7 +995,7 @@
 
 		// draw proband arrow
 		var probandIdx  = pedigree_util.getProbandIndex(opts.dataset);
-		if(probandIdx) {
+		if(typeof probandIdx !== 'undefined') {
 			var probandNode = pedigree_util.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
 
 			ped.append("svg:defs").append("svg:marker")    // arrow head
