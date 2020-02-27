@@ -2,28 +2,66 @@
 // pedigree form
 (function(pedigree_form, $, undefined) {
 
+	$("#select_all_gene_tests").on('change', function (e) {
+	    if(this.value === "S") {
+	    	// select all mutation search to be negative
+	    	$("#gene_test").find("select[name$='_gene_test']").val("S").change();
+			$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
+	    } else if(this.value === "T") {
+	    	// select all direct gene tests to be negative
+	    	$("#gene_test").find("select[name$='_gene_test']").val("T").change();
+			$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
+	    } else if(this.value === "N") {
+	    	// select all gene tests to be negative
+	    	$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
+	    } else if(this.value === "reset") {
+	    	$("#gene_test").find("select[name$='_gene_test']").val("-").change();
+	    	$("#gene_test").find("select[name$='_gene_test_result']").val("-").change();
+	    }
+	});
+
+	$('#acc_FamHist_div').on('click', '#id_proband, #id_exclude', function(e) {
+		var name = $('#id_name').val();
+		if($(this).attr("id") === 'id_proband' && $(this).is(':checked')) {
+			var msg = "You are about to switch the index family member. Risk factor information (e.g. BMI "+
+			          "etc) will be cleared for the current index. Ensure you have saved the pedigree file "+
+			          "before continuing.";
+
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
+	    		title: "WARNING - save before continuing",
+	    		width: 350,
+	    		buttons: {
+		        	"Continue": function () {
+		                $(this).dialog('close');
+		                var dataset = pedcache.current(opts);
+		                opts.dataset = ptree.copy_dataset(dataset);
+		                pedigree_util.setProband(opts.dataset, name, true);
+		                ptree.rebuild(opts);
+		                reset_n_sync(opts);
+		                $('#id_proband').prop("disabled", true);
+		            },
+		            "Cancel": function () {
+		                $(this).dialog('close');
+		                $("#id_proband").prop('checked', false);
+		                $('#id_proband').prop("disabled", false);
+		            }
+	    		}
+			});
+		} else if($(this).attr("id") === 'id_exclude') {
+			var dataset = pedcache.current(opts);
+            opts.dataset = ptree.copy_dataset(dataset);
+			var idx = pedigree_util.getIdxByName(opts.dataset, name);
+			if($(this).is(':checked'))
+				opts.dataset[idx].exclude = true;
+			else
+				delete opts.dataset[idx].exclude;
+			ptree.rebuild(opts);
+		}
+	});
+
 	pedigree_form.update = function(opts) {
 		$('.node_save').click(function() {
 			pedigree_form.save(opts);
-		});
-
-		$('#id_proband, #id_exclude').click(function(e) {
-			var dataset = pedcache.current(opts);
-			opts.dataset = ptree.copy_dataset(dataset);
-
-			var name = $('#id_name').val();
-			if($(this).attr("id") === 'id_proband') {
-				pedigree_util.setProband(opts.dataset, name, $(this).is(':checked'));
-			} else {
-				var idx = pedigree_util.getIdxByName(opts.dataset, name);
-				if($(this).is(':checked'))
-					opts.dataset[idx].exclude = true;
-				else
-					delete opts.dataset[idx].exclude;
-			}
-			pedcache.add(opts);
-			$("#"+opts.targetDiv).empty();
-			ptree.build(opts);
 		});
 
 		// advanced options - model parameters
@@ -90,8 +128,10 @@
 
 		if('proband' in node) {
 			$('#id_proband').prop('checked', node.proband);
+			$('#id_proband').prop("disabled", true);
 		} else {
 			$('#id_proband').prop('checked', false);
+			$('#id_proband').prop("disabled", !('yob' in node))
 		}
 
 		if('exclude' in node) {
@@ -106,7 +146,7 @@
 			$('#id_ashkenazi').prop('checked', false);
 		}*/
 
-		// year of both
+		// year of birth
 		if('yob' in node) {
 			$('#id_yob_0').val(node.yob);
 		} else {

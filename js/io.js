@@ -77,6 +77,10 @@
 		}
 		return Math.abs(year - sum) <= 1 && year >= sum;
 	}
+
+	utils.capitaliseFirstLetter = function(string) {
+	    return string.charAt(0).toUpperCase() + string.slice(1);
+	}
 }(window.utils = window.utils || {}, jQuery));
 
 
@@ -93,6 +97,42 @@
 		};
 	io.genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d',	'rad51c', 'brip1'];
 	io.pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
+
+	// get breast and ovarian PRS values
+	io.get_prs_values = function() {
+		var prs = {};
+		if(io.hasInput("breast_prs_a") && io.hasInput("breast_prs_z")) {
+			prs['breast_cancer_prs'] = {
+				'alpha': parseFloat($('#breast_prs_a').val()),
+				'zscore': parseFloat($('#breast_prs_z').val()),
+				'percent': parseFloat($('#breast_prs_percent').val())
+			};
+		}
+		if(io.hasInput("ovarian_prs_a") && io.hasInput("ovarian_prs_z")) {
+			prs['ovarian_cancer_prs'] = {
+				'alpha': parseFloat($('#ovarian_prs_a').val()),
+				'zscore': parseFloat($('#ovarian_prs_z').val()),
+				'percent': parseFloat($('#ovarian_prs_percent').val())
+			};
+		}
+		console.log(prs);
+		return (isEmpty(prs) ? 0 : prs);
+	}
+
+	// check if input has a value
+	io.hasInput = function(id) {
+		return $.trim($('#'+id).val()).length !== 0;
+	}
+
+	// return true if the object is empty
+	var isEmpty = function(myObj) {
+	    for(var key in myObj) {
+	        if (myObj.hasOwnProperty(key)) {
+	            return false;
+	        }
+	    }
+	    return true;
+	}
 
 	io.get_surgical_ops = function() {
 		var meta = "";
@@ -116,6 +156,15 @@
 
 		$('#save_canrisk').click(function(e) {
 			var meta = io.get_surgical_ops();
+			try {
+				var prs = io.get_prs_values();
+		    	if(prs.breast_cancer_prs && prs.breast_cancer_prs.alpha !== 0 && prs.breast_cancer_prs.zscore !== 0) {
+		    		meta += "\n##PRS_BC=alpha="+prs.breast_cancer_prs.alpha+",zscore="+prs.breast_cancer_prs.zscore;
+		    	}
+		    	if(prs.ovarian_cancer_prs && prs.ovarian_cancer_prs.alpha !== 0 && prs.ovarian_cancer_prs.zscore !== 0) {
+		    		meta += "\n##PRS_OC=alpha="+prs.ovarian_cancer_prs.alpha+",zscore="+prs.ovarian_cancer_prs.zscore;
+		    	}
+			} catch(err) { console.warn("PRS", prs); }
 			io.save_canrisk(opts, meta);
 		});
 
@@ -173,6 +222,9 @@
 	    var img = document.createElement("img");
 	    img.onload = function() {
 	        if(utils.isIE() || iscanvg) {
+	        	// change font so it isn't tiny
+	        	svgStr = svgStr.replace(/ font-size="\d?.\d*em"/g, '');
+	        	svgStr = svgStr.replace(/<text /g, '<text font-size="13px" ');
 	        	canvg(canvas, svgStr, {
 	    			  scaleWidth: svg.width(),
 	    			  scaleHeight: svg.height(),
@@ -323,15 +375,27 @@
         }, 300);
 	};
 
-	io.save_file = function(opts, content){
+	// save content to a file
+	io.save_file = function(opts, content, filename, type){
 		if(opts.DEBUG)
 			console.log(content);
-		if(utils.isIE() || utils.isEdge()) {
-			var blobObj = new Blob([content]);
-			window.navigator.msSaveOrOpenBlob(blobObj, 'canrisk.txt');
-		} else {
-			var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
-			window.open(uriContent, 'canrisk');
+		if(!filename) filename = "ped.txt";
+		if(!type) type = "text/plain";
+
+	   var file = new Blob([content], {type: type});
+	   if (window.navigator.msSaveOrOpenBlob) 	// IE10+
+		   window.navigator.msSaveOrOpenBlob(file, filename);
+	   else { 									// other browsers
+		   var a = document.createElement("a");
+		   var url = URL.createObjectURL(file);
+		   a.href = url;
+		   a.download = filename;
+		   document.body.appendChild(a);
+		   a.click();
+		   setTimeout(function() {
+			   document.body.removeChild(a);
+			   window.URL.revokeObjectURL(url);
+			}, 0);
 		}
 	}
 
@@ -341,7 +405,7 @@
 	};
 
 	io.save_canrisk = function(opts, meta){
-		io.save_file(opts, run_prediction.get_non_anon_pedigree(pedcache.current(opts), meta));
+		io.save_file(opts, run_prediction.get_non_anon_pedigree(pedcache.current(opts), meta), "canrisk.txt");
 	};
 
 	io.canrisk_validation = function(opts) {
