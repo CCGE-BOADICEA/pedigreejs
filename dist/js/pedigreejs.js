@@ -2349,6 +2349,15 @@ import * as d3 from '../node_modules/d3';
 
 		// affected booleans switches
 		var switches2 = ["affected","unaffected", "unknown"];
+
+		if (document.getElementById("id_deceased").checked){
+			document.getElementById("row_yod").style.display = ""
+		}
+
+		else if (document.getElementById("id_alive").checked){
+			document.getElementById("row_yod").style.display = "none"
+		}
+
 		for(var iswitch=0; iswitch<switches2.length; iswitch++){
 					var attr = switches2[iswitch];
 					var s = $('#id_'+attr);
@@ -3223,24 +3232,39 @@ import * as d3 from '../node_modules/d3';
 		(d.data.name ? d.data.name : "")+"></td></tr>";
 
 
-		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' disabled value="+
+		table += "<tr><td style='text-align:right'>PhenoStore ID</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' disabled value="+
 				(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
 		table += "<tr><td style='text-align:right'>*Local ID</td><td><input class='form-control' type='text' id='id_external' name='external_name' value="+
 						(d.data.external_name ? d.data.external_name : "")+"></td></tr>";
+
+						// alive status = 0; dead status = 1
+						table += '<tr><td style="text-align:left" colspan="2" id="id_status"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vital status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+								 '<label class="radio-inline"><input type="radio" name="status" value="0" id="id_alive" '+(d.data.status === 0 ? "checked" : "checked")+'>&thinsp;Alive</label>' +
+								 '<label class="radio-inline"><input type="radio" name="status" value="1" id="id_deceased" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
+								 '</td></tr>';
+						$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
 
 		table += "<tr><td style='text-align:right'>*Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1800' max='2050' name='yob' style='width:7em' value="+
 							(d.data.yob ? d.data.yob : "")+"></td></tr>";
 
 
-		table += "<tr><td style='text-align:right'>Year Of Death</td><td><input class='form-control' type='number' id='id_yod' min='1800' max='2050' name='yod' style='width:7em' value="+
+		table += "<tr id='row_yod'><td style='text-align:right'>Year Of Death</td><td><input class='form-control' type='number' id='id_yod' min='1800' max='2050' name='yod' style='width:7em' value="+
 												(d.data.yod ? d.data.yod : "")+"></td></tr>";
+
+
+		//Fro now on probably for removing
+		table += '<tr><td style="text-align:left" colspan="2" id="id_sex"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sex &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+						 '<label class="radio-inline"><input type="radio" name="sex" value="M" id="id_male"'+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
+						 '<label class="radio-inline"><input type="radio" name="sex" value="F" id="id_female"'+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
+						 '<label class="radio-inline"><input type="radio" name="sex" value="U" id="id_sex_unknown"'+(d.data.sex === 'U' ? "checked" : "")+'>Unknown</label>' +
+						 '</td></tr>';
 
 
 		// affected
 		var switches2 = ["affected", "unaffected", "unknown"];
-			table += '<tr><td colspan="2"> *';
+			table += '<tr><td style="text-align:left" colspan="2"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *Disease status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 			for(var iswitch=0; iswitch<switches2.length; iswitch++){
 				 var attr = switches2[iswitch];
 						if(iswitch === 3)
@@ -3251,20 +3275,6 @@ import * as d3 from '../node_modules/d3';
 								    capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
 		 }
 
-
-    //Fro now on probably for removing
-		table += '<tr><td colspan="2" id="id_sex">' +
-				 '<label class="radio-inline"><input type="radio" name="sex" value="M" id="id_male"'+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
-				 '<label class="radio-inline"><input type="radio" name="sex" value="F" id="id_female"'+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
-				 '<label class="radio-inline"><input type="radio" name="sex" value="U" id="id_sex_unknown"'+(d.data.sex === 'U' ? "checked" : "")+'>Unknown</label>' +
-				 '</td></tr>';
-
-		// alive status = 0; dead status = 1
-		table += '<tr><td colspan="2" id="id_status">' +
-				 '<label class="radio-inline"><input type="radio" name="status" value="0" id="id_alive" '+(d.data.status === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
-				 '<label class="radio-inline"><input type="radio" name="status" value="1" id="id_deceased" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
-				 '</td></tr>';
-		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
 
 
@@ -3330,18 +3340,24 @@ import * as d3 from '../node_modules/d3';
 
 
     //Alive deceased status checkbox update
+		document.getElementById("row_yod").style.display = "none"
+
 		if (d.data.status == "1"){
 			document.getElementById("id_deceased").checked = true
+			document.getElementById("row_yod").style.display = ""
 		}
 
 		else if (d.data.status == "0"){
 			document.getElementById("id_alive").checked = true
+			document.getElementById("row_yod").style.display = "none"
 		}
+
 
 		//Disable Fam id input
 		if (document.getElementById("id_report_id") != null){
 			document.getElementById("id_report_id").disabled = true
 		}
+
 
 
 		return;
