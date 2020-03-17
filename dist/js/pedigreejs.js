@@ -1024,7 +1024,7 @@ import * as d3 from '../node_modules/d3';
 			.attr("height", "100%")
 			.attr("rx", 6)
 			.attr("ry", 6)
-			.style("stroke", "darkgrey")
+			.style("stroke", "")
        		.style("fill", opts.background) // or none
        		.style("stroke-width", 1);
 
