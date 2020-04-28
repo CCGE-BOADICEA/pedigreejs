@@ -87,6 +87,10 @@ import * as d3 from '../node_modules/d3';
 			io.save(opts);
 		});
 
+		$('#export_ped').click(function(e) {
+			io.export_ped(opts);
+		});
+
 		$('#print').click(function(e) {
 			io.print(io.get_printable_svg(opts));
 		});
@@ -247,10 +251,99 @@ import * as d3 from '../node_modules/d3';
 
 		var content = JSON.stringify(opts.dataset);
 
+		var ped_id = opts.dataset[0].report_id;
+
+		var link = document.createElement("a");
+		link.download = ped_id + ".json";
+		link.href = "data:application/txt;charset=utf-8," + encodeURIComponent(content);;
+		link.click();
+
 		if(opts.DEBUG)
 			console.log(content);
-		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
-		window.open(uriContent, 'boadicea_pedigree');
+		//var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
+		//window.open(uriContent, 'boadicea_pedigree');
+	};
+
+	io.export_ped = function(opts){
+
+		var fam_id = "";
+		var ind_id = "";
+		var pat_id = "";
+		var mot_id = "";
+		var sex = "";
+		var affected_status = "";
+
+		var line = "";
+
+	 for (var i=0; i < opts.dataset.length; i++) {
+
+		if ("parent_node" in opts.dataset[i]) {
+            delete opts.dataset[i].parent_node;
+        }
+
+		if ("report_id" in opts.dataset[i]) {
+            fam_id = opts.dataset[i].report_id;
+        }
+		
+		if ("name" in opts.dataset[i]) {
+            ind_id = opts.dataset[i].name;
+		}
+
+		if ("father" in opts.dataset[i]) {
+            pat_id = opts.dataset[i].father;
+		}
+
+		else
+		   pat_id = 0
+
+		if ("mother" in opts.dataset[i]) {
+            mot_id = opts.dataset[i].mother;
+		}
+
+		else
+		   mot_id = 0
+
+		if ("sex" in opts.dataset[i]) {
+			if (opts.dataset[i].sex == "M")
+				sex = 1;
+				
+			else if (opts.dataset[i].sex == "F")
+				sex = 2;
+			
+			else
+			    sex = 0;
+		}
+
+		if ("affected" in opts.dataset[i]) {
+			if (opts.dataset[i].affected == true)
+			affected_status = 2
+		}
+
+		else if ("unaffected" in opts.dataset[i]) {
+			if (opts.dataset[i].unaffected == true)
+			affected_status = 1
+		}
+
+		else
+		   affected_status = 0
+
+		
+		var fields = fam_id + " " + ind_id + " " + pat_id  + " " + mot_id  + " " + sex + " " + affected_status + "\n"
+		
+		line += fields
+    }
+
+		var content = line;
+
+		var ped_id = opts.dataset[0].report_id;
+
+		var link = document.createElement("a");
+		link.download = ped_id + ".ped";
+		link.href = "data:application/txt;charset=utf-8," + encodeURIComponent(content);;
+		link.click();
+
+		if(opts.DEBUG)
+			console.log(content);
 	};
 
 	io.load = function(e, opts) {
