@@ -266,12 +266,12 @@ import * as d3 from '../node_modules/d3';
 
 	io.export_ped = function(opts){
 
-		var fam_id = "";
-		var ind_id = "";
-		var pat_id = "";
-		var mot_id = "";
-		var sex = "";
-		var affected_status = "";
+		var fam_id = "NA";
+		var ind_id = "NA";
+		var pat_id = "NA";
+		var mot_id = "NA";
+		var sex = "NA";
+		var affected_status = "NA";
 
 		var line = "";
 
@@ -283,21 +283,57 @@ import * as d3 from '../node_modules/d3';
 
 		if ("report_id" in opts.dataset[i]) {
             fam_id = opts.dataset[i].report_id;
-        }
+		}
 		
-		if ("name" in opts.dataset[i]) {
+		if ("display_name" in opts.dataset[i]) {
+            ind_id = opts.dataset[i].display_name;
+		}
+		
+		else if ("name" in opts.dataset[i]) {
             ind_id = opts.dataset[i].name;
 		}
 
 		if ("father" in opts.dataset[i]) {
-            pat_id = opts.dataset[i].father;
+			 let tmp_pat_id = opts.dataset[i].father;
+			 let obj = opts.dataset.find(o => o.name === tmp_pat_id);
+			 
+			 if (obj != undefined) {
+				if ("display_name" in obj)
+				   pat_id = obj.display_name
+				else
+				   pat_id = obj.name
+			 }
+
+			 else {
+				if (tmp_pat_id !=undefined)
+					pat_id = tmp_pat_id
+				
+				else
+				   pat_id = 0
+			 }
 		}
 
 		else
 		   pat_id = 0
 
 		if ("mother" in opts.dataset[i]) {
-            mot_id = opts.dataset[i].mother;
+			let tmp_mot_id = opts.dataset[i].mother;
+			let obj = opts.dataset.find(o => o.name === tmp_mot_id);
+
+			if (obj != undefined) {
+				if ("display_name" in obj)
+				   mot_id = obj.display_name
+				else
+				   mot_id = obj.name
+			 }
+
+			 else  {
+				if (tmp_mot_id !=undefined)
+					mot_id = tmp_mot_id
+				
+				else
+				   mot_id = 0
+			 }
 		}
 
 		else
@@ -331,7 +367,7 @@ import * as d3 from '../node_modules/d3';
 		var fields = fam_id + " " + ind_id + " " + pat_id  + " " + mot_id  + " " + sex + " " + affected_status + "\n"
 		
 		line += fields
-    }
+     }
 
 		var content = line;
 
@@ -3457,7 +3493,7 @@ import * as d3 from '../node_modules/d3';
     }
 
 
-
 }(window.widgets = window.widgets || {}, jQuery));
 
 //# sourceMappingURL=pedigreejs.js.map
+
