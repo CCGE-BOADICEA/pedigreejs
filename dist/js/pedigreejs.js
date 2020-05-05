@@ -286,11 +286,18 @@ import * as d3 from '../node_modules/d3';
 		}
 		
 		if ("display_name" in opts.dataset[i]) {
-            ind_id = opts.dataset[i].display_name;
+
+			if (opts.dataset[i].display_name != "")
+				ind_id = opts.dataset[i].display_name;
+			
+			else {   
+			     if ("name" in opts.dataset[i]) 
+				  ind_id = opts.dataset[i].name;
+		    }
 		}
 		
 		else if ("name" in opts.dataset[i]) {
-            ind_id = opts.dataset[i].name;
+                   ind_id = opts.dataset[i].name;
 		}
 
 		if ("father" in opts.dataset[i]) {
