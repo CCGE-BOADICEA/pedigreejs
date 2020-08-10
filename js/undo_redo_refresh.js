@@ -291,7 +291,7 @@
 	pedcache.current = function(opts) {
 		var current = pedcache.get_count(opts)-1;
 		if(current == -1)
-			current = max_limit-1;
+			current = max_limit;
 		if(has_browser_storage(opts))
 			return JSON.parse(get_browser_store(opts, get_prefix(opts)+current));
 		else if(get_arr(opts))
