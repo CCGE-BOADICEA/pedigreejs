@@ -885,19 +885,37 @@ import * as d3 from '../node_modules/d3';
 
 	// test if two nodes are consanguinous partners
 	pedigree_util.consanguity = function(node1, node2, opts) {
-		var ancestors1 = pedigree_util.ancestors(opts.dataset, node1);
-		var ancestors2 = pedigree_util.ancestors(opts.dataset, node2);
-		var names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
-		var names2 = $.map(ancestors2, function(ancestor, i){return ancestor.name;});
-		var consanguity = false;
+		const ancestors1 = pedigree_util.ancestors(opts.dataset, node1);
+		const ancestors2 = pedigree_util.ancestors(opts.dataset, node2);
+		const names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
+		const names2 = $.map(ancestors2, function(ancestor, i){return ancestor.name;});
+		let consanguinity = false;
+
+
+		/*if(node1.consanguity_link === node2.name)
+		{
+			consanguinity= true;
+		}*/
+
 		$.each(names1, function( index, name ) {
 			if($.inArray(name, names2) !== -1){
-				consanguity = true;
+				consanguinity = true;
 				return false;
 			}
 		});
-		return consanguity;
-	}
+
+		opts.consanguinity_pairs.forEach(function(couple){
+			if(couple.includes(node1.data.name))
+			{
+				consanguinity=true;
+				return false;
+			}
+		});
+
+
+		console.log("Consanguinity: " + consanguinity);
+		return consanguinity;
+	};
 
 	// return a flattened representation of the tree
 	pedigree_util.flatten = function(root) {
@@ -1109,6 +1127,7 @@ import * as d3 from '../node_modules/d3';
 	ptree.build = function(options) {
 		var opts = $.extend({ // defaults
 			targetDiv: 'pedigree_edit',
+			consanguinity_pairs: [],
 			dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
 				{"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
 				{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
@@ -1235,10 +1254,10 @@ import * as d3 from '../node_modules/d3';
 						return d3.symbolTriangle;
 					return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;}))
 			.style("stroke", function (d) {
-				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
+				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "#4575B4";
 			})
 			.style("stroke-width", function (d) {
-				return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
+				return d.data.age && d.data.yob && !d.data.exclude ? ".4em" : ".3em";
 			})
 			.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
 			.style("fill", "none");
@@ -1287,7 +1306,7 @@ import * as d3 from '../node_modules/d3';
 					return 'lightgrey';
 				if(d.data.ncancers === 0) {
 					if(d.data.affected)
-						return 'darkgrey';
+						return '#fec44f';
 					return opts.node_background;
 				}
 				return opts.diseases[i].colour;
@@ -1880,8 +1899,8 @@ import * as d3 from '../node_modules/d3';
 			return d.data.hidden && !opts.DEBUG ? false : true;
 		}).append("text")
 			.attr("class", class_label + ' ped_label' || "ped_label")
-			.attr("x", fx)
-			.attr("y", fy)
+			.attr("x", -100)
+			.attr("y",  80)
 			//.attr("dy", size)
 			.attr("font-family", opts.font_family)
 			.attr("font-size", opts.font_size)
@@ -3004,6 +3023,10 @@ import * as d3 from '../node_modules/d3';
 			.attr("x", font_size/3)
 			.attr("y", font_size*1.5)
 			.text("\uf096 ");
+
+		var tooltip_div = d3.select("body").append("div")
+			.attr("class", "tooltip")
+			.style("opacity", 0);
 		var square_title = square.append("svg:title").text("add male");
 
 		var circle = popup_selection.append("text")  // female
@@ -3103,10 +3126,9 @@ import * as d3 from '../node_modules/d3';
 		// drag line between nodes to create partners
 		drag_handle(opts);
 
-		// rectangle used to highlight on mouse over
-		node.append("rect")
+		let node_block = node.append("rect")
 			.filter(function (d) {
-				return d.data.hidden && !opts.DEBUG ? false : true;
+				return !(d.data.hidden && !opts.DEBUG);
 			})
 			.attr("class", 'indi_rect')
 			.attr("rx", 6)
@@ -3118,7 +3140,7 @@ import * as d3 from '../node_modules/d3';
 			.style("stroke", "black")
 			.style("stroke-width", 0.7)
 			.style("opacity", 0)
-			.attr("fill", "lightgrey");
+			.attr("fill", "#4575B4");
 
 		// widgets
 		var fx = function(d) {return off - 0.75*opts.symbol_size;};
@@ -3161,8 +3183,36 @@ import * as d3 from '../node_modules/d3';
 				.attr("yy", function(d){return d.y;})
 				.attr("x", widgets[key].fx)
 				.attr("y", widgets[key].fy)
-				.attr('font-size', '0.9em' )
-				.text(widgets[key].text);
+				.attr('font-size', '1.2em' )
+				.text(widgets[key].text)
+				.on("mouseover", function(d,i){
+
+					tooltip_div.transition()
+						.duration(200)
+						.style("opacity", .9);
+
+					tooltip_div.html(widgets[key].title)
+						.style("left", (d3.event.pageX) + "px")
+						.style("top", (d3.event.pageY - 28) + "px");
+
+					d3.select(this)
+						.transition()
+						.duration(500)
+						.style("fill","orange")
+						.attr('font-size', '1.4em' )
+				})
+				.on("mouseout", function(d,i){
+
+					tooltip_div.transition()
+						.duration(500)
+						.style("opacity", 0);
+
+					d3.select(this)
+						.transition()
+						.duration(500)
+						.style("fill","black")
+						.attr('font-size', '1.2em' )
+				});
 
 			if('styles' in widgets[key])
 				for(var style in widgets[key].styles){
@@ -3176,6 +3226,27 @@ import * as d3 from '../node_modules/d3';
 		// add sibling or child
 		d3.selectAll(".addsibling, .addchild")
 			.on("mouseover", function () {
+
+
+				tooltip_div.transition()
+					.duration(200)
+					.style("opacity", .9);
+
+				let term = this.className.baseVal.split("add");
+
+				tooltip_div.html("add " + term[1])
+					.style("left", (d3.event.pageX) + "px")
+					.style("top", (d3.event.pageY - 28) + "px");
+
+
+				d3.select(this)
+					.transition()
+					.duration(500)
+					.style("fill","orange")
+					.attr('font-size', '1.4em' );
+
+
+
 				var type = d3.select(this).attr('class');
 				d3.selectAll('.popup_selection').style("opacity", 1);
 				add_person = {'node': d3.select(this.parentNode), 'type': type};
@@ -3186,6 +3257,18 @@ import * as d3 from '../node_modules/d3';
 				d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
 				d3.selectAll('.popup_selection_rotate45')
 					.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
+			})
+			.on("mouseout", function(d,i){
+
+				tooltip_div.transition()
+					.duration(200)
+					.style("opacity", 0);
+
+				d3.select(this)
+					.transition()
+					.duration(500)
+					.style("fill","black")
+					.attr('font-size', '1.2em' )
 			});
 
 		// handle widget clicks
@@ -3286,10 +3369,27 @@ import * as d3 from '../node_modules/d3';
 
 	// drag line between nodes to create partners
 	function drag_handle(opts) {
-		var line_drag_selection = d3.select('.diagram');
-		line_drag_selection.append("line").attr("class", 'line_drag_selection')
-			.attr("stroke-width", 6)
+		const line_drag_selection = d3.select('.diagram');
+		line_drag_selection
+			.append("line")
+			.attr("class", 'line_drag_selection')
+			.attr("stroke-width", 10)
+			.attr('font-size', '1.4em' )
 			.style("stroke-dasharray", ("2, 1"))
+			.on("mouseover", function(d, i){
+				d3.select(this)
+					.transition()
+					.duration(500)
+					.style("stroke","orange")
+					.attr("stroke-width", 12)
+			})
+			.on("mouseout", function(d, i){
+				d3.select(this)
+					.transition()
+					.duration(500)
+					.style("stroke","black")
+					.attr("stroke-width", 10)
+			})
 			.attr("stroke","black")
 			.call(d3.drag()
 				.on("start", dragstart)
