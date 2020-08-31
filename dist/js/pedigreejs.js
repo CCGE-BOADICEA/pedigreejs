@@ -3405,17 +3405,25 @@ import * as d3 from '../node_modules/d3';
 		}
 
 		function dragstop(d) {
+			console.log("drag stop");
 			if(last_mouseover &&
 				dragging.data.name !== last_mouseover.data.name &&
 				dragging.data.sex  !== last_mouseover.data.sex) {
 				// make partners
-				var child = {"name": ptree.makeid(4), "sex": 'U',
+
+				/*
+                why should we create a child?? */
+				let child = {"name": ptree.makeid(4), "sex": 'U',
 					"mother": (dragging.data.sex === 'F' ? dragging.data.name : last_mouseover.data.name),
 					"father": (dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name)};
-				var newdataset = ptree.copy_dataset(opts.dataset);
-				opts.dataset = newdataset;
 
-				var idx = pedigree_util.getIdxByName(opts.dataset, dragging.data.name)+1;
+
+				opts.dataset = ptree.copy_dataset(opts.dataset);
+				opts.consanguinity_pairs.push([dragging.data.name, last_mouseover.data.name]);
+				let idx = pedigree_util.getIdxByName(opts.dataset, dragging.data.name)+1;
+				/*let idx_1 = pedigree_util.getIdxByName(opts.dataset, last_mouseover.data.name)+1;*/
+				// add consanguinity value
+
 				opts.dataset.splice(idx, 0, child);
 				ptree.rebuild(opts);
 			}
