@@ -1,5 +1,5 @@
 import SearchComp from './SearchComp';
-import React from 'react'
+import React, {Component} from 'react'
 import ReactDOM from 'react-dom';
 import * as d3 from '../node_modules/d3';
 
@@ -85,6 +85,10 @@ import * as d3 from '../node_modules/d3';
 
 		$('#save').click(function(e) {
 			io.save(opts);
+		});
+
+		$('#export_ped').click(function(e) {
+			io.export_ped(opts);
 		});
 
 		$('#print').click(function(e) {
@@ -247,10 +251,142 @@ import * as d3 from '../node_modules/d3';
 
 		var content = JSON.stringify(opts.dataset);
 
+		var ped_id = opts.dataset[0].report_id;
+
+		var link = document.createElement("a");
+		link.download = ped_id + ".json";
+		link.href = "data:application/txt;charset=utf-8," + encodeURIComponent(content);;
+		link.click();
+
 		if(opts.DEBUG)
 			console.log(content);
-		var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
-		window.open(uriContent, 'boadicea_pedigree');
+		//var uriContent = "data:application/csv;charset=utf-8," + encodeURIComponent(content);
+		//window.open(uriContent, 'boadicea_pedigree');
+	};
+
+	io.export_ped = function(opts){
+
+		var fam_id = "NA";
+		var ind_id = "NA";
+		var pat_id = "NA";
+		var mot_id = "NA";
+		var sex = "NA";
+		var affected_status = "NA";
+
+		var line = "";
+
+		for (var i=0; i < opts.dataset.length; i++) {
+
+			if ("parent_node" in opts.dataset[i]) {
+				delete opts.dataset[i].parent_node;
+			}
+
+			if ("report_id" in opts.dataset[i]) {
+				fam_id = opts.dataset[i].report_id;
+			}
+
+			if ("display_name" in opts.dataset[i]) {
+
+				if (opts.dataset[i].display_name != "")
+					ind_id = opts.dataset[i].display_name;
+
+				else {
+					if ("name" in opts.dataset[i])
+						ind_id = opts.dataset[i].name;
+				}
+			}
+
+			else if ("name" in opts.dataset[i]) {
+				ind_id = opts.dataset[i].name;
+			}
+
+			if ("father" in opts.dataset[i]) {
+				let tmp_pat_id = opts.dataset[i].father;
+				let obj = opts.dataset.find(o => o.name === tmp_pat_id);
+
+				if (obj != undefined) {
+					if ("display_name" in obj)
+						pat_id = obj.display_name
+					else
+						pat_id = obj.name
+				}
+
+				else {
+					if (tmp_pat_id !=undefined)
+						pat_id = tmp_pat_id
+
+					else
+						pat_id = 0
+				}
+			}
+
+			else
+				pat_id = 0
+
+			if ("mother" in opts.dataset[i]) {
+				let tmp_mot_id = opts.dataset[i].mother;
+				let obj = opts.dataset.find(o => o.name === tmp_mot_id);
+
+				if (obj != undefined) {
+					if ("display_name" in obj)
+						mot_id = obj.display_name
+					else
+						mot_id = obj.name
+				}
+
+				else  {
+					if (tmp_mot_id !=undefined)
+						mot_id = tmp_mot_id
+
+					else
+						mot_id = 0
+				}
+			}
+
+			else
+				mot_id = 0
+
+			if ("sex" in opts.dataset[i]) {
+				if (opts.dataset[i].sex == "M")
+					sex = 1;
+
+				else if (opts.dataset[i].sex == "F")
+					sex = 2;
+
+				else
+					sex = 0;
+			}
+
+			if ("affected" in opts.dataset[i]) {
+				if (opts.dataset[i].affected == true)
+					affected_status = 2
+			}
+
+			else if ("unaffected" in opts.dataset[i]) {
+				if (opts.dataset[i].unaffected == true)
+					affected_status = 1
+			}
+
+			else
+				affected_status = 0
+
+
+			var fields = fam_id + " " + ind_id + " " + pat_id  + " " + mot_id  + " " + sex + " " + affected_status + "\n"
+
+			line += fields
+		}
+
+		var content = line;
+
+		var ped_id = opts.dataset[0].report_id;
+
+		var link = document.createElement("a");
+		link.download = ped_id + ".ped";
+		link.href = "data:application/txt;charset=utf-8," + encodeURIComponent(content);;
+		link.click();
+
+		if(opts.DEBUG)
+			console.log(content);
 	};
 
 	io.load = function(e, opts) {
@@ -745,41 +881,23 @@ import * as d3 from '../node_modules/d3';
 		}
 		recurse(node);
 		return ancestors;
-	};
+	}
 
 	// test if two nodes are consanguinous partners
 	pedigree_util.consanguity = function(node1, node2, opts) {
-		const ancestors1 = pedigree_util.ancestors(opts.dataset, node1);
-		const ancestors2 = pedigree_util.ancestors(opts.dataset, node2);
-		const names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
-		const names2 = $.map(ancestors2, function(ancestor, i){return ancestor.name;});
-		let consanguinity = false;
-
-
-		/*if(node1.consanguity_link === node2.name)
-		{
-			consanguinity= true;
-		}*/
-
+		var ancestors1 = pedigree_util.ancestors(opts.dataset, node1);
+		var ancestors2 = pedigree_util.ancestors(opts.dataset, node2);
+		var names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
+		var names2 = $.map(ancestors2, function(ancestor, i){return ancestor.name;});
+		var consanguity = false;
 		$.each(names1, function( index, name ) {
 			if($.inArray(name, names2) !== -1){
-				consanguinity = true;
+				consanguity = true;
 				return false;
 			}
 		});
-
-		opts.consanguinity_pairs.forEach(function(couple){
-			if(couple.includes(node1.data.name))
-			{
-				consanguinity=true;
-				return false;
-			}
-		});
-
-
-		console.log("Consanguinity: " + consanguinity);
-		return consanguinity;
-	};
+		return consanguity;
+	}
 
 	// return a flattened representation of the tree
 	pedigree_util.flatten = function(root) {
@@ -991,14 +1109,12 @@ import * as d3 from '../node_modules/d3';
 	ptree.build = function(options) {
 		var opts = $.extend({ // defaults
 			targetDiv: 'pedigree_edit',
-			consanguinity_pairs: [["PAX", "PAY"]],
-			dataset: [
-				{"name": "m21", "display_name": "father", "sex": "M", "top_level": true },
-				{"name": "f21", "display_name": "mother", "sex": "F", "top_level": true },
-				{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true }],
+			dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
+				{"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
+				{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
 			width: 600,
 			height: 400,
-			symbol_size: 250,
+			symbol_size: 35,
 			zoomIn: 1.0,
 			zoomOut: 1.0,
 			diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
@@ -1044,7 +1160,7 @@ import * as d3 from '../node_modules/d3';
 			.attr("height", "100%")
 			.attr("rx", 6)
 			.attr("ry", 6)
-			.style("stroke", "darkgrey")
+			.style("stroke", "")
 			.style("fill", opts.background) // or none
 			.style("stroke-width", 1);
 
@@ -1060,29 +1176,29 @@ import * as d3 from '../node_modules/d3';
 			xtransform = opts.symbol_size/2;
 			ytransform = (-opts.symbol_size*2.5);
 		}
-		let ped = svg.append("g")
+		var ped = svg.append("g")
 			.attr("class", "diagram")
 			.attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+zoom+")");
 
-		let top_level = $.map(opts.dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
-		let hidden_root = {
+		var top_level = $.map(opts.dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
+		var hidden_root = {
 			name : 'hidden_root',
 			id : 0,
 			hidden : true,
 			children : top_level
 		};
 
-		let partners = pedigree_util.buildTree(opts, hidden_root, hidden_root)[0];
-		let root = d3.hierarchy(hidden_root);
+		var partners = pedigree_util.buildTree(opts, hidden_root, hidden_root)[0];
+		var root = d3.hierarchy(hidden_root);
 		ptree.roots[opts.targetDiv] = root;
 
 		/// get score at each depth used to adjust node separation
-		let tree_dimensions = ptree.get_tree_dimensions(opts);
+		var tree_dimensions = ptree.get_tree_dimensions(opts);
 		if(opts.DEBUG)
 			console.log('opts.width='+svg_dimensions.width+' width='+tree_dimensions.width+
 				' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
 
-		let treemap = d3.tree().separation(function(a, b) {
+		var treemap = d3.tree().separation(function(a, b) {
 			return a.parent === b.parent || a.data.hidden || b.data.hidden ? 1.2 : 2.2;
 		}).size([tree_dimensions.width, tree_dimensions.height]);
 
@@ -1091,16 +1207,16 @@ import * as d3 from '../node_modules/d3';
 
 		// check the number of visible nodes equals the size of the pedigree dataset
 		var vis_nodes = $.map(opts.dataset, function(p, i){return p.hidden ? null : p;});
-		if(vis_nodes.length !== opts.dataset.length) {
+		if(vis_nodes.length != opts.dataset.length) {
 			throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 		}
 
 		pedigree_util.adjust_coords(opts, nodes, flattenNodes);
 
-		let ptrLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
+		var ptrLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
 		check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines
 
-		let node = ped.selectAll(".node")
+		var node = ped.selectAll(".node")
 			.data(nodes.descendants())
 			.enter()
 			.append("g")
@@ -1112,17 +1228,17 @@ import * as d3 from '../node_modules/d3';
 		node.append("path")
 			.filter(function (d) {return !d.data.hidden;})
 			.attr("shape-rendering", "geometricPrecision")
-			.attr("transform", function(d) {return d.data.sex === "U"? "rotate(45)" : "";})
+			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
 			.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
 				.type(function(d) {
 					if(d.data.miscarriage || d.data.termination)
 						return d3.symbolTriangle;
-					return d.data.sex === "F" ? d3.symbolCircle : d3.symbolSquare;}))
+					return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;}))
 			.style("stroke", function (d) {
-				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "#4575B4";
+				return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 			})
 			.style("stroke-width", function (d) {
-				return d.data.age && d.data.yob && !d.data.exclude ? ".4em" : ".3em";
+				return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
 			})
 			.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
 			.style("fill", "none");
@@ -1132,7 +1248,7 @@ import * as d3 from '../node_modules/d3';
 			.attr("id", function (d) {return d.data.name;}).append("path")
 			.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);})
 			.attr("class", "node")
-			.attr("transform", function(d) {return d.data.sex === "U"? "rotate(45)" : "";})
+			.attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
 			.attr("d", d3.symbol().size(function(d) {
 				if (d.data.hidden)
 					return opts.symbol_size * opts.symbol_size / 5;
@@ -1141,10 +1257,10 @@ import * as d3 from '../node_modules/d3';
 				.type(function(d) {
 					if(d.data.miscarriage || d.data.termination)
 						return d3.symbolTriangle;
-					return d.data.sex === "F" ? d3.symbolCircle :d3.symbolSquare;}));
+					return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}));
 
 		// pie plots for disease colours
-		let pienode = node.selectAll("pienode")
+		var pienode = node.selectAll("pienode")
 			.data(function(d) {     		// set the disease data for the pie plot
 				var ncancers = 0;
 				var cancers = $.map(opts.diseases, function(val, i){
@@ -1168,10 +1284,10 @@ import * as d3 from '../node_modules/d3';
 			.attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
 			.style("fill", function(d, i) {
 				if(d.data.exclude)
-					return '#fff7bc';
+					return 'lightgrey';
 				if(d.data.ncancers === 0) {
 					if(d.data.affected)
-						return '#fec44f';
+						return 'darkgrey';
 					return opts.node_background;
 				}
 				return opts.diseases[i].colour;
@@ -1188,9 +1304,9 @@ import * as d3 from '../node_modules/d3';
 						"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
 						"L" + (dx+indent) + "," + (dy+(opts.symbol_size *  1.28))
 				}
-				let dx = -(opts.symbol_size * 0.66);
-				let dy = -(opts.symbol_size * 0.64);
-				let indent = opts.symbol_size/4;
+				var dx = -(opts.symbol_size * 0.66);
+				var dy = -(opts.symbol_size * 0.64);
+				var indent = opts.symbol_size/4;
 				return get_bracket(dx, dy, indent)+get_bracket(-dx, dy, -indent);
 			}})
 			.style("stroke", function (d) {
@@ -1204,11 +1320,8 @@ import * as d3 from '../node_modules/d3';
 
 
 		// alive status = 0; dead status = 1
-		const status_node = node.append('line')
-			.filter(function (d) {
-				console.log(d.data.status === "1");
-				return d.data.status === "1";
-			})
+		var status = node.append('line')
+			.filter(function (d) {return d.data.status == 1;})
 			.style("stroke", "black")
 			.attr("x1", function(d, i) {return -0.6*opts.symbol_size;})
 			.attr("y1", function(d, i) {return 0.6*opts.symbol_size;})
@@ -1231,10 +1344,10 @@ import * as d3 from '../node_modules/d3';
                 .html("\uf071");
                 warn.append("svg:title").text("incomplete");*/
 
-		const font_size = parseInt(getPx(opts.font_size)) + 4;
-		// NOT SURE WE NEED THIS; COMMENTED FOR NOW. IT WOULD display label defined in opts.labels e.g. alleles/genotype data
-		/*for(var ilab=0; ilab<opts.labels.length; ilab++) {
-			const label = opts.labels[ilab];
+		var font_size = parseInt(getPx(opts.font_size)) + 4;
+		// display label defined in opts.labels e.g. alleles/genotype data
+		for(var ilab=0; ilab<opts.labels.length; ilab++) {
+			var label = opts.labels[ilab];
 			addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size),
 				function(d) {
 					if(!d.data[label])
@@ -1245,8 +1358,8 @@ import * as d3 from '../node_modules/d3';
 				function(d) {
 					if(d.data[label]) {
 						if(label === 'alleles') {
-							let alleles = "";
-							let vars = d.data.alleles.split(';');
+							var alleles = "";
+							var vars = d.data.alleles.split(';');
 							for(var ivar = 0;ivar < vars.length;ivar++) {
 								if(vars[ivar] !== "") alleles += vars[ivar] + ';';
 							}
@@ -1259,7 +1372,7 @@ import * as d3 from '../node_modules/d3';
 						return d.data[label];
 					}
 				}, 'indi_details');
-		}*/
+		}
 
 		// individuals disease details
 		for(var i=0;i<opts.diseases.length; i++) {
@@ -1276,7 +1389,7 @@ import * as d3 from '../node_modules/d3';
 					return y_offset;
 				},
 				function(d) {
-					const dis = disease.replace('_', ' ').replace('cancer', 'ca.');
+					var dis = disease.replace('_', ' ').replace('cancer', 'ca.');
 					return disease+'_diagnosis_age' in d.data ? dis +": "+ d.data[disease+'_diagnosis_age'] : '';
 				}, 'indi_details');
 		}
@@ -1286,7 +1399,6 @@ import * as d3 from '../node_modules/d3';
 
 		// links between partners
 		var clash_depth = {};
-
 		partners = ped.selectAll(".partner")
 			.data(ptrLinkNodes)
 			.enter()
@@ -1295,18 +1407,17 @@ import * as d3 from '../node_modules/d3';
 			.attr("stroke", "#000")
 			.attr("shape-rendering", "auto")
 			.attr('d', function(d, i) {
-				const node1 = pedigree_util.getNodeByName(flattenNodes, d.mother.data.name);
-				const node2 = pedigree_util.getNodeByName(flattenNodes, d.father.data.name);
+				var node1 = pedigree_util.getNodeByName(flattenNodes, d.mother.data.name);
+				var node2 = pedigree_util.getNodeByName(flattenNodes, d.father.data.name);
 				var consanguity = pedigree_util.consanguity(node1, node2, opts);
-				//const consanguity = true;
-				const divorced = (d.mother.data.divorced &&  d.mother.data.divorced === d.father.data.name);
+				var divorced = (d.mother.data.divorced &&  d.mother.data.divorced === d.father.data.name);
 
-				const x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
-				const x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
-				const dy1 = d.mother.y;
+				var x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
+				var x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
+				var dy1 = d.mother.y;
 
 				// identify clashes with other nodes at the same depth
-				const clash = ptree.check_ptr_link_clashes(opts, d);
+				var clash = ptree.check_ptr_link_clashes(opts, d);
 				var path = "";
 				if(clash) {
 					if(d.mother.depth in clash_depth)
@@ -1495,48 +1606,50 @@ import * as d3 from '../node_modules/d3';
 			if (typeof opts.validate == 'function') {
 				if(opts.DEBUG)
 					console.log('CALLING CONFIGURED VALIDATION FUNCTION');
-				return opts.validate.call(this, opts);
+				return opts.validate.call(this, opts);;
 			}
 
 			function create_err(err) {
 				console.error(err);
 
-				utils.messages('Warning', err);
+				utils.messages('Warning', err)
 
 				return new Error(err);
 			}
 
 			// check consistency of parents sex
-			let uniquenames = [];
+			var uniquenames = [];
 			for(var p=0; p<opts.dataset.length; p++) {
 				if(!p.hidden) {
 					if(opts.dataset[p].mother || opts.dataset[p].father) {
-						let display_name = opts.dataset[p].display_name;
+						var display_name = opts.dataset[p].display_name;
 						if(!display_name)
 							display_name = 'unnamed';
 						display_name += ' (IndivID: '+opts.dataset[p].name+')';
-						let mother = opts.dataset[p].mother;
-						let father = opts.dataset[p].father;
+						var mother = opts.dataset[p].mother;
+						var father = opts.dataset[p].father;
 						if(!mother || !father) {
 							throw create_err('Missing parent for '+display_name);
 						}
 
-						let midx = pedigree_util.getIdxByName(opts.dataset, mother);
-						let fidx = pedigree_util.getIdxByName(opts.dataset, father);
+						var midx = pedigree_util.getIdxByName(opts.dataset, mother);
+						var fidx = pedigree_util.getIdxByName(opts.dataset, father);
 						if(midx === -1)
 							throw create_err('The mother (IndivID: '+mother+') of family member '+
 								display_name+' is missing from the pedigree.');
 						if(fidx === -1)
 							throw create_err('The father (IndivID: '+father+') of family member '+
 								display_name+' is missing from the pedigree.');
-						if(opts.dataset[midx].sex !== "F")
+
+						//Checks if the two parents have the same gender
+						/*if(opts.dataset[midx].sex !== "F")
 							throw create_err("The mother of family member "+display_name+
-								" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
+									" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
 						if(opts.dataset[fidx].sex !== "M") {
 							throw create_err("The father of family member "+display_name+
-								" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
+									" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
 
-						}
+								}*/
 
 					}
 				}
@@ -1547,11 +1660,11 @@ import * as d3 from '../node_modules/d3';
 				uniquenames.push(opts.dataset[p].name);
 			}
 			// warn if there is a break in the pedigree
-			let unconnected = ptree.unconnected(opts.dataset);
+			var unconnected = ptree.unconnected(opts.dataset);
 			if(unconnected.length > 0)
 				console.warn("individuals unconnected to pedigree ", unconnected);
 		}
-	};
+	}
 
 	// check if the object contains a key with a given prefix
 	function prefixInObj(prefix, obj) {
@@ -1571,7 +1684,7 @@ import * as d3 from '../node_modules/d3';
 		var target = dataset[ pedigree_util.getProbandIndex(dataset) ];
 		if(!target){
 			console.warn("No target defined");
-			if(dataset.length === 0) {
+			if(dataset.length == 0) {
 				throw "empty pedigree data set";
 			}
 			target = dataset[0];
@@ -1759,16 +1872,16 @@ import * as d3 from '../node_modules/d3';
 		var hgt = adiv.height();
 		adiv.remove();
 		return hgt;
-	}
+	};
 
 	// Add label
 	function addLabel(opts, node, size, fx, fy, ftext, class_label) {
 		node.filter(function (d) {
-			return !(d.data.hidden && !opts.DEBUG);
+			return d.data.hidden && !opts.DEBUG ? false : true;
 		}).append("text")
 			.attr("class", class_label + ' ped_label' || "ped_label")
-			.attr("x", -100)
-			.attr("y",  80)
+			.attr("x", fx)
+			.attr("y", fy)
 			//.attr("dy", size)
 			.attr("font-family", opts.font_family)
 			.attr("font-size", opts.font_size)
@@ -1800,16 +1913,14 @@ import * as d3 from '../node_modules/d3';
 
 		var disallowed = ["id", "parent_node"];
 		var newdataset = [];
-		for(let i=0; i<dataset.length; i++){
-			let obj = {};
-			for(let key in dataset[i]) {
-				if(disallowed.indexOf(key) === -1)
+		for(var i=0; i<dataset.length; i++){
+			var obj = {};
+			for(var key in dataset[i]) {
+				if(disallowed.indexOf(key) == -1)
 					obj[key] = dataset[i][key];
 			}
 			newdataset.push(obj);
 		}
-		console.log("New dataset");
-		console.log(newdataset);
 		return newdataset;
 	};
 
@@ -2374,6 +2485,15 @@ import * as d3 from '../node_modules/d3';
 
 		// affected booleans switches
 		var switches2 = ["affected","unaffected", "unknown"];
+
+		if (document.getElementById("id_deceased").checked){
+			document.getElementById("row_yod").style.display = ""
+		}
+
+		else if (document.getElementById("id_alive").checked){
+			document.getElementById("row_yod").style.display = "none"
+		}
+
 		for(var iswitch=0; iswitch<switches2.length; iswitch++){
 			var attr = switches2[iswitch];
 			var s = $('#id_'+attr);
@@ -2835,8 +2955,6 @@ import * as d3 from '../node_modules/d3';
 }(window.pedcache = window.pedcache || {}, jQuery));
 
 
-
-
 // pedigree widgets
 (function(widgets, $, undefined) {
 
@@ -2877,11 +2995,6 @@ import * as d3 from '../node_modules/d3';
 			.style("stroke", "darkgrey")
 			.attr("fill", "white");
 
-		var tooltip_div = d3.select("body").append("div")
-			.attr("class", "tooltip")
-			.style("opacity", 0);
-
-		// square to add siblings;
 		var square = popup_selection.append("text")  // male
 			.attr('font-family', 'FontAwesome')
 			.style("opacity", 0)
@@ -2891,10 +3004,7 @@ import * as d3 from '../node_modules/d3';
 			.attr("x", font_size/3)
 			.attr("y", font_size*1.5)
 			.text("\uf096 ");
-
-
 		var square_title = square.append("svg:title").text("add male");
-
 
 		var circle = popup_selection.append("text")  // female
 			.attr('font-family', 'FontAwesome')
@@ -2936,36 +3046,15 @@ import * as d3 from '../node_modules/d3';
 			.text("\uf0d8");
 		var mztwin_title = mztwin.append("svg:title").text("add monozygotic/identical twins");
 
-		// assign mouseover and mouseout effect to the persontypes; (not working now)
-		/*const types = [square, circle, mztwin, dztwin,unspecified ];
-		types.forEach(function(item){
-			item
-				.on("mouseover", function() {
-
-					d3.select(this)
-                        .transition()
-                        .duration(500)
-                        .style("fill","orange")}
-				)
-				.on("mouseout", function() {
-
-					d3.select(this)
-						.transition()
-						.duration(500)
-						.style("fill","black")}
-				)
-
-            });*/
-
 		var add_person = {};
 		// click the person type selection
 		d3.selectAll(".persontype")
 			.on("click", function () {
-				let newdataset = ptree.copy_dataset(opts.dataset);
-				let mztwin = d3.select(this).classed("mztwin");
-				let dztwin = d3.select(this).classed("dztwin");
-				let twin_type;
-				let sex;
+				var newdataset = ptree.copy_dataset(opts.dataset);
+				var mztwin = d3.select(this).classed("mztwin");
+				var dztwin = d3.select(this).classed("dztwin");
+				var twin_type;
+				var sex;
 				if(mztwin || dztwin) {
 					sex = add_person.node.datum().data.sex;
 					twin_type = (mztwin ? "mztwin" : "dztwin");
@@ -2985,13 +3074,6 @@ import * as d3 from '../node_modules/d3';
 				add_person = {};
 			})
 			.on("mouseover", function() {
-
-				/*d3.select(this)
-                    .transition()
-                    .duration(500)
-                    .style("fill","orange")
-                    .attr('font-size', '1.2em' )*/
-
 				if(add_person.node)
 					add_person.node.select('rect').style("opacity", 0.2);
 				d3.selectAll('.popup_selection').style("opacity", 1);
@@ -3007,35 +3089,24 @@ import * as d3 from '../node_modules/d3';
 					else
 						circle_title.text("add daughter");
 				}
-			})
-			.on("mouseout", function(){
-				/*	d3.select(this)
-                        .transition()
-                        .duration(500)
-                        .style("fill","black")
-                        .attr('font-size', '1.2em' )*/
-			})
-
-		// handle mouse out of popup selection
-
-		d3.selectAll(".popup_selection")
-			.on("mouseout", function (d, i) {
-				// hide rect and popup selection
-
-				if (add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) === -1)
-					add_person.node.select('rect').style("opacity", 0);
-				d3.selectAll('.popup_selection').style("opacity", 0);
 			});
 
+		// handle mouse out of popup selection
+		d3.selectAll(".popup_selection").on("mouseout", function () {
+			// hide rect and popup selection
+			if(add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) == -1)
+				add_person.node.select('rect').style("opacity", 0);
+			d3.selectAll('.popup_selection').style("opacity", 0);
+		});
 
 
 		// drag line between nodes to create partners
 		drag_handle(opts);
 
 		// rectangle used to highlight on mouse over
-		let node_block = node.append("rect")
+		node.append("rect")
 			.filter(function (d) {
-				return !(d.data.hidden && !opts.DEBUG);
+				return d.data.hidden && !opts.DEBUG ? false : true;
 			})
 			.attr("class", 'indi_rect')
 			.attr("rx", 6)
@@ -3047,18 +3118,15 @@ import * as d3 from '../node_modules/d3';
 			.style("stroke", "black")
 			.style("stroke-width", 0.7)
 			.style("opacity", 0)
-			.attr("fill", "#4575B4");
+			.attr("fill", "lightgrey");
 
 		// widgets
-		var fx = function(d) {
-			let res = off - 0.75*opts.symbol_size;
-			return res};
-
+		var fx = function(d) {return off - 0.75*opts.symbol_size;};
 		var fy = opts.symbol_size -2;
 		var off = 0;
 		var widgets = {
 			'addchild':   {'text': '\uf063', 'title': 'add child',   'fx': fx, 'fy': fy},
-			'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': + 0.55*opts.symbol_size, 'fy': fy},
+			'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': fx, 'fy': fy},
 			'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': fx, 'fy': fy},
 			'addparents': {
 				'text': '\uf062', 'title': 'add parents',
@@ -3077,13 +3145,10 @@ import * as d3 from '../node_modules/d3';
 			widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
 		}
 
-
-		/*	Create all icons around the node*/
-		for(let key in widgets) {
-			var widget = node
-				.append("text")
+		for(var key in widgets) {
+			var widget = node.append("text")
 				.filter(function (d) {
-					return  (!(d.data.hidden && !opts.DEBUG)) &&
+					return  (d.data.hidden && !opts.DEBUG ? false : true) &&
 						!((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
 						!(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
 						!(d.data.parent_node === undefined && key === 'addchild') &&
@@ -3096,69 +3161,21 @@ import * as d3 from '../node_modules/d3';
 				.attr("yy", function(d){return d.y;})
 				.attr("x", widgets[key].fx)
 				.attr("y", widgets[key].fy)
-				.attr('font-size', '1.2em' )
-				.text(widgets[key].text)
-				.on("mouseover", function(d,i){
-
-					tooltip_div.transition()
-						.duration(200)
-						.style("opacity", .9);
-
-					tooltip_div.html(widgets[key].title)
-						.style("left", (d3.event.pageX) + "px")
-						.style("top", (d3.event.pageY - 28) + "px");
-
-					d3.select(this)
-						.transition()
-						.duration(500)
-						.style("fill","orange")
-						.attr('font-size', '1.4em' )
-				})
-				.on("mouseout", function(d,i){
-
-					tooltip_div.transition()
-						.duration(500)
-						.style("opacity", 0);
-
-					d3.select(this)
-						.transition()
-						.duration(500)
-						.style("fill","black")
-						.attr('font-size', '1.2em' )
-				});
+				.attr('font-size', '0.9em' )
+				.text(widgets[key].text);
 
 			if('styles' in widgets[key])
 				for(var style in widgets[key].styles){
 					widget.attr(style, widgets[key].styles[style]);
 				}
 
-			//widget.append("svg:title").text(widgets[key].title);
+			widget.append("svg:title").text(widgets[key].title);
 			off += 17;
 		}
 
 		// add sibling or child
 		d3.selectAll(".addsibling, .addchild")
-			.on("mouseover", function (d) {
-
-
-				tooltip_div.transition()
-					.duration(200)
-					.style("opacity", .9);
-
-				let term = this.className.baseVal.split("add");
-
-				tooltip_div.html("add " + term[1])
-					.style("left", (d3.event.pageX) + "px")
-					.style("top", (d3.event.pageY - 28) + "px");
-
-
-				d3.select(this)
-					.transition()
-					.duration(500)
-					.style("fill","orange")
-					.attr('font-size', '1.4em' );
-
-				console.log("add child");
+			.on("mouseover", function () {
 				var type = d3.select(this).attr('class');
 				d3.selectAll('.popup_selection').style("opacity", 1);
 				add_person = {'node': d3.select(this.parentNode), 'type': type};
@@ -3169,18 +3186,6 @@ import * as d3 from '../node_modules/d3';
 				d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
 				d3.selectAll('.popup_selection_rotate45')
 					.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
-			})
-			.on("mouseout", function(d,i){
-
-				tooltip_div.transition()
-					.duration(200)
-					.style("opacity", 0);
-
-				d3.select(this)
-					.transition()
-					.duration(500)
-					.style("fill","black")
-					.attr('font-size', '1.2em' )
 			});
 
 		// handle widget clicks
@@ -3192,10 +3197,6 @@ import * as d3 from '../node_modules/d3';
 				if(opts.DEBUG) {
 					console.log(opt);
 				}
-
-				tooltip_div.transition()
-					.duration(500)
-					.style("opacity", 0);
 
 				var newdataset;
 				if(opt === 'settings') {
@@ -3232,9 +3233,8 @@ import * as d3 from '../node_modules/d3';
 
 		node.filter(function (d) { return !d.data.hidden; })
 			.on("click", function (d) {
-				console.log("node_click");
 				if (d3.event.ctrlKey) {
-					if(highlight.indexOf(d) === -1)
+					if(highlight.indexOf(d) == -1)
 						highlight.push(d);
 					else
 						highlight.splice(highlight.indexOf(d), 1);
@@ -3242,10 +3242,9 @@ import * as d3 from '../node_modules/d3';
 					highlight = [d];
 
 				if('nodeclick' in opts) {
-
 					opts.nodeclick(d.data);
 					d3.selectAll(".indi_rect").style("opacity", 0);
-					d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) !== -1;}).style("opacity", 0.5);
+					d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1;}).style("opacity", 0.5);
 				}
 			})
 			.on("mouseover", function(d){
@@ -3258,16 +3257,9 @@ import * as d3 from '../node_modules/d3';
 					}
 					return;
 				}
-				d3.select(this).select('rect')
-					.transition()
-					.duration(500)
-					.style("opacity", 0.2);
-
-				d3.select(this)
-					.selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings')
-					.style("opacity", 1);
+				d3.select(this).select('rect').style("opacity", 0.2);
+				d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
 				d3.select(this).selectAll('.indi_details').style("opacity", 0);
-				console.log("Show Consanguinity Icon");
 				setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
 			})
 			.on("mouseout", function(d){
@@ -3275,7 +3267,7 @@ import * as d3 from '../node_modules/d3';
 					return;
 
 				d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
-				if(highlight.indexOf(d) === -1)
+				if(highlight.indexOf(d) == -1)
 					d3.select(this).select('rect').style("opacity", 0);
 				d3.select(this).selectAll('.indi_details').style("opacity", 1);
 				// hide popup if it looks like the mouse is moving north
@@ -3292,29 +3284,12 @@ import * as d3 from '../node_modules/d3';
 			});
 	};
 
-	// CONSANGUINITY ===> drag line between nodes to create partners
+	// drag line between nodes to create partners
 	function drag_handle(opts) {
-		const line_drag_selection = d3.select('.diagram');
-		line_drag_selection
-			.append("line")
-			.attr("class", 'line_drag_selection')
-			.attr("stroke-width", 10)
-			.attr('font-size', '1.4em' )
+		var line_drag_selection = d3.select('.diagram');
+		line_drag_selection.append("line").attr("class", 'line_drag_selection')
+			.attr("stroke-width", 6)
 			.style("stroke-dasharray", ("2, 1"))
-			.on("mouseover", function(d, i){
-				d3.select(this)
-					.transition()
-					.duration(500)
-					.style("stroke","orange")
-					.attr("stroke-width", 12)
-			})
-			.on("mouseout", function(d, i){
-				d3.select(this)
-					.transition()
-					.duration(500)
-					.style("stroke","black")
-					.attr("stroke-width", 10)
-			})
 			.attr("stroke","black")
 			.call(d3.drag()
 				.on("start", dragstart)
@@ -3323,7 +3298,6 @@ import * as d3 from '../node_modules/d3';
 		setLineDragPosition(0, 0, 0, 0);
 
 		function dragstart(d) {
-			console.log("drag start");
 			d3.event.sourceEvent.stopPropagation();
 			dragging = last_mouseover;
 			d3.selectAll('.line_drag_selection')
@@ -3331,25 +3305,17 @@ import * as d3 from '../node_modules/d3';
 		}
 
 		function dragstop(d) {
-			console.log("drag stop");
 			if(last_mouseover &&
 				dragging.data.name !== last_mouseover.data.name &&
 				dragging.data.sex  !== last_mouseover.data.sex) {
 				// make partners
-
-				/*
-                why should we create a child?? */
-				let child = {"name": ptree.makeid(4), "sex": 'U',
+				var child = {"name": ptree.makeid(4), "sex": 'U',
 					"mother": (dragging.data.sex === 'F' ? dragging.data.name : last_mouseover.data.name),
 					"father": (dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name)};
+				var newdataset = ptree.copy_dataset(opts.dataset);
+				opts.dataset = newdataset;
 
-
-				opts.dataset = ptree.copy_dataset(opts.dataset);
-				opts.consanguinity_pairs.push([dragging.data.name, last_mouseover.data.name]);
-				let idx = pedigree_util.getIdxByName(opts.dataset, dragging.data.name)+1;
-				/*let idx_1 = pedigree_util.getIdxByName(opts.dataset, last_mouseover.data.name)+1;*/
-				// add consanguinity value
-
+				var idx = pedigree_util.getIdxByName(opts.dataset, dragging.data.name)+1;
 				opts.dataset.splice(idx, 0, child);
 				ptree.rebuild(opts);
 			}
@@ -3361,7 +3327,6 @@ import * as d3 from '../node_modules/d3';
 		}
 
 		function drag(d) {
-
 			d3.event.sourceEvent.stopPropagation();
 			var dx = d3.event.dx;
 			var xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
@@ -3388,39 +3353,54 @@ import * as d3 from '../node_modules/d3';
 	function openEditDialog(opts, d) {
 		$('#node_properties').dialog({
 			autoOpen: false,
-			title: d.data.display_name,
+			title: "Add pedigree info and/or create a new entry",
 			width: ($(window).width() > 400 ? 600 : $(window).width()- 30)
 		});
 
 		//document.body.innerHTML +='<input type="text" id="myInput"  title="Type in a name">';
 
 
-		let table = "<table id='person_details' class='table'>";
+		var table = "<table id='person_details' class='table'>";
 
-		table += '<div id="test" style="text-align:left"> Search: </div>';
+		table += '<div id="search_comp" style="text-align:left"> Search: </div>';
 
 		table += "<tr style='display:none'><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
 			(d.data.name ? d.data.name : "")+"></td></tr>";
 
 
-		table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' disabled value="+
+		table += "<tr><td style='text-align:right'>PhenoStore ID</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' disabled value="+
 			(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
-		table += "<tr><td style='text-align:right'>External id</td><td><input class='form-control' type='text' id='id_external' name='external_name' value="+
+		table += "<tr><td style='text-align:right'>*Local ID</td><td><input class='form-control' type='text' id='id_external' name='external_name' value="+
 			(d.data.external_name ? d.data.external_name : "")+"></td></tr>";
 
+		// alive status = 0; dead status = 1
+		table += '<tr><td style="text-align:left" colspan="2" id="id_status"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vital status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+			'<label class="radio-inline"><input type="radio" name="status" value="0" id="id_alive" '+(d.data.status === 0 ? "checked" : "checked")+'>&thinsp;Alive</label>' +
+			'<label class="radio-inline"><input type="radio" name="status" value="1" id="id_deceased" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
+			'</td></tr>';
+		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
-		table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1800' max='2050' name='yob' style='width:7em' value="+
+
+		table += "<tr><td style='text-align:right'>*Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1800' max='2050' name='yob' style='width:7em' value="+
 			(d.data.yob ? d.data.yob : "")+"></td></tr>";
 
 
-		table += "<tr><td style='text-align:right'>Year Of Death</td><td><input class='form-control' type='number' id='id_yod' min='1800' max='2050' name='yod' style='width:7em' value="+
+		table += "<tr id='row_yod'><td style='text-align:right'>Year Of Death</td><td><input class='form-control' type='number' id='id_yod' min='1800' max='2050' name='yod' style='width:7em' value="+
 			(d.data.yod ? d.data.yod : "")+"></td></tr>";
 
 
+		//Fro now on probably for removing
+		table += '<tr><td style="text-align:left" colspan="2" id="id_sex"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sex &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+			'<label class="radio-inline"><input type="radio" name="sex" value="M" id="id_male"'+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
+			'<label class="radio-inline"><input type="radio" name="sex" value="F" id="id_female"'+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
+			'<label class="radio-inline"><input type="radio" name="sex" value="U" id="id_sex_unknown"'+(d.data.sex === 'U' ? "checked" : "")+'>Unknown</label>' +
+			'</td></tr>';
+
+
 		// affected
-		let switches2 = ["affected", "unaffected", "unknown"];
-		table += '<tr><td colspan="2">';
+		var switches2 = ["affected", "unaffected", "unknown"];
+		table += '<tr><td style="text-align:left" colspan="2"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *Disease status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		for(var iswitch=0; iswitch<switches2.length; iswitch++){
 			var attr = switches2[iswitch];
 			if(iswitch === 3)
@@ -3431,20 +3411,6 @@ import * as d3 from '../node_modules/d3';
 				capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
 		}
 
-
-		//Fro now on probably for removing
-		table += '<tr><td colspan="2" id="id_sex">' +
-			'<label class="radio-inline"><input type="radio" name="sex" value="M" id="id_male"'+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
-			'<label class="radio-inline"><input type="radio" name="sex" value="F" id="id_female"'+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
-			'<label class="radio-inline"><input type="radio" name="sex" value="U" id="id_sex_unknown"'+(d.data.sex === 'U' ? "checked" : "")+'>Unknown</label>' +
-			'</td></tr>';
-
-		// alive status = 0; dead status = 1
-		table += '<tr><td colspan="2" id="id_status">' +
-			'<label class="radio-inline"><input type="radio" name="status" value="0" id="id_alive" '+(d.data.status === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
-			'<label class="radio-inline"><input type="radio" name="status" value="1" id="id_deceased" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
-			'</td></tr>';
-		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
 
 
@@ -3460,22 +3426,24 @@ import * as d3 from '../node_modules/d3';
 			"yob",  "mztwin", "dztwin" , "yod", "affected", "unaffected", "unknown", "breast_cancer","external_name", "famid"];
 		$.merge(exclude, switches);
 
+		table += "<tr><td colspan='2' style='font-style:italic'>*Mandatory in case of creating a new entry </td></tr>";
 
-		table += '<tr><td colspan="2" style="line-height:1px;"></td></tr>';
+
+		/*table += '<tr><td colspan="2" style="line-height:0px;"></td></tr>';
 		$.each(d.data, function(k, v) {
 			if($.inArray(k, exclude) == -1) {
 				var kk = capitaliseFirstLetter(k);
 				if(v === true || v === false) {
 					table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
-						k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
+							k+"' value="+v+" "+(v ? "checked" : "")+"></td></tr>";
 				} else if(k.length > 0){
 					table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='text' id='id_" +
-						k+"' name='"+k+"' value="+v+"></td></tr>";
+							k+"' name='"+k+"' value="+v+"></td></tr>";
 				}
 			}
-		});
+		});*/
 
-		table += '<tr><td style="text-align:right"></td><td><button id="close_but" style="font-size:1.4em" class="ui-button ui-widget ui-corner-all">Close</button></td></tr>';
+		table += '<tr><td style="text-align:right"></td><td><button id="close_but" style="font-size:1.4em;display:none" class="ui-button ui-widget ui-corner-all">Close</button></td></tr>';
 
 		table += "</table>";
 
@@ -3497,7 +3465,7 @@ import * as d3 from '../node_modules/d3';
 
 		ReactDOM.render(
 			<SearchComp   savefunction={call_pedigree} />,
-			document.getElementById('test')
+			document.getElementById('search_comp')
 		);
 
 		//$('#id_name').closest('tr').toggle();
@@ -3508,13 +3476,18 @@ import * as d3 from '../node_modules/d3';
 
 
 		//Alive deceased status checkbox update
+		document.getElementById("row_yod").style.display = "none"
+
 		if (d.data.status == "1"){
 			document.getElementById("id_deceased").checked = true
+			document.getElementById("row_yod").style.display = ""
 		}
 
 		else if (d.data.status == "0"){
 			document.getElementById("id_alive").checked = true
+			document.getElementById("row_yod").style.display = "none"
 		}
+
 
 		//Disable Fam id input
 		if (document.getElementById("id_report_id") != null){
@@ -3522,11 +3495,12 @@ import * as d3 from '../node_modules/d3';
 		}
 
 
+
 		return;
 	}
-
 
 
 }(window.widgets = window.widgets || {}, jQuery));
 
 //# sourceMappingURL=pedigreejs.js.map
+
