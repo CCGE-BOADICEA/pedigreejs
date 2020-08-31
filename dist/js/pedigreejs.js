@@ -991,11 +991,11 @@ import * as d3 from '../node_modules/d3';
 	ptree.build = function(options) {
 		var opts = $.extend({ // defaults
 			targetDiv: 'pedigree_edit',
-			consanguinity_pairs: [],
+			consanguinity_pairs: [["PAX", "PAY"]],
 			dataset: [
-				{"name": "m21", "display_name": "father", "sex": "M", "top_level": true, consanguinity_link: false},
-				{"name": "f21", "display_name": "mother", "sex": "F", "top_level": true, consanguinity_link: false},
-				{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true, consanguinity_link: false}],
+				{"name": "m21", "display_name": "father", "sex": "M", "top_level": true },
+				{"name": "f21", "display_name": "mother", "sex": "F", "top_level": true },
+				{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true }],
 			width: 600,
 			height: 400,
 			symbol_size: 250,
