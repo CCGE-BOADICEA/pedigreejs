@@ -3193,6 +3193,10 @@ import * as d3 from '../node_modules/d3';
 					console.log(opt);
 				}
 
+				tooltip_div.transition()
+					.duration(500)
+					.style("opacity", 0);
+
 				var newdataset;
 				if(opt === 'settings') {
 					if(typeof opts.edit === 'function') {
