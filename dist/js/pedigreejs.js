@@ -3148,7 +3148,7 @@ import * as d3 from '../node_modules/d3';
 		var off = 0;
 		var widgets = {
 			'addchild':   {'text': '\uf063', 'title': 'add child',   'fx': fx, 'fy': fy},
-			'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': fx, 'fy': fy},
+			'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': + 0.55*opts.symbol_size, 'fy': fy},
 			'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': fx, 'fy': fy},
 			'addparents': {
 				'text': '\uf062', 'title': 'add parents',
