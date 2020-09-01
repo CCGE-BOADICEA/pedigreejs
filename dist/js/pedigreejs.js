@@ -1365,7 +1365,8 @@ import * as d3 from '../node_modules/d3';
 
 		var font_size = parseInt(getPx(opts.font_size)) + 4;
 		// display label defined in opts.labels e.g. alleles/genotype data
-		for(var ilab=0; ilab<opts.labels.length; ilab++) {
+		// NOT SURE WE NEED THIS; COMMENTED FOR NOW. IT WOULD display label defined in opts.labels e.g. alleles/genotype data
+		/*for(var ilab=0; ilab<opts.labels.length; ilab++) {
 			var label = opts.labels[ilab];
 			addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size),
 				function(d) {
@@ -1391,7 +1392,7 @@ import * as d3 from '../node_modules/d3';
 						return d.data[label];
 					}
 				}, 'indi_details');
-		}
+		}*/
 
 		// individuals disease details
 		for(var i=0;i<opts.diseases.length; i++) {
@@ -3611,4 +3612,3 @@ import * as d3 from '../node_modules/d3';
 }(window.widgets = window.widgets || {}, jQuery));
 
 //# sourceMappingURL=pedigreejs.js.map
-
