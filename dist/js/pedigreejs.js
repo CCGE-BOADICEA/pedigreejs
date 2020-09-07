@@ -539,9 +539,10 @@
 		var hdr = [];  // collect risk factor header lines
 		// assumes two line header
 		for(var i = 0;i < lines.length;i++){
-		    if(lines[i].startsWith("##")) {
-		    	if(lines[i].startsWith("##CanRisk") && lines[i].indexOf(";") > -1) {   // contains surgical op data
-		    		var ops = lines[i].split(";");
+			var ln = lines[i].trim();
+		    if(ln.startsWith("##")) {
+		    	if(ln.startsWith("##CanRisk") && ln.indexOf(";") > -1) {   // contains surgical op data
+		    		var ops = ln.split(";");
 		    		for(var j=1; j<ops.length; j++) {
 		    			var opdata = ops[j].split("=");
 		    			if(opdata.length === 2) {
@@ -549,18 +550,18 @@
 		    			}
 		    		}
 		    	}
-		    	if(lines[i].indexOf("CanRisk") === -1 && !lines[i].startsWith("##FamID")) {
-		    		hdr.push(lines[i].replace("##", ""));
+		    	if(ln.indexOf("CanRisk") === -1 && !ln.startsWith("##FamID")) {
+		    		hdr.push(ln.replace("##", ""));
 		    	}
 		    	continue;
 		    }
 
 		    var delim = /\t/;
-		    if(lines[i].indexOf('\t') < 0) {
+		    if(ln.indexOf('\t') < 0) {
 		    	delim = /\s+/;
 		    	console.log("NOT TAB DELIM");
 		    }
-		    var attr = $.map(lines[i].trim().split(delim), function(val, i){return val.trim();});
+		    var attr = $.map(ln.split(delim), function(val, i){return val.trim();});
 
 			if(attr.length > 1) {
 				var indi = {
@@ -3222,7 +3223,7 @@
 	pedcache.current = function(opts) {
 		var current = pedcache.get_count(opts)-1;
 		if(current == -1)
-			current = max_limit-1;
+			current = max_limit;
 		if(has_browser_storage(opts))
 			return JSON.parse(get_browser_store(opts, get_prefix(opts)+current));
 		else if(get_arr(opts))
