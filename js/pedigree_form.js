@@ -106,6 +106,14 @@
 		}
     })
 
+    // update status field and age label - 0 = alive, 1 = dead
+    pedigree_form.updateStatus = function(status) {
+		$('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
+		(status == 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock'));
+		$('#id_age_'+status).removeClass("hidden");
+		$('#id_age_'+(status == 1 ? '0' : '1')).addClass("hidden");
+	}
+
 	pedigree_form.nodeclick = function(node) {
 		$('form > fieldset').prop('disabled', false);
 		// clear values
@@ -123,8 +131,7 @@
 			node.status = 0;
 		$('input[name=status][value="'+node.status+'"]').prop('checked', true);
 		// show lock symbol for age and yob synchronisation
-		$('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
-		(node.status == 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock'))
+		pedigree_form.updateStatus(node.status);
 
 		if('proband' in node) {
 			$('#id_proband').prop('checked', node.proband);
