@@ -4,16 +4,14 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width,maximum-scale=2">
-	
-	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
+
+    <link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link rel="stylesheet" href="../dist/css/pedigreejs.min.css" />
 
-	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="https://unpkg.com/d3@4.13.0/build/d3.min.js"></script>
-	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/d3@5.16.0/dist/d3.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 	<!-- <script src="../dist/js/pedigreejs.min.js"></script> -->
     <script src="../js/io.js"></script>
     <script src="../js/pedigree_form.js"></script>
@@ -21,11 +19,55 @@
     <script src="../js/undo_redo_refresh.js"></script>
     <script src="../js/widgets.js"></script>
 
+	<style>
+		body {
+		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+		    font-size: 14px;
+		    line-height: 1.42857143;
+		    color: #333;
+		    background-color: #fff;
+		}
+		.container {
+		    width: 90%;
+		    max-width: 1140px;
+		    margin-right: auto;
+		    margin-left: auto;
+		}
+		
+		#ped {text-align:center;}
+		.btn {
+		color: #333;
+		    background-color: #fff;
+		    border: 1px solid #ccc;
+		    display: inline-block;
+		    padding: 6px 12px;
+		    cursor: pointer;
+		    margin-left: 5px;
+		    border-radius: 4px;
+		}
+		#opts {
+			background-color: #F5F5F5;
+			padding: 10px;
+			border: 1px solid #ccc;
+			font-size: 13px;
+    		line-height: 1.42857143;
+			overflow: auto;word-wrap: normal;
+			border-radius: 4px;
+		}
+		#history_ex4 {
+			padding: 10px;
+		}
+		.text-center {
+			text-align: center;
+			padding: 0 20px;
+		}
+	</style>
+
 	<script type="text/javascript">
 	$( document ).ready(function() {
 		var parent_width = $('#pedigrees').parent().width();
 		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
-		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
+		var svg_width = (parent_width > 750 ? (parent_width*9/12 - margin) : parent_width- margin);
 
 		var pedfile = 	"fam1 1 6 7 2 2 0 1 0 0\n"+
 						"fam1 2 4 5 1 1 0 0 0 0\n"+
@@ -35,10 +77,10 @@
 						"fam1 6 0 0 1 1 0 0 0 0\n"+
 						"fam1 7 0 0 2 2 0 1 0 1";
 		var dataset = io.readLinkage(pedfile);
-		
+
 		var opts = {
 			'targetDiv': 'pedigrees',
-			'btn_target': 'diabetes2_history',
+			'btn_target': 'history_ex4',
 			'width': svg_width,
 			'height': 400,
 			'symbol_size': 35,
@@ -62,22 +104,24 @@
 </head>
 <body>
 
-<br>
 <div class="text-center">
-	<h3>Example 4</h3>
-	<label class="btn btn-default btn-file">
+	<h2>Example 4</h2>
+	<label class="btn">
 		<input id="load" type="file" style="display: none;"/>Load
-	</label>	
-	<label class="btn btn-default btn-file">
+	</label>
+	<label class="btn">
 		<input id="save" type="button" style="display: none;"/>Save
 	</label>
-	<label class="btn btn-default btn-file">
+	<label class="btn">
 		<input id="print" type="button" style="display: none;"/>Print
 	</label>
-	<label class="btn btn-default btn-file">
+	<label class="btn">
 		<input id="svg_download" type="button" style="display: none;"/>SVG
 	</label>
-	<div id='diabetes2_history'></div>
+	<label class="btn">
+		<input id="png_download" type="button" style="display: none;">PNG
+	</label>
+	<div id='history_ex4'></div>
 	<div id="pedigrees"></div>
 	<div id="node_properties"></div>
 </div>
@@ -94,7 +138,7 @@ fam1 5 0 0 2 2 0 0 0 1
 fam1 6 0 0 1 1 0 0 0 0
 fam1 7 0 0 2 2 0 1 0 1
 </pre>
-<p>These are the options used:</p> 
+<p>These are the options used:</p>
 <pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
 </div>
 
