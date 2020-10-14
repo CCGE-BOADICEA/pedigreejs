@@ -242,43 +242,19 @@
     }
 
 	// return a copy pedigree svg
-	io.copy_svg_html = function(opts) {
-    	var svg_html = io.get_printable_svg(opts).html();
-    	return io.copy_svg(svg_html);
+	io.copy_svg = function(opts) {
+		var svg_node = io.get_printable_svg(opts);
+		
+		// change clipPath id's and update related path
+		var rid = ptree.makeid(4)
+		svg_node.find('clipPath').each(function() {
+			var clipid = this.id;
+			var elpath = svg_node.find('path[clip-path="url(#'+clipid+')"]');
+			elpath.attr('clip-path', "url(#"+clipid+rid+")");
+			$(this).prop('id', clipid+rid);
+		});
+		return svg_node;
 	}
-
-	// return a copy of svg html with unique url references (e.g. for clippath)
-    io.copy_svg = function(svg_html) {
-    	// find all url's to make unique
-    	var myRegexp = /url\((&quot;|"|'){0,1}\#(.*?)(&quot;|"|'){0,1}\)/g;
-	    var matches = [];
-	    var match;
-	    var c = 0;
-	    myRegexp.lastIndex = 0;
-	    while (match = myRegexp.exec(svg_html)) {
-	    	c++;
-	    	if(c > 800) {
-	    		console.error("io.copy_svg_html: counter exceeded 800");
-	    		return "ERROR DISPLAYING PEDIGREE";
-	    	}
-	        matches.push(match);
-	        if (myRegexp.lastIndex === match.index) {
-	        	myRegexp.lastIndex++;
-	        }
-	    }
-
-    	for(var i=0; i<matches.length; i++) {
-    		var quote = (matches[i][1] ? matches[i][1] : "");
-    		var val = matches[i][2];
-    		var m1 = "id=\"" + val + "\"";
-    		var m2 = "url\\(" + quote + "\#" + val + quote + "\\)";
-
-    		var newval = val+ptree.makeid(2);
-    		svg_html = svg_html.replace(new RegExp(m1, 'g'), "id=\""+newval+"\"" );
-    		svg_html = svg_html.replace(new RegExp(m2, 'g'), "url(#"+newval+")" );
-    	}
-		return svg_html;
-	};
 
 	// get printable svg div, adjust size to tree dimensions and scale to fit
 	io.get_printable_svg = function(opts) {
@@ -303,8 +279,10 @@
 		    	scale = (xscale < yscale ? xscale : yscale);
 		    }
 			svg_div = $('<div></div>');  				// create a new div
-			svg_div.append($('#'+opts.targetDiv).find('svg').parent().html());	// copy svg html to new div
-		    var svg = svg_div.find( "svg" );
+			
+			svg = $('#'+opts.targetDiv).find('svg').clone().appendTo(svg_div);
+			//svg_div.append($('#'+opts.targetDiv).find('svg').parent().html());	// copy svg html to new div
+		    //var svg = svg_div.find( "svg" );
 		    svg.attr('width', wid);		// adjust dimensions
 		    svg.attr('height', hgt);
 
@@ -332,7 +310,7 @@
         var height = $(window).height()-10;
         var cssFiles = [
         	'/static/css/canrisk.css',
-        	'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+        	'https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css'
         ];
         var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
         var headContent = '';
@@ -361,7 +339,7 @@
         		html += id;
         	html += $(el[i]).html();
         	if(i < el.length-1)
-        		html += '<div style="page-break-before:always"> </div>';
+        		html += '<div class="page-break"> </div>';
         }
 
         printWindow.document.write(headContent);
@@ -371,7 +349,7 @@
         printWindow.focus();
         setTimeout(function() {
         	printWindow.print();
-            printWindow.close();
+        	printWindow.close();
         }, 300);
 	};
 
@@ -1577,7 +1555,7 @@
 		.html("\uf071");
 		warn.append("svg:title").text("incomplete");*/
 
-		var font_size = parseInt(getPx(opts.font_size)) + 4;
+		var font_size = parseInt(getPx(opts)) + 4;
 		// display label defined in opts.labels e.g. alleles/genotype data
 		for(var ilab=0; ilab<opts.labels.length; ilab++) {
 			var label = opts.labels[ilab];
@@ -1842,7 +1820,7 @@
 
 		function zoomFn() {
 			var t = d3.event.transform;
-			if(d3.event, t.x.toString().length > 10)	// IE fix for drag off screen
+			if(utils.isIE() && t.x.toString().length > 10)	// IE fix for drag off screen
 				return;
 			var pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
 			if(t.k == 1) {
@@ -2117,7 +2095,8 @@
 	}
 
 	// get height in pixels
-	function getPx(emVal){
+	function getPx(opts){
+		var emVal = opts.font_size;
 		if (emVal === parseInt(emVal, 10)) // test if integer
 			return emVal;
 
@@ -2125,10 +2104,8 @@
 			return emVal.replace('px', '');
 		else if(emVal.indexOf("em") === -1)
 			return emVal;
-		var adiv = $('<div style="display: none; font-size: '+emVal+'; margin: 0; padding:0; height: auto; line-height: 1; border:0;">&nbsp;</div>').appendTo('body');
-		var hgt = adiv.height();
-		adiv.remove();
-		return hgt;
+		emVal = parseFloat(emVal.replace('em', ''));
+		return (parseFloat(getComputedStyle($('#'+opts.targetDiv).get(0)).fontSize)*emVal)-1.0;
 	};
 
 	// Add label
@@ -2666,6 +2643,14 @@
 		}
     })
 
+    // update status field and age label - 0 = alive, 1 = dead
+    pedigree_form.updateStatus = function(status) {
+		$('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
+		(status == 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock'));
+		$('#id_age_'+status).removeClass("hidden");
+		$('#id_age_'+(status == 1 ? '0' : '1')).addClass("hidden");
+	}
+
 	pedigree_form.nodeclick = function(node) {
 		$('form > fieldset').prop('disabled', false);
 		// clear values
@@ -2683,8 +2668,7 @@
 			node.status = 0;
 		$('input[name=status][value="'+node.status+'"]').prop('checked', true);
 		// show lock symbol for age and yob synchronisation
-		$('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
-		(node.status == 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock'))
+		pedigree_form.updateStatus(node.status);
 
 		if('proband' in node) {
 			$('#id_proband').prop('checked', node.proband);
