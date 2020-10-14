@@ -760,7 +760,7 @@
 		.html("\uf071");
 		warn.append("svg:title").text("incomplete");*/
 
-		var font_size = parseInt(getPx(opts.font_size)) + 4;
+		var font_size = parseInt(getPx(opts)) + 4;
 		// display label defined in opts.labels e.g. alleles/genotype data
 		for(var ilab=0; ilab<opts.labels.length; ilab++) {
 			var label = opts.labels[ilab];
@@ -1025,7 +1025,7 @@
 
 		function zoomFn() {
 			var t = d3.event.transform;
-			if(d3.event, t.x.toString().length > 10)	// IE fix for drag off screen
+			if(utils.isIE() && t.x.toString().length > 10)	// IE fix for drag off screen
 				return;
 			var pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
 			if(t.k == 1) {
@@ -1300,7 +1300,8 @@
 	}
 
 	// get height in pixels
-	function getPx(emVal){
+	function getPx(opts){
+		var emVal = opts.font_size;
 		if (emVal === parseInt(emVal, 10)) // test if integer
 			return emVal;
 
@@ -1308,10 +1309,8 @@
 			return emVal.replace('px', '');
 		else if(emVal.indexOf("em") === -1)
 			return emVal;
-		var adiv = $('<div style="display: none; font-size: '+emVal+'; margin: 0; padding:0; height: auto; line-height: 1; border:0;">&nbsp;</div>').appendTo('body');
-		var hgt = adiv.height();
-		adiv.remove();
-		return hgt;
+		emVal = parseFloat(emVal.replace('em', ''));
+		return (parseFloat(getComputedStyle($('#'+opts.targetDiv).get(0)).fontSize)*emVal)-1.0;
 	};
 
 	// Add label
