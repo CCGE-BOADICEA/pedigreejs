@@ -12,7 +12,7 @@
 #   - dist/**/*.js
 #
 src_files:
-  - https://cdn.jsdelivr.net/npm/d3@4.13.0/build/d3.min.js
+  - https://cdn.jsdelivr.net/npm/d3@5.16.0/dist/d3.min.js
   - https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.js
   - https://cdn.jsdelivr.net/npm/jquery-ui-dist@1.12.1/jquery-ui.min.js
   - js/*.js

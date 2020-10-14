@@ -242,43 +242,19 @@
     }
 
 	// return a copy pedigree svg
-	io.copy_svg_html = function(opts) {
-    	var svg_html = io.get_printable_svg(opts).html();
-    	return io.copy_svg(svg_html);
+	io.copy_svg = function(opts) {
+		var svg_node = io.get_printable_svg(opts);
+		
+		// change clipPath id's and update related path
+		var rid = ptree.makeid(4)
+		svg_node.find('clipPath').each(function() {
+			var clipid = this.id;
+			var elpath = svg_node.find('path[clip-path="url(#'+clipid+')"]');
+			elpath.attr('clip-path', "url(#"+clipid+rid+")");
+			$(this).prop('id', clipid+rid);
+		});
+		return svg_node;
 	}
-
-	// return a copy of svg html with unique url references (e.g. for clippath)
-    io.copy_svg = function(svg_html) {
-    	// find all url's to make unique
-    	var myRegexp = /url\((&quot;|"|'){0,1}\#(.*?)(&quot;|"|'){0,1}\)/g;
-	    var matches = [];
-	    var match;
-	    var c = 0;
-	    myRegexp.lastIndex = 0;
-	    while (match = myRegexp.exec(svg_html)) {
-	    	c++;
-	    	if(c > 800) {
-	    		console.error("io.copy_svg_html: counter exceeded 800");
-	    		return "ERROR DISPLAYING PEDIGREE";
-	    	}
-	        matches.push(match);
-	        if (myRegexp.lastIndex === match.index) {
-	        	myRegexp.lastIndex++;
-	        }
-	    }
-
-    	for(var i=0; i<matches.length; i++) {
-    		var quote = (matches[i][1] ? matches[i][1] : "");
-    		var val = matches[i][2];
-    		var m1 = "id=\"" + val + "\"";
-    		var m2 = "url\\(" + quote + "\#" + val + quote + "\\)";
-
-    		var newval = val+ptree.makeid(2);
-    		svg_html = svg_html.replace(new RegExp(m1, 'g'), "id=\""+newval+"\"" );
-    		svg_html = svg_html.replace(new RegExp(m2, 'g'), "url(#"+newval+")" );
-    	}
-		return svg_html;
-	};
 
 	// get printable svg div, adjust size to tree dimensions and scale to fit
 	io.get_printable_svg = function(opts) {
@@ -303,8 +279,10 @@
 		    	scale = (xscale < yscale ? xscale : yscale);
 		    }
 			svg_div = $('<div></div>');  				// create a new div
-			svg_div.append($('#'+opts.targetDiv).find('svg').parent().html());	// copy svg html to new div
-		    var svg = svg_div.find( "svg" );
+			
+			svg = $('#'+opts.targetDiv).find('svg').clone().appendTo(svg_div);
+			//svg_div.append($('#'+opts.targetDiv).find('svg').parent().html());	// copy svg html to new div
+		    //var svg = svg_div.find( "svg" );
 		    svg.attr('width', wid);		// adjust dimensions
 		    svg.attr('height', hgt);
 
@@ -332,7 +310,7 @@
         var height = $(window).height()-10;
         var cssFiles = [
         	'/static/css/canrisk.css',
-        	'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+        	'https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css'
         ];
         var printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
         var headContent = '';
@@ -361,7 +339,7 @@
         		html += id;
         	html += $(el[i]).html();
         	if(i < el.length-1)
-        		html += '<div style="page-break-before:always"> </div>';
+        		html += '<div class="page-break"> </div>';
         }
 
         printWindow.document.write(headContent);
@@ -371,7 +349,7 @@
         printWindow.focus();
         setTimeout(function() {
         	printWindow.print();
-            printWindow.close();
+        	printWindow.close();
         }, 300);
 	};
 
