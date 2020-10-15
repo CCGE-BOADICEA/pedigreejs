@@ -8,3 +8,4 @@
 .addsibling, .addchild {
 	cursor: default;
 }
+svg {overflow:hidden}
