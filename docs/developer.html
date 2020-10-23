@@ -5,14 +5,11 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width,maximum-scale=2">
 
-	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css" media="all" />
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="dist/css/pedigreejs.min.css" />
 
 	<style>
-		a[href^="http://"][target=_blank]:after, 
-		a[href^="https://"][target=_blank]:after, 
+		a[href^="http://"][target=_blank]:after,
+		a[href^="https://"][target=_blank]:after,
 		a[href^="ftp://"][target=_blank]:after {
 		  content: "\f08e";
 		  font-family: FontAwesome;
@@ -25,26 +22,92 @@
 		}
 
 		.fa-rotate-45 {
-			-webkit-transform:rotate(45deg); 
-			-moz-transform:rotate(45deg); 
-			-ms-transform:rotate(45deg); 
+			-webkit-transform:rotate(45deg);
+			-moz-transform:rotate(45deg);
+			-ms-transform:rotate(45deg);
 			-o-transform:rotate(45deg);
 			transform:rotate(45deg);
 		}
-	</style>
 
-	<script src="https://code.jquery.com/jquery-3.2.0.min.js"></script> 
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="https://unpkg.com/d3@4.13.0/build/d3.min.js"></script>
-	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+		.header {
+			background-color:#DDD1C1;
+			margin-right: auto;
+    		margin-left: auto;
+    		margin-bottom: 20px;
+		}
+
+		.btn.btn-primary {
+			color: #fff;
+		    background-color: #337ab7;
+		    border-color: #2e6da4;
+		    padding: 10px 16px;
+		    font-size: 18px;
+		    line-height: 1.3333333;
+		    border-radius: 6px;
+		    text-decoration: none;
+		}
+
+		@media screen and (min-width: 768px) {
+			.header {
+		    	padding-top: 20px;
+		    	padding-bottom: 20px;
+		  	}
+		  	.header h1 {
+			    font-size: 63px;
+			    font-weight: 500;
+    			line-height: 1.1;
+    			margin: 10px 0;
+			}
+			.header h2 {
+			    font-size: 30px;
+			    margin-top: 20px;
+    			margin-bottom: 10px;
+    			font-weight: 500;
+			}
+		}
+
+		body {
+			margin: 0;
+		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+		    font-size: 14px;
+		    line-height: 1.42857143;
+		    color: #333;
+		    background-color: #fff;
+		}
+		.container {
+		    width: 90%;
+		    max-width: 1140px;
+		    margin-right: auto;
+		    margin-left: auto;
+		}
+		.btn {
+			color: #333;
+		    background-color: #fff;
+		    border: 1px solid #ccc;
+		    display: inline-block;
+		    padding: 6px 12px;
+		    cursor: pointer;
+		    margin-left: 5px;
+		    border-radius: 4px;
+		}
+		.options {
+			background-color: #F5F5F5;
+			padding: 10px;
+			border: 1px solid #ccc;
+			font-size: 13px;
+    		line-height: 1.42857143;
+			overflow: auto;word-wrap: normal;
+			border-radius: 4px;
+		}
+	</style>
 </head>
 <body>
 
 <!-- HEADER -->
-<div class="jumbotron" style="background-color:#DDD1C1">
+<div class="header">
 	<div class="container">
-	          <a class="btn btn-primary btn-lg pull-right" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs">View on GitHub</a>
-	          <h1><a href="../index.html">pedigreejs</a></h1>
+	          <a class="btn btn-primary pull-right" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs">View on GitHub</a>
+	          <h1>pedigreejs</h1>
 	          <h2>A web tool for building and displaying pedigrees.</h2>
 	</div>
 </div>
@@ -56,17 +119,24 @@
 		To embed pedigreejs in your application, you will need to either download or link to a CDN for
 		<a href="https://jquery.com/">JQuery</a>, <a href="http://fontawesome.io/">Font Awesome</a> and
 		<a href="https://d3js.org/">d3</a>. Font Awesome is used to display some of the widgets for
-		building the pedigree. The d3-hierarchy module is used to assist in the layout of the pedigree 
+		building the pedigree. The d3-hierarchy module is used to assist in the layout of the pedigree
 		tree. The pedigreejs JavaScript and CSS files can be found under the projects GitHub
 		<a href="https://github.com/CCGE-BOADICEA/pedigreejs/tree/master/dist">'dist'</a> directory.
 		The examples show how the options can be used to provide a suitable pedigree display and can
 		be used as templates to experiment with. The 'dataset' option in the initialisation and configuration
 		of pedigreejs defines the pedigree to be rendered,
 		</p>
+		<p>
+			Note: if the default editor is being used, then <a href="https://jqueryui.com/">jQuery UI</a> is also needed
+			and it requires an empty div with id set to node_properties.
+
+			<pre class="options">&lt;div id="node_properties"&gt;&lt;/div&gt;</pre>
+
+		</p>
 		<h3>Storing and Retrieving Pedigree Data</h3>
 		<p>
 		The <a href="../index.html#opts">‘store_type’</a> options in the configuration allows the data
-		to be store in the browser in 3 ways. The default is to use <strong>‘session’</strong> storage which is used in 
+		to be store in the browser in 3 ways. The default is to use <strong>‘session’</strong> storage which is used in
 		<a href="https://www.w3schools.com/html/html5_webstorage.asp">HTML5</a> to store data for a session.
 		So if the browser or tab is closed the data is lost. The second option is to use <strong>‘local’</strong>
 		storage which again is used in HTML but persists and has no expiration date. The last option is
@@ -76,7 +146,7 @@
 		<p>
 		The current pedigree data displayed can be accessed by calling the JavaScript routine:
 		</p>
-		<pre>var pedigree = pedcache.current(opts);</pre>
+		<pre class="options">var pedigree = pedcache.current(opts);</pre>
 		<p>
 		Where 'opts' is the options used to intialise pedigreejs. This returns the pedigree data in JSON format.
 		A search routine can then be implemented to interogate this, see <a href="example8.html">example 8</a>.
@@ -87,7 +157,7 @@
 		the existence of parents and that the sex of the mother is female and the father is male. Also it checks
 		that the unique name exists and is unique for each individual in the pedigree. Errors are returned, e.g.
 		</p>
-<pre>NON-UNIQUE NAME: f21
+<pre class="options">NON-UNIQUE NAME: f21
 MOTHERS SEX NOT FEMALE: M
 MISSING FATHER FOR ch1</pre>
 		<p>Alternatively
@@ -111,11 +181,11 @@ MISSING FATHER FOR ch1</pre>
 		<p>
 		The <a href="https://jasmine.github.io/">Jasmine</a> test framework is used to provide tests for the
 		JavaScript. It can be installed and run from the root directory as follows:</p>
-<pre>pip install jasmine
+<pre class="options">pip install jasmine
 jasmine</pre>
 		<p>
 		Then visit 0.0.0.0:8888 in a web-browser to run the tests.
 		</p>
-	</div>  
+	</div>
 </div>
-</body>	
+</body>
