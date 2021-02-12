@@ -997,9 +997,9 @@
 		var probandIdx  = pedigree_util.getProbandIndex(opts.dataset);
 		if(typeof probandIdx !== 'undefined') {
 			var probandNode = pedigree_util.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
-
+			var triid = "triangle"+ptree.makeid(3);
 			ped.append("svg:defs").append("svg:marker")    // arrow head
-			    .attr("id", "triangle")
+			    .attr("id", triid)
 			    .attr("refX", 6)
 			    .attr("refY", 6)
 			    .attr("markerWidth", 20)
@@ -1016,7 +1016,7 @@
 		        .attr("y2", probandNode.y+opts.symbol_size/2)
 		        .attr("stroke-width", 1)
 		        .attr("stroke", "black")
-		        .attr("marker-end", "url(#triangle)");
+		        .attr("marker-end", "url(#"+triid+")");
 		}
 		// drag and zoom
 		zoom = d3.zoom()
