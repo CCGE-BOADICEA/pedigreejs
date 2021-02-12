@@ -1792,9 +1792,9 @@
 		var probandIdx  = pedigree_util.getProbandIndex(opts.dataset);
 		if(typeof probandIdx !== 'undefined') {
 			var probandNode = pedigree_util.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
-
+			var triid = "triangle"+ptree.makeid(3);
 			ped.append("svg:defs").append("svg:marker")    // arrow head
-			    .attr("id", "triangle")
+			    .attr("id", triid)
 			    .attr("refX", 6)
 			    .attr("refY", 6)
 			    .attr("markerWidth", 20)
@@ -1811,7 +1811,7 @@
 		        .attr("y2", probandNode.y+opts.symbol_size/2)
 		        .attr("stroke-width", 1)
 		        .attr("stroke", "black")
-		        .attr("marker-end", "url(#triangle)");
+		        .attr("marker-end", "url(#"+triid+")");
 		}
 		// drag and zoom
 		zoom = d3.zoom()
@@ -2560,29 +2560,30 @@
 	$('#acc_FamHist_div').on('click', '#id_proband, #id_exclude', function(e) {
 		var name = $('#id_name').val();
 		if($(this).attr("id") === 'id_proband' && $(this).is(':checked')) {
-			var msg = "You are about to switch the index family member. Risk factor information (e.g. BMI "+
-			          "etc) will be cleared for the current index. Ensure you have saved the pedigree file "+
-			          "before continuing.";
+			var msg = $("#proband_switch_dialog").text();
 
 			$('<div id="msgDialog">'+msg+'</div>').dialog({
-	    		title: "WARNING - save before continuing",
+	    		title: $("#proband_switch_dialog").data("title"),
 	    		width: 350,
-	    		buttons: {
-		        	"Continue": function () {
-		                $(this).dialog('close');
-		                var dataset = pedcache.current(opts);
-		                opts.dataset = ptree.copy_dataset(dataset);
-		                pedigree_util.setProband(opts.dataset, name, true);
-		                ptree.rebuild(opts);
-		                reset_n_sync(opts);
-		                $('#id_proband').prop("disabled", true);
-		            },
-		            "Cancel": function () {
-		                $(this).dialog('close');
-		                $("#id_proband").prop('checked', false);
-		                $('#id_proband').prop("disabled", false);
-		            }
-	    		}
+	    		buttons: [{
+	    				text: $("#proband_switch_dialog").data("continue"),
+		    		    click: function() {
+		    		    	$(this).dialog('close');
+			                var dataset = pedcache.current(opts);
+			                opts.dataset = ptree.copy_dataset(dataset);
+			                pedigree_util.setProband(opts.dataset, name, true);
+			                ptree.rebuild(opts);
+			                reset_n_sync(opts);
+			                $('#id_proband').prop("disabled", true);
+		    		    }
+	    			},{
+		    		    text: $("#proband_switch_dialog").data("cancel"),
+		    		    click: function() {
+		    		    	 $(this).dialog('close');
+				             $("#id_proband").prop('checked', false);
+				             $('#id_proband').prop("disabled", false);
+		    		    }
+	    			}]
 			});
 		} else if($(this).attr("id") === 'id_exclude') {
 			var dataset = pedcache.current(opts);
@@ -3721,8 +3722,8 @@
 
 		// alive status = 0; dead status = 1
 		table += '<tr><td colspan="2" id="id_status">' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(d.data.status === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
-				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(d.data.status === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(parseInt(d.data.status) === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
+				 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(parseInt(d.data.status) === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
 				 '</td></tr>';
 		$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
