@@ -177,7 +177,7 @@
 		});
 
 		$('#png_download').click(function(e) {
-			var deferred = io.svg2png($('svg'), "pedigree", utils.isEdge()||utils.isIE());
+			var deferred = io.svg2img($('svg'), "pedigree");
 		    $.when.apply($,[deferred]).done(function() {
 		    	var obj = getByName(arguments, "pedigree");
 		        if(utils.isEdge() || utils.isIE()) {
@@ -203,9 +203,26 @@
 	}
 
 	/**
-	 * Given a SVG document element convert to PNG.
+	 * Given a SVG document element convert to image (e.g. jpeg, png - default png).
 	 */
-    io.svg2png = function(svg, deferred_name, iscanvg) {
+    io.svg2img = function(svg, deferred_name, options) {
+    	var defaults = {iscanvg: false, resolution: 1, img_type: "image/png"};
+    	if(!options) options = defaults;
+    	$.each(defaults, function(key, value) {
+    		if(!(key in options)) {options[key] = value;}
+    	});
+
+    	// set SVG background to white - fix for jpeg creation
+    	if (svg.find(".pdf-white-bg").length === 0){
+	    	var d3obj = d3.select(svg.get(0));
+	    	d3obj.append("rect")
+		        .attr("width", "100%")
+		        .attr("height", "100%")
+		        .attr("class", "pdf-white-bg")
+		        .attr("fill", "white");
+	        d3obj.select(".pdf-white-bg").lower();
+    	}
+
     	var deferred = $.Deferred();
     	var svgStr;
 	    if (typeof window.XMLSerializer != "undefined") {
@@ -216,44 +233,82 @@
 
 	    var imgsrc = 'data:image/svg+xml;base64,'+ btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
     	var canvas = document.createElement("canvas");
+	    canvas.width = svg.width()*options.resolution;
+	    canvas.height = svg.height()*options.resolution;
     	var context = canvas.getContext("2d");
-	    canvas.width = svg.width();
-	    canvas.height = svg.height();
 	    var img = document.createElement("img");
 	    img.onload = function() {
-	        if(utils.isIE() || iscanvg) {
+	        if(utils.isIE() || options.iscanvg) {
 	        	// change font so it isn't tiny
 	        	svgStr = svgStr.replace(/ font-size="\d?.\d*em"/g, '');
-	        	svgStr = svgStr.replace(/<text /g, '<text font-size="13px" ');
-	        	canvg(canvas, svgStr, {
-	    			  scaleWidth: svg.width(),
-	    			  scaleHeight: svg.height(),
+	        	svgStr = svgStr.replace(/<text /g, '<text font-size="12px" ');
+	        	v = canvg.Canvg.fromString(context, svgStr, {
+	    			  scaleWidth: canvas.width,
+	    			  scaleHeight: canvas.height,
 	    			  ignoreDimensions: true
 	        	});
-	        	console.log(deferred_name, "use canvg to create PNG");
+	        	v.start();
+	        	console.log(deferred_name, options.img_type, "use canvg to create image");
 	        } else {
-    			context.clearRect (0, 0, svg.width(), svg.height());
-        		context.drawImage(img, 0, 0, svg.width(), svg.height());
+    			context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    			console.log(deferred_name, options.img_type);
     		}
-	        deferred.resolve({'name': deferred_name, 'img':canvas.toDataURL("image/png"), 'w':svg.width(), 'h':svg.height()});
+	        deferred.resolve({'name': deferred_name, 'resolution': options.resolution, 'img':canvas.toDataURL(options.img_type, 1), 'w':canvas.width, 'h':canvas.height});
     	};
     	img.src = imgsrc;
     	return deferred.promise();
     }
 
+    function getMatches(str, myRegexp) {
+	    var matches = [];
+	    var match;
+	    var c = 0;
+	    myRegexp.lastIndex = 0;
+	    while (match = myRegexp.exec(str)) {
+	    	c++;
+	    	if(c > 400) {
+	    		console.error("getMatches: counter exceeded 800");
+	    		return -1;
+	    	}
+	        matches.push(match);
+	        if (myRegexp.lastIndex === match.index) {
+	        	myRegexp.lastIndex++;
+	        }
+	    }
+	    return matches;
+    }
+
+    // find all url's to make unique
+    function unique_urls(svg_html) {
+	    var matches = getMatches(svg_html, /url\((&quot;|"|'){0,1}\#(.*?)(&quot;|"|'){0,1}\)/g);
+	    if(matches === -1)
+	    	return "ERROR DISPLAYING PEDIGREE"
+
+	    $.each(matches, function(index, match) {
+    		var quote = (match[1] ? match[1] : "");
+    		var val = match[2];
+    		var m1 = "id=\"" + val + "\"";
+    		var m2 = "url\\(" + quote + "\#" + val + quote + "\\)";
+
+    		var newval = val+ptree.makeid(2);
+    		svg_html = svg_html.replace(new RegExp(m1, 'g'), "id=\""+newval+"\"" );
+    		svg_html = svg_html.replace(new RegExp(m2, 'g'), "url(#"+newval+")" );
+	   });
+		return svg_html;
+    }
+
 	// return a copy pedigree svg
 	io.copy_svg = function(opts) {
 		var svg_node = io.get_printable_svg(opts);
-		
-		// change clipPath id's and update related path
-		var rid = ptree.makeid(4)
-		svg_node.find('clipPath').each(function() {
-			var clipid = this.id;
-			var elpath = svg_node.find('path[clip-path="url(#'+clipid+')"]');
-			elpath.attr('clip-path', "url(#"+clipid+rid+")");
-			$(this).prop('id', clipid+rid);
-		});
-		return svg_node;
+		var d3obj = d3.select(svg_node.get(0));
+
+		// remove unused elements
+		d3obj.selectAll(".popup_selection, .indi_rect, .addsibling, .addpartner, .addchild, .addparents, .delete, .line_drag_selection").remove();
+		d3obj.selectAll("text")
+		  .filter(function(){
+			 return d3.select(this).text().length === 0
+		  }).remove();
+		return $(unique_urls(svg_node.html()));
 	}
 
 	// get printable svg div, adjust size to tree dimensions and scale to fit
@@ -264,7 +319,8 @@
 		}
 
 		var tree_dimensions = ptree.get_tree_dimensions(opts);
-		var svg_div = $('#'+opts.targetDiv).find('svg').parent();
+		var svg_div = $('<div></div>');  				// create a new div
+		var svg = $('#'+opts.targetDiv).find('svg').clone().appendTo(svg_div);
 		if(opts.width < tree_dimensions.width || opts.height < tree_dimensions.height ||
 		   tree_dimensions.width > 595 || tree_dimensions.height > 842) {
 			var wid = tree_dimensions.width;
@@ -278,11 +334,7 @@
 		    	var yscale = hgt/tree_dimensions.height;
 		    	scale = (xscale < yscale ? xscale : yscale);
 		    }
-			svg_div = $('<div></div>');  				// create a new div
-			
-			svg = $('#'+opts.targetDiv).find('svg').clone().appendTo(svg_div);
-			//svg_div.append($('#'+opts.targetDiv).find('svg').parent().html());	// copy svg html to new div
-		    //var svg = svg_div.find( "svg" );
+
 		    svg.attr('width', wid);		// adjust dimensions
 		    svg.attr('height', hgt);
 
