@@ -1,5 +1,8 @@
 // Pedigree Tree Utils
 
+import {copy_dataset, syncTwins, rebuild, addchild, delete_node_dataset} from '/es/pedigree.js';
+import * as pedcache from '/es/pedcache.js';
+
 export function isIE() {
 	 let ua = navigator.userAgent;
 	 /* MSIE used to detect old browsers and Trident used to newer ones*/
@@ -573,7 +576,7 @@ export function proband_attr(opts, keys, value){
 // If a value is not provided the attribute is removed.
 // 'key' can be a list of keys or a single key.
 export function node_attr(opts, name, keys, value){
-	let newdataset = ptree.copy_dataset(pedcache.current(opts));
+	let newdataset = copy_dataset(pedcache.current(opts));
 	let node = getNodeByName(newdataset, name);
 	if(!node){
 		console.warn("No person defined");
@@ -611,26 +614,26 @@ export function node_attr(opts, name, keys, value){
 		if(!found)
 			return;
 	}
-    ptree.syncTwins(newdataset, node);
+    syncTwins(newdataset, node);
 	opts.dataset = newdataset;
-	ptree.rebuild(opts);
+	rebuild(opts);
 }
 
 // add a child to the proband; giveb sex, age, yob and breastfeeding months (optional)
 export function proband_add_child(opts, sex, age, yob, breastfeeding){
-	let newdataset = ptree.copy_dataset(pedcache.current(opts));
+	let newdataset = copy_dataset(pedcache.current(opts));
 	let proband = newdataset[ getProbandIndex(newdataset) ];
 	if(!proband){
 		console.warn("No proband defined");
 		return;
 	}
-	let newchild = ptree.addchild(newdataset, proband, sex, 1)[0];
+	let newchild = addchild(newdataset, proband, sex, 1)[0];
     newchild.age = age;
     newchild.yob = yob;
     if(breastfeeding !== undefined)
     	newchild.breastfeeding = breastfeeding;
 	opts.dataset = newdataset;
-	ptree.rebuild(opts);
+	rebuild(opts);
 	return newchild.name;
 }
 
@@ -639,15 +642,15 @@ export function delete_node_by_name(opts, name){
 	function onDone(opts, dataset) {
 		// assign new dataset and rebuild pedigree
 		opts.dataset = dataset;
-		ptree.rebuild(opts);
+		rebuild(opts);
 	}
-	let newdataset = ptree.copy_dataset(pedcache.current(opts));
+	let newdataset = copy_dataset(pedcache.current(opts));
 	let node = getNodeByName(pedcache.current(opts), name);
 	if(!node){
 		console.warn("No node defined");
 		return;
 	}
-	ptree.delete_node_dataset(newdataset, node, opts, onDone);
+	delete_node_dataset(newdataset, node, opts, onDone);
 }
 
 // check by name if the individual exists
