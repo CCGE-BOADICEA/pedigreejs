@@ -154,7 +154,7 @@ export function svg2img(svg, deferred_name, options) {
 	let context = canvas.getContext("2d");
     let img = document.createElement("img");
     img.onload = function() {
-        if(pedigree_util.isIE() || pedigree_util.iscanvg) {
+        if(pedigree_util.isIE()) {
         	// change font so it isn't tiny
         	svgStr = svgStr.replace(/ font-size="\d?.\d*em"/g, '');
         	svgStr = svgStr.replace(/<text /g, '<text font-size="12px" ');
