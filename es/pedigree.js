@@ -7,18 +7,18 @@ import {addWidgets} from './widgets.js';
 
 let roots = {};
 export function build(options) {
-    let opts = $.extend({ // defaults
-    	targetDiv: 'pedigree_edit',
-    	dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
-    		       {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
-    			   {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
-    	width: 600,
-    	height: 400,
-    	symbol_size: 35,
-    	zoomIn: 1.0,
-    	zoomOut: 1.0,
-    	diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
-    				{'type': 'breast_cancer2', 'colour': 'pink'},
+	let opts = $.extend({ // defaults
+		targetDiv: 'pedigree_edit',
+		dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
+				   {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
+				   {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
+		width: 600,
+		height: 400,
+		symbol_size: 35,
+		zoomIn: 1.0,
+		zoomOut: 1.0,
+		diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
+					{'type': 'breast_cancer2', 'colour': 'pink'},
 					{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 					{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 					{'type': 'prostate_cancer', 'colour': '#D5494A'}],
@@ -30,28 +30,28 @@ export function build(options) {
 		background: "#EEE",
 		node_background: '#fdfdfd',
 		validate: true,
-    	DEBUG: false}, options );
+		DEBUG: false}, options );
 
-    if ( $( "#fullscreen" ).length === 0 ) {
-    	// add undo, redo, fullscreen buttons and event listeners once
+	if ( $( "#fullscreen" ).length === 0 ) {
+		// add undo, redo, fullscreen buttons and event listeners once
 		pbuttons.add(opts);
 		io.add(opts);
-    }
+	}
 
-    if(pedcache.nstore(opts) == -1)
-    	pedcache.add(opts);
+	if(pedcache.nstore(opts) == -1)
+		pedcache.add(opts);
 
-    pbuttons.updateButtons(opts);
+	pbuttons.updateButtons(opts);
 
-    // validate pedigree data
-    validate_pedigree(opts);
-    // group top level nodes by partners
-    opts.dataset = group_top_level(opts.dataset);
+	// validate pedigree data
+	validate_pedigree(opts);
+	// group top level nodes by partners
+	opts.dataset = group_top_level(opts.dataset);
 
-    if(opts.DEBUG)
-    	pedigree_utils.print_opts(opts);
-    let svg_dimensions = get_svg_dimensions(opts);
-    let svg = d3.select("#"+opts.targetDiv)
+	if(opts.DEBUG)
+		pedigree_utils.print_opts(opts);
+	let svg_dimensions = get_svg_dimensions(opts);
+	let svg = d3.select("#"+opts.targetDiv)
 				 .append("svg:svg")
 				 .attr("width", svg_dimensions.width)
 				 .attr("height", svg_dimensions.height);
@@ -62,8 +62,8 @@ export function build(options) {
 		.attr("rx", 6)
 		.attr("ry", 6)
 		.style("stroke", "darkgrey")
-   		.style("fill", opts.background) // or none
-   		.style("stroke-width", 1);
+		.style("fill", opts.background) // or none
+		.style("stroke-width", 1);
 
 	let xytransform = pedcache.getposition(opts);  // cached position
 	let xtransform = xytransform[0];
@@ -79,9 +79,9 @@ export function build(options) {
 	}
 	let ped = svg.append("g")
 			 .attr("class", "diagram")
-             .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+zoom+")");
+			 .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+zoom+")");
 
-	let top_level = $.map(opts.dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
+	let top_level = $.map(opts.dataset, function(val, _i){return 'top_level' in val && val.top_level ? val : null;});
 	let hidden_root = {
 		name : 'hidden_root',
 		id : 0,
@@ -93,11 +93,11 @@ export function build(options) {
 	let root = d3.hierarchy(hidden_root);
 	roots[opts.targetDiv] = root;
 
-	/// get score at each depth used to adjust node separation
+	// / get score at each depth used to adjust node separation
 	let tree_dimensions = get_tree_dimensions(opts);
 	if(opts.DEBUG)
 		console.log('opts.width='+svg_dimensions.width+' width='+tree_dimensions.width+
-				    ' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
+					' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
 
 	let treemap = d3.tree().separation(function(a, b) {
 		return a.parent === b.parent || a.data.hidden || b.data.hidden ? 1.2 : 2.2;
@@ -107,7 +107,7 @@ export function build(options) {
 	let flattenNodes = nodes.descendants();
 
 	// check the number of visible nodes equals the size of the pedigree dataset
-	let vis_nodes = $.map(opts.dataset, function(p, i){return p.hidden ? null : p;});
+	let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
 	if(vis_nodes.length != opts.dataset.length) {
 		throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 	}
@@ -120,8 +120,8 @@ export function build(options) {
 	let node = ped.selectAll(".node")
 				  .data(nodes.descendants())
 				  .enter()
-				   	.append("g")
-				   	.attr("transform", function(d, i) {
+				  .append("g")
+					.attr("transform", function(d, _i) {
 						return "translate(" + d.x + "," + d.y + ")";
 					});
 
@@ -130,7 +130,7 @@ export function build(options) {
 		.filter(function (d) {return !d.data.hidden;})
 		.attr("shape-rendering", "geometricPrecision")
 		.attr("transform", function(d) {return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
-		.attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
+		.attr("d", d3.symbol().size(function(_d) { return (opts.symbol_size * opts.symbol_size) + 2;})
 				.type(function(d) {
 					if(d.data.miscarriage || d.data.termination)
 						return d3.symbolTriangle;
@@ -162,58 +162,51 @@ export function build(options) {
 
 	// pie plots for disease colours
 	let pienode = node.selectAll("pienode")
-	   .data(function(d) {     		// set the disease data for the pie plot
+	   .data(function(d) {	 		// set the disease data for the pie plot
 		   let ncancers = 0;
 		   let cancers = $.map(opts.diseases, function(val, i){
 			   if(prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
 		   });
 		   if(ncancers === 0) cancers = [1];
-		   return [$.map(cancers, function(val, i){
+		   return [$.map(cancers, function(val, _i){
 			   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
-				   	   'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
-				   	   'affected': d.data.affected,
-				   	   'exclude': d.data.exclude};})];
+						'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
+						'affected': d.data.affected,
+						'exclude': d.data.exclude};})];
 	   })
 	   .enter()
-	    .append("g");
+		.append("g");
 
 	pienode.selectAll("path")
-	    .data(d3.pie().value(function(d) {return d.cancer;}))
-	    .enter().append("path")
-	    	.attr("clip-path", function(d) {return "url(#"+d.data.id+")";}) // clip the rectangle
-		    .attr("class", "pienode")
-		    .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
-		    .style("fill", function(d, i) {
-		    	if(d.data.exclude)
-		    		return 'lightgrey';
-		    	if(d.data.ncancers === 0) {
-		    		if(d.data.affected)
-		    			return 'darkgrey';
-			    	return opts.node_background;
-		    	}
-		    	return opts.diseases[i].colour;
-		    });
+		.data(d3.pie().value(function(d) {return d.cancer;}))
+		.enter().append("path")
+			.attr("clip-path", function(d) {return "url(#"+d.data.id+")";}) // clip the rectangle
+			.attr("class", "pienode")
+			.attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
+			.style("fill", function(d, i) {
+				if(d.data.exclude)
+					return 'lightgrey';
+				if(d.data.ncancers === 0) {
+					if(d.data.affected)
+						return 'darkgrey';
+					return opts.node_background;
+				}
+				return opts.diseases[i].colour;
+			});
 
 	// adopted in/out brackets
 	node.append("path")
 		.filter(function (d) {return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);})
-		.attr("d", function(d) { {
-			function get_bracket(dx, dy, indent) {
-				return 	"M" + (dx+indent) + "," + dy +
-						"L" + dx + " " + dy +
-						"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
-						"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
-						"L" + (dx+indent) + "," + (dy+(opts.symbol_size *  1.28))
-			}
+		.attr("d", function(_d) { {
 			let dx = -(opts.symbol_size * 0.66);
 			let dy = -(opts.symbol_size * 0.64);
 			let indent = opts.symbol_size/4;
-			return get_bracket(dx, dy, indent)+get_bracket(-dx, dy, -indent);
+			return get_bracket(dx, dy, indent, opts)+get_bracket(-dx, dy, -indent, opts);
 			}})
 		.style("stroke", function (d) {
 			return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 		})
-		.style("stroke-width", function (d) {
+		.style("stroke-width", function (_d) {
 			return ".1em";
 		})
 		.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
@@ -221,13 +214,13 @@ export function build(options) {
 
 
 	// alive status = 0; dead status = 1
-	let status = node.append('line')
-	.filter(function (d) {return d.data.status == 1;})
-	    .style("stroke", "black")
-	    .attr("x1", function(d, i) {return -0.6*opts.symbol_size;})
-	    .attr("y1", function(d, i) {return 0.6*opts.symbol_size;})
-	    .attr("x2", function(d, i) {return 0.6*opts.symbol_size;})
-	    .attr("y2", function(d, i) {return -0.6*opts.symbol_size;});
+	node.append('line')
+		.filter(function (d) {return d.data.status == 1;})
+			.style("stroke", "black")
+			.attr("x1", function(_d, _i) {return -0.6*opts.symbol_size;})
+			.attr("y1", function(_d, _i) {return 0.6*opts.symbol_size;})
+			.attr("x2", function(_d, _i) {return 0.6*opts.symbol_size;})
+			.attr("y2", function(_d, _i) {return -0.6*opts.symbol_size;});
 
 	// names of individuals
 	addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
@@ -236,14 +229,10 @@ export function build(options) {
 					return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
 				return 'display_name' in d.data ? d.data.display_name : '';});
 
-/*		let warn = node.filter(function (d) {
-    		return (!d.data.age || !d.data.yob) && !d.data.hidden;
-		}).append("text")
-		.attr('font-family', 'FontAwesome')
-		.attr("x", ".25em")
-		.attr("y", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size))
-		.html("\uf071");
-		warn.append("svg:title").text("incomplete");*/
+/*
+ * let warn = node.filter(function (d) { return (!d.data.age || !d.data.yob) && !d.data.hidden; }).append("text") .attr('font-family', 'FontAwesome')
+ * .attr("x", ".25em") .attr("y", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size)) .html("\uf071"); warn.append("svg:title").text("incomplete");
+ */
 
 	let font_size = parseInt(getPx(opts)) + 4;
 	// display label defined in opts.labels e.g. alleles/genotype data
@@ -300,99 +289,102 @@ export function build(options) {
 
 	// links between partners
 	let clash_depth = {};
+	
+	// get path looping over node(s)
+	let draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
+		let extend = function(i, l) {
+			if(i+1 < l)   // && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
+				return extend(++i);
+			return i;
+		};
+		let path = "";
+		for(let j=0; j<clash.length; j++) {
+			let k = extend(j, clash.length);
+			let dx1 = clash[j] - dx - cshift;
+			let dx2 = clash[k] + dx + cshift;
+			if(parent_node.x > dx1 && parent_node.x < dx2)
+				parent_node.y = dy2;
+
+			path += "L" + dx1 + "," +  (dy1 - cshift) +
+					"L" + dx1 + "," +  (dy2 - cshift) +
+					"L" + dx2 + "," +  (dy2 - cshift) +
+					"L" + dx2 + "," +  (dy1 - cshift);
+			j = k;
+		}
+		return path;
+	}
+	
+	
 	partners = ped.selectAll(".partner")
-	  	.data(ptrLinkNodes)
-	  	.enter()
-	  		.insert("path", "g")
-	  		.attr("fill", "none")
-	  		.attr("stroke", "#000")
-	  		.attr("shape-rendering", "auto")
-	  		.attr('d', function(d, i) {
-	  			let node1 = pedigree_utils.getNodeByName(flattenNodes, d.mother.data.name);
-	  			let node2 = pedigree_utils.getNodeByName(flattenNodes, d.father.data.name);
-	  			let consanguity = pedigree_utils.consanguity(node1, node2, opts);
-	  			let divorced = (d.mother.data.divorced &&  d.mother.data.divorced === d.father.data.name);
+		.data(ptrLinkNodes)
+		.enter()
+			.insert("path", "g")
+			.attr("fill", "none")
+			.attr("stroke", "#000")
+			.attr("shape-rendering", "auto")
+			.attr('d', function(d, _i) {
+				let node1 = pedigree_utils.getNodeByName(flattenNodes, d.mother.data.name);
+				let node2 = pedigree_utils.getNodeByName(flattenNodes, d.father.data.name);
+				let consanguity = pedigree_utils.consanguity(node1, node2, opts);
+				let divorced = (d.mother.data.divorced &&  d.mother.data.divorced === d.father.data.name);
 
-	  			let x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
-  				let x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
-  				let dy1 = d.mother.y;
-  				let dy2;
+				let x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
+				let x2 = (d.mother.x < d.father.x ? d.father.x : d.mother.x);
+				let dy1 = d.mother.y;
+				let dy2, dx, parent_node;
 
-  				// identify clashes with other nodes at the same depth
-	  			let clash = check_ptr_link_clashes(opts, d);
-	  			let path = "";
-	  			if(clash) {
-	  				if(d.mother.depth in clash_depth)
-	  					clash_depth[d.mother.depth] += 4;
-	  				else
-	  					clash_depth[d.mother.depth] = 4;
+				// identify clashes with other nodes at the same depth
+				let clash = check_ptr_link_clashes(opts, d);
+				let path = "";
+				if(clash) {
+					if(d.mother.depth in clash_depth)
+						clash_depth[d.mother.depth] += 4;
+					else
+						clash_depth[d.mother.depth] = 4;
 
-	  				dy1 -= clash_depth[d.mother.depth];
-	  				let dx = clash_depth[d.mother.depth] + opts.symbol_size/2 + 2;
+					dy1 -= clash_depth[d.mother.depth];
+					dx = clash_depth[d.mother.depth] + opts.symbol_size/2 + 2;
 
-	  				let parent_nodes = d.mother.data.parent_node;
-	  				let parent_node_name = parent_nodes[0];
-	  				for(let ii=0; ii<parent_nodes.length; ii++) {
-	  					if(parent_nodes[ii].father.name === d.father.data.name &&
-	  					   parent_nodes[ii].mother.name === d.mother.data.name)
-	  						 parent_node_name = parent_nodes[ii].name;
-	  				}
-	  				let parent_node = pedigree_utils.getNodeByName(flattenNodes, parent_node_name);
+					let parent_nodes = d.mother.data.parent_node;
+					let parent_node_name = parent_nodes[0];
+					for(let ii=0; ii<parent_nodes.length; ii++) {
+						if(parent_nodes[ii].father.name === d.father.data.name &&
+						   parent_nodes[ii].mother.name === d.mother.data.name)
+							parent_node_name = parent_nodes[ii].name;
+					}
+					parent_node = pedigree_utils.getNodeByName(flattenNodes, parent_node_name);
 					parent_node.y = dy1; // adjust hgt of parent node
-	  				clash.sort(function (a,b) {return a - b;});
+					clash.sort(function (a,b) {return a - b;});
 
-	  				dy2 = (dy1-opts.symbol_size/2-3);
-	  				// get path looping over node(s)
-	  				draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
-		  				extend = function(i, l) {
-		  					if(i+1 < l)   //  && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
-		  						return extend(++i);
-		  					return i;
-		  				};
-	  					let path = "";
-		  				for(let j=0; j<clash.length; j++) {
-		  					let k = extend(j, clash.length);
-		  					let dx1 = clash[j] - dx - cshift;
-		  					let dx2 = clash[k] + dx + cshift;
-		  					if(parent_node.x > dx1 && parent_node.x < dx2)
-		  						parent_node.y = dy2;
+					dy2 = (dy1-opts.symbol_size/2-3);
+					path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
+				}
 
-	  						path += "L" + dx1 + "," +  (dy1 - cshift) +
-		  					        "L" + dx1 + "," +  (dy2 - cshift) +
-		  					        "L" + dx2 + "," +  (dy2 - cshift) +
-		  					        "L" + dx2 + "," +  (dy1 - cshift);
-	  						j = k;
-		  				}
-		  				return path;
-	  				}
-	  				path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
-	  			}
+				let divorce_path = "";
+				if(divorced && !clash)
+					divorce_path = "M" + (x1+((x2-x1)*.66)+6) + "," + (dy1-6) +
+								   "L"+  (x1+((x2-x1)*.66)-6) + "," + (dy1+6) +
+								   "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
+								   "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
+				if(consanguity) {  // consanguinous, draw double line between partners
+					dy1 = (d.mother.x < d.father.x ? d.mother.y : d.father.y);
+					dy2 = (d.mother.x < d.father.x ? d.father.y : d.mother.y);
 
-	  			let divorce_path = "";
-	  			if(divorced && !clash)
-	  				divorce_path = "M" + (x1+((x2-x1)*.66)+6) + "," + (dy1-6) +
-	  				               "L"+  (x1+((x2-x1)*.66)-6) + "," + (dy1+6) +
-	  				               "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
-	  				               "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
-	  			if(consanguity) {  // consanguinous, draw double line between partners
-	  				dy1 = (d.mother.x < d.father.x ? d.mother.y : d.father.y);
-	  				dy2 = (d.mother.x < d.father.x ? d.father.y : d.mother.y);
-
-	  				let cshift = 3;
-	  				if(Math.abs(dy1-dy2) > 0.1) {      // DIFFERENT LEVEL
-	  					return	"M" + x1 + "," + dy1 + "L" + x2 + "," + dy2 +
-  				                "M" + x1 + "," + (dy1 - cshift) + "L" + x2 + "," + (dy2 - cshift);
-	  				} else {                           // SAME LEVEL
-		  				let path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
-		  				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 +
-		  				        "M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
-	  				}
-	  			}
-	  			return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + divorce_path;
-	  		});
+					let cshift = 3;
+					if(Math.abs(dy1-dy2) > 0.1) {	  // DIFFERENT LEVEL
+						return	"M" + x1 + "," + dy1 + "L" + x2 + "," + dy2 +
+								"M" + x1 + "," + (dy1 - cshift) + "L" + x2 + "," + (dy2 - cshift);
+					} else {						   // SAME LEVEL
+						let path2 = (clash ? draw_path(clash, dx, dy1, dy2, parent_node, cshift) : "");
+						return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 +
+								"M" + x1 + "," + (dy1 - cshift) + path2 + "L" + x2 + "," + (dy1 - cshift) + divorce_path;
+					}
+				}
+				return	"M" + x1 + "," + dy1 + path + "L" + x2 + "," + dy1 + divorce_path;
+			});
 
 	// links to children
-	let links = ped.selectAll(".link")
+	ped.selectAll(".link")
 		.data(root.links(nodes.descendants()))
 		.enter()
 			.filter(function (d) {
@@ -402,17 +394,17 @@ export function build(options) {
 			})
 			.insert("path", "g")
 			.attr("fill", "none")
-			.attr("stroke-width", function(d, i) {
+			.attr("stroke-width", function(d, _i) {
 				if(d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden)
 					return 1;
 				return (opts.DEBUG ? 2 : 1);
 			})
-			.attr("stroke", function(d, i) {
+			.attr("stroke", function(d, _i) {
 				if(d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden)
 					return 'pink';
 				return "#000";
 			})
-			.attr("stroke-dasharray", function(d, i) {
+			.attr("stroke-dasharray", function(d, _i) {
 				if(!d.target.data.adopted_in) return null;
 				let dash_len = Math.abs(d.source.y-((d.source.y + d.target.y) / 2));
 				let dash_array = [dash_len, 0, Math.abs(d.source.x-d.target.x), 0];
@@ -422,12 +414,12 @@ export function build(options) {
 					$.merge(dash_array, [5, 5]);
 				return dash_array;
 			})
-			.attr("shape-rendering", function(d, i) {
+			.attr("shape-rendering", function(d, _i) {
 				if(d.target.data.mztwin || d.target.data.dztwin)
 					return "geometricPrecision";
 				return "auto";
 			})
-			.attr("d", function(d, i) {
+			.attr("d", function(d, _i) {
 				if(d.target.data.mztwin || d.target.data.dztwin) {
 					// get twin position
 					let twins = pedigree_utils.getTwins(opts.dataset, d.target.data);
@@ -451,14 +443,14 @@ export function build(options) {
 							let xx = (xmid + d.target.x)/2;
 							let yy = (ymid + (d.target.y-opts.symbol_size/2))/2;
 							xhbar = "M" + xx + "," + yy +
-							     	"L" + (xmid + (xmid-xx)) + " " + yy;
+									"L" + (xmid + (xmid-xx)) + " " + yy;
 						}
 
 						return "M" + (d.source.x) + "," + (d.source.y ) +
-					           "V" + ymid +
-					           "H" + xmid +
-					           "L" + (d.target.x) + " " + (d.target.y-opts.symbol_size/2) +
-					           xhbar;
+							   "V" + ymid +
+							   "H" + xmid +
+							   "L" + (d.target.x) + " " + (d.target.y-opts.symbol_size/2) +
+							   xhbar;
 					}
 				}
 
@@ -468,15 +460,15 @@ export function build(options) {
 
 					if(ma.depth !== pa.depth) {
 						return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
-						       "H" + (d.target.x) +
-					           "V" + (d.target.y);
+							   "H" + (d.target.x) +
+							   "V" + (d.target.y);
 					}
 				}
 
 				return "M" + (d.source.x) + "," + (d.source.y ) +
-				       "V" + ((d.source.y + d.target.y) / 2) +
-				       "H" + (d.target.x) +
-				       "V" + (d.target.y);
+					   "V" + ((d.source.y + d.target.y) / 2) +
+					   "H" + (d.target.x) +
+					   "V" + (d.target.y);
 			});
 
 	// draw proband arrow
@@ -484,25 +476,25 @@ export function build(options) {
 	if(typeof probandIdx !== 'undefined') {
 		let probandNode = pedigree_utils.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
 		let triid = "triangle"+pedigree_utils.makeid(3);
-		ped.append("svg:defs").append("svg:marker")    // arrow head
-		    .attr("id", triid)
-		    .attr("refX", 6)
-		    .attr("refY", 6)
-		    .attr("markerWidth", 20)
-		    .attr("markerHeight", 20)
-		    .attr("orient", "auto")
-		    .append("path")
-		    .attr("d", "M 0 0 12 6 0 12 3 6")
-		    .style("fill", "black");
+		ped.append("svg:defs").append("svg:marker")	// arrow head
+			.attr("id", triid)
+			.attr("refX", 6)
+			.attr("refY", 6)
+			.attr("markerWidth", 20)
+			.attr("markerHeight", 20)
+			.attr("orient", "auto")
+			.append("path")
+			.attr("d", "M 0 0 12 6 0 12 3 6")
+			.style("fill", "black");
 
 		ped.append("line")
-	        .attr("x1", probandNode.x-opts.symbol_size)
-	        .attr("y1", probandNode.y+opts.symbol_size)
-	        .attr("x2", probandNode.x-opts.symbol_size/2)
-	        .attr("y2", probandNode.y+opts.symbol_size/2)
-	        .attr("stroke-width", 1)
-	        .attr("stroke", "black")
-	        .attr("marker-end", "url(#"+triid+")");
+			.attr("x1", probandNode.x-opts.symbol_size)
+			.attr("y1", probandNode.y+opts.symbol_size)
+			.attr("x2", probandNode.x-opts.symbol_size/2)
+			.attr("y2", probandNode.y+opts.symbol_size/2)
+			.attr("stroke-width", 1)
+			.attr("stroke", "black")
+			.attr("marker-end", "url(#"+triid+")");
 	}
 	// drag and zoom
 	zoom = d3.zoom()
@@ -523,7 +515,12 @@ export function build(options) {
 	}
 	svg.call(zoom);
 	return opts;
-};
+}
+
+function create_err(err) {
+	console.error(err);
+	return new Error(err);
+}
 
 // validate pedigree data
 export function validate_pedigree(opts){
@@ -531,12 +528,7 @@ export function validate_pedigree(opts){
 		if (typeof opts.validate == 'function') {
 			if(opts.DEBUG)
 				console.log('CALLING CONFIGURED VALIDATION FUNCTION');
-			return opts.validate.call(this, opts);;
-	    }
-
-		function create_err(err) {
-			console.error(err);
-			return new Error(err);
+			return opts.validate.call(this, opts);
 		}
 
 		// check consistency of parents sex
@@ -560,10 +552,10 @@ export function validate_pedigree(opts){
 					let fidx = pedigree_utils.getIdxByName(opts.dataset, father);
 					if(midx === -1)
 						throw create_err('The mother (IndivID: '+mother+') of family member '+
-								         display_name+' is missing from the pedigree.');
+										 display_name+' is missing from the pedigree.');
 					if(fidx === -1)
 						throw create_err('The father (IndivID: '+father+') of family member '+
-								         display_name+' is missing from the pedigree.');
+										 display_name+' is missing from the pedigree.');
 					if(opts.dataset[midx].sex !== "F")
 						throw create_err("The mother of family member "+display_name+
 								" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
@@ -595,15 +587,24 @@ export function validate_pedigree(opts){
 	}
 }
 
+//adopted in/out brackets
+function get_bracket(dx, dy, indent, opts) {
+	return 	"M" + (dx+indent) + "," + dy +
+			"L" + dx + " " + dy +
+			"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
+			"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
+			"L" + (dx+indent) + "," + (dy+(opts.symbol_size *  1.28))
+}
+
 // check if the object contains a key with a given prefix
 function prefixInObj(prefix, obj) {
 	let found = false;
 	if(obj)
-		$.each(obj, function(k, n){
-		    if(k.indexOf(prefix+"_") === 0 || k === prefix) {
-		    	found = true;
-		    	return found;
-		    }
+		$.each(obj, function(k, _n){
+			if(k.indexOf(prefix+"_") === 0 || k === prefix) {
+				found = true;
+				return found;
+			}
 		});
 	return found;
 }
@@ -637,21 +638,21 @@ export function check_ptr_link_clashes(opts, anode) {
 	let dy = mother.y;
 
 	// identify clashes with other nodes at the same depth
-	let clash = $.map(flattenNodes, function(bnode, i){
+	let clash = $.map(flattenNodes, function(bnode, _i){
 		return !bnode.data.hidden &&
-			    bnode.data.name !== mother.data.name &&  bnode.data.name !== father.data.name &&
-			    bnode.y == dy && bnode.x > x1 && bnode.x < x2 ? bnode.x : null;
+				bnode.data.name !== mother.data.name &&  bnode.data.name !== father.data.name &&
+				bnode.y == dy && bnode.x > x1 && bnode.x < x2 ? bnode.x : null;
 	});
 	return clash.length > 0 ? clash : null;
-};
+}
 
 function get_svg_dimensions(opts) {
-    return {'width' : (pbuttons.is_fullscreen()? window.innerWidth  : opts.width),
-    	    'height': (pbuttons.is_fullscreen()? window.innerHeight : opts.height)};
+	return {'width' : (pbuttons.is_fullscreen()? window.innerWidth  : opts.width),
+			'height': (pbuttons.is_fullscreen()? window.innerHeight : opts.height)};
 }
 
 export function get_tree_dimensions(opts) {
-	/// get score at each depth used to adjust node separation
+	// / get score at each depth used to adjust node separation
 	let svg_dimensions = get_svg_dimensions(opts);
 	let maxscore = 0;
 	let generation = {};
@@ -672,11 +673,11 @@ export function get_tree_dimensions(opts) {
 
 	let max_depth = Object.keys(generation).length*opts.symbol_size*3.5;
 	let tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
-			           svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
+					   svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
 	let tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
-	      		       svg_dimensions.height - opts.symbol_size : max_depth);
+					   svg_dimensions.height - opts.symbol_size : max_depth);
 	return {'width': tree_width, 'height': tree_height};
-};
+}
 
 // group top_level nodes by their partners
 function group_top_level(dataset) {
@@ -688,26 +689,26 @@ function group_top_level(dataset) {
 	}
 
 	let top_level = [];
-    let top_level_seen = [];
-    for(let i=0;i<dataset.length;i++) {
-    	let node = dataset[i];
-    	if('top_level' in node && $.inArray(node.name, top_level_seen) == -1){
-    		top_level_seen.push(node.name);
-    		top_level.push(node);
-    		let ptrs = pedigree_utils.get_partners(dataset, node);
-    		for(let j=0; j<ptrs.length; j++){
-    			if($.inArray(ptrs[j], top_level_seen) == -1) {
-        			top_level_seen.push(ptrs[j]);
-        			top_level.push(pedigree_utils.getNodeByName(dataset, ptrs[j]));
-    			}
-    		}
-    	}
-    }
+	let top_level_seen = [];
+	for(let i=0;i<dataset.length;i++) {
+		let node = dataset[i];
+		if('top_level' in node && $.inArray(node.name, top_level_seen) == -1){
+			top_level_seen.push(node.name);
+			top_level.push(node);
+			let ptrs = pedigree_utils.get_partners(dataset, node);
+			for(let j=0; j<ptrs.length; j++){
+				if($.inArray(ptrs[j], top_level_seen) == -1) {
+					top_level_seen.push(ptrs[j]);
+					top_level.push(pedigree_utils.getNodeByName(dataset, ptrs[j]));
+				}
+			}
+		}
+	}
 
-    let newdataset = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? null : val;});
-    for (let i = top_level.length; i > 0; --i)
-    	newdataset.unshift(top_level[i-1]);
-    return newdataset;
+	let newdataset = $.map(dataset, function(val, _i){return 'top_level' in val && val.top_level ? null : val;});
+	for (let i = top_level.length; i > 0; --i)
+		newdataset.unshift(top_level[i-1]);
+	return newdataset;
 }
 
 // get height in pixels
@@ -722,7 +723,7 @@ function getPx(opts){
 		return emVal;
 	emVal = parseFloat(emVal.replace('em', ''));
 	return (parseFloat(getComputedStyle($('#'+opts.targetDiv).get(0)).fontSize)*emVal)-1.0;
-};
+}
 
 // Add label
 function addLabel(opts, node, size, fx, fy, ftext, class_label) {
@@ -732,7 +733,7 @@ function addLabel(opts, node, size, fx, fy, ftext, class_label) {
 	.attr("class", class_label + ' ped_label' || "ped_label")
 	.attr("x", fx)
 	.attr("y", fy)
-	//.attr("dy", size)
+	// .attr("dy", size)
 	.attr("font-family", opts.font_family)
 	.attr("font-size", opts.font_size)
 	.attr("font-weight", opts.font_weight)
@@ -754,7 +755,7 @@ export function rebuild(opts) {
 	} catch(e) {
 		// templates not declared
 	}
-};
+}
 
 // add children to a given node
 export function addchild(dataset, node, sex, nchild, twin_type) {
@@ -782,8 +783,8 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 	let newchildren = [];
 	for (let i = 0; i < nchild; i++) {
 		let child = {"name": pedigree_utils.makeid(4), "sex": sex,
-				     "mother": (node.sex === 'F' ? node.name : ptr_name),
-			         "father": (node.sex === 'F' ? ptr_name : node.name)};
+					 "mother": (node.sex === 'F' ? node.name : ptr_name),
+					 "father": (node.sex === 'F' ? ptr_name : node.name)};
 		dataset.splice(idx, 0, child);
 
 		if(twin_type)
@@ -791,7 +792,7 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 		newchildren.push(child);
 	}
 	return newchildren;
-};
+}
 
 //
 export function addsibling(dataset, node, sex, add_lhs, twin_type) {
@@ -817,7 +818,7 @@ export function addsibling(dataset, node, sex, add_lhs, twin_type) {
 		idx++;
 	dataset.splice(idx, 0, newbie);
 	return newbie;
-};
+}
 
 // set two siblings as twins
 function setMzTwin(dataset, d1, d2, twin_type) {
@@ -865,7 +866,7 @@ export function syncTwins(dataset, d1) {
 				d2.age = d1.age;
 		}
 	}
-};
+}
 
 // check integrity twin settings
 function checkTwins(dataset) {
@@ -949,7 +950,7 @@ export function addparents(opts, dataset, name) {
 
 		let faidx = pedigree_utils.getIdxByName(dataset, father.name);
 		let moidx = pedigree_utils.getIdxByName(dataset, mother.name);
-		if(faidx > moidx) {                   // switch to ensure father on lhs of mother
+		if(faidx > moidx) {				   // switch to ensure father on lhs of mother
 			let tmpfa = dataset[faidx];
 			dataset[faidx] = dataset[moidx];
 			dataset[moidx] = tmpfa;
@@ -988,7 +989,7 @@ export function addparents(opts, dataset, name) {
 			ptr_node.father = father.name;
 		}
 	}
-};
+}
 
 // add partner
 export function addpartner(opts, dataset, name) {
@@ -1005,7 +1006,7 @@ export function addpartner(opts, dataset, name) {
 
 	let idx = pedigree_utils.getIdxByName(dataset, tree_node.data.name)+2;
 	dataset.splice(idx, 0, child);
-};
+}
 
 // get adjacent nodes at the same depth
 function adjacent_nodes(root, node, excludes) {
@@ -1038,7 +1039,7 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		for(i=0; i<node.parent_node.length; i++){
 			let parent = node.parent_node[i];
 			let ps = [pedigree_utils.getNodeByName(dataset, parent.mother.name),
-				      pedigree_utils.getNodeByName(dataset, parent.father.name)];
+					  pedigree_utils.getNodeByName(dataset, parent.father.name)];
 			// delete parents
 			for(j=0; j<ps.length; j++) {
 				if(ps[j].name === node.name || ps[j].noparents !== undefined || ps[j].top_level) {
@@ -1048,7 +1049,7 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 			}
 
 			let children = parent.children;
-			let children_names = $.map(children, function(p, i){return p.name;});
+			let children_names = $.map(children, function(p, _i){return p.name;});
 			for(j=0; j<children.length; j++) {
 				let child = pedigree_utils.getNodeByName(dataset, children[j].name);
 				if(child){
@@ -1102,7 +1103,7 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 	try	{
 		// validate new pedigree dataset
 		let newopts = $.extend({}, opts);
-		newopts.dataset = copy_dataset(dataset);
+		newopts.dataset = pedigree_utils.copy_dataset(dataset);
 		validate_pedigree(newopts);
 		// check if pedigree is split
 		unconnected = pedigree_utils.unconnected(dataset);
@@ -1123,4 +1124,4 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		onDone(opts, dataset);
 	}
 	return dataset;
-};
+}

@@ -3,55 +3,55 @@ import {rebuild, syncTwins} from './pedigree.js';
 import {copy_dataset, setProband, getIdxByName, getNodeByName} from './pedigree_utils.js';
 import {current as pedcache_current} from './pedcache.js';
 
-$("#select_all_gene_tests").on('change', function (e) {
-    if(this.value === "S") {
-    	// select all mutation search to be negative
-    	$("#gene_test").find("select[name$='_gene_test']").val("S").change();
+$("#select_all_gene_tests").on('change', function (_e) {
+	if(this.value === "S") {
+		// select all mutation search to be negative
+		$("#gene_test").find("select[name$='_gene_test']").val("S").change();
 		$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
-    } else if(this.value === "T") {
-    	// select all direct gene tests to be negative
-    	$("#gene_test").find("select[name$='_gene_test']").val("T").change();
+	} else if(this.value === "T") {
+		// select all direct gene tests to be negative
+		$("#gene_test").find("select[name$='_gene_test']").val("T").change();
 		$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
-    } else if(this.value === "N") {
-    	// select all gene tests to be negative
-    	$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
-    } else if(this.value === "reset") {
-    	$("#gene_test").find("select[name$='_gene_test']").val("-").change();
-    	$("#gene_test").find("select[name$='_gene_test_result']").val("-").change();
-    }
+	} else if(this.value === "N") {
+		// select all gene tests to be negative
+		$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
+	} else if(this.value === "reset") {
+		$("#gene_test").find("select[name$='_gene_test']").val("-").change();
+		$("#gene_test").find("select[name$='_gene_test_result']").val("-").change();
+	}
 });
 
-$('#acc_FamHist_div').on('click', '#id_proband, #id_exclude', function(e) {
+$('#acc_FamHist_div').on('click', '#id_proband, #id_exclude', function(_e) {
 	let name = $('#id_name').val();
 	if($(this).attr("id") === 'id_proband' && $(this).is(':checked')) {
 		let msg = $("#proband_switch_dialog").text();
 
 		$('<div id="msgDialog">'+msg+'</div>').dialog({
-    		title: $("#proband_switch_dialog").data("title"),
-    		width: 350,
-    		buttons: [{
-    				text: $("#proband_switch_dialog").data("continue"),
-	    		    click: function() {
-	    		    	$(this).dialog('close');
-		                let dataset = pedcache_current(opts);
-		                opts.dataset = copy_dataset(dataset);
-		                setProband(opts.dataset, name, true);
-		                rebuild(opts);
-		                reset_n_sync(opts);
-		                $('#id_proband').prop("disabled", true);
-	    		    }
-    			},{
-	    		    text: $("#proband_switch_dialog").data("cancel"),
-	    		    click: function() {
-	    		    	 $(this).dialog('close');
-			             $("#id_proband").prop('checked', false);
-			             $('#id_proband').prop("disabled", false);
-	    		    }
-    			}]
+			title: $("#proband_switch_dialog").data("title"),
+			width: 350,
+			buttons: [{
+					text: $("#proband_switch_dialog").data("continue"),
+					click: function() {
+						$(this).dialog('close');
+						let dataset = pedcache_current(opts);
+						opts.dataset = copy_dataset(dataset);
+						setProband(opts.dataset, name, true);
+						rebuild(opts);
+						reset_n_sync(opts);
+						$('#id_proband').prop("disabled", true);
+					}
+				},{
+					text: $("#proband_switch_dialog").data("cancel"),
+					click: function() {
+						 $(this).dialog('close');
+						 $("#id_proband").prop('checked', false);
+						 $('#id_proband').prop("disabled", false);
+					}
+				}]
 		});
 	} else if($(this).attr("id") === 'id_exclude') {
 		let dataset = pedcache_current(opts);
-        opts.dataset = copy_dataset(dataset);
+		opts.dataset = copy_dataset(dataset);
 		let idx = getIdxByName(opts.dataset, name);
 		if($(this).is(':checked'))
 			opts.dataset[idx].exclude = true;
@@ -92,7 +92,7 @@ export function update(opts) {
 		}
 		save_ashkn(opts); // save ashkenazi updates
 	});
-};
+}
 
 // handle family history change events (undo/redo/delete)
 $(document).on('fhChange', function(e, opts){
@@ -203,7 +203,7 @@ export function nodeclick(node) {
 	} catch(err) {
 		console.warn('valid() not found');
 	}
-};
+}
 
 function update_ashkn(newdataset) {
 	// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
@@ -293,7 +293,7 @@ export function save(opts) {
 		} else {
 			delete person[name];
 		}
-    });
+	});
 
 	// cancer checkboxes
 	$('#person_details input[type="checkbox"][name$="cancer"],input[type="checkbox"][name$="cancer2"]').each(function() {
@@ -335,7 +335,7 @@ export function save(opts) {
 
 export function update_diagnosis_age_widget() {
 	if($("#id_approx").is(':checked')) {
-		$("[id$='_diagnosis_age_0']").each(function( index ) {
+		$("[id$='_diagnosis_age_0']").each(function( _i ) {
 			if($(this).val() !== '') {
 				let name = this.name.substring(0, this.name.length-2);
 				$("#id_"+name+"_1").val(round5($(this).val())).prop('selected', true);
@@ -345,7 +345,7 @@ export function update_diagnosis_age_widget() {
 		$("[id$='_diagnosis_age_0']").hide();
 		$("[id$='_diagnosis_age_1']").show();
 	} else {
-		$("[id$='_diagnosis_age_1']").each(function( index ) {
+		$("[id$='_diagnosis_age_1']").each(function( _i ) {
 			if($(this).val() !== '') {
 				let name = this.name.substring(0, this.name.length-2);
 				$("#id_"+name+"_0").val($(this).val());
@@ -355,7 +355,7 @@ export function update_diagnosis_age_widget() {
 		$("[id$='_diagnosis_age_0']").show();
 		$("[id$='_diagnosis_age_1']").hide();
 	}
-};
+}
 
 // males should not have ovarian cancer and females should not have prostate cancer
 function update_cancer_by_sex(node) {
