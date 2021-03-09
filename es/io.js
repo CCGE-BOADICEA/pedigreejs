@@ -1,7 +1,7 @@
 // pedigree I/O
-import * as pedigree_util from '/es/pedigree_utils.js';
-import * as pedcache from '/es/pedcache.js';
-import {copy_dataset, get_tree_dimensions, validate_pedigree, rebuild} from '/es/pedigree.js';
+import * as pedigree_util from './pedigree_utils.js';
+import * as pedcache from './pedcache.js';
+import {get_tree_dimensions, validate_pedigree, rebuild} from './pedigree.js';
 
 // cancers, genetic & pathology tests
 export let cancers = {
@@ -77,6 +77,7 @@ export function add(opts) {
 	    	if(prs.breast_cancer_prs && prs.breast_cancer_prs.alpha !== 0 && prs.breast_cancer_prs.zscore !== 0) {
 	    		meta += "\n##PRS_BC=alpha="+prs.breast_cancer_prs.alpha+",zscore="+prs.breast_cancer_prs.zscore;
 	    	}
+	    	
 	    	if(prs.ovarian_cancer_prs && prs.ovarian_cancer_prs.alpha !== 0 && prs.ovarian_cancer_prs.zscore !== 0) {
 	    		meta += "\n##PRS_OC=alpha="+prs.ovarian_cancer_prs.alpha+",zscore="+prs.ovarian_cancer_prs.zscore;
 	    	}

@@ -1,7 +1,7 @@
 // Pedigree Tree Utils
 
-import {copy_dataset, syncTwins, rebuild, addchild, delete_node_dataset} from '/es/pedigree.js';
-import * as pedcache from '/es/pedcache.js';
+import {syncTwins, rebuild, addchild, delete_node_dataset} from './pedigree.js';
+import * as pedcache from './pedcache.js';
 
 export function isIE() {
 	 let ua = navigator.userAgent;
@@ -12,6 +12,24 @@ export function isIE() {
 export function isEdge() {
 	 return navigator.userAgent.match(/Edge/g);
 }
+
+export function copy_dataset(dataset) {
+	if(dataset[0].id) { // sort by id
+		dataset.sort(function(a,b){return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));});
+	}
+
+	let disallowed = ["id", "parent_node"];
+	let newdataset = [];
+	for(let i=0; i<dataset.length; i++){
+		let obj = {};
+		for(let key in dataset[i]) {
+			if(disallowed.indexOf(key) == -1)
+				obj[key] = dataset[i][key];
+		}
+		newdataset.push(obj);
+	}
+	return newdataset;
+};
 
 /**
  *  Get formatted time or data & time

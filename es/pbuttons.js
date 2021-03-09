@@ -1,6 +1,7 @@
 // undo, redo, reset buttons
-import * as pedcache from '/es/pedcache.js';
-import {copy_dataset, rebuild, build} from '/es/pedigree.js';
+import * as pedcache from './pedcache.js';
+import {rebuild, build} from './pedigree.js';
+import {copy_dataset} from './pedigree_utils.js';
 
 export function add(options) {
 	let opts = $.extend({

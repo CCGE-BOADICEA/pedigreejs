@@ -1,7 +1,7 @@
 // pedigree form
-import {copy_dataset, rebuild, syncTwins} from '/es/pedigree.js';
-import {setProband, getIdxByName, getNodeByName} from '/es/pedigree_utils.js';
-import {current as pedcache_current} from '/es/pedcache.js';
+import {rebuild, syncTwins} from './pedigree.js';
+import {copy_dataset, setProband, getIdxByName, getNodeByName} from './pedigree_utils.js';
+import {current as pedcache_current} from './pedcache.js';
 
 $("#select_all_gene_tests").on('change', function (e) {
     if(this.value === "S") {

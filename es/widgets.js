@@ -1,8 +1,8 @@
 // pedigree widgets
-import {copy_dataset, addsibling, addchild, addparents, addpartner, rebuild, delete_node_dataset} from '/es/pedigree.js';
-import {makeid, getIdxByName} from '/es/pedigree_utils.js';
-import {save, update} from '/es/pedigree_form.js';
-import {current as pedcache_current} from '/es/pedcache.js';
+import {addsibling, addchild, addparents, addpartner, rebuild, delete_node_dataset} from './pedigree.js';
+import {copy_dataset, makeid, getIdxByName} from './pedigree_utils.js';
+import {save, update} from './pedigree_form.js';
+import {current as pedcache_current} from './pedcache.js';
 
 function getTranslation(transform) {
 	  // Create a dummy g for calculation purposes only. This will never

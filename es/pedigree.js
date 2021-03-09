@@ -1,9 +1,9 @@
 // Pedigree Tree Builder
-import * as pedigree_util from '/es/pedigree_utils.js';
-import * as pbuttons from '/es/pbuttons.js';
-import {addWidgets} from '/es/widgets.js';
-import * as pedcache from '/es/pedcache.js';
-import * as io from '/es/io.js';
+import  * as pedigree_utils from './pedigree_utils.js';
+import * as pbuttons from './pbuttons.js';
+import * as pedcache from './pedcache.js';
+import * as io from './io.js';
+import {addWidgets} from './widgets.js';
 
 let roots = {};
 export function build(options) {
@@ -49,7 +49,7 @@ export function build(options) {
     opts.dataset = group_top_level(opts.dataset);
 
     if(opts.DEBUG)
-    	pedigree_util.print_opts(opts);
+    	pedigree_utils.print_opts(opts);
     let svg_dimensions = get_svg_dimensions(opts);
     let svg = d3.select("#"+opts.targetDiv)
 				 .append("svg:svg")
@@ -89,7 +89,7 @@ export function build(options) {
 		children : top_level
 	};
 
-	let partners = pedigree_util.buildTree(opts, hidden_root, hidden_root)[0];
+	let partners = pedigree_utils.buildTree(opts, hidden_root, hidden_root)[0];
 	let root = d3.hierarchy(hidden_root);
 	roots[opts.targetDiv] = root;
 
@@ -112,9 +112,9 @@ export function build(options) {
 		throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 	}
 
-	pedigree_util.adjust_coords(opts, nodes, flattenNodes);
+	pedigree_utils.adjust_coords(opts, nodes, flattenNodes);
 
-	let ptrLinkNodes = pedigree_util.linkNodes(flattenNodes, partners);
+	let ptrLinkNodes = pedigree_utils.linkNodes(flattenNodes, partners);
 	check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines
 
 	let node = ped.selectAll(".node")
@@ -308,9 +308,9 @@ export function build(options) {
 	  		.attr("stroke", "#000")
 	  		.attr("shape-rendering", "auto")
 	  		.attr('d', function(d, i) {
-	  			let node1 = pedigree_util.getNodeByName(flattenNodes, d.mother.data.name);
-	  			let node2 = pedigree_util.getNodeByName(flattenNodes, d.father.data.name);
-	  			let consanguity = pedigree_util.consanguity(node1, node2, opts);
+	  			let node1 = pedigree_utils.getNodeByName(flattenNodes, d.mother.data.name);
+	  			let node2 = pedigree_utils.getNodeByName(flattenNodes, d.father.data.name);
+	  			let consanguity = pedigree_utils.consanguity(node1, node2, opts);
 	  			let divorced = (d.mother.data.divorced &&  d.mother.data.divorced === d.father.data.name);
 
 	  			let x1 = (d.mother.x < d.father.x ? d.mother.x : d.father.x);
@@ -337,7 +337,7 @@ export function build(options) {
 	  					   parent_nodes[ii].mother.name === d.mother.data.name)
 	  						 parent_node_name = parent_nodes[ii].name;
 	  				}
-	  				let parent_node = pedigree_util.getNodeByName(flattenNodes, parent_node_name);
+	  				let parent_node = pedigree_utils.getNodeByName(flattenNodes, parent_node_name);
 					parent_node.y = dy1; // adjust hgt of parent node
 	  				clash.sort(function (a,b) {return a - b;});
 
@@ -416,7 +416,7 @@ export function build(options) {
 				if(!d.target.data.adopted_in) return null;
 				let dash_len = Math.abs(d.source.y-((d.source.y + d.target.y) / 2));
 				let dash_array = [dash_len, 0, Math.abs(d.source.x-d.target.x), 0];
-				let twins = pedigree_util.getTwins(opts.dataset, d.target.data);
+				let twins = pedigree_utils.getTwins(opts.dataset, d.target.data);
 				if(twins.length >= 1) dash_len = dash_len * 3;
 				for(let usedlen = 0; usedlen < dash_len; usedlen += 10)
 					$.merge(dash_array, [5, 5]);
@@ -430,13 +430,13 @@ export function build(options) {
 			.attr("d", function(d, i) {
 				if(d.target.data.mztwin || d.target.data.dztwin) {
 					// get twin position
-					let twins = pedigree_util.getTwins(opts.dataset, d.target.data);
+					let twins = pedigree_utils.getTwins(opts.dataset, d.target.data);
 					if(twins.length >= 1) {
 						let twinx = 0;
 						let xmin = d.target.x;
 						let xmax = d.target.x;
 						for(let t=0; t<twins.length; t++) {
-							let thisx = pedigree_util.getNodeByName(flattenNodes, twins[t].name).x;
+							let thisx = pedigree_utils.getNodeByName(flattenNodes, twins[t].name).x;
 							if(xmin > thisx) xmin = thisx;
 							if(xmax < thisx) xmax = thisx;
 							twinx += thisx;
@@ -463,8 +463,8 @@ export function build(options) {
 				}
 
 				if(d.source.data.mother) {   // check parents depth to see if they are at the same level in the tree
-					let ma = pedigree_util.getNodeByName(flattenNodes, d.source.data.mother.name);
-					let pa = pedigree_util.getNodeByName(flattenNodes, d.source.data.father.name);
+					let ma = pedigree_utils.getNodeByName(flattenNodes, d.source.data.mother.name);
+					let pa = pedigree_utils.getNodeByName(flattenNodes, d.source.data.father.name);
 
 					if(ma.depth !== pa.depth) {
 						return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
@@ -480,10 +480,10 @@ export function build(options) {
 			});
 
 	// draw proband arrow
-	let probandIdx  = pedigree_util.getProbandIndex(opts.dataset);
+	let probandIdx  = pedigree_utils.getProbandIndex(opts.dataset);
 	if(typeof probandIdx !== 'undefined') {
-		let probandNode = pedigree_util.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
-		let triid = "triangle"+pedigree_util.makeid(3);
+		let probandNode = pedigree_utils.getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
+		let triid = "triangle"+pedigree_utils.makeid(3);
 		ped.append("svg:defs").append("svg:marker")    // arrow head
 		    .attr("id", triid)
 		    .attr("refX", 6)
@@ -511,7 +511,7 @@ export function build(options) {
 
 	function zoomFn() {
 		let t = d3.event.transform;
-		if(pedigree_util.isIE() && t.x.toString().length > 10)	// IE fix for drag off screen
+		if(pedigree_utils.isIE() && t.x.toString().length > 10)	// IE fix for drag off screen
 			return;
 		let pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
 		if(t.k == 1) {
@@ -556,8 +556,8 @@ export function validate_pedigree(opts){
 						throw create_err('Missing parent for '+display_name);
 					}
 
-					let midx = pedigree_util.getIdxByName(opts.dataset, mother);
-					let fidx = pedigree_util.getIdxByName(opts.dataset, father);
+					let midx = pedigree_utils.getIdxByName(opts.dataset, mother);
+					let fidx = pedigree_utils.getIdxByName(opts.dataset, father);
 					if(midx === -1)
 						throw create_err('The mother (IndivID: '+mother+') of family member '+
 								         display_name+' is missing from the pedigree.');
@@ -589,7 +589,7 @@ export function validate_pedigree(opts){
 			throw create_err('More than one family found: '+famids.join(", ")+'.');
 		}
 		// warn if there is a break in the pedigree
-		let unconnected = pedigree_util.unconnected(opts.dataset);
+		let unconnected = pedigree_utils.unconnected(opts.dataset);
 		if(unconnected.length > 0)
 			console.warn("individuals unconnected to pedigree ", unconnected);
 	}
@@ -619,14 +619,14 @@ function check_ptr_links(opts, ptrLinkNodes){
 
 export function check_ptr_link_clashes(opts, anode) {
 	let root = roots[opts.targetDiv];
-	let flattenNodes = pedigree_util.flatten(root);
+	let flattenNodes = pedigree_utils.flatten(root);
 	let mother, father;
 	if('name' in anode) {
-		anode = pedigree_util.getNodeByName(flattenNodes, anode.name);
+		anode = pedigree_utils.getNodeByName(flattenNodes, anode.name);
 		if(!('mother' in anode.data))
 			return null;
-		mother = pedigree_util.getNodeByName(flattenNodes, anode.data.mother);
-		father = pedigree_util.getNodeByName(flattenNodes, anode.data.father);
+		mother = pedigree_utils.getNodeByName(flattenNodes, anode.data.mother);
+		father = pedigree_utils.getNodeByName(flattenNodes, anode.data.father);
 	} else {
 		mother = anode.mother;
 		father = anode.father;
@@ -656,8 +656,8 @@ export function get_tree_dimensions(opts) {
 	let maxscore = 0;
 	let generation = {};
 	for(let i=0; i<opts.dataset.length; i++) {
-		let depth = pedigree_util.getDepth(opts.dataset, opts.dataset[i].name);
-		let children = pedigree_util.getAllChildren(opts.dataset, opts.dataset[i]);
+		let depth = pedigree_utils.getDepth(opts.dataset, opts.dataset[i].name);
+		let children = pedigree_utils.getAllChildren(opts.dataset, opts.dataset[i]);
 
 		// score based on no. of children and if parent defined
 		let score = 1 + (children.length > 0 ? 0.55+(children.length*0.25) : 0) + (opts.dataset[i].father ? 0.25 : 0);
@@ -683,7 +683,7 @@ function group_top_level(dataset) {
 	// let top_level = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
 	// calculate top_level nodes
 	for(let i=0;i<dataset.length;i++) {
-		if(pedigree_util.getDepth(dataset, dataset[i].name) == 2)
+		if(pedigree_utils.getDepth(dataset, dataset[i].name) == 2)
 			dataset[i].top_level = true;
 	}
 
@@ -694,11 +694,11 @@ function group_top_level(dataset) {
     	if('top_level' in node && $.inArray(node.name, top_level_seen) == -1){
     		top_level_seen.push(node.name);
     		top_level.push(node);
-    		let ptrs = pedigree_util.get_partners(dataset, node);
+    		let ptrs = pedigree_utils.get_partners(dataset, node);
     		for(let j=0; j<ptrs.length; j++){
     			if($.inArray(ptrs[j], top_level_seen) == -1) {
         			top_level_seen.push(ptrs[j]);
-        			top_level.push(pedigree_util.getNodeByName(dataset, ptrs[j]));
+        			top_level.push(pedigree_utils.getNodeByName(dataset, ptrs[j]));
     			}
     		}
     	}
@@ -756,24 +756,6 @@ export function rebuild(opts) {
 	}
 };
 
-export function copy_dataset(dataset) {
-	if(dataset[0].id) { // sort by id
-		dataset.sort(function(a,b){return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));});
-	}
-
-	let disallowed = ["id", "parent_node"];
-	let newdataset = [];
-	for(let i=0; i<dataset.length; i++){
-		let obj = {};
-		for(let key in dataset[i]) {
-			if(disallowed.indexOf(key) == -1)
-				obj[key] = dataset[i][key];
-		}
-		newdataset.push(obj);
-	}
-	return newdataset;
-};
-
 // add children to a given node
 export function addchild(dataset, node, sex, nchild, twin_type) {
 	if(twin_type && $.inArray(twin_type, [ "mztwin", "dztwin" ] ) === -1)
@@ -781,17 +763,17 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 
 	if (typeof nchild === typeof undefined)
 		nchild = 1;
-	let children = pedigree_util.getAllChildren(dataset, node);
+	let children = pedigree_utils.getAllChildren(dataset, node);
 	let ptr_name, idx;
 	if (children.length === 0) {
 		let partner = addsibling(dataset, node, node.sex === 'F' ? 'M': 'F', node.sex === 'F');
 		partner.noparents = true;
 		ptr_name = partner.name;
-		idx = pedigree_util.getIdxByName(dataset, node.name)+1;
+		idx = pedigree_utils.getIdxByName(dataset, node.name)+1;
 	} else {
 		let c = children[0];
 		ptr_name = (c.father === node.name ? c.mother : c.father);
-		idx = pedigree_util.getIdxByName(dataset, c.name);
+		idx = pedigree_utils.getIdxByName(dataset, c.name);
 	}
 
 	let twin_id;
@@ -799,7 +781,7 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 		twin_id = getUniqueTwinID(dataset, twin_type);
 	let newchildren = [];
 	for (let i = 0; i < nchild; i++) {
-		let child = {"name": pedigree_util.makeid(4), "sex": sex,
+		let child = {"name": pedigree_utils.makeid(4), "sex": sex,
 				     "mother": (node.sex === 'F' ? node.name : ptr_name),
 			         "father": (node.sex === 'F' ? ptr_name : node.name)};
 		dataset.splice(idx, 0, child);
@@ -816,14 +798,14 @@ export function addsibling(dataset, node, sex, add_lhs, twin_type) {
 	if(twin_type && $.inArray(twin_type, [ "mztwin", "dztwin" ] ) === -1)
 		return new Error("INVALID TWIN TYPE SET: "+twin_type);
 
-	let newbie = {"name": pedigree_util.makeid(4), "sex": sex};
+	let newbie = {"name": pedigree_utils.makeid(4), "sex": sex};
 	if(node.top_level) {
 		newbie.top_level = true;
 	} else {
 		newbie.mother = node.mother;
 		newbie.father = node.father;
 	}
-	let idx = pedigree_util.getIdxByName(dataset, node.name);
+	let idx = pedigree_utils.getIdxByName(dataset, node.name);
 
 	if(twin_type) {
 		setMzTwin(dataset, dataset[idx], newbie, twin_type);
@@ -908,23 +890,23 @@ function checkTwins(dataset) {
 export function addparents(opts, dataset, name) {
 	let mother, father;
 	let root = roots[opts.targetDiv];
-	let flat_tree = pedigree_util.flatten(root);
-	let tree_node = pedigree_util.getNodeByName(flat_tree, name);
+	let flat_tree = pedigree_utils.flatten(root);
+	let tree_node = pedigree_utils.getNodeByName(flat_tree, name);
 	let node  = tree_node.data;
 	let depth = tree_node.depth;   // depth of the node in relation to the root (depth = 1 is a top_level node)
 
 	let pid = -101;
 	let ptr_name;
-	let children = pedigree_util.getAllChildren(dataset, node);
+	let children = pedigree_utils.getAllChildren(dataset, node);
 	if(children.length > 0){
 		ptr_name = children[0].mother == node.name ? children[0].father : children[0].mother;
-		pid = pedigree_util.getNodeByName(flat_tree, ptr_name).data.id;
+		pid = pedigree_utils.getNodeByName(flat_tree, ptr_name).data.id;
 	}
 
 	let i;
 	if(depth == 1) {
-		mother = {"name": pedigree_util.makeid(4), "sex": "F", "top_level": true};
-		father = {"name": pedigree_util.makeid(4), "sex": "M", "top_level": true};
+		mother = {"name": pedigree_utils.makeid(4), "sex": "F", "top_level": true};
+		father = {"name": pedigree_utils.makeid(4), "sex": "M", "top_level": true};
 		dataset.splice(0, 0, mother);
 		dataset.splice(0, 0, father);
 
@@ -937,15 +919,15 @@ export function addparents(opts, dataset, name) {
 			}
 		}
 	} else {
-		let node_mother = pedigree_util.getNodeByName(flat_tree, tree_node.data.mother);
-		let node_father = pedigree_util.getNodeByName(flat_tree, tree_node.data.father);
-		let node_sibs = pedigree_util.getAllSiblings(dataset, node);
+		let node_mother = pedigree_utils.getNodeByName(flat_tree, tree_node.data.mother);
+		let node_father = pedigree_utils.getNodeByName(flat_tree, tree_node.data.father);
+		let node_sibs = pedigree_utils.getAllSiblings(dataset, node);
 
 		// lhs & rhs id's for siblings of this node
 		let rid = 10000;
 		let lid = tree_node.data.id;
 		for(i=0; i<node_sibs.length; i++){
-			let sid = pedigree_util.getNodeByName(flat_tree, node_sibs[i].name).data.id;
+			let sid = pedigree_utils.getNodeByName(flat_tree, node_sibs[i].name).data.id;
 			if(sid < rid && sid > tree_node.data.id)
 				rid = sid;
 			if(sid < lid)
@@ -957,30 +939,30 @@ export function addparents(opts, dataset, name) {
 		let midx;
 		if( (!add_lhs && node_father.data.id > node_mother.data.id) ||
 			(add_lhs && node_father.data.id < node_mother.data.id) )
-			midx = pedigree_util.getIdxByName(dataset, node.father);
+			midx = pedigree_utils.getIdxByName(dataset, node.father);
 		else
-			midx = pedigree_util.getIdxByName(dataset, node.mother);
+			midx = pedigree_utils.getIdxByName(dataset, node.mother);
 
 		let parent = dataset[midx];
 		father = addsibling(dataset, parent, 'M', add_lhs);
 		mother = addsibling(dataset, parent, 'F', add_lhs);
 
-		let faidx = pedigree_util.getIdxByName(dataset, father.name);
-		let moidx = pedigree_util.getIdxByName(dataset, mother.name);
+		let faidx = pedigree_utils.getIdxByName(dataset, father.name);
+		let moidx = pedigree_utils.getIdxByName(dataset, mother.name);
 		if(faidx > moidx) {                   // switch to ensure father on lhs of mother
 			let tmpfa = dataset[faidx];
 			dataset[faidx] = dataset[moidx];
 			dataset[moidx] = tmpfa;
 		}
 
-		let orphans = pedigree_util.getAdoptedSiblings(dataset, node);
+		let orphans = pedigree_utils.getAdoptedSiblings(dataset, node);
 		let nid = tree_node.data.id;
 		for(i=0; i<orphans.length; i++){
-			let oid = pedigree_util.getNodeByName(flat_tree, orphans[i].name).data.id;
+			let oid = pedigree_utils.getNodeByName(flat_tree, orphans[i].name).data.id;
 			if(opts.DEBUG)
 				console.log('ORPHAN='+i+' '+orphans[i].name+' '+(nid < oid && oid < rid)+' nid='+nid+' oid='+oid+' rid='+rid);
 			if((add_lhs || nid < oid) && oid < rid){
-				let oidx = pedigree_util.getIdxByName(dataset, orphans[i].name);
+				let oidx = pedigree_utils.getIdxByName(dataset, orphans[i].name);
 				dataset[oidx].mother = mother.name;
 				dataset[oidx].father = father.name;
 			}
@@ -994,13 +976,13 @@ export function addparents(opts, dataset, name) {
 		mother.noparents = true;
 		father.noparents = true;
 	}
-	let idx = pedigree_util.getIdxByName(dataset, node.name);
+	let idx = pedigree_utils.getIdxByName(dataset, node.name);
 	dataset[idx].mother = mother.name;
 	dataset[idx].father = father.name;
 	delete dataset[idx].noparents;
 
 	if('parent_node' in node) {
-		let ptr_node = dataset[pedigree_util.getIdxByName(dataset, ptr_name)];
+		let ptr_node = dataset[pedigree_utils.getIdxByName(dataset, ptr_name)];
 		if('noparents' in ptr_node) {
 			ptr_node.mother = mother.name;
 			ptr_node.father = father.name;
@@ -1011,23 +993,23 @@ export function addparents(opts, dataset, name) {
 // add partner
 export function addpartner(opts, dataset, name) {
 	let root = roots[opts.targetDiv];
-	let flat_tree = pedigree_util.flatten(root);
-	let tree_node = pedigree_util.getNodeByName(flat_tree, name);
+	let flat_tree = pedigree_utils.flatten(root);
+	let tree_node = pedigree_utils.getNodeByName(flat_tree, name);
 
 	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 	partner.noparents = true;
 
-	let child = {"name": pedigree_util.makeid(4), "sex": "M"};
+	let child = {"name": pedigree_utils.makeid(4), "sex": "M"};
 	child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
 	child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
-	let idx = pedigree_util.getIdxByName(dataset, tree_node.data.name)+2;
+	let idx = pedigree_utils.getIdxByName(dataset, tree_node.data.name)+2;
 	dataset.splice(idx, 0, child);
 };
 
 // get adjacent nodes at the same depth
 function adjacent_nodes(root, node, excludes) {
-	let dnodes = pedigree_util.getNodesAtDepth(pedigree_util.flatten(root), node.depth, excludes);
+	let dnodes = pedigree_utils.getNodesAtDepth(pedigree_utils.flatten(root), node.depth, excludes);
 	let lhs_node, rhs_node;
 	for(let i=0; i<dnodes.length; i++) {
 		if(dnodes[i].x < node.x)
@@ -1041,13 +1023,13 @@ function adjacent_nodes(root, node, excludes) {
 // delete a node and descendants
 export function delete_node_dataset(dataset, node, opts, onDone) {
 	let root = roots[opts.targetDiv];
-	let fnodes = pedigree_util.flatten(root);
+	let fnodes = pedigree_utils.flatten(root);
 	let deletes = [];
 	let i, j;
 
 	// get d3 data node
 	if(node.id === undefined) {
-		let d3node = pedigree_util.getNodeByName(fnodes, node.name);
+		let d3node = pedigree_utils.getNodeByName(fnodes, node.name);
 		if(d3node !== undefined)
 			node = d3node.data;
 	}
@@ -1055,12 +1037,12 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 	if(node.parent_node) {
 		for(i=0; i<node.parent_node.length; i++){
 			let parent = node.parent_node[i];
-			let ps = [pedigree_util.getNodeByName(dataset, parent.mother.name),
-				      pedigree_util.getNodeByName(dataset, parent.father.name)];
+			let ps = [pedigree_utils.getNodeByName(dataset, parent.mother.name),
+				      pedigree_utils.getNodeByName(dataset, parent.father.name)];
 			// delete parents
 			for(j=0; j<ps.length; j++) {
 				if(ps[j].name === node.name || ps[j].noparents !== undefined || ps[j].top_level) {
-					dataset.splice(pedigree_util.getIdxByName(dataset, ps[j].name), 1);
+					dataset.splice(pedigree_utils.getIdxByName(dataset, ps[j].name), 1);
 					deletes.push(ps[j]);
 				}
 			}
@@ -1068,47 +1050,47 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 			let children = parent.children;
 			let children_names = $.map(children, function(p, i){return p.name;});
 			for(j=0; j<children.length; j++) {
-				let child = pedigree_util.getNodeByName(dataset, children[j].name);
+				let child = pedigree_utils.getNodeByName(dataset, children[j].name);
 				if(child){
 					child.noparents = true;
-					let ptrs = pedigree_util.get_partners(dataset, child);
+					let ptrs = pedigree_utils.get_partners(dataset, child);
 					let ptr;
 					if(ptrs.length > 0)
-						ptr = pedigree_util.getNodeByName(dataset, ptrs[0]);
+						ptr = pedigree_utils.getNodeByName(dataset, ptrs[0]);
 					if(ptr && ptr.mother !== child.mother) {
 						child.mother = ptr.mother;
 						child.father = ptr.father;
 					} else if(ptr) {
-						let child_node  = pedigree_util.getNodeByName(fnodes, child.name);
+						let child_node  = pedigree_utils.getNodeByName(fnodes, child.name);
 						let adj = adjacent_nodes(root, child_node, children_names);
 						child.mother = adj[0] ? adj[0].data.mother : (adj[1] ? adj[1].data.mother : null);
 						child.father = adj[0] ? adj[0].data.father : (adj[1] ? adj[1].data.father : null);
 					} else {
-						dataset.splice(pedigree_util.getIdxByName(dataset, child.name), 1);
+						dataset.splice(pedigree_utils.getIdxByName(dataset, child.name), 1);
 					}
 				}
 			}
 		}
 	} else {
-		dataset.splice(pedigree_util.getIdxByName(dataset, node.name), 1);
+		dataset.splice(pedigree_utils.getIdxByName(dataset, node.name), 1);
 	}
 
 	// delete ancestors
 	console.log(deletes);
 	for(i=0; i<deletes.length; i++) {
 		let del = deletes[i];
-		let sibs = pedigree_util.getAllSiblings(dataset, del);
+		let sibs = pedigree_utils.getAllSiblings(dataset, del);
 		console.log('DEL', del.name, sibs);
 		if(sibs.length < 1) {
 			console.log('del sibs', del.name, sibs);
-			let data_node  = pedigree_util.getNodeByName(fnodes, del.name);
+			let data_node  = pedigree_utils.getNodeByName(fnodes, del.name);
 			let ancestors = data_node.ancestors();
 			for(j=0; j<ancestors.length; j++) {
 				console.log(ancestors[i]);
 				if(ancestors[j].data.mother){
 					console.log('DELETE ', ancestors[j].data.mother, ancestors[j].data.father);
-					dataset.splice(pedigree_util.getIdxByName(dataset, ancestors[j].data.mother.name), 1);
-					dataset.splice(pedigree_util.getIdxByName(dataset, ancestors[j].data.father.name), 1);
+					dataset.splice(pedigree_utils.getIdxByName(dataset, ancestors[j].data.mother.name), 1);
+					dataset.splice(pedigree_utils.getIdxByName(dataset, ancestors[j].data.father.name), 1);
 				}
 			}
 		}
@@ -1123,16 +1105,16 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		newopts.dataset = copy_dataset(dataset);
 		validate_pedigree(newopts);
 		// check if pedigree is split
-		unconnected = pedigree_util.unconnected(dataset);
+		unconnected = pedigree_utils.unconnected(dataset);
 	} catch(err) {
-		pedigree_util.messages('Warning', 'Deletion of this pedigree member is disallowed.')
+		pedigree_utils.messages('Warning', 'Deletion of this pedigree member is disallowed.')
 		throw err;
 	}
 	if(unconnected.length > 0) {
 		// check & warn only if this is a new split
 		if(unconnected(opts.dataset).length === 0) {
 			console.error("individuals unconnected to pedigree ", unconnected);
-			pedigree_util.messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
+			pedigree_utils.messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
 			return;
 		}
 	}
