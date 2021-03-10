@@ -4,24 +4,6 @@ import {copy_dataset, makeid, getIdxByName} from './pedigree_utils.js';
 import {save, update} from './pedigree_form.js';
 import {current as pedcache_current} from './pedcache.js';
 
-function getTranslation(transform) {
-	  // Create a dummy g for calculation purposes only. This will never
-	  // be appended to the DOM and will be discarded once this function
-	  // returns.
-	  let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-
-	  // Set the transform attribute to the provided string value.
-	  g.setAttributeNS(null, "transform", transform);
-
-	  // consolidate the SVGTransformList containing all transformations
-	  // to a single SVGTransform of type SVG_TRANSFORM_MATRIX and get
-	  // its SVGMatrix.
-	  let matrix = g.transform.baseVal.consolidate().matrix;
-
-	  // As per definition values e and f are the ones for the translation.
-	  return [matrix.e, matrix.f];
-	}
-
 let dragging;
 let last_mouseover;
 //
@@ -70,7 +52,7 @@ export function addWidgets(opts, node) {
 		.attr("transform", "translate(-1000,-100)")
 		.attr("class", "popup_selection fa-lg fa-unspecified popup_selection_rotate45 persontype")
 		.text("\uf096 ");
-	let unspecified_title = unspecified.append("svg:title").text("add unspecified");
+	unspecified.append("svg:title").text("add unspecified");
 
 	let dztwin = popup_selection.append("text")  // dizygotic twins
 		.attr('font-family', 'FontAwesome')
@@ -80,7 +62,7 @@ export function addWidgets(opts, node) {
 		.attr("x", font_size*4.6)
 		.attr("y", font_size*1.5)
 		.text("\uf106 ");
-	let dztwin_title = dztwin.append("svg:title").text("add dizygotic/fraternal twins");
+	dztwin.append("svg:title").text("add dizygotic/fraternal twins");
 
 	let mztwin = popup_selection.append("text")  // monozygotic twins
 	.attr('font-family', 'FontAwesome')
@@ -90,7 +72,7 @@ export function addWidgets(opts, node) {
 	.attr("x", font_size*6.2)
 	.attr("y", font_size*1.5)
 	.text("\uf0d8");
-	let mztwin_title = mztwin.append("svg:title").text("add monozygotic/identical twins");
+	mztwin.append("svg:title").text("add monozygotic/identical twins");
 
 	let add_person = {};
 	// click the person type selection
@@ -157,8 +139,8 @@ export function addWidgets(opts, node) {
 		.attr("class", 'indi_rect')
 		.attr("rx", 6)
 		.attr("ry", 6)
-		.attr("x", function(d) { return - 0.75*opts.symbol_size; })
-		.attr("y", function(d) { return - opts.symbol_size; })
+		.attr("x", function(_d) { return - 0.75*opts.symbol_size; })
+		.attr("y", function(_d) { return - opts.symbol_size; })
 		.attr("width",  (1.5 * opts.symbol_size)+'px')
 		.attr("height", (2 * opts.symbol_size)+'px')
 		.style("stroke", "black")
@@ -167,7 +149,7 @@ export function addWidgets(opts, node) {
 		.attr("fill", "lightgrey");
 
 	// widgets
-	let fx = function(d) {return off - 0.75*opts.symbol_size;};
+	let fx = function(_d) {return off - 0.75*opts.symbol_size;};
 	let fy = opts.symbol_size -2;
 	let off = 0;
 	let widgets = {
@@ -194,11 +176,11 @@ export function addWidgets(opts, node) {
 	for(let key in widgets) {
 		let widget = node.append("text")
 			.filter(function (d) {
-		    	return  (d.data.hidden && !opts.DEBUG ? false : true) &&
-		    	       !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
-		    	       !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
-		    	       !(d.data.parent_node === undefined && key === 'addchild') &&
-		    	       !((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
+				return  (d.data.hidden && !opts.DEBUG ? false : true) &&
+						!((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
+						!(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
+						!(d.data.parent_node === undefined && key === 'addchild') &&
+						!((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
 			})
 			.attr("class", key)
 			.style("opacity", 0)
@@ -231,7 +213,7 @@ export function addWidgets(opts, node) {
 		  let y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y"));
 		  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
 		  d3.selectAll('.popup_selection_rotate45')
-		  	.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
+			.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
 	  });
 
 	// handle widget clicks
@@ -253,11 +235,6 @@ export function addWidgets(opts, node) {
 			}
 		} else if(opt === 'delete') {
 			newdataset = copy_dataset(pedcache_current(opts));
-			function onDone(opts, dataset) {
-				// assign new dataset and rebuild pedigree
-				opts.dataset = dataset;
-				rebuild(opts);
-			}
 			delete_node_dataset(newdataset, d.data, opts, onDone);
 		} else if(opt === 'addparents') {
 			newdataset = copy_dataset(pedcache_current(opts));
@@ -292,7 +269,7 @@ export function addWidgets(opts, node) {
 			d3.selectAll(".indi_rect").style("opacity", 0);
 			d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1;}).style("opacity", 0.5);
 		}
- 	})
+	})
 	.on("mouseover", function(d){
 		d3.event.stopPropagation();
 		last_mouseover = d;
@@ -317,18 +294,24 @@ export function addWidgets(opts, node) {
 			d3.select(this).select('rect').style("opacity", 0);
 		d3.select(this).selectAll('.indi_details').style("opacity", 1);
 		// hide popup if it looks like the mouse is moving north
-        if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
-        	d3.selectAll('.popup_selection').style("opacity", 0);
-        if(!dragging) {
-        	// hide popup if it looks like the mouse is moving north, south or west
-        	if(Math.abs(d3.mouse(this)[1]) > 0.25*opts.symbol_size ||
-        	   Math.abs(d3.mouse(this)[1]) < -0.25*opts.symbol_size ||
-        	   d3.mouse(this)[0] < 0.2*opts.symbol_size){
-        		setLineDragPosition(0, 0, 0, 0);
-        	}
+		if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
+			d3.selectAll('.popup_selection').style("opacity", 0);
+		if(!dragging) {
+			// hide popup if it looks like the mouse is moving north, south or west
+			if( Math.abs(d3.mouse(this)[1]) > 0.25*opts.symbol_size ||
+				Math.abs(d3.mouse(this)[1]) < -0.25*opts.symbol_size ||
+				d3.mouse(this)[0] < 0.2*opts.symbol_size){
+					setLineDragPosition(0, 0, 0, 0);
+			}
         }
 	});
-};
+}
+
+function onDone(opts, dataset) {
+	// assign new dataset and rebuild pedigree
+	opts.dataset = dataset;
+	rebuild(opts);
+}
 
 // drag line between nodes to create partners
 function drag_handle(opts) {
@@ -345,14 +328,14 @@ function drag_handle(opts) {
 
 	setLineDragPosition(0, 0, 0, 0);
 
-	function dragstart(d) {
+	function dragstart(_d) {
 		d3.event.sourceEvent.stopPropagation();
 		dragging = last_mouseover;
 		d3.selectAll('.line_drag_selection')
 			.attr("stroke","darkred");
 	}
 
-	function dragstop(d) {
+	function dragstop(_d) {
 		if(last_mouseover &&
 		   dragging.data.name !== last_mouseover.data.name &&
 		   dragging.data.sex  !== last_mouseover.data.sex) {
@@ -374,7 +357,7 @@ function drag_handle(opts) {
 		return;
 	}
 
-	function drag(d) {
+	function drag(_d) {
 		d3.event.sourceEvent.stopPropagation();
 		let dx = d3.event.dx;
 		let dy = d3.event.dy;
@@ -388,10 +371,10 @@ function setLineDragPosition(x1, y1, x2, y2, translate) {
 	if(translate)
 		d3.selectAll('.line_drag_selection').attr("transform", "translate("+translate+")");
 	d3.selectAll('.line_drag_selection')
-    	.attr("x1", x1)
-    	.attr("y1", y1)
-    	.attr("x2", x2)
-        .attr("y2", y2);
+		.attr("x1", x1)
+		.attr("y1", y1)
+		.attr("x2", x2)
+		.attr("y2", y2);
 }
 
 function capitaliseFirstLetter(string) {
@@ -487,7 +470,7 @@ function openEditDialog(opts, d) {
 
 	//$('#id_name').closest('tr').toggle();
 	$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function() {
-    	save(opts);
+		save(opts);
     });
 	update(opts);
 	return;
