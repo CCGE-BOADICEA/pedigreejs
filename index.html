@@ -7,18 +7,13 @@
 
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="dist/css/pedigreejs.min.css" />
+	<link rel="stylesheet" href="css/pedigreejs.css" />
 
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/d3@5.16.0/dist/d3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-	<!-- <script src="dist/js/pedigreejs.min.js"></script> -->
-    <script src="js/io.js"></script>
-    <script src="js/pedigree_form.js"></script>
-    <script src="js/pedigree.js"></script>
-    <script src="js/undo_redo_refresh.js"></script>
-    <script src="js/widgets.js"></script>
 
+ 	<script src="build/js/pedigreejs.min.js"></script> 
 
 	<style>
 		a[href^="http://"][target=_blank]:after,
@@ -67,7 +62,7 @@
 		.row > div {
 			margin-right: 10px;
 		}
-		
+
 		.left {
 			width:140px;
 			font-weight: bold;
@@ -145,16 +140,14 @@
 		}
 	</style>
 
-
 	<script type="text/javascript">
-	if(utils.isIE() || utils.isEdge()) {
-		<!-- canvg used to convert svf to png image -->
-		document.write('<script src="https://cdn.jsdelivr.net/npm/canvg@2.0.0/dist/browser/canvg.min.js"><\/script>');
-	}
-
 	$( document ).ready(function() {
-		var DEBUG = (pedigree_util.urlParam('debug') === null ? false : true);
-
+		if(pedigreejs.pedigree_utils.isIE()) {
+			var s = document.createElement("script");
+			s.type = "text/javascript";
+			s.src = "https://cdn.jsdelivr.net/npm/canvg@3.0.7/lib/umd.js";
+			$("head").append(s);
+		}
 		////////////////////
 		var dataset = [
 			{"name": "m11", "sex": "M", "top_level": true},
@@ -184,14 +177,14 @@
 							 {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 							 {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 							 {'type': 'prostate_cancer', 'colour': '#D5494A'}],
-				'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)};
-		var local_dataset = pedcache.current(opts);
+				'DEBUG': (pedigreejs.pedigree_utils.urlParam('debug') === null ? false : true)};
+		var local_dataset = pedigreejs.pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		} else {
 			opts.dataset = dataset;
 		}
-		opts= ptree.build(opts);
+		opts = pedigreejs.pedigreejs.build(opts);
 	});
 	</script>
 </head>
