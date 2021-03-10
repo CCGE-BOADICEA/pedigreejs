@@ -29,51 +29,51 @@ export function copy_dataset(dataset) {
 		newdataset.push(obj);
 	}
 	return newdataset;
-};
+}
 
 /**
  *  Get formatted time or data & time
  */
 export function getFormattedDate(time){
-    let d = new Date();
-    if(time)
-    	return ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + ":" + ('0' + d.getSeconds()).slice(-2);
-    else
-    	return d.getFullYear() + "-" + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + ('0' + d.getDate()).slice(-2) + " " + ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + ":" + ('0' + d.getSeconds()).slice(-2);
+	let d = new Date();
+	if(time)
+		return ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + ":" + ('0' + d.getSeconds()).slice(-2);
+	else
+		return d.getFullYear() + "-" + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + ('0' + d.getDate()).slice(-2) + " " + ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + ":" + ('0' + d.getSeconds()).slice(-2);
  }
 
 /**
  * Show message or confirmation dialog.
- * @param title     - dialog window title
- * @param msg       - message to diasplay
+ * @param title	 - dialog window title
+ * @param msg	   - message to diasplay
  * @param onConfirm - function to call in a confirmation dialog
- * @param opts      - pedigreejs options
- * @param dataset    - pedigree dataset
+ * @param opts	  - pedigreejs options
+ * @param dataset	- pedigree dataset
  */
 export function messages(title, msg, onConfirm, opts, dataset) {
 	if(onConfirm) {
 		$('<div id="msgDialog">'+msg+'</div>').dialog({
-		        modal: true,
-		        title: title,
-		        width: 350,
-		        buttons: {
-		        	"Yes": function () {
-		                $(this).dialog('close');
-		                onConfirm(opts, dataset);
-		            },
-		            "No": function () {
-		                $(this).dialog('close');
-		            }
-		        }
-		    });
+				modal: true,
+				title: title,
+				width: 350,
+				buttons: {
+					"Yes": function () {
+						$(this).dialog('close');
+						onConfirm(opts, dataset);
+					},
+					"No": function () {
+						$(this).dialog('close');
+					}
+				}
+			});
 	} else {
 		$('<div id="msgDialog">'+msg+'</div>').dialog({
-    		title: title,
-    		width: 350,
-    		buttons: [{
-    			text: "OK",
-    			click: function() { $( this ).dialog( "close" );}
-    		}]
+			title: title,
+			width: 350,
+			buttons: [{
+				text: "OK",
+				click: function() { $( this ).dialog( "close" );}
+			}]
 		});
 	}
 }
@@ -83,8 +83,8 @@ export function messages(title, msg, onConfirm, opts, dataset) {
  * yob should not be greater than or equal to current year. If alive the
  * absolute difference between the sum of age and year of birth and the
  * current year should be <= 1.
- * @param age    - age in years.
- * @param yob    - year of birth.
+ * @param age	- age in years.
+ * @param yob	- year of birth.
  * @param status - 0 = alive, 1 = dead.
  * @return true if age and yob are consistent with current year otherwise false.
  */
@@ -98,17 +98,17 @@ export function validate_age_yob(age, yob, status) {
 }
 
 export function capitaliseFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+	return string.charAt(0).toUpperCase() + string.slice(1);
 }
-	
-	
+
+
 export function makeid(len) {
-    let text = "";
-    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    for( let i=0; i < len; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    return text;
-};
+	let text = "";
+	let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	for( let i=0; i < len; i++ )
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+	return text;
+}
 
 export function buildTree(opts, person, root, partnerLinks, id) {
 	if (typeof person.children === typeof undefined)
@@ -175,7 +175,7 @@ export function buildTree(opts, person, root, partnerLinks, id) {
 		id = buildTree(opts, p, root, partnerLinks, id)[1];
 	});
 	return [partnerLinks, id];
-};
+}
 
 // update parent node and sort twins
 function updateParent(p, parent, id, nodes, opts) {
@@ -217,7 +217,7 @@ function setChildrenId(children, id) {
 
 export function isProband(obj) {
 	return typeof $(obj).attr('proband') !== typeof undefined && $(obj).attr('proband') !== false;
-};
+}
 
 export function setProband(dataset, name, is_proband) {
 	$.each(dataset, function(i, p) {
@@ -226,12 +226,12 @@ export function setProband(dataset, name, is_proband) {
 		else
 			delete p.proband;
 	});
-};
+}
 
 //combine arrays ignoring duplicates
 function combineArrays(arr1, arr2) {
-    for(let i=0; i<arr2.length; i++)
-    	if($.inArray( arr2[i], arr1 ) == -1) arr1.push(arr2[i]);
+	for(let i=0; i<arr2.length; i++)
+		if($.inArray( arr2[i], arr1 ) == -1) arr1.push(arr2[i]);
 }
 
 function include_children(connected, p, dataset) {
@@ -270,41 +270,41 @@ export function unconnected(dataset){
 		}
 		target = dataset[0];
 	}
-    let connected = [target.name];
-    let change = true;
-    let ii = 0;
-    while(change && ii < 200) {
-    	ii++;
-    	let nconnect = connected.length;
-        $.each(dataset, function( idx, p ) {
-        	if($.inArray( p.name, connected ) != -1) {
-        		// check if this person or a partner has a parent
-        		let ptrs = get_partners(dataset, p);
-        		let has_parent = (p.name === target.name || !p.noparents);
-        		for(let i=0; i<ptrs.length; i++){
-        			if(!getNodeByName(dataset, ptrs[i]).noparents)
-        				has_parent = true;
-        		}
+	let connected = [target.name];
+	let change = true;
+	let ii = 0;
+	while(change && ii < 200) {
+		ii++;
+		let nconnect = connected.length;
+		$.each(dataset, function( idx, p ) {
+			if($.inArray( p.name, connected ) != -1) {
+				// check if this person or a partner has a parent
+				let ptrs = get_partners(dataset, p);
+				let has_parent = (p.name === target.name || !p.noparents);
+				for(let i=0; i<ptrs.length; i++){
+					if(!getNodeByName(dataset, ptrs[i]).noparents)
+						has_parent = true;
+				}
 
-        		if(has_parent){
-            		if(p.mother && $.inArray( p.mother, connected ) == -1)
-            			connected.push(p.mother);
-            		if(p.father && $.inArray( p.father, connected ) == -1)
-            			connected.push(p.father);
-        		}
-        	} else if( !p.noparents &&
-        			  ((p.mother && $.inArray( p.mother, connected ) != -1) ||
-        			   (p.father && $.inArray( p.father, connected ) != -1))){
-        		connected.push(p.name);
-        	}
-    		// include any children
-        	include_children(connected, p, dataset);
-        });
-        change = (nconnect != connected.length);
-    }
-    let names = $.map(dataset, function(val, i){return val.name;});
-    return $.map(names, function(name, i){return $.inArray(name, connected) == -1 ? name : null;});
-};
+				if(has_parent){
+					if(p.mother && $.inArray( p.mother, connected ) == -1)
+						connected.push(p.mother);
+					if(p.father && $.inArray( p.father, connected ) == -1)
+						connected.push(p.father);
+				}
+			} else if( !p.noparents &&
+					  ((p.mother && $.inArray( p.mother, connected ) != -1) ||
+					   (p.father && $.inArray( p.father, connected ) != -1))){
+				connected.push(p.name);
+			}
+			// include any children
+			include_children(connected, p, dataset);
+		});
+		change = (nconnect != connected.length);
+	}
+	let names = $.map(dataset, function(val, _i){return val.name;});
+	return $.map(names, function(name, _i){return $.inArray(name, connected) == -1 ? name : null;});
+}
 
 export function getProbandIndex(dataset) {
 	let proband;
@@ -315,7 +315,7 @@ export function getProbandIndex(dataset) {
 		}
 	});
 	return proband;
-};
+}
 
 export function getChildren(dataset, mother, father) {
 	let children = [];
@@ -331,7 +331,7 @@ export function getChildren(dataset, mother, father) {
 				}
 		});
 	return children;
-};
+}
 
 function contains_parent(arr, m, f) {
 	for(let i=0; i<arr.length; i++)
@@ -346,46 +346,46 @@ export function getSiblings(dataset, person, sex) {
 	if(person === undefined || !person.mother || person.noparents)
 		return [];
 
-	return $.map(dataset, function(p, i){
+	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&
-		       (p.mother === person.mother && p.father === person.father) &&
-		       (!sex || p.sex == sex) ? p : null;
+			   (p.mother === person.mother && p.father === person.father) &&
+			   (!sex || p.sex == sex) ? p : null;
 	});
-};
+}
 
 // get the siblings + adopted siblings
 export function getAllSiblings(dataset, person, sex) {
-	return $.map(dataset, function(p, i){
+	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&
-		       (p.mother === person.mother && p.father === person.father) &&
-		       (!sex || p.sex == sex) ? p : null;
+			   (p.mother === person.mother && p.father === person.father) &&
+			   (!sex || p.sex == sex) ? p : null;
 	});
-};
+}
 
 // get the mono/di-zygotic twin(s)
 export function getTwins(dataset, person) {
 	let sibs = getSiblings(dataset, person);
 	let twin_type = (person.mztwin ? "mztwin" : "dztwin");
-	return $.map(sibs, function(p, i){
+	return $.map(sibs, function(p, _i){
 		return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
 	});
-};
+}
 
 // get the adopted siblings of a given individual
 export function getAdoptedSiblings(dataset, person) {
-	return $.map(dataset, function(p, i){
+	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && 'noparents' in p &&
-		       (p.mother === person.mother && p.father === person.father) ? p : null;
+			   (p.mother === person.mother && p.father === person.father) ? p : null;
 	});
-};
+}
 
 export function getAllChildren(dataset, person, sex) {
-	return $.map(dataset, function(p, i){
+	return $.map(dataset, function(p, _i){
 		return !('noparents' in p) &&
-		       (p.mother === person.name || p.father === person.name) &&
-		       (!sex || p.sex === sex) ? p : null;
+			   (p.mother === person.name || p.father === person.name) &&
+			   (!sex || p.sex === sex) ? p : null;
 	});
-};
+}
 
 // get the depth of the given person from the root
 export function getDepth(dataset, name) {
@@ -397,7 +397,7 @@ export function getDepth(dataset, name) {
 		depth++;
 	}
 	return depth;
-};
+}
 
 // given an array of people get an index for a given person
 export function getIdxByName(arr, name) {
@@ -409,14 +409,14 @@ export function getIdxByName(arr, name) {
 		}
 	});
 	return idx;
-};
+}
 
 // get the nodes at a given depth sorted by their x position
 export function getNodesAtDepth(fnodes, depth, exclude_names) {
-	return $.map(fnodes, function(p, i){
+	return $.map(fnodes, function(p, _i){
 		return p.depth == depth && !p.data.hidden && $.inArray(p.data.name, exclude_names) == -1 ? p : null;
 	}).sort(function (a,b) {return a.x - b.x;});
-};
+}
 
 // convert the partner names into corresponding tree nodes
 export function linkNodes(flattenNodes, partners) {
@@ -425,7 +425,7 @@ export function linkNodes(flattenNodes, partners) {
 		links.push({'mother': getNodeByName(flattenNodes, partners[i].mother.name),
 					'father': getNodeByName(flattenNodes, partners[i].father.name)});
 	return links;
-};
+}
 
 // get ancestors of a node
 export function ancestors(dataset, node) {
@@ -448,8 +448,8 @@ export function consanguity(node1, node2, opts) {
 		return true;
 	let ancestors1 = ancestors(opts.dataset, node1);
 	let ancestors2 = ancestors(opts.dataset, node2);
-	let names1 = $.map(ancestors1, function(ancestor, i){return ancestor.name;});
-	let names2 = $.map(ancestors2, function(ancestor, i){return ancestor.name;});
+	let names1 = $.map(ancestors1, function(ancestor, _i){return ancestor.name;});
+	let names2 = $.map(ancestors2, function(ancestor, _i){return ancestor.name;});
 	let consanguity = false;
 	$.each(names1, function( index, name ) {
 		if($.inArray(name, names2) !== -1){
@@ -470,7 +470,7 @@ export function flatten(root) {
 	}
 	recurse(root);
 	return flat;
-};
+}
 
 // Adjust D3 layout positioning.
 // Position hidden parent node centring them between father and mother nodes. Remove kinks
@@ -492,7 +492,7 @@ export function adjust_coords(opts, root, flattenNodes) {
 							let child1 = (node.children[0].data.hidden ? node.children[1] : node.children[0]);
 							let child2 = (node.children[0].data.hidden ? node.children[0] : node.children[1]);
 							if( ((child1.x < child2.x && xmid < child2.x) || (child1.x > child2.x && xmid > child2.x)) &&
-							    !overlap(opts, root.descendants(), xmid, child1.depth, [child1.data.name])){
+								!overlap(opts, root.descendants(), xmid, child1.depth, [child1.data.name])){
 								child1.x = xmid;
 							}
 						}
@@ -522,12 +522,12 @@ export function adjust_coords(opts, root, flattenNodes) {
 	}
 	recurse(root);
 	recurse(root);
-};
+}
 
 // test if moving siblings by diff overlaps with other nodes
 function nodesOverlap(opts, node, diff, root) {
 	let descendants = node.descendants();
-	let descendantsNames = $.map(descendants, function(descendant, i){return descendant.data.name;});
+	let descendantsNames = $.map(descendants, function(descendant, _i){return descendant.data.name;});
 	let nodes = root.descendants();
 	for(let i=0; i<descendants.length; i++){
 		let descendant = descendants[i];
@@ -549,7 +549,7 @@ export function overlap(opts, nodes, xnew, depth, exclude_names) {
 		}
 	}
 	return false;
-};
+}
 
 // given a persons name return the corresponding d3 tree node
 export function getNodeByName(nodes, name) {
@@ -559,16 +559,16 @@ export function getNodeByName(nodes, name) {
 		else if (name === nodes[i].name)
 			return nodes[i];
 	}
-};
+}
 
 // given the name of a url param get the value
 export function urlParam(name){
-    let results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-    if (results===null)
-       return null;
-    else
-       return results[1] || 0;
-};
+	let results = new RegExp('[?&]' + name + '=([^&#]*)').exec(window.location.href);
+	if (results===null)
+	   return null;
+	else
+	   return results[1] || 0;
+}
 
 // get grandparents index
 export function get_grandparents_idx(dataset, midx, fidx) {
@@ -580,7 +580,7 @@ export function get_grandparents_idx(dataset, midx, fidx) {
 		gfidx = getIdxByName(dataset, dataset[gfidx].mother);
 	}
 	return {'midx': gmidx, 'fidx': gfidx};
-};
+}
 
 // Set or remove proband attributes.
 // If a value is not provided the attribute is removed from the proband.
@@ -612,10 +612,12 @@ export function node_attr(opts, name, keys, value){
 			if(k in node && keys.length === 1) {
 				if(node[k] === value)
 					return;
-				try{
+				try {
 				   if(JSON.stringify(node[k]) === JSON.stringify(value))
 					   return;
-				} catch(e){}
+				} catch(e){
+					// continue regardless of error
+				}
 			}
 			node[k] = value;
 		}
@@ -632,7 +634,7 @@ export function node_attr(opts, name, keys, value){
 		if(!found)
 			return;
 	}
-    syncTwins(newdataset, node);
+	syncTwins(newdataset, node);
 	opts.dataset = newdataset;
 	rebuild(opts);
 }
@@ -646,10 +648,10 @@ export function proband_add_child(opts, sex, age, yob, breastfeeding){
 		return;
 	}
 	let newchild = addchild(newdataset, proband, sex, 1)[0];
-    newchild.age = age;
-    newchild.yob = yob;
-    if(breastfeeding !== undefined)
-    	newchild.breastfeeding = breastfeeding;
+	newchild.age = age;
+	newchild.yob = yob;
+	if(breastfeeding !== undefined)
+		newchild.breastfeeding = breastfeeding;
 	opts.dataset = newdataset;
 	rebuild(opts);
 	return newchild.name;
@@ -701,4 +703,4 @@ export function print_opts(opts){
 		if(key === 'dataset') continue;
 		$("#pedigree_data").append("<span>"+key + ":" + opts[key]+"; </span>");
 	}
-};
+}
