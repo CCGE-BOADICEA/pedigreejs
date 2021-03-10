@@ -100,7 +100,7 @@ export function add(opts) {
 			let obj = getByName(arguments, "pedigree");
 			if(pedigree_util.isEdge() || pedigree_util.isIE()) {
 				let html="<img src='"+obj.img+"' alt='canvas image'/>";
-				let newTab = window.open();
+				let newTab = window.open();		// pop-ups need to be enabled
 				newTab.document.write(html);
 			} else {
 				let a	  = document.createElement('a');
