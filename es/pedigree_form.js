@@ -331,7 +331,7 @@ export function save(opts) {
 	syncTwins(newdataset, person);
 	opts.dataset = newdataset;
 	rebuild(opts);
-};
+}
 
 export function update_diagnosis_age_widget() {
 	if($("#id_approx").is(':checked')) {
