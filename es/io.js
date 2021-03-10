@@ -182,7 +182,7 @@ function getMatches(str, myRegexp) {
 	let match;
 	let c = 0;
 	myRegexp.lastIndex = 0;
-	while (match = myRegexp.exec(str)) {
+	while ((match = myRegexp.exec(str))) {
 		c++;
 		if(c > 400) {
 			console.error("getMatches: counter exceeded 800");
@@ -198,7 +198,7 @@ function getMatches(str, myRegexp) {
 
 // find all url's to make unique
 function unique_urls(svg_html) {
-	let matches = getMatches(svg_html, /url\((&quot;|"|'){0,1}\#(.*?)(&quot;|"|'){0,1}\)/g);
+	let matches = getMatches(svg_html, /url\((&quot;|"|'){0,1}#(.*?)(&quot;|"|'){0,1}\)/g);
 	if(matches === -1)
 		return "ERROR DISPLAYING PEDIGREE"
 
@@ -206,7 +206,7 @@ function unique_urls(svg_html) {
 		let quote = (match[1] ? match[1] : "");
 		let val = match[2];
 		let m1 = "id=\"" + val + "\"";
-		let m2 = "url\\(" + quote + "\#" + val + quote + "\\)";
+		let m2 = "url\\(" + quote + "#" + val + quote + "\\)";
 
 		let newval = val+pedigree_util.makeid(2);
 		svg_html = svg_html.replace(new RegExp(m1, 'g'), "id=\""+newval+"\"" );
@@ -404,7 +404,9 @@ export function load(e, opts) {
 					acc_FamHist_ticked();
 					acc_FamHist_Leave();
 					RESULT.FLAG_FAMILY_MODAL = true;
-				} catch(err3) {}
+				} catch(err3) {
+					// ignore error
+				}
 			} catch(err2) {
 				pedigree_util.messages("File Error", ( err2.message ? err2.message : err2));
 			}
