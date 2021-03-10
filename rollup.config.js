@@ -21,7 +21,6 @@ export default {
 		name: 'pedigreejs',
 	    file: 'build/js/pedigreejs.min.js',
 	    format: 'iife',
-	    name: 'version',
 	    plugins: [terser()]
 	  }
   ]
