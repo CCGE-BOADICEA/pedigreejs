@@ -1,4 +1,9 @@
 describe('Test pedigree SVG ', function() {
+	var pedigree_util = window.pedigreejs.pedigree_utils;
+	var pedigreejs = window.pedigreejs.pedigreejs;
+	var pedcache = window.pedigreejs.pedcache;
+	var io = window.pedigreejs.io;
+
 	var wid = 600;
 	var hgt = 500;
 	var opts = {
@@ -8,13 +13,13 @@ describe('Test pedigree SVG ', function() {
 			symbol_size: 35,
 			validate: true
 		}
-	
+
 	var ds1 = [
   		{"name": "m21", "sex": "M", "top_level": true},
 		{"name": "f21", "sex": "F", "top_level": true},
 		{"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "bc1":  true, "proband": true}
 	];
-	
+
 	var ds2 = [
 		{"name":"hGf","sex":"F","top_level":true,"status":0},
 		{"name":"tRc","sex":"M","top_level":true},
@@ -26,7 +31,7 @@ describe('Test pedigree SVG ', function() {
 		{"name":"m21","sex":"M","mother":"Sarah","father":"OAa"},
 		{"name":"Pat","sex":"F","noparents":true,"mother":"Sarah","father":"OAa"},
 		{"name":"ch1","sex":"F","mother":"Pat","father":"m21","bc1":true,"proband":true}];
-	
+
 	var ds3 = [
 		{"name":"Yvb","sex":"F","top_level":true},
 		{"name":"UTN","sex":"M","top_level":true},
@@ -45,7 +50,7 @@ describe('Test pedigree SVG ', function() {
 		{"name":"Tom","sex":"M","mother":"ch1","father":"Dan"},
 		{"name":"qLM","sex":"M","mother":"KSc","father":"cMy","noparents":true},
 		{"name":"YlJ","sex":"F","mother":"KSc","father":"cMy","noparents":true}];
- 
+
 	var bwa_v4 = "BOADICEA import pedigree file format 4.0\n" +
 			"FamID	Name	Target	IndivID	FathID	MothID	Sex	MZtwin	Dead	Age	Yob	1stBrCa	2ndBrCa	OvCa	ProCa	PanCa	Ashkn	BRCA1t	BRCA1r	BRCA2t	BRCA2r	PALB2t	PALB2r	ATMt	ATMr	CHEK2t	CHEK2r	ER	PR	HER2	CK14	CK56\n"+
 			"XXXX	0	0	lgzm	0	0	F	0	0	92	1925	81	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0\n" +
@@ -64,7 +69,7 @@ describe('Test pedigree SVG ', function() {
 
 	beforeEach(function() {
 		$('body').append("<div id='pedigree_edit'></div>");
-		ptree.build(opts);
+		pedigreejs.rebuild(opts);
 	});
 
 	afterEach(function() {
@@ -89,7 +94,7 @@ describe('Test pedigree SVG ', function() {
 	    console.log("Global vars:", globalVars);
 	    document.body.removeChild(iframe);
 	}
-	
+
 	describe('the svg', function() {
 		it('should be created', function() {
 			getGlobals();
@@ -116,11 +121,11 @@ describe('Test pedigree SVG ', function() {
 			expect(d3.select('svg').select("g.diagram").classed("diagram")).toBe(true);
 		});
 	});
-	
+
 	// check for links between partners that clash
 	function check_clashing_partner_links(newopts) {
 		for(var i=0; i<newopts.dataset.length; i++) {
-			if(ptree.check_ptr_link_clashes(newopts, newopts.dataset[i]))
+			if(pedigreejs.check_ptr_link_clashes(newopts, newopts.dataset[i]))
 				return true;
 		}
 		return false;
@@ -128,25 +133,25 @@ describe('Test pedigree SVG ', function() {
 
 	// check for nodes that overlap
 	function check_nodes_overlapping(newopts) {
-		var fn = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+		var fn = pedigree_util.flatten(pedigreejs.roots[newopts.targetDiv]);
 		for(var i=0; i<fn.length; i++)
 			expect(pedigree_util.overlap(newopts, fn, fn[i].x, fn[i].depth, [fn[i].data.name])).toBe(false);
 	}
 
 	// check for individuals that aren't connected to the target
 	function check_unconnected(newopts) {
-		expect(ptree.unconnected(newopts.dataset).length).toBe(0);
+		expect(pedigree_util.unconnected(newopts.dataset).length).toBe(0);
 	}
 
 	describe('the pedigree utility', function() {
 		var newopts;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds1);
+			newopts.dataset = pedigree_util.copy_dataset(ds1);
 		});
 
 		it('should identify nodes overlapping', function() {
-			var flattenNodes = pedigree_util.flatten(ptree.roots[opts.targetDiv]);
+			var flattenNodes = pedigree_util.flatten(pedigreejs.roots[opts.targetDiv]);
 			var n1 = pedigree_util.getNodeByName(flattenNodes, 'm21');
 			var n2 = pedigree_util.getNodeByName(flattenNodes, 'f21');
 			n1.x = n2.x;
@@ -154,7 +159,7 @@ describe('Test pedigree SVG ', function() {
 		});
 
 		it('should confirm nodes are not overlapping', function() {
-			var fnodes = pedigree_util.flatten(ptree.roots[opts.targetDiv]);
+			var fnodes = pedigree_util.flatten(pedigreejs.roots[opts.targetDiv]);
 			for(var i=0; i<fnodes.length; i++) {
 				var node = fnodes[i];
 				expect(pedigree_util.overlap(opts, fnodes, node.x, node.depth, [node.data.name])).toBe(false);
@@ -167,7 +172,7 @@ describe('Test pedigree SVG ', function() {
 
 		it('should identify individuals that are not connected to the proband', function() {
 			newopts.dataset.push({"name": "frank", "sex":"M"});
-			var unconnected = ptree.unconnected(newopts.dataset);
+			var unconnected = pedigree_util.unconnected(newopts.dataset);
 			expect(unconnected.length).toBe(1);
 			expect(unconnected[0]).toBe("frank");
 		});
@@ -177,62 +182,64 @@ describe('Test pedigree SVG ', function() {
     describe('the pedigree data', function() {
             beforeEach(function() {
                     newopts = $.extend({}, opts);
-                    newopts.dataset = ptree.copy_dataset(ds1);
-                    ptree.rebuild(newopts);
+                    newopts.dataset = pedigree_util.copy_dataset(ds1);
+                    pedigreejs.rebuild(newopts);
                     ncount = newopts.dataset.length;
             });
 
             it('should have unique names', function() {
             	    var err = "IndivID for family member unnamed (IndivID: f21) is not unique.";
-                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                    expect(function() {pedigreejs.build(newopts)}).not.toThrow(new Error(err));
                     var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
                     ch1.name = 'f21';
-                    newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                    expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+                    newopts.dataset = pedigree_util.copy_dataset(newopts.dataset);
+
+                    console.log(newopts.dataset);
+                    expect(function() {pedigreejs.build(newopts)}).toThrow(new Error(err));
             });
 
             it('should expect mothers to be female', function() {
             		var err = "The mother of family member unnamed (IndivID: ch1) is not specified as female. All mothers in the pedigree must have sex specified as 'F'.";
-                    expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                    expect(function() {pedigreejs.build(newopts)}).not.toThrow(new Error(err));
                     var f21 = pedigree_util.getNodeByName(newopts.dataset, 'f21');
                     f21.sex = 'M';
-                    newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                    expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+                    newopts.dataset = pedigree_util.copy_dataset(newopts.dataset);
+                    expect(function() {pedigreejs.build(newopts)}).toThrow(new Error(err));
             });
 
             it('should expect fathers to be male', function() {
         		var err = "The father of family member unnamed (IndivID: ch1) is not specified as male. All fathers in the pedigree must have sex specified as 'M'.";
-                expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                expect(function() {pedigreejs.build(newopts)}).not.toThrow(new Error(err));
                 var m21 = pedigree_util.getNodeByName(newopts.dataset, 'm21');
                 m21.sex = 'F';
-                newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+                newopts.dataset = pedigree_util.copy_dataset(newopts.dataset);
+                expect(function() {pedigreejs.build(newopts)}).toThrow(new Error(err));
             });
 
             it('should expect father to present', function() {
         		var err = "The father (IndivID: m21) of family member unnamed (IndivID: ch1) is missing from the pedigree.";
-                expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                expect(function() {pedigreejs.build(newopts)}).not.toThrow(new Error(err));
                 newopts.dataset.splice(pedigree_util.getIdxByName(newopts.dataset, 'm21'), 1)   // remove father
-                newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+                newopts.dataset = pedigree_util.copy_dataset(newopts.dataset);
+                expect(function() {pedigreejs.build(newopts)}).toThrow(new Error(err));
             });
 
             it('should expect mother to present', function() {
         		var err = "The mother (IndivID: f21) of family member unnamed (IndivID: ch1) is missing from the pedigree.";
-                expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                expect(function() {pedigreejs.build(newopts)}).not.toThrow(new Error(err));
                 newopts.dataset.splice(pedigree_util.getIdxByName(newopts.dataset, 'f21'), 1)   // remove mother
-                newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+                newopts.dataset = pedigree_util.copy_dataset(newopts.dataset);
+                expect(function() {pedigreejs.build(newopts)}).toThrow(new Error(err));
             });
 
             it('should expect IndivID', function() {
         		var err = "Me (IndivID: undefined) has no IndivID.";
-                expect(function() {ptree.build(newopts)}).not.toThrow(new Error(err));
+                expect(function() {pedigreejs.build(newopts)}).not.toThrow(new Error(err));
                 var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
                 ch1.display_name = 'Me';
                 delete ch1.name;
-                newopts.dataset = ptree.copy_dataset(newopts.dataset);
-                expect(function() {ptree.build(newopts)}).toThrow(new Error(err));
+                newopts.dataset = pedigree_util.copy_dataset(newopts.dataset);
+                expect(function() {pedigreejs.build(newopts)}).toThrow(new Error(err));
             });
     });
 
@@ -240,17 +247,17 @@ describe('Test pedigree SVG ', function() {
 		var newopts, ncount;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds1);
-			ptree.rebuild(newopts);
+			newopts.dataset = pedigree_util.copy_dataset(ds1);
+			pedigreejs.rebuild(newopts);
 			ncount = newopts.dataset.length;
 		});
 
 		it('should be possible at the top level', function() {
 			var f21 = pedigree_util.getNodeByName(newopts.dataset, 'f21');
-			ptree.addchild(newopts.dataset, f21, 'F', 1);
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
+			pedigreejs.addchild(newopts.dataset, f21, 'F', 1);
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
 
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts)
@@ -259,10 +266,10 @@ describe('Test pedigree SVG ', function() {
 
 		it('should be possible for the proband', function() {
 			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
-			ptree.addchild(newopts.dataset, ch1, 'F', 2);
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
+			pedigreejs.addchild(newopts.dataset, ch1, 'F', 2);
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
 
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts)
@@ -271,10 +278,10 @@ describe('Test pedigree SVG ', function() {
 
 		it('should be possible as twins for the proband', function() {
 			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
-			ptree.addchild(newopts.dataset, ch1, 'U', 2, "mztwin");
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
+			pedigreejs.addchild(newopts.dataset, ch1, 'U', 2, "mztwin");
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
 
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts)
@@ -287,16 +294,16 @@ describe('Test pedigree SVG ', function() {
 		var newopts, ncount;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds1);
-			ptree.rebuild(newopts);
+			newopts.dataset = pedigree_util.copy_dataset(ds1);
+			pedigreejs.rebuild(newopts);
 			ncount = newopts.dataset.length;
 		});
 
 		it('should be possible for nodes with parents', function() {
 			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
-			ptree.addsibling(newopts.dataset, ch1, "M");
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			pedigreejs.addsibling(newopts.dataset, ch1, "M");
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts)
@@ -305,9 +312,9 @@ describe('Test pedigree SVG ', function() {
 
 		it('should be possible to add twins', function() {
 			var ch1 = pedigree_util.getNodeByName(newopts.dataset, 'ch1');
-			ptree.addsibling(newopts.dataset, ch1, ch1.sex, false, "dztwin");
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			pedigreejs.addsibling(newopts.dataset, ch1, ch1.sex, false, "dztwin");
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts)
@@ -321,15 +328,15 @@ describe('Test pedigree SVG ', function() {
 		var newopts, ncount;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds1);
-			ptree.rebuild(newopts);
+			newopts.dataset = pedigree_util.copy_dataset(ds1);
+			pedigreejs.rebuild(newopts);
 			ncount = newopts.dataset.length;
 		});
-		
+
 		it('should be possible to add a partner to nodes', function() {
-			ptree.addpartner(newopts, newopts.dataset, 'ch1');
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			pedigreejs.addpartner(newopts, newopts.dataset, 'ch1');
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts)
@@ -342,44 +349,44 @@ describe('Test pedigree SVG ', function() {
 		var newopts;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds3);
-			ptree.rebuild(newopts);
+			newopts.dataset = pedigree_util.copy_dataset(ds3);
+			pedigreejs.rebuild(newopts);
 		});
 
 		afterEach(function() {
 			pedcache.clear();
 			$('#msgDialog').remove();
 		});
-		
+
 		it('should show message dialog if disallowed', function() {
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
-			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
+			var fnodes = pedigree_util.flatten(pedigreejs.roots[newopts.targetDiv]);
 			var dan = pedigree_util.getNodeByName(fnodes, 'Dan');
 
 			var err = "The mother (IndivID: KSc) of family member unnamed (IndivID: f21) is missing from the pedigree.";
 			expect($('#msgDialog').length).toBe(0);
-            expect(function() {ptree.delete_node_dataset(newopts.dataset, dan.data, newopts)}).toThrow(new Error(err));
+            expect(function() {pedigreejs.delete_node_dataset(newopts.dataset, dan.data, newopts)}).toThrow(new Error(err));
 			// message dialog
 			expect($('#msgDialog').length).toBe(1);
 			expect($('#msgDialog').text()).toBe("Deletion of this pedigree member is disallowed.");
 		});
-		
-		it('should show confirmation dialog if splitting pedigree', function() {
-			newdataset = ptree.copy_dataset(newopts.dataset);
-			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+
+/*		it('should show confirmation dialog if splitting pedigree', function() {
+			newdataset = pedigree_util.copy_dataset(newopts.dataset);
+			var fnodes = pedigree_util.flatten(pedigreejs.roots[newopts.targetDiv]);
 			var tom = pedigree_util.getNodeByName(fnodes, 'Tom');
 
-			spyOn(utils, "messages");
-            ptree.delete_node_dataset(newdataset, tom.data, newopts);
-            expect(utils.messages).toHaveBeenCalled();   // message dialog
-		});
+			spyOn(pedigree_util, "messages");
+            pedigreejs.delete_node_dataset(newdataset, tom.data, newopts);
+            expect(pedigree_util.messages).toHaveBeenCalled();   // message dialog
+		});*/
 
 		it('should be allowed', function() {
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
-			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
+			var fnodes = pedigree_util.flatten(pedigreejs.roots[newopts.targetDiv]);
 			var ana = pedigree_util.getNodeByName(fnodes, 'Ana');
-			ptree.delete_node_dataset(newopts.dataset, ana.data, newopts);
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			pedigreejs.delete_node_dataset(newopts.dataset, ana.data, newopts);
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts);
@@ -391,27 +398,27 @@ describe('Test pedigree SVG ', function() {
 		var newopts;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds3);
-			ptree.rebuild(newopts);
-			var fnodes = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+			newopts.dataset = pedigree_util.copy_dataset(ds3);
+			pedigreejs.rebuild(newopts);
+			var fnodes = pedigree_util.flatten(pedigreejs.roots[newopts.targetDiv]);
 			var ana = pedigree_util.getNodeByName(fnodes, 'Ana');
-			ptree.delete_node_dataset(newopts.dataset, ana.data, newopts);
-			newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
+			pedigreejs.delete_node_dataset(newopts.dataset, ana.data, newopts);
+			newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
 		});
 
 		it('should not have any partner links clashing', function() {
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 		});
-		
+
 		it('should not have nodes overlapping', function() {
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
 			check_nodes_overlapping(newopts);
 		});
-		
+
 		it('should not have any individuals not connected to the target', function() {
-			expect(function() {ptree.rebuild(newopts)}).not.toThrow();
-			expect(ptree.unconnected(newopts.dataset).length).toBe(0);  // check if individuals aren't connected to target
+			expect(function() {pedigreejs.rebuild(newopts)}).not.toThrow();
+			expect(pedigree_util.unconnected(newopts.dataset).length).toBe(0);  // check if individuals aren't connected to target
 		});
 	});
 
@@ -436,26 +443,26 @@ describe('Test pedigree SVG ', function() {
 		it('should be able to append updates to', function() {
 			var ncache = pedcache.get_count(opts);
 			var idx = pedigree_util.getProbandIndex(ds3);
-			var newdataset = ptree.copy_dataset(ds3); 
-			ptree.addsibling(newdataset, newdataset[idx], 'F');
+			var newdataset = pedigree_util.copy_dataset(ds3);
+			pedigreejs.addsibling(newdataset, newdataset[idx], 'F');
 			var newopts = $.extend({}, opts);
 			newopts.dataset = newdataset;
-			ptree.rebuild(newopts);
+			pedigreejs.rebuild(newopts);
 			expect(parseInt(pedcache.get_count(newopts))).toBe(parseInt(ncache)+1);
 			pedcache.clear();
 		});
-		
+
 		it('can be stored as an array', function() {
 			pedcache.clear();
 			var newopts = $.extend({}, opts);
 			newopts.store_type = "array";
-			ptree.rebuild(newopts);
+			pedigreejs.rebuild(newopts);
 			expect(parseInt(pedcache.get_count(newopts))).toBe(1);
 			var current = pedcache.current(newopts);
 			var idx = pedigree_util.getProbandIndex(current);
-			ptree.addsibling(current, current[idx], 'F');
-			newopts['dataset'] = current;	
-			ptree.rebuild(newopts);
+			pedigreejs.addsibling(current, current[idx], 'F');
+			newopts['dataset'] = current;
+			pedigreejs.rebuild(newopts);
 			expect(parseInt(pedcache.get_count(newopts))).toBe(2);
 			pedcache.clear();
 		});
@@ -465,8 +472,8 @@ describe('Test pedigree SVG ', function() {
 		var newopts;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds2);
-			ptree.rebuild(newopts);
+			newopts.dataset = pedigree_util.copy_dataset(ds2);
+			pedigreejs.rebuild(newopts);
 		});
 
 		afterEach(function() {
@@ -475,40 +482,40 @@ describe('Test pedigree SVG ', function() {
 
 		it('should not have any partner links clashing', function() {
 			for(var i=0; i<newopts.dataset.length; i++) {
-				expect(ptree.check_ptr_link_clashes(newopts, newopts.dataset[i])).toBe(null);
+				expect(pedigreejs.check_ptr_link_clashes(newopts, newopts.dataset[i])).toBe(null);
 			}
 		});
 
 	    function addParentTest(name) {
 	    	it('should not have any partner links clashing when a parent is added to '+name, function() {
 				// add parent
-				newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
-				ptree.addparents(newopts, newopts.dataset, name);
-				ptree.rebuild(newopts);
+				newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
+				pedigreejs.addparents(newopts, newopts.dataset, name);
+				pedigreejs.rebuild(newopts);
 
 				for(var i=0; i<newopts.dataset.length; i++) {
-					expect(ptree.check_ptr_link_clashes(newopts, newopts.dataset[i])).toBe(null);
+					expect(pedigreejs.check_ptr_link_clashes(newopts, newopts.dataset[i])).toBe(null);
 				}
 			});
 	    }
-	    var kids = ['James', 'Sarah', 'Pat'];		
+	    var kids = ['James', 'Sarah', 'Pat'];
 		for(var i=0; i<kids.length; i++)
 			addParentTest(kids[i]);
 	});
-	
-	
+
+
 	describe('the pedigree test data (2)', function() {
 		var newopts;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds3);
-			ptree.rebuild(newopts);
+			newopts.dataset = pedigree_util.copy_dataset(ds3);
+			pedigreejs.rebuild(newopts);
 		});
 
 		afterEach(function() {
 			pedcache.clear();
 		});
-		
+
 		it('should not have any partner links clashing', function() {
 			expect(check_clashing_partner_links(newopts)).toBe(false);
 		});
@@ -518,50 +525,50 @@ describe('Test pedigree SVG ', function() {
 		});
 
 		it('should identify nodes overlapping', function() {
-			var fn = pedigree_util.flatten(ptree.roots[newopts.targetDiv]);
+			var fn = pedigree_util.flatten(pedigreejs.roots[newopts.targetDiv]);
 			var n1 = pedigree_util.getNodeByName(fn, 'Yvb');
 			n1.x = pedigree_util.getNodeByName(fn, 'cMy').x;
 			expect(pedigree_util.overlap(newopts, fn, n1.x, n1.depth, [n1.data.name])).toBe(true);
 		});
-		
+
 		// add a parent and test for clashes
 	    function addParentTest(name, clashExpected) {
 	    	it( (clashExpected ? 'should have' : 'should not have any')+
 	    	 	 ' partner links clashing when a parent is added to '+name, function() {
-				newopts['dataset'] = ptree.copy_dataset(newopts.dataset);
-				ptree.addparents(newopts, newopts.dataset, name);
-				ptree.rebuild(newopts);
+				newopts['dataset'] = pedigree_util.copy_dataset(newopts.dataset);
+				pedigreejs.addparents(newopts, newopts.dataset, name);
+				pedigreejs.rebuild(newopts);
 				expect(check_clashing_partner_links(newopts)).toBe(clashExpected);
 			});
 	    }
-	    var kids = [{'name':'Jane', 'clashExpected':false}, {'name':'Ana', 'clashExpected':true}];		
+	    var kids = [{'name':'Jane', 'clashExpected':false}, {'name':'Ana', 'clashExpected':true}];
 		for(var i=0; i<kids.length; i++)
 			addParentTest(kids[i].name, kids[i].clashExpected);
 	});
-	
+
 	// io
 	describe('the input', function() {
 		var newopts;
 		beforeEach(function() {
 			newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds1);
+			newopts.dataset = pedigree_util.copy_dataset(ds1);
 		});
-		
+
 		it('should allow bwa v4 format', function() {
 			newopts['dataset'] = io.readBoadiceaV4(bwa_v4);
-			ptree.rebuild(newopts);
+			pedigreejs.rebuild(newopts);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts);
 		});
 
 		it('should allow linkage format', function() {
 			newopts['dataset'] = io.readLinkage(linkage_ped);
-			ptree.rebuild(newopts);
+			pedigreejs.rebuild(newopts);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts);
 		});
 	});
-	
+
 	// utils
 	describe('the age and year of birth', function() {
 		var year = new Date().getFullYear();
@@ -569,17 +576,17 @@ describe('Test pedigree SVG ', function() {
 		var yob = year - age;
 		it('should be consistent with current year for alive individuals', function() {
 			var status = 0;       // status - 0 = alive, 1 = dead
-			expect(utils.validate_age_yob(age, yob, status)).toBe(true);
-			expect(utils.validate_age_yob(age-1, yob, status)).toBe(true);
-			expect(utils.validate_age_yob(age+1, yob, status)).toBe(false); 
-			expect(utils.validate_age_yob(age+2, yob, status)).toBe(false);
+			expect(pedigree_util.validate_age_yob(age, yob, status)).toBe(true);
+			expect(pedigree_util.validate_age_yob(age-1, yob, status)).toBe(true);
+			expect(pedigree_util.validate_age_yob(age+1, yob, status)).toBe(false);
+			expect(pedigree_util.validate_age_yob(age+2, yob, status)).toBe(false);
 		});
 
 		it('should be consistent with current year for decesased individuals', function() {
 			var status = 1;       // status - 0 = alive, 1 = dead
-			expect(utils.validate_age_yob(age, yob, status)).toBe(true);
-			expect(utils.validate_age_yob(age-2, yob, status)).toBe(true);
-			expect(utils.validate_age_yob(age+1, yob, status)).toBe(false);
+			expect(pedigree_util.validate_age_yob(age, yob, status)).toBe(true);
+			expect(pedigree_util.validate_age_yob(age-2, yob, status)).toBe(true);
+			expect(pedigree_util.validate_age_yob(age+1, yob, status)).toBe(false);
 		});
 	});
 
@@ -589,17 +596,17 @@ describe('Test pedigree SVG ', function() {
 		});
 		it('should be displayed', function() {
 			expect($('#msgDialog').length).toBe(0);
-			utils.messages('title', 'hello');
+			pedigree_util.messages('title', 'hello');
 			expect($('#msgDialog').length).toBe(1);
 			expect($('#msgDialog').text()).toBe("hello");
 		});
-		
+
 		it('should show confirmation dialog', function() {
 			expect($('#msgDialog').length).toBe(0);
 			var newopts = $.extend({}, opts);
-			newopts.dataset = ptree.copy_dataset(ds1);
+			newopts.dataset = pedigree_util.copy_dataset(ds1);
 			var onConfirm = function(){return};
-            utils.messages('title', 'hello', onConfirm, newopts, ds1);
+			pedigree_util.messages('title', 'hello', onConfirm, newopts, ds1);
 			expect($('#msgDialog').length).toBe(1);
 		});
 	});
