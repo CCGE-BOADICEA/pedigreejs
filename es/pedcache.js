@@ -1,25 +1,24 @@
 //store a history of pedigree
 
-let count = 0;
 let max_limit = 25;
 let dict_cache = {};
 
 // test if browser storage is supported
 function has_browser_storage(opts) {
-    try {
-    	if(opts.store_type === 'array')
-    		return false;
+	try {
+		if(opts.store_type === 'array')
+			return false;
 
-    	if(opts.store_type !== 'local' && opts.store_type !== 'session' && opts.store_type !== undefined)
-    		return false;
+		if(opts.store_type !== 'local' && opts.store_type !== 'session' && opts.store_type !== undefined)
+			return false;
 
-    	let mod = 'test';
-        localStorage.setItem(mod, mod);
-        localStorage.removeItem(mod);
-        return true;
-    } catch(e) {
-        return false;
-    }
+		let mod = 'test';
+		localStorage.setItem(mod, mod);
+		localStorage.removeItem(mod);
+		return true;
+	} catch(e) {
+		return false;
+	}
 }
 
 function get_prefix(opts) {
@@ -75,7 +74,7 @@ export function get_count(opts) {
 	if(count !== null && count !== undefined)
 		return count;
 	return 0;
-};
+}
 
 function set_count(opts, count) {
 	if (has_browser_storage(opts))
@@ -102,7 +101,7 @@ export function add(opts) {
 	else
 		count = 0;
 	set_count(opts, count);
-};
+}
 
 export function nstore(opts) {
 	if(has_browser_storage(opts)) {
@@ -114,7 +113,7 @@ export function nstore(opts) {
 		return (get_arr(opts) && get_arr(opts).length > 0 ? get_arr(opts).length : -1);
 	}
 	return -1;
-};
+}
 
 export function current(opts) {
 	let current = get_count(opts)-1;
@@ -124,7 +123,7 @@ export function current(opts) {
 		return JSON.parse(get_browser_store(opts, get_prefix(opts)+current));
 	else if(get_arr(opts))
 		return JSON.parse(get_arr(opts)[current]);
-};
+}
 
 export function last(opts) {
 	if(has_browser_storage(opts)) {
@@ -141,7 +140,7 @@ export function last(opts) {
 			return JSON.parse(arr(arr.length-1));
 	}
 	return undefined;
-};
+}
 
 export function previous(opts, previous) {
 	if(previous === undefined)
@@ -159,7 +158,7 @@ export function previous(opts, previous) {
 		return JSON.parse(get_browser_store(opts, get_prefix(opts)+previous));
 	else
 		return JSON.parse(get_arr(opts)[previous]);
-};
+}
 
 export function next(opts, next) {
 	if(next === undefined)
@@ -172,13 +171,13 @@ export function next(opts, next) {
 		return JSON.parse(get_browser_store(opts, get_prefix(opts)+next));
 	else
 		return JSON.parse(get_arr(opts)[next]);
-};
+}
 
 export function clear(opts) {
 	if(has_browser_storage(opts))
 		clear_browser_store(opts);
 	dict_cache = {};
-};
+}
 
 // zoom - store translation coords
 export function setposition(opts, x, y, zoom) {
@@ -190,17 +189,16 @@ export function setposition(opts, x, y, zoom) {
 	} else {
 		//TODO
 	}
-};
+}
 
 export function getposition(opts) {
 	if(!has_browser_storage(opts) ||
 		(localStorage.getItem(get_prefix(opts)+'_X') === null &&
 		 sessionStorage.getItem(get_prefix(opts)+'_X') === null))
 		return [null, null];
-	let pos = [parseInt(get_browser_store(opts, get_prefix(opts)+'_X')),
-		   	   parseInt(get_browser_store(opts, get_prefix(opts)+'_Y'))];
+	let pos = [ parseInt(get_browser_store(opts, get_prefix(opts)+'_X')),
+				parseInt(get_browser_store(opts, get_prefix(opts)+'_Y')) ];
 	if(get_browser_store(get_prefix(opts)+'_ZOOM') !== null)
 		pos.push(parseFloat(get_browser_store(opts, get_prefix(opts)+'_ZOOM')));
 	return pos;
-};
-
+}
