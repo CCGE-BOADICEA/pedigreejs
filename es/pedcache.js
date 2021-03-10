@@ -83,7 +83,7 @@ function set_count(opts, count) {
 		dict_cache[get_prefix(opts)+'COUNT'] = count;
 }
 
-export function add(opts) {
+export function init_cache(opts) {
 	if(!opts.dataset)
 		return;
 	let count = get_count(opts);

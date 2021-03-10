@@ -39,7 +39,7 @@ export function build(options) {
 	}
 
 	if(pedcache.nstore(opts) == -1)
-		pedcache.add(opts);
+		pedcache.init_cache(opts);
 
 	pbuttons.updateButtons(opts);
 
@@ -742,7 +742,7 @@ function addLabel(opts, node, size, fx, fy, ftext, class_label) {
 
 export function rebuild(opts) {
 	$("#"+opts.targetDiv).empty();
-	pedcache.add(opts);
+	pedcache.init_cache(opts);
 	try {
 		build(opts);
 	} catch(e) {
