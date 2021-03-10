@@ -5,7 +5,7 @@ import * as pedcache from './pedcache.js';
 import * as io from './io.js';
 import {addWidgets} from './widgets.js';
 
-let roots = {};
+export let roots = {};
 export function build(options) {
 	let opts = $.extend({ // defaults
 		targetDiv: 'pedigree_edit',
@@ -581,9 +581,9 @@ export function validate_pedigree(opts){
 			throw create_err('More than one family found: '+famids.join(", ")+'.');
 		}
 		// warn if there is a break in the pedigree
-		let unconnected = pedigree_utils.unconnected(opts.dataset);
-		if(unconnected.length > 0)
-			console.warn("individuals unconnected to pedigree ", unconnected);
+		let uc = pedigree_utils.unconnected(opts.dataset);
+		if(uc.length > 0)
+			console.warn("individuals unconnected to pedigree ", uc);
 	}
 }
 
@@ -1099,22 +1099,22 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 	// check integrity of mztwins settings
 	checkTwins(dataset);
 
-	let unconnected;
+	let uc;
 	try	{
 		// validate new pedigree dataset
 		let newopts = $.extend({}, opts);
 		newopts.dataset = pedigree_utils.copy_dataset(dataset);
 		validate_pedigree(newopts);
 		// check if pedigree is split
-		unconnected = pedigree_utils.unconnected(dataset);
+		uc = pedigree_utils.unconnected(dataset);
 	} catch(err) {
 		pedigree_utils.messages('Warning', 'Deletion of this pedigree member is disallowed.')
 		throw err;
 	}
-	if(unconnected.length > 0) {
+	if(uc.length > 0) {
 		// check & warn only if this is a new split
-		if(unconnected(opts.dataset).length === 0) {
-			console.error("individuals unconnected to pedigree ", unconnected);
+		if(pedigree_utils.unconnected(opts.dataset).length === 0) {
+			console.error("individuals unconnected to pedigree ", uc);
 			pedigree_utils.messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
 			return;
 		}
