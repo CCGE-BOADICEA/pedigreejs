@@ -2,6 +2,7 @@
 import * as pedigree_util from './pedigree_utils.js';
 import * as pedcache from './pedcache.js';
 import {get_tree_dimensions, validate_pedigree, rebuild} from './pedigree.js';
+import {get_non_anon_pedigree} from './canrisk_file.js';
 
 // cancers, genetic & pathology tests
 export let cancers = {
@@ -338,7 +339,7 @@ export function save(opts){
 }
 
 export function save_canrisk(opts, meta){
-	save_file(opts, run_prediction.get_non_anon_pedigree(pedcache.current(opts), meta), "canrisk.txt");
+	save_file(opts, get_non_anon_pedigree(pedcache.current(opts), meta), "canrisk.txt");
 }
 
 export function canrisk_validation(opts) {
