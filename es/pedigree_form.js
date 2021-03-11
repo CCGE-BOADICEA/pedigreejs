@@ -1,65 +1,7 @@
 // pedigree form
 import {rebuild, syncTwins} from './pedigree.js';
-import {copy_dataset, setProband, getIdxByName, getNodeByName} from './pedigree_utils.js';
+import {copy_dataset, getNodeByName} from './pedigree_utils.js';
 import {current as pedcache_current} from './pedcache.js';
-
-$("#select_all_gene_tests").on('change', function (_e) {
-	if(this.value === "S") {
-		// select all mutation search to be negative
-		$("#gene_test").find("select[name$='_gene_test']").val("S").change();
-		$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
-	} else if(this.value === "T") {
-		// select all direct gene tests to be negative
-		$("#gene_test").find("select[name$='_gene_test']").val("T").change();
-		$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
-	} else if(this.value === "N") {
-		// select all gene tests to be negative
-		$("#gene_test").find("select[name$='_gene_test_result']").val("N").change();
-	} else if(this.value === "reset") {
-		$("#gene_test").find("select[name$='_gene_test']").val("-").change();
-		$("#gene_test").find("select[name$='_gene_test_result']").val("-").change();
-	}
-});
-
-$('#acc_FamHist_div').on('click', '#id_proband, #id_exclude', function(_e) {
-	let name = $('#id_name').val();
-	if($(this).attr("id") === 'id_proband' && $(this).is(':checked')) {
-		let msg = $("#proband_switch_dialog").text();
-
-		$('<div id="msgDialog">'+msg+'</div>').dialog({
-			title: $("#proband_switch_dialog").data("title"),
-			width: 350,
-			buttons: [{
-					text: $("#proband_switch_dialog").data("continue"),
-					click: function() {
-						$(this).dialog('close');
-						let dataset = pedcache_current(opts);
-						opts.dataset = copy_dataset(dataset);
-						setProband(opts.dataset, name, true);
-						rebuild(opts);
-						reset_n_sync(opts);
-						$('#id_proband').prop("disabled", true);
-					}
-				},{
-					text: $("#proband_switch_dialog").data("cancel"),
-					click: function() {
-						 $(this).dialog('close');
-						 $("#id_proband").prop('checked', false);
-						 $('#id_proband').prop("disabled", false);
-					}
-				}]
-		});
-	} else if($(this).attr("id") === 'id_exclude') {
-		let dataset = pedcache_current(opts);
-		opts.dataset = copy_dataset(dataset);
-		let idx = getIdxByName(opts.dataset, name);
-		if($(this).is(':checked'))
-			opts.dataset[idx].exclude = true;
-		else
-			delete opts.dataset[idx].exclude;
-		rebuild(opts);
-	}
-});
 
 export function update(opts) {
 	$('.node_save').click(function() {
