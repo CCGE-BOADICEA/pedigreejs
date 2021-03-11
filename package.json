@@ -30,6 +30,10 @@
     "@rollup/plugin-node-resolve": "^11.2.0",
     "rollup": "^2.41.0",
     "rollup-plugin-eslint": "^7.0.0",
+    "rollup-plugin-postcss": "^4.0.0",
     "rollup-plugin-terser": "^7.0.2"
+  },
+  "dependencies": {
+    "postcss": "^8.2.8"
   }
 }
