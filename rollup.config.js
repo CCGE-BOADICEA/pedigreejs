@@ -3,6 +3,8 @@ import {terser} from 'rollup-plugin-terser';
 import { eslint } from "rollup-plugin-eslint";
 import postcss from 'rollup-plugin-postcss';
 
+const version = process.env.npm_package_version;
+
 export default {
   input: 'es/index.js',
   plugins: [
@@ -14,13 +16,13 @@ export default {
 	  ],
   output: [{
 	    name: 'pedigreejs',
-	    file: 'build/pedigreejs.js',
+	    file: 'build/pedigreejs.'+version+'.js',
 	    format: 'iife',
 	    sourcemap: 'inline'
 	  },
 	  {
 		name: 'pedigreejs',
-	    file: 'build/pedigreejs.min.js',
+	    file: 'build/pedigreejs.'+version+'.min.js',
 	    format: 'iife',
 	    plugins: [terser()]
 	  }
