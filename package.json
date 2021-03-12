@@ -11,8 +11,17 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "start": "http-server"
+    "start": "http-server",
+    "browserlist": "npx browserslist@latest --update-db"
   },
+  "babel": {
+    "presets": [
+      "@babel/env"
+    ]
+  },
+  "browserslist": [
+  	"defaults"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/CCGE-BOADICEA/pedigreejs.git"
