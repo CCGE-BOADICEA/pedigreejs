@@ -3,38 +3,6 @@ import {rebuild, syncTwins} from './pedigree.js';
 import {copy_dataset, getNodeByName} from './pedigree_utils.js';
 import {current as pedcache_current} from './pedcache.js';
 
-export function update(opts) {
-	$('.node_save').click(function() {
-		save(opts);
-	});
-
-	// advanced options - model parameters
-	$("input[id$='_mut_sensitivity'], input[id$='_mut_frequency']").prop('disabled', true);
-	$('#id_use_custom_mutation_sensitivities').change(function() {
-		$("input[id$='_mut_sensitivity']").prop('disabled', !$(this).is(":checked"));
-	});
-
-	$('#id_mutation_frequencies').change(function() {
-		$("input[id$='_mut_frequency']").prop('disabled', (this.value !== 'Custom'));
-		// note pedigree_form.mutation_frequencies is set in the view see pedigree_section_js.html
-		if(pedigree_form.bc_mutation_frequencies && this.value !== 'Custom') {
-			let bcmfreq = pedigree_form.bc_mutation_frequencies[this.value];
-			for (let gene in bcmfreq)
-				$('#id_'+gene.toLowerCase()+'_bc_mut_frequency').val(bcmfreq[gene]);
-
-			let obcmfreq = pedigree_form.oc_mutation_frequencies[this.value];
-			for (let gene in obcmfreq)
-				$('#id_'+gene.toLowerCase()+'_oc_mut_frequency').val(obcmfreq[gene]);
-		}
-
-		if(this.value === 'Ashkenazi') {  // update canrisk FH radio settings
-			$('#orig_ashk').prop( "checked", true );
-		} else {
-			$('#orig_unk').prop( "checked", true );
-		}
-		save_ashkn(opts); // save ashkenazi updates
-	});
-}
 
 // handle family history change events (undo/redo/delete)
 $(document).on('fhChange', function(e, opts){

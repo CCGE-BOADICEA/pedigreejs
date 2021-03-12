@@ -1,7 +1,7 @@
 // pedigree widgets
 import {addsibling, addchild, addparents, addpartner, rebuild, delete_node_dataset} from './pedigree.js';
 import {copy_dataset, makeid, getIdxByName} from './pedigree_utils.js';
-import {save, update} from './pedigree_form.js';
+import {save} from './pedigree_form.js';
 import {current as pedcache_current} from './pedcache.js';
 
 let dragging;
@@ -469,10 +469,8 @@ function openEditDialog(opts, d) {
 	$('#node_properties').html(table);
 	$('#node_properties').dialog('open');
 
-	//$('#id_name').closest('tr').toggle();
 	$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function() {
 		save(opts);
     });
-	update(opts);
 	return;
 }
