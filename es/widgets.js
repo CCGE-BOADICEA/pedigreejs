@@ -218,8 +218,8 @@ export function addWidgets(opts, node) {
 
 	// handle widget clicks
 	d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
-	  .on("click", function (event) {
-		event.stopPropagation();
+	  .on("click", function () {
+		  d3.event.stopPropagation();
 		let opt = d3.select(this).attr('class');
 		let d = d3.select(this.parentNode).datum();
 		if(opts.DEBUG) {
@@ -255,8 +255,8 @@ export function addWidgets(opts, node) {
 	let highlight = [];
 
 	node.filter(function (d) { return !d.data.hidden; })
-	.on("click", function (event, d) {
-		if (event.ctrlKey) {
+	.on("click", function (d) {
+		if (d3.event.ctrlKey) {
 			if(highlight.indexOf(d) == -1)
 				highlight.push(d);
 			else
@@ -270,8 +270,8 @@ export function addWidgets(opts, node) {
 			d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1;}).style("opacity", 0.5);
 		}
 	})
-	.on("mouseover", function(event, d){
-		event.stopPropagation();
+	.on("mouseover", function(d){
+		d3.event.stopPropagation();
 		last_mouseover = d;
 		if(dragging) {
 			if(dragging.data.name !== last_mouseover.data.name &&
@@ -285,7 +285,7 @@ export function addWidgets(opts, node) {
 		d3.select(this).selectAll('.indi_details').style("opacity", 0);
 		setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
 	})
-	.on("mouseout", function(event, d){
+	.on("mouseout", function(d){
 		if(dragging)
 			return;
 
@@ -294,8 +294,8 @@ export function addWidgets(opts, node) {
 			d3.select(this).select('rect').style("opacity", 0);
 		d3.select(this).selectAll('.indi_details').style("opacity", 1);
 		// hide popup if it looks like the mouse is moving north
-		let xcoord = d3.pointer(event)[0];
-		let ycoord = d3.pointer(event)[1];
+		let xcoord = d3.mouse(this)[0];
+		let ycoord = d3.mouse(this)[1];
 		if(ycoord < 0.8*opts.symbol_size)
 			d3.selectAll('.popup_selection').style("opacity", 0);
 		if(!dragging) {
@@ -358,10 +358,10 @@ function drag_handle(opts) {
 		return;
 	}
 
-	function drag(event, _d) {
-		event.sourceEvent.stopPropagation();
-		let dx = event.dx;
-		let dy = event.dy;
+	function drag(_d) {
+		d3.event.sourceEvent.stopPropagation();
+		let dx = d3.event.dx;
+		let dy = d3.event.dy;
         let xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
         let ynew = parseFloat(d3.select(this).attr('y2'))+ dy;
         setLineDragPosition(opts.symbol_size-10, 0, xnew, ynew);

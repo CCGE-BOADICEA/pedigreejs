@@ -501,8 +501,8 @@ export function build(options) {
 	  .scaleExtent([opts.zoomIn, opts.zoomOut])
 	  .on('zoom', zoomFn);
 
-	function zoomFn(event) {
-		let t = event.transform;
+	function zoomFn() {
+		let t = d3.event.transform;
 		if(pedigree_utils.isIE() && t.x.toString().length > 10)	// IE fix for drag off screen
 			return;
 		let pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
