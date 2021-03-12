@@ -255,8 +255,8 @@ export function addWidgets(opts, node) {
 	let highlight = [];
 
 	node.filter(function (d) { return !d.data.hidden; })
-	.on("click", function (d) {
-		if (d3.event.ctrlKey) {
+	.on("click", function (event, d) {
+		if (event.ctrlKey) {
 			if(highlight.indexOf(d) == -1)
 				highlight.push(d);
 			else
