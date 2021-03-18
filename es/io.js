@@ -14,11 +14,6 @@ export function add(opts) {
 		save(opts);
 	});
 
-	$('#save_canrisk').click(function(_e) {
-		let meta = get_meta();
-		save_canrisk(opts, meta);
-	});
-
 	$('#print').click(function(_e) {
 		print(get_printable_svg(opts));
 	});
@@ -268,10 +263,6 @@ export function save_file(opts, content, filename, type){
 function save(opts){
 	let content = JSON.stringify(pedcache.current(opts));
 	save_file(opts, content);
-}
-
-function save_canrisk(opts, meta){
-	save_file(opts, get_non_anon_pedigree(pedcache.current(opts), meta), "canrisk.txt");
 }
 
 function canrisk_validation(opts) {

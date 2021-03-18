@@ -1649,10 +1649,6 @@ var pedigreejs = (function (exports) {
     $('#save').click(function (_e) {
       save$1(opts);
     });
-    $('#save_canrisk').click(function (_e) {
-      var meta = get_meta();
-      save_canrisk(opts, meta);
-    });
     $('#print').click(function (_e) {
       print(get_printable_svg(opts));
     });
@@ -1917,10 +1913,6 @@ var pedigreejs = (function (exports) {
   function save$1(opts) {
     var content = JSON.stringify(current(opts));
     save_file(opts, content);
-  }
-
-  function save_canrisk(opts, meta) {
-    save_file(opts, get_non_anon_pedigree(current(opts), meta), "canrisk.txt");
   }
 
   function canrisk_validation(opts) {
