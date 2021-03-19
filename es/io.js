@@ -2,7 +2,7 @@
 import * as pedigree_util from './pedigree_utils.js';
 import * as pedcache from './pedcache.js';
 import {get_tree_dimensions, validate_pedigree, rebuild} from './pedigree.js';
-import {get_non_anon_pedigree, get_meta, readCanRiskV1, cancers, genetic_test, pathology_tests} from './canrisk_file.js';
+import {readCanRiskV1, cancers, genetic_test, pathology_tests} from './canrisk_file.js';
 
 
 export function add(opts) {
@@ -130,7 +130,7 @@ function unique_urls(svg_html) {
 	if(matches === -1)
 		return "ERROR DISPLAYING PEDIGREE"
 
-	$.each(matches, function(index, match) {
+	$.each(matches, function(_index, match) {
 		let quote = (match[1] ? match[1] : "");
 		let val = match[2];
 		let m1 = "id=\"" + val + "\"";
@@ -266,7 +266,7 @@ function save(opts){
 }
 
 function canrisk_validation(opts) {
-	$.each(opts.dataset, function(idx, p) {
+	$.each(opts.dataset, function(_idx, p) {
 		if(!p.hidden && p.sex === 'M' && !pedigree_util.isProband(p)) {
 			if(p[cancers['breast_cancer2']]) {
 				let msg = 'Male family member ('+p.display_name+') with contralateral breast cancer found. '+
@@ -426,7 +426,7 @@ export function readBoadiceaV4(boadicea_lines, version) {
 			if(attr[10] !== "0") indi.yob = attr[10];
 
 			let idx = 11;
-			$.each(cancers, function(cancer, diagnosis_age) {
+			$.each(cancers, function(_cancer, diagnosis_age) {
 				// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
 				if(attr[idx] !== "0") {
 					indi[diagnosis_age] = attr[idx];

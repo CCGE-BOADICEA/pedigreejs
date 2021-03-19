@@ -122,8 +122,8 @@ export function buildTree(opts, person, root, partnerLinks, id) {
 	let nodes = flatten(root);
 	//console.log('NAME='+person.name+' NO. CHILDREN='+person.children.length);
 	let partners = [];
-	$.each(person.children, function(i, child) {
-		$.each(opts.dataset, function(j, p) {
+	$.each(person.children, function(_i, child) {
+		$.each(opts.dataset, function(_j, p) {
 			if (((child.name === p.mother) || (child.name === p.father)) && child.id === undefined) {
 				let m = getNodeByName(nodes, p.mother);
 				let f = getNodeByName(nodes, p.father);
@@ -136,7 +136,7 @@ export function buildTree(opts, person, root, partnerLinks, id) {
 	});
 	$.merge(partnerLinks, partners);
 
-	$.each(partners, function(i, ptr) {
+	$.each(partners, function(_i, ptr) {
 		let mother = ptr.mother;
 		let father = ptr.father;
 		mother.children = [];
@@ -171,7 +171,7 @@ export function buildTree(opts, person, root, partnerLinks, id) {
 	});
 	id = setChildrenId(person.children, id);
 
-	$.each(person.children, function(i, p) {
+	$.each(person.children, function(_i, p) {
 		id = buildTree(opts, p, root, partnerLinks, id)[1];
 	});
 	return [partnerLinks, id];
@@ -209,7 +209,7 @@ function setChildrenId(children, id) {
 		return 0;
 	});
 
-	$.each(children, function(i, p) {
+	$.each(children, function(_i, p) {
 		if(p.id === undefined) p.id = id++;
 	});
 	return id;
@@ -220,7 +220,7 @@ export function isProband(obj) {
 }
 
 export function setProband(dataset, name, is_proband) {
-	$.each(dataset, function(i, p) {
+	$.each(dataset, function(_i, p) {
 		if (name === p.name)
 			p.proband = is_proband;
 		else
@@ -239,7 +239,7 @@ function include_children(connected, p, dataset) {
 		return;
 	combineArrays(connected, get_partners(dataset, p));
 	let children = getAllChildren(dataset, p);
-	$.each(children, function( child_idx, child ) {
+	$.each(children, function( _child_idx, child ) {
 		if($.inArray( child.name, connected ) == -1) {
 			connected.push(child.name);
 			combineArrays(connected, get_partners(dataset, child));
@@ -276,7 +276,7 @@ export function unconnected(dataset){
 	while(change && ii < 200) {
 		ii++;
 		let nconnect = connected.length;
-		$.each(dataset, function( idx, p ) {
+		$.each(dataset, function( _idx, p ) {
 			if($.inArray( p.name, connected ) != -1) {
 				// check if this person or a partner has a parent
 				let ptrs = get_partners(dataset, p);
@@ -321,7 +321,7 @@ export function getChildren(dataset, mother, father) {
 	let children = [];
 	let names = [];
 	if(mother.sex === 'F')
-		$.each(dataset, function(i, p) {
+		$.each(dataset, function(_i, p) {
 			if(mother.name === p.mother)
 				if(!father || father.name == p.father) {
 					if($.inArray(p.name, names) === -1){
@@ -451,7 +451,7 @@ export function consanguity(node1, node2, opts) {
 	let names1 = $.map(ancestors1, function(ancestor, _i){return ancestor.name;});
 	let names2 = $.map(ancestors2, function(ancestor, _i){return ancestor.name;});
 	let consanguity = false;
-	$.each(names1, function( index, name ) {
+	$.each(names1, function( _index, name ) {
 		if($.inArray(name, names2) !== -1){
 			consanguity = true;
 			return false;

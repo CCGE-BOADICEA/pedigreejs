@@ -118,12 +118,12 @@ export function nodeclick(node) {
 function update_ashkn(newdataset) {
 	// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
 	if($('#orig_ashk').is(':checked')) {
-		$.each(newdataset, function(i, p) {
+		$.each(newdataset, function(_i, p) {
 			if(p.proband)
 				p.ashkenazi = 1;
 		});
 	} else {
-		$.each(newdataset, function(i, p) {
+		$.each(newdataset, function(_i, p) {
 			delete p.ashkenazi;
 		});
 	}

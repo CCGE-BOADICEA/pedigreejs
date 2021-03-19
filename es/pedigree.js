@@ -164,7 +164,7 @@ export function build(options) {
 	let pienode = node.selectAll("pienode")
 	   .data(function(d) {	 		// set the disease data for the pie plot
 		   let ncancers = 0;
-		   let cancers = $.map(opts.diseases, function(val, i){
+		   let cancers = $.map(opts.diseases, function(_val, i){
 			   if(prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
 		   });
 		   if(ncancers === 0) cancers = [1];
@@ -223,7 +223,7 @@ export function build(options) {
 			.attr("y2", function(_d, _i) {return -0.6*opts.symbol_size;});
 
 	// names of individuals
-	addLabel(opts, node, ".25em", -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
+	addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
 			function(d) {
 				if(opts.DEBUG)
 					return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
@@ -238,7 +238,7 @@ export function build(options) {
 	// display label defined in opts.labels e.g. alleles/genotype data
 	for(let ilab=0; ilab<opts.labels.length; ilab++) {
 		let label = opts.labels[ilab];
-		addLabel(opts, node, ".25em", -(0.7 * opts.symbol_size),
+		addLabel(opts, node, -(0.7 * opts.symbol_size),
 			function(d) {
 				if(!d.data[label])
 					return;
@@ -267,7 +267,7 @@ export function build(options) {
 	// individuals disease details
 	for(let i=0;i<opts.diseases.length; i++) {
 		let disease = opts.diseases[i].type;
-		addLabel(opts, node, ".25em", -(opts.symbol_size),
+		addLabel(opts, node, -(opts.symbol_size),
 				function(d) {
 					let y_offset = (d.y_offset ? d.y_offset+font_size: font_size*2.2);
 					for(let j=0;j<opts.diseases.length; j++) {
@@ -726,7 +726,7 @@ function getPx(opts){
 }
 
 // Add label
-function addLabel(opts, node, size, fx, fy, ftext, class_label) {
+function addLabel(opts, node, fx, fy, ftext, class_label) {
 	node.filter(function (d) {
 		return d.data.hidden && !opts.DEBUG ? false : true;
 	}).append("text")
