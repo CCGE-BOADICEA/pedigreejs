@@ -198,7 +198,7 @@ export function getposition(opts) {
 		return [null, null];
 	let pos = [ parseInt(get_browser_store(opts, get_prefix(opts)+'_X')),
 				parseInt(get_browser_store(opts, get_prefix(opts)+'_Y')) ];
-	if(get_browser_store(get_prefix(opts)+'_ZOOM') !== null)
+	if(get_browser_store(opts, get_prefix(opts)+'_ZOOM') !== null)
 		pos.push(parseFloat(get_browser_store(opts, get_prefix(opts)+'_ZOOM')));
 	return pos;
 }
