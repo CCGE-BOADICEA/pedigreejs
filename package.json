@@ -12,7 +12,7 @@
 	"scripts": {
 		"build": "rollup -c",
 		"build-es": "rollup es/index.js --file build/pedigreejs.es.v2.0.0-rc1.js --format es --plugin 'rollup-plugin-postcss={extract: true, minimize: true}'",
-		"server": "python -m http.server",
+		"server": "python -m http.server 8001",
 		"browserlist": "npx browserslist@latest --update-db"
 	},
 	"babel": {
