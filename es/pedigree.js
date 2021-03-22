@@ -504,7 +504,7 @@ export function build(options) {
 	zoom = d3.zoom()
 	  .scaleExtent([opts.zoomIn, opts.zoomOut])
 	  .filter(function() {
-	  		if(d3.event.type === 'dblclick') return false;
+			if(d3.event.type === 'dblclick') return false;
 			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
 				if(d3.event.type && d3.event.type === 'wheel') return false
 			}
