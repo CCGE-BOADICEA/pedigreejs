@@ -215,13 +215,14 @@ var pedigreejs = (function (exports) {
     if (has_browser_storage(opts)) {
       set_browser_store(opts, get_prefix(opts) + '_X', x);
       set_browser_store(opts, get_prefix(opts) + '_Y', y);
-      if (zoom) set_browser_store(opts, get_prefix(opts) + '_ZOOM', zoom);
+      var zoomName = get_prefix(opts) + '_ZOOM';
+      if (zoom) set_browser_store(opts, zoomName, zoom);else opts.store_type === 'local' ? localStorage.removeItem(zoomName) : sessionStorage.removeItem(zoomName);
     }
   }
   function getposition(opts) {
     if (!has_browser_storage(opts) || localStorage.getItem(get_prefix(opts) + '_X') === null && sessionStorage.getItem(get_prefix(opts) + '_X') === null) return [null, null];
     var pos = [parseInt(get_browser_store(opts, get_prefix(opts) + '_X')), parseInt(get_browser_store(opts, get_prefix(opts) + '_Y'))];
-    if (get_browser_store(get_prefix(opts) + '_ZOOM') !== null) pos.push(parseFloat(get_browser_store(opts, get_prefix(opts) + '_ZOOM')));
+    if (get_browser_store(opts, get_prefix(opts) + '_ZOOM') !== null) pos.push(parseFloat(get_browser_store(opts, get_prefix(opts) + '_ZOOM')));
     return pos;
   }
 
@@ -979,24 +980,40 @@ var pedigreejs = (function (exports) {
       btn_target: 'pedigree_history'
     }, options);
     var btns = [{
-      "fa": "fa-undo",
+      "fa": "fa-undo pull-left",
       "title": "undo"
     }, {
-      "fa": "fa-repeat",
+      "fa": "fa-repeat pull-left",
       "title": "redo"
     }, {
-      "fa": "fa-refresh",
+      "fa": "fa-refresh pull-left",
       "title": "reset"
     }, {
-      "fa": "fa-arrows-alt",
+      "fa": "fa-arrows-alt pull-left",
       "title": "fullscreen"
     }];
+    btns.push({
+      "fa": "fa-align-center pull-right",
+      "title": "center"
+    });
+
+    if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
+      if (opts.zoomOut != 1) btns.push({
+        "fa": "fa-minus-circle pull-right",
+        "title": "zoom-out"
+      });
+      if (opts.zoomIn != 1) btns.push({
+        "fa": "fa-plus-circle pull-right",
+        "title": "zoom-in"
+      });
+    }
+
     var lis = "";
 
     for (var i = 0; i < btns.length; i++) {
-      lis += '<li">';
-      lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' + (btns[i].fa == "fa-arrows-alt" ? 'id="fullscreen" ' : '') + ' aria-hidden="true" title="' + btns[i].title + '"></i>';
-      lis += '</li>';
+      lis += '<span>';
+      lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' + (btns[i].fa == "fa-arrows-alt pull-left" ? 'id="fullscreen" ' : '') + ' aria-hidden="true" title="' + btns[i].title + '"></i>';
+      lis += '</span>';
     }
 
     $("#" + opts.btn_target).append(lis);
@@ -1056,6 +1073,12 @@ var pedigreejs = (function (exports) {
             }
           }
         });
+      } else if ($(e.target).hasClass('fa-plus-circle')) {
+        zoom_pedigree(opts, 1.1);
+      } else if ($(e.target).hasClass('fa-minus-circle')) {
+        zoom_pedigree(opts, 0.9);
+      } else if ($(e.target).hasClass('fa-align-center')) {
+        zoom_pedigree(opts, 1, opts.symbol_size / 2, -opts.symbol_size * 2.5, 1);
       } // trigger fhChange event
 
 
@@ -2940,6 +2963,7 @@ var pedigreejs = (function (exports) {
   }
 
   var roots = {};
+  var zoom, xtransform, ytransform;
   function build(options) {
     var opts = $.extend({
       // defaults
@@ -2965,6 +2989,7 @@ var pedigreejs = (function (exports) {
       width: 600,
       height: 400,
       symbol_size: 35,
+      zoomSrc: ['wheel', 'button'],
       zoomIn: 1.0,
       zoomOut: 1.0,
       diseases: [{
@@ -3013,20 +3038,21 @@ var pedigreejs = (function (exports) {
     .style("stroke-width", 1);
     var xytransform = getposition(opts); // cached position
 
-    var xtransform = xytransform[0];
-    var ytransform = xytransform[1];
-    var zoom = 1;
+    xtransform = xytransform[0];
+    ytransform = xytransform[1];
+    var k = 1;
 
     if (xytransform.length == 3) {
-      zoom = xytransform[2];
+      k = xytransform[2];
     }
 
     if (xtransform === null || ytransform === null) {
       xtransform = opts.symbol_size / 2;
       ytransform = -opts.symbol_size * 2.5;
+      setposition(opts, xtransform, ytransform);
     }
 
-    var ped = svg.append("g").attr("class", "diagram").attr("transform", "translate(" + xtransform + "," + ytransform + ") scale(" + zoom + ")");
+    var ped = svg.append("g").attr("class", "diagram").attr("transform", "translate(" + xtransform + "," + ytransform + ") scale(" + k + ")");
     var top_level = $.map(opts.dataset, function (val, _i) {
       return 'top_level' in val && val.top_level ? val : null;
     });
@@ -3245,12 +3271,13 @@ var pedigreejs = (function (exports) {
       var path = "";
 
       for (var j = 0; j < clash.length; j++) {
-        var k = extend(j, clash.length);
+        var _k = extend(j, clash.length);
+
         var dx1 = clash[j] - dx - cshift;
-        var dx2 = clash[k] + dx + cshift;
+        var dx2 = clash[_k] + dx + cshift;
         if (parent_node.x > dx1 && parent_node.x < dx2) parent_node.y = dy2;
         path += "L" + dx1 + "," + (dy1 - cshift) + "L" + dx1 + "," + (dy2 - cshift) + "L" + dx2 + "," + (dy2 - cshift) + "L" + dx2 + "," + (dy1 - cshift);
-        j = k;
+        j = _k;
       }
 
       return path;
@@ -3391,25 +3418,49 @@ var pedigreejs = (function (exports) {
     } // drag and zoom
 
 
-    zoom = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).on('zoom', zoomFn);
+    zoom = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).filter(function () {
+      if (!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
+        if (d3.event.type && d3.event.type === 'wheel') return false;
+      }
+
+      return true;
+    }).on('zoom', zoomFn);
 
     function zoomFn() {
       var t = d3.event.transform;
-      if (isIE() && t.x.toString().length > 10) // IE fix for drag off screen
-        return;
-      var pos = [t.x + parseInt(xtransform), t.y + parseInt(ytransform)];
 
-      if (t.k == 1) {
-        setposition(opts, pos[0], pos[1]);
-      } else {
-        setposition(opts, pos[0], pos[1], t.k);
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
+        var xyk = getposition(opts);
+        if (xyk.length == 3) t.k = xyk[2];
       }
 
-      ped.attr('transform', 'translate(' + pos[0] + ',' + pos[1] + ') scale(' + t.k + ')');
+      transform_pedigree(opts, t.x + xtransform, t.y + ytransform, t.k);
+      return;
     }
 
     svg.call(zoom);
     return opts;
+  } // scale size the pedigree or optionally set x, y and k
+
+  function zoom_pedigree(opts, scale, x, y, k) {
+    if (!x) {
+      var xyk = getposition(opts); // cached position
+
+      x = xyk[0] !== null ? xyk[0] : xtransform;
+      y = xyk[1] !== null ? xyk[1] : ytransform;
+      if (!k) k = xyk.length == 3 ? xyk[2] * scale : 1 * scale;
+    }
+
+    if (k < opts.zoomIn || k > opts.zoomOut) return;
+    var ped = d3.select("#" + opts.targetDiv).select(".diagram");
+    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
+    .scale(k).translate(x - xtransform, y - ytransform);
+    ped.call(zoom.transform, transform); // apply new zoom transform:
+  }
+  function transform_pedigree(opts, x, y, k) {
+    var ped = d3.select("#" + opts.targetDiv).select(".diagram");
+    setposition(opts, x, y, k !== 1 ? k : undefined);
+    ped.attr('transform', 'translate(' + x + ',' + y + ') scale(' + k + ')');
   }
 
   function create_err(err) {
@@ -4008,6 +4059,8 @@ var pedigreejs = (function (exports) {
     __proto__: null,
     roots: roots,
     build: build,
+    zoom_pedigree: zoom_pedigree,
+    transform_pedigree: transform_pedigree,
     validate_pedigree: validate_pedigree,
     check_ptr_link_clashes: check_ptr_link_clashes,
     get_tree_dimensions: get_tree_dimensions,

@@ -6,6 +6,8 @@ import * as io from './io.js';
 import {addWidgets} from './widgets.js';
 
 export let roots = {};
+let zoom, xtransform, ytransform;
+
 export function build(options) {
 	let opts = $.extend({ // defaults
 		targetDiv: 'pedigree_edit',
@@ -15,6 +17,7 @@ export function build(options) {
 		width: 600,
 		height: 400,
 		symbol_size: 35,
+		zoomSrc: ['wheel', 'button'],
 		zoomIn: 1.0,
 		zoomOut: 1.0,
 		diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
@@ -66,20 +69,21 @@ export function build(options) {
 		.style("stroke-width", 1);
 
 	let xytransform = pedcache.getposition(opts);  // cached position
-	let xtransform = xytransform[0];
-	let ytransform = xytransform[1];
-	let zoom = 1;
+	xtransform = xytransform[0];
+	ytransform = xytransform[1];
+	let k = 1;
 	if(xytransform.length == 3){
-		zoom = xytransform[2];
+		k = xytransform[2];
 	}
 
 	if(xtransform === null || ytransform === null) {
 		xtransform = opts.symbol_size/2;
 		ytransform = (-opts.symbol_size*2.5);
+		pedcache.setposition(opts, xtransform, ytransform);
 	}
 	let ped = svg.append("g")
 			 .attr("class", "diagram")
-			 .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+zoom+")");
+			 .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+k+")");
 
 	let top_level = $.map(opts.dataset, function(val, _i){return 'top_level' in val && val.top_level ? val : null;});
 	let hidden_root = {
@@ -289,7 +293,7 @@ export function build(options) {
 
 	// links between partners
 	let clash_depth = {};
-	
+
 	// get path looping over node(s)
 	let draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
 		let extend = function(i, l) {
@@ -313,8 +317,8 @@ export function build(options) {
 		}
 		return path;
 	}
-	
-	
+
+
 	partners = ped.selectAll(".partner")
 		.data(ptrLinkNodes)
 		.enter()
@@ -499,22 +503,48 @@ export function build(options) {
 	// drag and zoom
 	zoom = d3.zoom()
 	  .scaleExtent([opts.zoomIn, opts.zoomOut])
+	  .filter(function() {
+			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
+				if(d3.event.type && d3.event.type === 'wheel') return false
+			}
+			return  true})
 	  .on('zoom', zoomFn);
 
 	function zoomFn() {
 		let t = d3.event.transform;
-		if(pedigree_utils.isIE() && t.x.toString().length > 10)	// IE fix for drag off screen
-			return;
-		let pos = [(t.x + parseInt(xtransform)), (t.y + parseInt(ytransform))];
-		if(t.k == 1) {
-			pedcache.setposition(opts, pos[0], pos[1]);
-		} else {
-			pedcache.setposition(opts, pos[0], pos[1], t.k);
+		if(d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
+			let xyk = pedcache.getposition(opts);
+			if(xyk.length == 3) t.k = xyk[2];
 		}
-		ped.attr('transform', 'translate(' + pos[0] + ',' + pos[1] + ') scale(' + t.k + ')');
+	    transform_pedigree(opts, t.x+xtransform, t.y+ytransform, t.k);
+	    return;
 	}
 	svg.call(zoom);
 	return opts;
+}
+
+// scale size the pedigree or optionally set x, y and k
+export function zoom_pedigree(opts, scale, x, y, k) {
+	if(!x) {
+		let xyk = pedcache.getposition(opts);  // cached position
+		x = (xyk[0] !== null ? xyk[0] : xtransform);
+		y = (xyk[1] !== null ? xyk[1] : ytransform);
+		if(!k) k = (xyk.length == 3 ? xyk[2]*scale : 1*scale);
+	}
+
+	if(k < opts.zoomIn || k > opts.zoomOut) return;
+
+	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
+	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
+      .scale(k) 
+      .translate(x-xtransform, y-ytransform);  
+    ped.call(zoom.transform, transform); 	// apply new zoom transform:
+}
+
+export function transform_pedigree(opts, x, y, k) {
+	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
+	pedcache.setposition(opts, x, y, (k !== 1 ? k : undefined));
+	ped.attr('transform', 'translate(' + x + ',' + y + ') scale(' + k + ')');
 }
 
 function create_err(err) {
@@ -564,8 +594,8 @@ export function validate_pedigree(opts){
 								" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
 				}
 			}
-			
-			
+
+
 			if(!opts.dataset[p].name)
 				throw create_err(display_name+' has no IndivID.');
 			if($.inArray(opts.dataset[p].name, uniquenames) > -1)

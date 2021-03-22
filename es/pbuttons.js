@@ -1,6 +1,6 @@
 // undo, redo, reset buttons
 import * as pedcache from './pedcache.js';
-import {rebuild, build} from './pedigree.js';
+import {rebuild, build, zoom_pedigree, transform_pedigree} from './pedigree.js';
 import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
 
 export function add(options) {
@@ -9,17 +9,27 @@ export function add(options) {
 		btn_target: 'pedigree_history'
     }, options );
 
-	let btns = [{"fa": "fa-undo", "title": "undo"},
-				{"fa": "fa-repeat", "title": "redo"},
-				{"fa": "fa-refresh", "title": "reset"},
-				{"fa": "fa-arrows-alt", "title": "fullscreen"}];
+	let btns = [{"fa": "fa-undo pull-left", "title": "undo"},
+				{"fa": "fa-repeat pull-left", "title": "redo"},
+				{"fa": "fa-refresh pull-left", "title": "reset"},
+				{"fa": "fa-arrows-alt pull-left", "title": "fullscreen"}];
+
+	btns.push({"fa": "fa-align-center pull-right", "title": "center"});
+	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
+		if(opts.zoomOut != 1)
+			btns.push({"fa": "fa-minus-circle pull-right", "title": "zoom-out"});
+		if(opts.zoomIn != 1)
+			btns.push({"fa": "fa-plus-circle pull-right", "title": "zoom-in"});
+	}
+	
+
 	let lis = "";
 	for(let i=0; i<btns.length; i++) {
-		lis += '<li">';
+		lis += '<span>';
 		lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' +
-		               (btns[i].fa == "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
+		               (btns[i].fa == "fa-arrows-alt pull-left" ? 'id="fullscreen" ' : '') +
 		               ' aria-hidden="true" title="'+ btns[i].title +'"></i>';
-		lis += '</li>';
+		lis += '</span>';
 	}
 	$( "#"+opts.btn_target ).append(lis);
 	click(opts);
@@ -86,6 +96,12 @@ function click(opts) {
 				    }
 				}
 			});
+		} else if ($(e.target).hasClass('fa-plus-circle')) {
+			zoom_pedigree(opts, 1.1);
+		} else if ($(e.target).hasClass('fa-minus-circle')) {
+			zoom_pedigree(opts, 0.9);
+		} else if ($(e.target).hasClass('fa-align-center')) {
+			zoom_pedigree(opts, 1, opts.symbol_size/2, (-opts.symbol_size*2.5), 1);
 		}
 		// trigger fhChange event
 		$(document).trigger('fhChange', [opts]);
