@@ -184,8 +184,12 @@ export function setposition(opts, x, y, zoom) {
 	if(has_browser_storage(opts)) {
 		set_browser_store(opts, get_prefix(opts)+'_X', x);
 		set_browser_store(opts, get_prefix(opts)+'_Y', y);
+
+		let zoomName = get_prefix(opts)+'_ZOOM';
 		if(zoom)
-			set_browser_store(opts, get_prefix(opts)+'_ZOOM', zoom);
+			set_browser_store(opts, zoomName, zoom);
+		else
+			((opts.store_type === 'local' ? localStorage.removeItem(zoomName) : sessionStorage.removeItem(zoomName)));
 	} else {
 		//TODO
 	}
