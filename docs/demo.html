@@ -57,8 +57,10 @@
 			opts.diseases = JSON.parse(dis);
 		}
 		opts= pedigreejs.pedigreejs.build(opts);
+		$('#demo_history').css('max-width', svg_width);
+		$('#demo_history').css('margin', 'auto');
 		
-		<!-- edit disease configuration -->
+		// edit disease configuration
 		$('#fh_edit_settings').on( "click", function() {
 			$('#fh_settings').dialog({
 			    autoOpen: false,

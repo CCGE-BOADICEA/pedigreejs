@@ -94,8 +94,9 @@
 			opts.dataset = dataset;
 		}
 		opts= pedigreejs.pedigreejs.build(opts);
-		
-		
+		$('#history_ex8').css('max-width', svg_width);
+		$('#history_ex8').css('margin', 'auto');
+
 		function search_pedigree_data(search) {
 			var pedigree = pedigreejs.pedcache.current(opts);		// current pedigree data
 			var html = "";
