@@ -4,9 +4,9 @@ import * as pbuttons from './pbuttons.js';
 import * as pedcache from './pedcache.js';
 import * as io from './io.js';
 import {addWidgets} from './widgets.js';
+import {get_zoom, set_initial_xy} from './zoom.js';
 
 export let roots = {};
-let zoom, xtransform, ytransform;
 
 export function build(options) {
 	let opts = $.extend({ // defaults
@@ -69,8 +69,8 @@ export function build(options) {
 		.style("stroke-width", 1);
 
 	let xytransform = pedcache.getposition(opts);  // cached position
-	xtransform = xytransform[0];
-	ytransform = xytransform[1];
+	let xtransform = xytransform[0];
+	let ytransform = xytransform[1];
 	let k = 1;
 	if(xytransform.length == 3){
 		k = xytransform[2];
@@ -81,6 +81,8 @@ export function build(options) {
 		ytransform = (-opts.symbol_size*2.5);
 		pedcache.setposition(opts, xtransform, ytransform);
 	}
+	set_initial_xy(xtransform, ytransform);
+	
 	let ped = svg.append("g")
 			 .attr("class", "diagram")
 			 .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+k+")");
@@ -501,51 +503,8 @@ export function build(options) {
 			.attr("marker-end", "url(#"+triid+")");
 	}
 	// drag and zoom
-	zoom = d3.zoom()
-	  .scaleExtent([opts.zoomIn, opts.zoomOut])
-	  .filter(function() {
-			if(d3.event.type === 'dblclick') return false;
-			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
-				if(d3.event.type && d3.event.type === 'wheel') return false
-			}
-			return  true})
-	  .on('zoom', zoomFn);
-
-	function zoomFn() {
-		let t = d3.event.transform;
-		if(d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
-			let xyk = pedcache.getposition(opts);
-			if(xyk.length == 3) t.k = xyk[2];
-		}
-	    transform_pedigree(opts, t.x+xtransform, t.y+ytransform, t.k);
-	    return;
-	}
-	svg.call(zoom);
+	svg.call(get_zoom(opts));
 	return opts;
-}
-
-// scale size the pedigree or optionally set x, y and k
-export function zoom_pedigree(opts, scale, x, y, k) {
-	if(!x) {
-		let xyk = pedcache.getposition(opts);  // cached position
-		x = (xyk[0] !== null ? xyk[0] : xtransform);
-		y = (xyk[1] !== null ? xyk[1] : ytransform);
-		if(!k) k = (xyk.length == 3 ? xyk[2]*scale : 1*scale);
-	}
-
-	if(k < opts.zoomIn || k > opts.zoomOut) return;
-
-	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
-	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
-      .scale(k) 
-      .translate(x-xtransform, y-ytransform);  
-    ped.call(zoom.transform, transform); 	// apply new zoom transform:
-}
-
-export function transform_pedigree(opts, x, y, k) {
-	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
-	pedcache.setposition(opts, x, y, (k !== 1 ? k : undefined));
-	ped.attr('transform', 'translate(' + x + ',' + y + ') scale(' + k + ')');
 }
 
 function create_err(err) {

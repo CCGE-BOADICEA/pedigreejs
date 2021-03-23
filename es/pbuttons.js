@@ -1,6 +1,7 @@
 // undo, redo, reset buttons
 import * as pedcache from './pedcache.js';
-import {rebuild, build, zoom_pedigree, transform_pedigree} from './pedigree.js';
+import {rebuild, build} from './pedigree.js';
+import {zoom_pedigree} from './zoom.js';
 import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
 
 export function add(options) {
