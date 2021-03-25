@@ -990,9 +990,31 @@ var pedigreejs = (function (exports) {
     });
     return zoom;
   }
-  function set_initial_xy(x, y) {
-    xi = x;
-    yi = y;
+  function set_initial_xy(opts) {
+    xi = opts.symbol_size / 2;
+    yi = -opts.symbol_size * 2.5;
+  }
+
+  function get_bounds(ped, opts) {
+    var xmin = Number.MAX_VALUE;
+    var xmax = -1000000;
+    var ymin = Number.MAX_VALUE;
+    var ymax = -1000000;
+    var sym2 = opts.symbol_size / 2;
+    ped.selectAll('g').each(function (d, _i) {
+      if (d.x && d.data.name !== 'hidden_root') {
+        if (d.x - sym2 < xmin) xmin = d.x - sym2;
+        if (d.x + sym2 > xmax) xmax = d.x + sym2;
+        if (d.y - sym2 < ymin) ymin = d.y - sym2;
+        if (d.y + sym2 > ymax) ymax = d.y + sym2;
+      }
+    });
+    return {
+      xmin: xmin,
+      xmax: xmax,
+      ymin: ymin,
+      ymax: ymax
+    };
   }
 
   function zoomFn(opts) {
@@ -1003,25 +1025,56 @@ var pedigreejs = (function (exports) {
       if (xyk.length == 3) t.k = xyk[2];
     }
 
-    transform_pedigree(opts, t.x + xi, t.y + yi, t.k);
+    transform_pedigree(opts, t.x + xi * t.k, t.y + yi * t.k, t.k);
     return;
-  } // scale size the pedigree or optionally set x, y and k
+  } // scale size the pedigree
 
 
-  function zoom_pedigree(opts, scale, x, y, k) {
-    if (!x) {
-      var xyk = getposition(opts); // cached position
+  function btn_zoom(opts, scale) {
+    var xyk = getposition(opts); // cached position
 
-      x = xyk[0] !== null ? xyk[0] : xi;
-      y = xyk[1] !== null ? xyk[1] : yi;
-      if (!k) k = xyk.length == 3 ? xyk[2] * scale : 1 * scale;
+    var k = xyk.length == 3 ? xyk[2] * scale : 1 * scale;
+    var x = (xyk[0] !== null ? xyk[0] : xi) - xi * k;
+    var y = (xyk[1] !== null ? xyk[1] : yi) - yi * k;
+
+    if (k < opts.zoomIn || k > opts.zoomOut) {
+      if (xyk.length == 3) {
+        var ck = xyk[2];
+        var zoomOut = k < ck;
+        if (zoomOut && k < opts.zoomIn) return;
+        if (!zoomOut && k > opts.zoomOut) return;
+      } else {
+        return;
+      }
     }
 
-    if (k < opts.zoomIn || k > opts.zoomOut) return;
-    var ped = d3.select("#" + opts.targetDiv).select(".diagram");
+    var svg = d3.select("#" + opts.targetDiv).select("svg");
     var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
-    .scale(k).translate(x - xi, y - yi);
-    ped.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
+    .scale(k).translate(x, y);
+    svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
+  }
+  function zoom_to_fit(opts) {
+    var ped = d3.select("#" + opts.targetDiv).select(".diagram");
+    var bounds = get_bounds(ped, opts);
+    var w = bounds.xmax - bounds.xmin,
+        h = bounds.ymax - bounds.ymin;
+    var svg = d3.select("#" + opts.targetDiv).select("svg");
+    var wfull = svg.node().clientWidth,
+        hfull = svg.node().clientHeight;
+    var k = 0.90 / Math.max(w / wfull, h / hfull); //let midX = w / 2,
+    //    midY = h / 2;
+    //let x = (wfull/2) - (k * midX);
+    //let y = (hfull/2) - (k * midY);
+
+    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
+    .scale(k).translate(-opts.symbol_size * 1.5 * k, 0);
+    svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
+  }
+  function center(opts) {
+    var svg = d3.select("#" + opts.targetDiv).select("svg");
+    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
+    .translate(0, 0);
+    svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
   }
 
   function transform_pedigree(opts, x, y, k) {
@@ -1052,6 +1105,10 @@ var pedigreejs = (function (exports) {
     btns.push({
       "fa": "fa-align-center pull-right",
       "title": "center"
+    });
+    btns.push({
+      "fa": "fa-crosshairs pull-right",
+      "title": "zoom to fit"
     });
 
     if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
@@ -1131,11 +1188,13 @@ var pedigreejs = (function (exports) {
           }
         });
       } else if ($(e.target).hasClass('fa-plus-circle')) {
-        zoom_pedigree(opts, 1.1);
+        btn_zoom(opts, 1.1);
       } else if ($(e.target).hasClass('fa-minus-circle')) {
-        zoom_pedigree(opts, 0.9);
+        btn_zoom(opts, 0.9);
       } else if ($(e.target).hasClass('fa-align-center')) {
-        zoom_pedigree(opts, 1, opts.symbol_size / 2, -opts.symbol_size * 2.5, 1);
+        center(opts);
+      } else if ($(e.target).hasClass('fa-crosshairs')) {
+        zoom_to_fit(opts);
       } // trigger fhChange event
 
 
@@ -1455,8 +1514,8 @@ var pedigreejs = (function (exports) {
     var _loop = function _loop(i) {
       var ln = lines[i].trim();
 
-      if (ln.startsWith("##")) {
-        if (ln.startsWith("##CanRisk") && ln.indexOf(";") > -1) {
+      if (ln.indexOf("##") === 0) {
+        if (ln.indexOf("##CanRisk") === 0 && ln.indexOf(";") > -1) {
           // contains surgical op data
           var ops = ln.split(";");
 
@@ -1469,7 +1528,7 @@ var pedigreejs = (function (exports) {
           }
         }
 
-        if (ln.indexOf("CanRisk") === -1 && !ln.startsWith("##FamID")) {
+        if (ln.indexOf("CanRisk") === -1 && ln.indexOf("##FamID") !== 0) {
           hdr.push(ln.replace("##", ""));
         }
 
@@ -2019,13 +2078,13 @@ var pedigreejs = (function (exports) {
         if (opts.DEBUG) console.log(e.target.result);
 
         try {
-          if (e.target.result.startsWith("BOADICEA import pedigree file format 4.0")) {
+          if (e.target.result.indexOf("BOADICEA import pedigree file format 4.0") === 0) {
             opts.dataset = readBoadiceaV4(e.target.result, 4);
             canrisk_validation(opts);
-          } else if (e.target.result.startsWith("BOADICEA import pedigree file format 2.0")) {
+          } else if (e.target.result.indexOf("BOADICEA import pedigree file format 2.0") === 0) {
             opts.dataset = readBoadiceaV4(e.target.result, 2);
             canrisk_validation(opts);
-          } else if (e.target.result.startsWith("##") && e.target.result.indexOf("CanRisk") !== -1) {
+          } else if (e.target.result.indexOf("##") === 0 && e.target.result.indexOf("CanRisk") !== -1) {
             var canrisk_data = readCanRisk(e.target.result);
             risk_factors = canrisk_data[0];
             opts.dataset = canrisk_data[1];
@@ -3108,7 +3167,7 @@ var pedigreejs = (function (exports) {
       setposition(opts, xtransform, ytransform);
     }
 
-    set_initial_xy(xtransform, ytransform);
+    set_initial_xy(opts);
     var ped = svg.append("g").attr("class", "diagram").attr("transform", "translate(" + xtransform + "," + ytransform + ") scale(" + k + ")");
     var top_level = $.map(opts.dataset, function (val, _i) {
       return 'top_level' in val && val.top_level ? val : null;
