@@ -90,8 +90,8 @@ export function readCanRiskV1(boadicea_lines) {
 	// assumes two line header
 	for(let i = 0;i < lines.length;i++){
 		let ln = lines[i].trim();
-		if(ln.startsWith("##")) {
-			if(ln.startsWith("##CanRisk") && ln.indexOf(";") > -1) {   // contains surgical op data
+		if(ln.indexOf("##") === 0) {
+			if(ln.indexOf("##CanRisk") === 0 && ln.indexOf(";") > -1) {   // contains surgical op data
 				let ops = ln.split(";");
 				for(let j=1; j<ops.length; j++) {
 					let opdata = ops[j].split("=");
@@ -100,7 +100,7 @@ export function readCanRiskV1(boadicea_lines) {
 					}
 				}
 			}
-			if(ln.indexOf("CanRisk") === -1 && !ln.startsWith("##FamID")) {
+			if(ln.indexOf("CanRisk") === -1 && ln.indexOf("##FamID") !== 0) {
 				hdr.push(ln.replace("##", ""));
 			}
 			continue;

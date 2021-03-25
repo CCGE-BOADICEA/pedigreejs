@@ -289,13 +289,13 @@ export function load(e, opts) {
 			if(opts.DEBUG)
 				console.log(e.target.result);
 			try {
-				if(e.target.result.startsWith("BOADICEA import pedigree file format 4.0")) {
+				if(e.target.result.indexOf("BOADICEA import pedigree file format 4.0") === 0) {
 					opts.dataset = readBoadiceaV4(e.target.result, 4);
 					canrisk_validation(opts);
-				} else if(e.target.result.startsWith("BOADICEA import pedigree file format 2.0")) {
+				} else if(e.target.result.indexOf("BOADICEA import pedigree file format 2.0") === 0) {
 					opts.dataset = readBoadiceaV4(e.target.result, 2);
 					canrisk_validation(opts);
-				} else if(e.target.result.startsWith("##") && e.target.result.indexOf("CanRisk") !== -1) {
+				} else if(e.target.result.indexOf("##") === 0 && e.target.result.indexOf("CanRisk") !== -1) {
 					let canrisk_data = readCanRisk(e.target.result);
 					risk_factors = canrisk_data[0];
 					opts.dataset = canrisk_data[1];
