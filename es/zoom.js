@@ -45,7 +45,6 @@ function zoomFn(opts) {
 		let xyk = pedcache.getposition(opts);
 		if(xyk.length == 3) t.k = xyk[2];
 	}
-
 	transform_pedigree(opts, t.x+(xi*t.k), t.y+(yi*t.k), t.k);
     return;
 }
@@ -81,16 +80,15 @@ export function zoom_to_fit(opts) {
 	let w = bounds.xmax-bounds.xmin,
 	    h = bounds.ymax-bounds.ymin;
 	
-	let parent = ped.node().parentElement;
-	let wfull = parent.clientWidth,
-	    hfull = parent.clientHeight;
+	let svg = d3.select("#"+opts.targetDiv).select("svg");
+	let wfull = svg.node().clientWidth,
+	    hfull = svg.node().clientHeight;
 	let k = 0.90 / Math.max(w/wfull, h/hfull);
 	//let midX = w / 2,
 	//    midY = h / 2;
 	//let x = (wfull/2) - (k * midX);
 	//let y = (hfull/2) - (k * midY);
 
-	let svg = d3.select("#"+opts.targetDiv).select("svg");
 	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
       .scale(k) 
       .translate(-opts.symbol_size*1.5*k, 0);
