@@ -81,7 +81,7 @@ export function build(options) {
 		ytransform = (-opts.symbol_size*2.5);
 		pedcache.setposition(opts, xtransform, ytransform);
 	}
-	set_initial_xy(xtransform, ytransform);
+	set_initial_xy(opts);
 	
 	let ped = svg.append("g")
 			 .attr("class", "diagram")
