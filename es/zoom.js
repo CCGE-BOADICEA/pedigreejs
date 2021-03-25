@@ -95,12 +95,12 @@ export function zoom_to_fit(opts) {
     svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
 }
 
-export function center(opts) {
-	let svg = d3.select("#"+opts.targetDiv).select("svg");
-	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
-      .translate(0, 0);
-    svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
-}
+//export function center(opts) {
+//	let svg = d3.select("#"+opts.targetDiv).select("svg");
+//	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
+//      .translate(0, 0);
+//    svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
+//}
 
 function transform_pedigree(opts, x, y, k) {
 	pedcache.setposition(opts, x, y, (k !== 1 ? k : undefined));

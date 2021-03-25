@@ -1069,13 +1069,12 @@ var pedigreejs = (function (exports) {
     var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
     .scale(k).translate(-opts.symbol_size * 1.5 * k, 0);
     svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
-  }
-  function center(opts) {
-    var svg = d3.select("#" + opts.targetDiv).select("svg");
-    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
-    .translate(0, 0);
-    svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
-  }
+  } //export function center(opts) {
+  //	let svg = d3.select("#"+opts.targetDiv).select("svg");
+  //	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
+  //      .translate(0, 0);
+  //    svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
+  //}
 
   function transform_pedigree(opts, x, y, k) {
     setposition(opts, x, y, k !== 1 ? k : undefined);
@@ -1103,12 +1102,8 @@ var pedigreejs = (function (exports) {
       "title": "fullscreen"
     }];
     btns.push({
-      "fa": "fa-align-center pull-right",
-      "title": "center"
-    });
-    btns.push({
       "fa": "fa-crosshairs pull-right",
-      "title": "zoom to fit"
+      "title": "zoom-to-fit"
     });
 
     if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
@@ -1191,8 +1186,6 @@ var pedigreejs = (function (exports) {
         btn_zoom(opts, 1.1);
       } else if ($(e.target).hasClass('fa-minus-circle')) {
         btn_zoom(opts, 0.9);
-      } else if ($(e.target).hasClass('fa-align-center')) {
-        center(opts);
       } else if ($(e.target).hasClass('fa-crosshairs')) {
         zoom_to_fit(opts);
       } // trigger fhChange event

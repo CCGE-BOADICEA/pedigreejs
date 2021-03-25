@@ -1,7 +1,7 @@
 // undo, redo, reset buttons
 import * as pedcache from './pedcache.js';
 import {rebuild, build} from './pedigree.js';
-import {btn_zoom, zoom_to_fit, center} from './zoom.js';
+import {btn_zoom, zoom_to_fit} from './zoom.js';
 import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
 
 export function add(options) {
@@ -15,8 +15,7 @@ export function add(options) {
 				{"fa": "fa-refresh pull-left", "title": "reset"},
 				{"fa": "fa-arrows-alt pull-left", "title": "fullscreen"}];
 
-	btns.push({"fa": "fa-align-center pull-right", "title": "center"});
-	btns.push({"fa": "fa-crosshairs pull-right", "title": "zoom to fit"});
+	btns.push({"fa": "fa-crosshairs pull-right", "title": "zoom-to-fit"});
 	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
 		if(opts.zoomOut != 1)
 			btns.push({"fa": "fa-minus-circle pull-right", "title": "zoom-out"});
@@ -102,8 +101,6 @@ function click(opts) {
 			btn_zoom(opts, 1.1);
 		} else if ($(e.target).hasClass('fa-minus-circle')) {
 			btn_zoom(opts, 0.9);
-		} else if ($(e.target).hasClass('fa-align-center')) {
-			center(opts);
 		} else if ($(e.target).hasClass('fa-crosshairs')) {
 			zoom_to_fit(opts);
 		} 
