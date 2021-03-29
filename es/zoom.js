@@ -22,7 +22,8 @@ export function set_initial_xy(opts) {
 	yi = -opts.symbol_size*2.5;
 }
 
-function get_bounds(opts) {
+// find width/height of pedigree graphic
+function get_dimensions(opts) {
 	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
 	let xmin = Number.MAX_VALUE;
 	let xmax = -1000000;
@@ -37,7 +38,7 @@ function get_bounds(opts) {
 			if(d.y+sym2 > ymax) ymax = d.y+sym2;
 		}
 	});
-	return {xmin:xmin, xmax:xmax, ymin:ymin, ymax:ymax};
+	return {wid: Math.abs(xmax-xmin), hgt: Math.abs(ymax-ymin)};
 }
 
 function zoomFn(opts) {
@@ -81,14 +82,11 @@ export function zoom_identity(opts) {
 }
 
 export function scale_to_fit(opts) {
-	let bounds = get_bounds(opts);
-	let w = bounds.xmax-bounds.xmin,
-	    h = bounds.ymax-bounds.ymin;
-	
+	let d = get_dimensions(opts);
 	let svg = d3.select("#"+opts.targetDiv).select("svg");
 	let wfull = svg.node().clientWidth,
 	    hfull = svg.node().clientHeight;
-	let k = 0.90 / Math.max(w/wfull, h/hfull);
+	let k = 0.90 / Math.max(d.wid/wfull, d.hgt/hfull);
 
 	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
       .scale(k) 
