@@ -993,9 +993,9 @@ var pedigreejs = (function (exports) {
   function set_initial_xy(opts) {
     xi = opts.symbol_size / 2;
     yi = -opts.symbol_size * 2.5;
-  }
+  } // find width/height of pedigree graphic
 
-  function get_bounds(opts) {
+  function get_dimensions(opts) {
     var ped = d3.select("#" + opts.targetDiv).select(".diagram");
     var xmin = Number.MAX_VALUE;
     var xmax = -1000000;
@@ -1011,10 +1011,8 @@ var pedigreejs = (function (exports) {
       }
     });
     return {
-      xmin: xmin,
-      xmax: xmax,
-      ymin: ymin,
-      ymax: ymax
+      wid: Math.abs(xmax - xmin),
+      hgt: Math.abs(ymax - ymin)
     };
   }
 
@@ -1059,13 +1057,11 @@ var pedigreejs = (function (exports) {
     svg.call(zoom.transform, d3.zoomIdentity);
   }
   function scale_to_fit(opts) {
-    var bounds = get_bounds(opts);
-    var w = bounds.xmax - bounds.xmin,
-        h = bounds.ymax - bounds.ymin;
+    var d = get_dimensions(opts);
     var svg = d3.select("#" + opts.targetDiv).select("svg");
     var wfull = svg.node().clientWidth,
         hfull = svg.node().clientHeight;
-    var k = 0.90 / Math.max(w / wfull, h / hfull);
+    var k = 0.90 / Math.max(d.wid / wfull, d.hgt / hfull);
     var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
     .scale(k).translate(-opts.symbol_size * 1.5 * k, 0);
     svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
