@@ -15,7 +15,7 @@ export function add(options) {
 				{"fa": "fa-refresh pull-left", "title": "reset"},
 				{"fa": "fa-arrows-alt pull-left", "title": "fullscreen"}];
 
-	btns.push({"fa": "fa-crosshairs pull-right", "title": "zoom-to-fit"});
+	btns.push({"fa": "fa-crosshairs pull-right", "title": "scale-to-fit"});
 	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
 		if(opts.zoomOut != 1)
 			btns.push({"fa": "fa-minus-circle pull-right", "title": "zoom-out"});

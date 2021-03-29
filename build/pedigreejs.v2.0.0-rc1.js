@@ -995,7 +995,8 @@ var pedigreejs = (function (exports) {
     yi = -opts.symbol_size * 2.5;
   }
 
-  function get_bounds(ped, opts) {
+  function get_bounds(opts) {
+    var ped = d3.select("#" + opts.targetDiv).select(".diagram");
     var xmin = Number.MAX_VALUE;
     var xmax = -1000000;
     var ymin = Number.MAX_VALUE;
@@ -1053,28 +1054,22 @@ var pedigreejs = (function (exports) {
     .scale(k).translate(x, y);
     svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
   }
+  function zoom_identity(opts) {
+    var svg = d3.select("#" + opts.targetDiv).select("svg");
+    svg.call(zoom.transform, d3.zoomIdentity);
+  }
   function zoom_to_fit(opts) {
-    var ped = d3.select("#" + opts.targetDiv).select(".diagram");
-    var bounds = get_bounds(ped, opts);
+    var bounds = get_bounds(opts);
     var w = bounds.xmax - bounds.xmin,
         h = bounds.ymax - bounds.ymin;
     var svg = d3.select("#" + opts.targetDiv).select("svg");
     var wfull = svg.node().clientWidth,
         hfull = svg.node().clientHeight;
-    var k = 0.90 / Math.max(w / wfull, h / hfull); //let midX = w / 2,
-    //    midY = h / 2;
-    //let x = (wfull/2) - (k * midX);
-    //let y = (hfull/2) - (k * midY);
-
+    var k = 0.90 / Math.max(w / wfull, h / hfull);
     var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
     .scale(k).translate(-opts.symbol_size * 1.5 * k, 0);
     svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
-  } //export function center(opts) {
-  //	let svg = d3.select("#"+opts.targetDiv).select("svg");
-  //	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
-  //      .translate(0, 0);
-  //    svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
-  //}
+  }
 
   function transform_pedigree(opts, x, y, k) {
     setposition(opts, x, y, k !== 1 ? k : undefined);
@@ -1103,7 +1098,7 @@ var pedigreejs = (function (exports) {
     }];
     btns.push({
       "fa": "fa-crosshairs pull-right",
-      "title": "zoom-to-fit"
+      "title": "scale-to-fit"
     });
 
     if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
@@ -1129,7 +1124,7 @@ var pedigreejs = (function (exports) {
     click(opts);
   }
   function is_fullscreen() {
-    return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
+    return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
   }
 
   function click(opts) {
@@ -1142,13 +1137,33 @@ var pedigreejs = (function (exports) {
       }
 
       rebuild(opts);
+      zoom_identity(opts);
+      zoom_to_fit(opts);
     });
     $('#fullscreen').on('click', function (_e) {
-      if (!document.mozFullScreen && !document.webkitFullScreen) {
+      //Toggle fullscreen off, activate it
+      if (!is_fullscreen()) {
         var target = $("#" + opts.targetDiv)[0];
-        if (target.mozRequestFullScreen) target.mozRequestFullScreen();else target.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+
+        if (target.requestFullscreen) {
+          target.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) {
+          target.mozRequestFullScreen(); // Firefox
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          target.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT); // Chrome and Safari
+        } else if (document.documentElement.msRequestFullscreen) {
+          target.msRequestFullscreen(); // IE
+        }
       } else {
-        if (document.mozCancelFullScreen) document.mozCancelFullScreen();else document.webkitCancelFullScreen();
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
       }
     }); // undo/redo/reset
 
@@ -2144,6 +2159,7 @@ var pedigreejs = (function (exports) {
   //  7. Genotypes (column 7 onwards);
   //	 columns 7 & 8 are allele calls for first variant ('0' = no call); colummns 9 & 10 are calls for second variant etc.
 
+
   function readLinkage(boadicea_lines) {
     var lines = boadicea_lines.trim().split('\n');
     var ped = [];
@@ -2434,7 +2450,6 @@ var pedigreejs = (function (exports) {
     svg_download: svg_download,
     print: print,
     save_file: save_file,
-    load: load,
     readLinkage: readLinkage,
     readBoadiceaV4: readBoadiceaV4
   });
