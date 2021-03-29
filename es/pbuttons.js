@@ -1,7 +1,7 @@
 // undo, redo, reset buttons
 import * as pedcache from './pedcache.js';
 import {rebuild, build} from './pedigree.js';
-import {btn_zoom, zoom_to_fit} from './zoom.js';
+import {btn_zoom, zoom_to_fit, zoom_identity} from './zoom.js';
 import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
 
 export function add(options) {
@@ -37,7 +37,7 @@ export function add(options) {
 }
 
 export function is_fullscreen(){
-	return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement);
+	return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
 }
 
 function click(opts) {
@@ -47,21 +47,35 @@ function click(opts) {
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		}
+
 		rebuild(opts);
+		zoom_identity(opts);
+		zoom_to_fit(opts);
     });
 
 	$('#fullscreen').on('click', function(_e) {
-		if (!document.mozFullScreen && !document.webkitFullScreen) {
+		//Toggle fullscreen off, activate it
+		if (!is_fullscreen()) {
 			let target = $("#"+opts.targetDiv)[0];
-			if(target.mozRequestFullScreen)
-				target.mozRequestFullScreen();
-			else
-				target.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+			if (target.requestFullscreen) {
+                target.requestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) {
+				target.mozRequestFullScreen(); // Firefox
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                target.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT); // Chrome and Safari
+            } else if (document.documentElement.msRequestFullscreen) {
+                target.msRequestFullscreen(); // IE
+            }
 		} else {
-			if(document.mozCancelFullScreen)
-				document.mozCancelFullScreen();
-			else
-				document.webkitCancelFullScreen();
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
 		}
 	});
 
