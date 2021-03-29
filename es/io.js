@@ -280,7 +280,7 @@ function canrisk_validation(opts) {
 	});
 }
 
-export function load(e, opts) {
+function load(e, opts) {
 	let f = e.target.files[0];
 	if(f) {
 		let risk_factors;
