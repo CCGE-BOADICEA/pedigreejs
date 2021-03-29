@@ -11,7 +11,7 @@ export function get_zoom(opts) {
 			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
 				if(d3.event.type && d3.event.type === 'wheel') return false
 			}
-			console.log("zoom", d3.event.type, d3.event);
+			(opts.DEBUG && console.log("zoom", d3.event.type, d3.event));
 			return  true})
 	  .on('zoom', function() { zoomFn(opts) });
 	return zoom;	  
@@ -60,10 +60,8 @@ export function btn_zoom(opts, scale) {
 
 	if(k < opts.zoomIn || k > opts.zoomOut) {
 		if(xyk.length == 3) {
-			let ck = xyk[2];
-			let zoomOut = (k < ck);
-			if(zoomOut  && k < opts.zoomIn) return;
-			if(!zoomOut && k > opts.zoomOut) return;
+			let zoomIn = (k < xyk[2]);
+			if((zoomIn && k < opts.zoomIn) || (!zoomIn && k > opts.zoomOut)) return;
 		} else {
 			return;
 		}
