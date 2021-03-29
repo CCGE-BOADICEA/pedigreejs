@@ -1136,8 +1136,8 @@ var pedigreejs = (function (exports) {
         opts.dataset = local_dataset;
       }
 
-      rebuild(opts);
       zoom_identity(opts);
+      rebuild(opts);
       scale_to_fit(opts);
     });
     $('#fullscreen').on('click', function (_e) {

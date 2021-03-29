@@ -47,9 +47,8 @@ function click(opts) {
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		}
-
-		rebuild(opts);
 		zoom_identity(opts);
+		rebuild(opts);
 		scale_to_fit(opts);
     });
 
