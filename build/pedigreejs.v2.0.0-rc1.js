@@ -1058,7 +1058,7 @@ var pedigreejs = (function (exports) {
     var svg = d3.select("#" + opts.targetDiv).select("svg");
     svg.call(zoom.transform, d3.zoomIdentity);
   }
-  function zoom_to_fit(opts) {
+  function scale_to_fit(opts) {
     var bounds = get_bounds(opts);
     var w = bounds.xmax - bounds.xmin,
         h = bounds.ymax - bounds.ymin;
@@ -1138,7 +1138,7 @@ var pedigreejs = (function (exports) {
 
       rebuild(opts);
       zoom_identity(opts);
-      zoom_to_fit(opts);
+      scale_to_fit(opts);
     });
     $('#fullscreen').on('click', function (_e) {
       //Toggle fullscreen off, activate it
@@ -1202,7 +1202,7 @@ var pedigreejs = (function (exports) {
       } else if ($(e.target).hasClass('fa-minus-circle')) {
         btn_zoom(opts, 0.9);
       } else if ($(e.target).hasClass('fa-crosshairs')) {
-        zoom_to_fit(opts);
+        scale_to_fit(opts);
       } // trigger fhChange event
 
 
