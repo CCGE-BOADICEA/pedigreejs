@@ -1,7 +1,7 @@
 // undo, redo, reset buttons
 import * as pedcache from './pedcache.js';
 import {rebuild, build} from './pedigree.js';
-import {btn_zoom, zoom_to_fit, zoom_identity} from './zoom.js';
+import {btn_zoom, scale_to_fit, zoom_identity} from './zoom.js';
 import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
 
 export function add(options) {
@@ -50,7 +50,7 @@ function click(opts) {
 
 		rebuild(opts);
 		zoom_identity(opts);
-		zoom_to_fit(opts);
+		scale_to_fit(opts);
     });
 
 	$('#fullscreen').on('click', function(_e) {
@@ -116,7 +116,7 @@ function click(opts) {
 		} else if ($(e.target).hasClass('fa-minus-circle')) {
 			btn_zoom(opts, 0.9);
 		} else if ($(e.target).hasClass('fa-crosshairs')) {
-			zoom_to_fit(opts);
+			scale_to_fit(opts);
 		} 
 		// trigger fhChange event
 		$(document).trigger('fhChange', [opts]);

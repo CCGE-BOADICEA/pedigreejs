@@ -1,4 +1,4 @@
-import * as pedcache from './pedcache.js';
+import {getposition, setposition} from './pedcache.js';
 
 let zoom, xi, yi;
 
@@ -22,7 +22,8 @@ export function set_initial_xy(opts) {
 	yi = -opts.symbol_size*2.5;
 }
 
-function get_bounds(ped, opts) {
+function get_bounds(opts) {
+	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
 	let xmin = Number.MAX_VALUE;
 	let xmax = -1000000;
 	let ymin = Number.MAX_VALUE;
@@ -42,7 +43,7 @@ function get_bounds(ped, opts) {
 function zoomFn(opts) {
 	let t = d3.event.transform;
 	if(d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
-		let xyk = pedcache.getposition(opts);
+		let xyk = getposition(opts);
 		if(xyk.length == 3) t.k = xyk[2];
 	}
 	transform_pedigree(opts, t.x+(xi*t.k), t.y+(yi*t.k), t.k);
@@ -51,7 +52,7 @@ function zoomFn(opts) {
 
 // scale size the pedigree
 export function btn_zoom(opts, scale) {
-	let xyk = pedcache.getposition(opts);  // cached position
+	let xyk = getposition(opts);  // cached position
 	let k = (xyk.length == 3 ? xyk[2]*scale : 1*scale);
 	let x = (xyk[0] !== null ? xyk[0] : xi)-(xi*k);
 	let y = (xyk[1] !== null ? xyk[1] : yi)-(yi*k);
@@ -74,9 +75,13 @@ export function btn_zoom(opts, scale) {
     svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
 }
 
-export function zoom_to_fit(opts) {
-	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
-	let bounds = get_bounds(ped, opts);
+export function zoom_identity(opts) {
+	let svg = d3.select("#"+opts.targetDiv).select("svg");
+	svg.call(zoom.transform, d3.zoomIdentity);
+}
+
+export function scale_to_fit(opts) {
+	let bounds = get_bounds(opts);
 	let w = bounds.xmax-bounds.xmin,
 	    h = bounds.ymax-bounds.ymin;
 	
@@ -84,10 +89,6 @@ export function zoom_to_fit(opts) {
 	let wfull = svg.node().clientWidth,
 	    hfull = svg.node().clientHeight;
 	let k = 0.90 / Math.max(w/wfull, h/hfull);
-	//let midX = w / 2,
-	//    midY = h / 2;
-	//let x = (wfull/2) - (k * midX);
-	//let y = (hfull/2) - (k * midY);
 
 	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
       .scale(k) 
@@ -95,15 +96,8 @@ export function zoom_to_fit(opts) {
     svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
 }
 
-//export function center(opts) {
-//	let svg = d3.select("#"+opts.targetDiv).select("svg");
-//	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
-//      .translate(0, 0);
-//    svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
-//}
-
 function transform_pedigree(opts, x, y, k) {
-	pedcache.setposition(opts, x, y, (k !== 1 ? k : undefined));
+	setposition(opts, x, y, (k !== 1 ? k : undefined));
 	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
 	ped.attr('transform', 'translate(' + x + ',' + y + ') scale(' + k + ')');
 }
