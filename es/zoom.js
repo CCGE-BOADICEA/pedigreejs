@@ -2,8 +2,12 @@ import {getposition, setposition} from './pedcache.js';
 
 let zoom, xi, yi;
 
-// zoom and drag
-export function get_zoom(opts) {
+// initialise zoom and drag
+export function init_zoom(opts, svg) {
+	// offsets
+	xi = opts.symbol_size/2;
+	yi = -opts.symbol_size*2.5;
+
 	zoom = d3.zoom()
 	  .scaleExtent([opts.zoomIn, opts.zoomOut])
 	  .filter(function() {
@@ -13,13 +17,64 @@ export function get_zoom(opts) {
 			}
 			(opts.DEBUG && console.log("zoom", d3.event.type, d3.event));
 			return  true})
-	  .on('zoom', function() { zoomFn(opts) });
-	return zoom;	  
+	  .on('zoom', function() { 
+			let t = d3.event.transform;
+			transform_pedigree(opts, t.x+(xi*t.k), t.y+(yi*t.k), t.k);
+	  });
+	svg.call(zoom);
+
+	// set initial position & scale
+	let xyk = getposition(opts);		// cached position
+	let k = (xyk.length == 3 ? xyk[2] : 1);
+	let x = (xyk[0] !== null ? xyk[0] - (xi*k) : 0);
+	let y = (xyk[1] !== null ? xyk[1] - (yi*k): 0);
+	var transform = d3.zoomIdentity
+      .scale(k)
+      .translate(x, y);
+    svg.call(zoom.transform, transform);
 }
 
-export function set_initial_xy(opts) {
-	xi = opts.symbol_size/2;
-	yi = -opts.symbol_size*2.5;
+// scale size the pedigree
+export function btn_zoom(opts, scale) {
+	let xyk = getposition(opts);  // cached position
+	let k = fix_dp(xyk.length == 3 ? xyk[2]*scale : 1*scale);
+	let x = fix_dp(xyk[0] !== null ? xyk[0] : xi)-(xi*k);
+	let y = fix_dp(xyk[1] !== null ? xyk[1] : yi)-(yi*k);
+
+	if(k < opts.zoomIn || k > opts.zoomOut) {
+		if(xyk.length == 3) {
+			let zoomIn = (k < xyk[2]);
+			if((zoomIn && k < opts.zoomIn) || (!zoomIn && k > opts.zoomOut)) return;
+		} else {
+			return;
+		}
+	}
+
+	let svg = d3.select("#"+opts.targetDiv).select("svg");
+	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
+      .scale(k) 
+      .translate(x, y);
+    svg.transition().duration(300).call(zoom.transform, transform); 	// apply new zoom transform:
+}
+
+export function scale_to_fit(opts) {
+	let d = get_dimensions(opts);
+	let svg = d3.select("#"+opts.targetDiv).select("svg");
+	let wfull = svg.node().clientWidth,
+	    hfull = svg.node().clientHeight;
+	let f = (wfull-opts.symbol_size*2)/wfull;
+	let k = f / Math.max(d.wid/wfull, d.hgt/hfull);
+
+	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
+      .scale(k) 
+      .translate(-opts.symbol_size*1.5*k, 0);
+    svg.transition().delay(200).duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
+}
+
+function transform_pedigree(opts, x, y, k) {
+	setposition(opts, x, y, (k !== 1 ? k : undefined));
+	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
+	ped.attr('transform', 'translate(' + x + ',' + y + ') scale(' + k + ')');
 }
 
 // find width/height of pedigree graphic
@@ -41,59 +96,6 @@ function get_dimensions(opts) {
 	return {wid: Math.abs(xmax-xmin), hgt: Math.abs(ymax-ymin)};
 }
 
-function zoomFn(opts) {
-	let t = d3.event.transform;
-	if(d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
-		let xyk = getposition(opts);
-		if(xyk.length == 3) t.k = xyk[2];
-	}
-	transform_pedigree(opts, t.x+(xi*t.k), t.y+(yi*t.k), t.k);
-    return;
-}
-
-// scale size the pedigree
-export function btn_zoom(opts, scale) {
-	let xyk = getposition(opts);  // cached position
-	let k = (xyk.length == 3 ? xyk[2]*scale : 1*scale);
-	let x = (xyk[0] !== null ? xyk[0] : xi)-(xi*k);
-	let y = (xyk[1] !== null ? xyk[1] : yi)-(yi*k);
-
-	if(k < opts.zoomIn || k > opts.zoomOut) {
-		if(xyk.length == 3) {
-			let zoomIn = (k < xyk[2]);
-			if((zoomIn && k < opts.zoomIn) || (!zoomIn && k > opts.zoomOut)) return;
-		} else {
-			return;
-		}
-	}
-
-	let svg = d3.select("#"+opts.targetDiv).select("svg");
-	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
-      .scale(k) 
-      .translate(x, y);
-    svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
-}
-
-export function zoom_identity(opts) {
-	let svg = d3.select("#"+opts.targetDiv).select("svg");
-	svg.call(zoom.transform, d3.zoomIdentity);
-}
-
-export function scale_to_fit(opts) {
-	let d = get_dimensions(opts);
-	let svg = d3.select("#"+opts.targetDiv).select("svg");
-	let wfull = svg.node().clientWidth,
-	    hfull = svg.node().clientHeight;
-	let k = 0.90 / Math.max(d.wid/wfull, d.hgt/hfull);
-
-	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
-      .scale(k) 
-      .translate(-opts.symbol_size*1.5*k, 0);
-    svg.transition().duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
-}
-
-function transform_pedigree(opts, x, y, k) {
-	setposition(opts, x, y, (k !== 1 ? k : undefined));
-	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
-	ped.attr('transform', 'translate(' + x + ',' + y + ') scale(' + k + ')');
+function fix_dp(f) {
+	return parseFloat(f.toFixed(6));
 }

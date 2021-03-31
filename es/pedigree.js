@@ -4,7 +4,7 @@ import * as pbuttons from './pbuttons.js';
 import * as pedcache from './pedcache.js';
 import * as io from './io.js';
 import {addWidgets} from './widgets.js';
-import {get_zoom, set_initial_xy} from './zoom.js';
+import {init_zoom} from './zoom.js';
 
 export let roots = {};
 
@@ -67,25 +67,9 @@ export function build(options) {
 		.style("stroke", "darkgrey")
 		.style("fill", opts.background) // or none
 		.style("stroke-width", 1);
-
-	let xytransform = pedcache.getposition(opts);  // cached position
-	let xtransform = xytransform[0];
-	let ytransform = xytransform[1];
-	let k = 1;
-	if(xytransform.length == 3){
-		k = xytransform[2];
-	}
-
-	if(xtransform === null || ytransform === null) {
-		xtransform = opts.symbol_size/2;
-		ytransform = (-opts.symbol_size*2.5);
-		pedcache.setposition(opts, xtransform, ytransform);
-	}
-	set_initial_xy(opts);
 	
 	let ped = svg.append("g")
-			 .attr("class", "diagram")
-			 .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+k+")");
+			 .attr("class", "diagram");
 
 	let top_level = $.map(opts.dataset, function(val, _i){return 'top_level' in val && val.top_level ? val : null;});
 	let hidden_root = {
@@ -502,8 +486,9 @@ export function build(options) {
 			.attr("stroke", "black")
 			.attr("marker-end", "url(#"+triid+")");
 	}
+
 	// drag and zoom
-	svg.call(get_zoom(opts));
+	init_zoom(opts, svg);
 	return opts;
 }
 
