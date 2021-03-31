@@ -973,9 +973,12 @@ var pedigreejs = (function (exports) {
     print_opts: print_opts
   });
 
-  var zoom, xi, yi; // zoom and drag
+  var zoom, xi, yi; // initialise zoom and drag
 
-  function get_zoom(opts) {
+  function init_zoom(opts, svg) {
+    // offsets
+    xi = opts.symbol_size / 2;
+    yi = -opts.symbol_size * 2.5;
     zoom = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).filter(function () {
       if (d3.event.type === 'dblclick') return false;
 
@@ -983,17 +986,63 @@ var pedigreejs = (function (exports) {
         if (d3.event.type && d3.event.type === 'wheel') return false;
       }
 
-      opts.DEBUG && console.log("zoom", d3.event.type, d3.event);
       return true;
     }).on('zoom', function () {
-      zoomFn(opts);
+      zooming(opts);
     });
-    return zoom;
+    svg.call(zoom); // set initial position & scale
+
+    var xyk = getposition(opts); // cached position
+
+    var k = xyk.length == 3 ? xyk[2] : 1;
+    var x = xyk[0] !== null ? xyk[0] : xi * k;
+    var y = xyk[1] !== null ? xyk[1] : yi * k;
+    var transform = d3.zoomIdentity.scale(k).translate(x, y);
+    svg.call(zoom.transform, transform);
+  } // scale size the pedigree
+
+  function btn_zoom(opts, scale) {
+    var xyk = getposition(opts); // cached position
+
+    var k = xyk.length == 3 ? xyk[2] * scale : 1 * scale;
+    var x = xyk[0] !== null ? xyk[0] : 0;
+    var y = xyk[1] !== null ? xyk[1] : 0;
+
+    if (k < opts.zoomIn || k > opts.zoomOut) {
+      if (xyk.length == 3) {
+        var zoomIn = k < xyk[2];
+        if (zoomIn && k < opts.zoomIn || !zoomIn && k > opts.zoomOut) return;
+      } else {
+        return;
+      }
+    }
+
+    var svg = d3.select("#" + opts.targetDiv).select("svg");
+    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
+    .scale(k).translate(x, y);
+    svg.transition().duration(300).call(zoom.transform, transform); // apply new zoom transform:
   }
-  function set_initial_xy(opts) {
-    xi = opts.symbol_size / 2;
-    yi = -opts.symbol_size * 2.5;
+  function scale_to_fit(opts) {
+    var d = get_dimensions(opts);
+    var svg = d3.select("#" + opts.targetDiv).select("svg");
+    var wfull = svg.node().clientWidth,
+        hfull = svg.node().clientHeight;
+    var f = (wfull - opts.symbol_size * 2) / wfull;
+    var k = f / Math.max(d.wid / wfull, d.hgt / hfull);
+    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
+    .scale(k).translate(-(xi * 2 * k), yi * k);
+    svg.transition().delay(200).duration(300).call(zoom.transform, transform); // apply new zoom transform:
+  }
+
+  function zooming(opts) {
+    opts.DEBUG && console.log("zoom", d3.event, d3.event.transform);
+    var t = d3.event.transform;
+    var k = t.k && t.k !== 1 ? t.k : undefined;
+    setposition(opts, t.x, t.y, k);
+    var ped = d3.select("#" + opts.targetDiv).select(".diagram");
+    ped.attr('transform', 'translate(' + t.x + ',' + t.y + ')' + (k ? ' scale(' + k + ')' : ''));
   } // find width/height of pedigree graphic
+
 
   function get_dimensions(opts) {
     var ped = d3.select("#" + opts.targetDiv).select(".diagram");
@@ -1016,61 +1065,6 @@ var pedigreejs = (function (exports) {
     };
   }
 
-  function zoomFn(opts) {
-    var t = d3.event.transform;
-
-    if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
-      var xyk = getposition(opts);
-      if (xyk.length == 3) t.k = xyk[2];
-    }
-
-    transform_pedigree(opts, t.x + xi * t.k, t.y + yi * t.k, t.k);
-    return;
-  } // scale size the pedigree
-
-
-  function btn_zoom(opts, scale) {
-    var xyk = getposition(opts); // cached position
-
-    var k = xyk.length == 3 ? xyk[2] * scale : 1 * scale;
-    var x = (xyk[0] !== null ? xyk[0] : xi) - xi * k;
-    var y = (xyk[1] !== null ? xyk[1] : yi) - yi * k;
-
-    if (k < opts.zoomIn || k > opts.zoomOut) {
-      if (xyk.length == 3) {
-        var zoomIn = k < xyk[2];
-        if (zoomIn && k < opts.zoomIn || !zoomIn && k > opts.zoomOut) return;
-      } else {
-        return;
-      }
-    }
-
-    var svg = d3.select("#" + opts.targetDiv).select("svg");
-    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
-    .scale(k).translate(x, y);
-    svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
-  }
-  function zoom_identity(opts) {
-    var svg = d3.select("#" + opts.targetDiv).select("svg");
-    svg.call(zoom.transform, d3.zoomIdentity);
-  }
-  function scale_to_fit(opts) {
-    var d = get_dimensions(opts);
-    var svg = d3.select("#" + opts.targetDiv).select("svg");
-    var wfull = svg.node().clientWidth,
-        hfull = svg.node().clientHeight;
-    var k = 0.90 / Math.max(d.wid / wfull, d.hgt / hfull);
-    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
-    .scale(k).translate(-opts.symbol_size * 1.5 * k, 0);
-    svg.transition().duration(700).call(zoom.transform, transform); // apply new zoom transform:
-  }
-
-  function transform_pedigree(opts, x, y, k) {
-    setposition(opts, x, y, k !== 1 ? k : undefined);
-    var ped = d3.select("#" + opts.targetDiv).select(".diagram");
-    ped.attr('transform', 'translate(' + x + ',' + y + ') scale(' + k + ')');
-  }
-
   // undo, redo, reset buttons
   function add$1(options) {
     var opts = $.extend({
@@ -1086,9 +1080,6 @@ var pedigreejs = (function (exports) {
     }, {
       "fa": "fa-refresh pull-left",
       "title": "reset"
-    }, {
-      "fa": "fa-arrows-alt pull-left",
-      "title": "fullscreen"
     }];
     btns.push({
       "fa": "fa-crosshairs pull-right",
@@ -1106,11 +1097,15 @@ var pedigreejs = (function (exports) {
       });
     }
 
+    btns.push({
+      "fa": "fa-arrows-alt pull-right",
+      "title": "fullscreen"
+    });
     var lis = "";
 
     for (var i = 0; i < btns.length; i++) {
       lis += '<span>';
-      lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' + (btns[i].fa == "fa-arrows-alt pull-left" ? 'id="fullscreen" ' : '') + ' aria-hidden="true" title="' + btns[i].title + '"></i>';
+      lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' + (btns[i].fa == "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') + ' aria-hidden="true" title="' + btns[i].title + '"></i>';
       lis += '</span>';
     }
 
@@ -1130,12 +1125,11 @@ var pedigreejs = (function (exports) {
         opts.dataset = local_dataset;
       }
 
-      zoom_identity(opts);
       rebuild(opts);
       scale_to_fit(opts);
     });
     $('#fullscreen').on('click', function (_e) {
-      //Toggle fullscreen off, activate it
+      // toggle fullscreen
       if (!is_fullscreen()) {
         var target = $("#" + opts.targetDiv)[0];
 
@@ -3153,24 +3147,7 @@ var pedigreejs = (function (exports) {
     var svg = d3.select("#" + opts.targetDiv).append("svg:svg").attr("width", svg_dimensions.width).attr("height", svg_dimensions.height);
     svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).style("stroke", "darkgrey").style("fill", opts.background) // or none
     .style("stroke-width", 1);
-    var xytransform = getposition(opts); // cached position
-
-    var xtransform = xytransform[0];
-    var ytransform = xytransform[1];
-    var k = 1;
-
-    if (xytransform.length == 3) {
-      k = xytransform[2];
-    }
-
-    if (xtransform === null || ytransform === null) {
-      xtransform = opts.symbol_size / 2;
-      ytransform = -opts.symbol_size * 2.5;
-      setposition(opts, xtransform, ytransform);
-    }
-
-    set_initial_xy(opts);
-    var ped = svg.append("g").attr("class", "diagram").attr("transform", "translate(" + xtransform + "," + ytransform + ") scale(" + k + ")");
+    var ped = svg.append("g").attr("class", "diagram");
     var top_level = $.map(opts.dataset, function (val, _i) {
       return 'top_level' in val && val.top_level ? val : null;
     });
@@ -3389,13 +3366,12 @@ var pedigreejs = (function (exports) {
       var path = "";
 
       for (var j = 0; j < clash.length; j++) {
-        var _k = extend(j, clash.length);
-
+        var k = extend(j, clash.length);
         var dx1 = clash[j] - dx - cshift;
-        var dx2 = clash[_k] + dx + cshift;
+        var dx2 = clash[k] + dx + cshift;
         if (parent_node.x > dx1 && parent_node.x < dx2) parent_node.y = dy2;
         path += "L" + dx1 + "," + (dy1 - cshift) + "L" + dx1 + "," + (dy2 - cshift) + "L" + dx2 + "," + (dy2 - cshift) + "L" + dx2 + "," + (dy1 - cshift);
-        j = _k;
+        j = k;
       }
 
       return path;
@@ -3536,7 +3512,7 @@ var pedigreejs = (function (exports) {
     } // drag and zoom
 
 
-    svg.call(get_zoom(opts));
+    init_zoom(opts, svg);
     return opts;
   }
 

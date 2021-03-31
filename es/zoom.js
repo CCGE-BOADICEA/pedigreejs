@@ -15,19 +15,15 @@ export function init_zoom(opts, svg) {
 			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
 				if(d3.event.type && d3.event.type === 'wheel') return false
 			}
-			(opts.DEBUG && console.log("zoom", d3.event.type, d3.event));
 			return  true})
-	  .on('zoom', function() { 
-			let t = d3.event.transform;
-			transform_pedigree(opts, t.x+(xi*t.k), t.y+(yi*t.k), t.k);
-	  });
+	  .on('zoom', function() { zooming(opts); });
 	svg.call(zoom);
 
 	// set initial position & scale
 	let xyk = getposition(opts);		// cached position
 	let k = (xyk.length == 3 ? xyk[2] : 1);
-	let x = (xyk[0] !== null ? xyk[0] - (xi*k) : 0);
-	let y = (xyk[1] !== null ? xyk[1] - (yi*k): 0);
+	let x = (xyk[0] !== null ? xyk[0]: (xi*k));
+	let y = (xyk[1] !== null ? xyk[1]: (yi*k));
 	var transform = d3.zoomIdentity
       .scale(k)
       .translate(x, y);
@@ -37,9 +33,9 @@ export function init_zoom(opts, svg) {
 // scale size the pedigree
 export function btn_zoom(opts, scale) {
 	let xyk = getposition(opts);  // cached position
-	let k = fix_dp(xyk.length == 3 ? xyk[2]*scale : 1*scale);
-	let x = fix_dp(xyk[0] !== null ? xyk[0] : xi)-(xi*k);
-	let y = fix_dp(xyk[1] !== null ? xyk[1] : yi)-(yi*k);
+	let k = (xyk.length == 3 ? xyk[2]*scale : 1*scale);
+	let x = (xyk[0] !== null ? xyk[0] : 0);
+	let y = (xyk[1] !== null ? xyk[1] : 0);
 
 	if(k < opts.zoomIn || k > opts.zoomOut) {
 		if(xyk.length == 3) {
@@ -67,14 +63,17 @@ export function scale_to_fit(opts) {
 
 	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
       .scale(k) 
-      .translate(-opts.symbol_size*1.5*k, 0);
-    svg.transition().delay(200).duration(700).call(zoom.transform, transform); 	// apply new zoom transform:
+      .translate(-(xi*2*k), (yi*k));
+    svg.transition().delay(200).duration(300).call(zoom.transform, transform); 	// apply new zoom transform:
 }
 
-function transform_pedigree(opts, x, y, k) {
-	setposition(opts, x, y, (k !== 1 ? k : undefined));
+function zooming(opts) {
+	(opts.DEBUG && console.log("zoom", d3.event, d3.event.transform));
+	let t = d3.event.transform;
+	let k = (t.k && t.k !== 1 ? t.k : undefined);
+	setposition(opts, t.x, t.y, k);
 	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
-	ped.attr('transform', 'translate(' + x + ',' + y + ') scale(' + k + ')');
+	ped.attr('transform', 'translate(' + t.x + ',' + t.y + ')' + (k ? ' scale(' + k + ')' : ''));
 }
 
 // find width/height of pedigree graphic
@@ -94,8 +93,4 @@ function get_dimensions(opts) {
 		}
 	});
 	return {wid: Math.abs(xmax-xmin), hgt: Math.abs(ymax-ymin)};
-}
-
-function fix_dp(f) {
-	return parseFloat(f.toFixed(6));
 }
