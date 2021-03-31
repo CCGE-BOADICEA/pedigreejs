@@ -1,7 +1,7 @@
 // undo, redo, reset buttons
 import * as pedcache from './pedcache.js';
 import {rebuild, build} from './pedigree.js';
-import {btn_zoom, scale_to_fit, zoom_identity} from './zoom.js';
+import {btn_zoom, scale_to_fit} from './zoom.js';
 import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
 
 export function add(options) {
@@ -12,8 +12,7 @@ export function add(options) {
 
 	let btns = [{"fa": "fa-undo pull-left", "title": "undo"},
 				{"fa": "fa-repeat pull-left", "title": "redo"},
-				{"fa": "fa-refresh pull-left", "title": "reset"},
-				{"fa": "fa-arrows-alt pull-left", "title": "fullscreen"}];
+				{"fa": "fa-refresh pull-left", "title": "reset"}];
 
 	btns.push({"fa": "fa-crosshairs pull-right", "title": "scale-to-fit"});
 	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
@@ -22,13 +21,13 @@ export function add(options) {
 		if(opts.zoomIn != 1)
 			btns.push({"fa": "fa-plus-circle pull-right", "title": "zoom-in"});
 	}
-	
+	btns.push({"fa": "fa-arrows-alt pull-right", "title": "fullscreen"});
 
 	let lis = "";
 	for(let i=0; i<btns.length; i++) {
 		lis += '<span>';
 		lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' +
-		               (btns[i].fa == "fa-arrows-alt pull-left" ? 'id="fullscreen" ' : '') +
+		               (btns[i].fa == "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') +
 		               ' aria-hidden="true" title="'+ btns[i].title +'"></i>';
 		lis += '</span>';
 	}
@@ -47,13 +46,12 @@ function click(opts) {
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		}
-		zoom_identity(opts);
 		rebuild(opts);
 		scale_to_fit(opts);
     });
 
 	$('#fullscreen').on('click', function(_e) {
-		//Toggle fullscreen off, activate it
+		// toggle fullscreen
 		if (!is_fullscreen()) {
 			let target = $("#"+opts.targetDiv)[0];
 			if (target.requestFullscreen) {
