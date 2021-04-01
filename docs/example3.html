@@ -7,17 +7,12 @@
 	
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="../dist/css/pedigreejs.min.css" />
+	<link rel="stylesheet" href="../build/pedigreejs.v2.0.0-rc1.min.css" />
 
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script> 
 	<script src="https://cdn.jsdelivr.net/npm/d3@5.16.0/dist/d3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-<!-- 	<script src="../dist/js/pedigreejs.min.js"></script> -->	
-	<script src="../js/io.js"></script>
-   	<script src="../js/pedigree_form.js"></script>
-   	<script src="../js/pedigree.js"></script>
-   	<script src="../js/undo_redo_refresh.js"></script>
-   	<script src="../js/widgets.js"></script>
+	<script src="../build/pedigreejs.v2.0.0-rc1.min.js"></script>
 
 	<style>
 		body {
@@ -108,16 +103,18 @@
 				'font_weight': 400,
 				'edit': openDialog,
 				'node_background': '#fff',
-				'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
+				'DEBUG': (pedigreejs.pedigree_utils.urlParam('debug') === null ? false : true)
 			};
 
-		var local_dataset = pedcache.current(opts);
+		var local_dataset = pedigreejs.pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		} else {
 			opts.dataset = dataset;
 		}
-		opts= ptree.build(opts);
+		opts= pedigreejs.pedigreejs.build(opts);
+		$('#history_ex3').css('max-width', svg_width);
+		$('#history_ex3').css('margin', 'auto');
 	});
 	</script>
 </head>

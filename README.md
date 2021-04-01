@@ -1,8 +1,9 @@
 
 ## pedigreejs
 
-pedigreejs is a javascript module for graphically building pedigree data in 
-the web-browser. 
+pedigreejs is written using <a href="http://www.2ality.com/2014/09/es6-modules-final.html" rel="nofollow">ES2015 modules</a>.
+
+It is used for graphically building pedigree data in the web-browser. 
 
 For details visit the [project page](https://ccge-boadicea.github.io/pedigreejs/).
 
@@ -10,15 +11,11 @@ For details visit the [project page](https://ccge-boadicea.github.io/pedigreejs/
 
 Jasmine tests are defined in [pedigree_spec.js](spec/javascripts/pedigree_spec.js).
 
-##  Build
+##  ECMAScript 5 bundle
 
-[Grunt](https://gruntjs.com/) can be used to build the distribution:
+[Rollup](https://rollupjs.org/) is used to create a ECMAScript 5 bundle of the distribution (in the build directory):
 
 ```
-npm install -g grunt-cli
-npm install grunt --save-dev
 npm install
-grunt
+npm run build
 ```
-
-It can also be used to run [JShint](http://jshint.com/).
