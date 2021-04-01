@@ -1128,7 +1128,7 @@ var pedigreejs = (function (exports) {
       rebuild(opts);
       setTimeout(function () {
         scale_to_fit(opts);
-      }, 1000);
+      }, 500);
     });
     $('#fullscreen').on('click', function (_e) {
       // toggle fullscreen
