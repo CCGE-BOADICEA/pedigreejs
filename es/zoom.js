@@ -14,7 +14,7 @@ export function init_zoom(opts, svg) {
 			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
 				if(d3.event.type && d3.event.type === 'wheel') return false
 			}
-			// ignore double click & secondary mouse buttons
+			// ignore dblclick & secondary mouse buttons
 			return (d3.event.type !== 'dblclick') && !d3.event.button})
 	  .on('zoom', function() { zooming(opts); });
 	svg.call(zoom);
