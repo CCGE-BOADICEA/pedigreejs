@@ -995,8 +995,8 @@ var pedigreejs = (function (exports) {
     var xyk = getposition(opts); // cached position
 
     var k = xyk.length == 3 ? xyk[2] : 1;
-    var x = xyk[0] !== null ? xyk[0] : xi * k;
-    var y = xyk[1] !== null ? xyk[1] : yi * k;
+    var x = xyk[0] !== null ? xyk[0] / k : xi * k;
+    var y = xyk[1] !== null ? xyk[1] / k : yi * k;
     var transform = d3.zoomIdentity.scale(k).translate(x, y);
     svg.call(zoom.transform, transform);
   } // scale size the pedigree
@@ -1004,7 +1004,7 @@ var pedigreejs = (function (exports) {
   function btn_zoom(opts, scale) {
     var xyk = getposition(opts); // cached position
 
-    var k = xyk.length == 3 ? xyk[2] * scale : 1 * scale;
+    var k = round(xyk.length == 3 ? xyk[2] * scale : 1 * scale);
     var x = xyk[0] !== null ? xyk[0] : 0;
     var y = xyk[1] !== null ? xyk[1] : 0;
 
@@ -1022,13 +1022,18 @@ var pedigreejs = (function (exports) {
     .scale(k).translate(x, y);
     svg.transition().duration(300).call(zoom.transform, transform); // apply new zoom transform:
   }
+
+  function round(f) {
+    return Math.round(f * 10000) / 10000;
+  }
+
   function scale_to_fit(opts) {
     var d = get_dimensions(opts);
     var svg = d3.select("#" + opts.targetDiv).select("svg");
     var wfull = svg.node().clientWidth,
         hfull = svg.node().clientHeight;
     var f = (wfull - opts.symbol_size * 2) / wfull;
-    var k = f / Math.max(d.wid / wfull, d.hgt / hfull);
+    var k = round(f / Math.max(d.wid / wfull, d.hgt / hfull));
     var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
     .scale(k).translate(-(xi * 2 * k), yi * k);
     svg.transition().delay(200).duration(300).call(zoom.transform, transform); // apply new zoom transform:
@@ -3121,7 +3126,7 @@ var pedigreejs = (function (exports) {
         'type': 'prostate_cancer',
         'colour': '#D5494A'
       }],
-      labels: ['stillbirth', 'age', 'yob', 'alleles'],
+      labels: ['stillbirth', ['age', 'yob'], 'alleles', ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'], ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test'], ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
       keep_proband_on_reset: false,
       font_size: '.75em',
       font_family: 'Helvetica',
@@ -3297,33 +3302,61 @@ var pedigreejs = (function (exports) {
      * .attr("x", ".25em") .attr("y", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size)) .html("\uf071"); warn.append("svg:title").text("incomplete");
      */
 
-    var font_size = parseInt(getPx(opts)) + 4; // display label defined in opts.labels e.g. alleles/genotype data
+    var font_size = parseInt(getPx(opts)) + 4;
+    console.log(getPx(opts), parseInt(getPx(opts))); // display label defined in opts.labels e.g. alleles/genotype data
 
     var _loop = function _loop(ilab) {
       var label = opts.labels[ilab];
-      addLabel(opts, node, -(0.7 * opts.symbol_size), function (d) {
-        if (!d.data[label]) return;
-        d.y_offset = ilab === 0 || !d.y_offset ? font_size * 2.25 : d.y_offset + font_size;
+      addLabel(opts, node, -opts.symbol_size, function (d) {
+        var arr = Array.isArray(label) ? label : [label];
+        var found = false;
+
+        for (var l = 0; l < arr.length; l++) {
+          var this_label = arr[l];
+
+          if (d.data[this_label]) {
+            found = true;
+          }
+        }
+
+        if (!found) return;
+        d.y_offset = ilab === 0 || !d.y_offset ? font_size * 2.35 : d.y_offset + font_size;
         return d.y_offset;
       }, function (d) {
-        if (d.data[label]) {
-          if (label === 'alleles') {
-            var alleles = "";
-            var vars = d.data.alleles.split(';');
+        var arr = Array.isArray(label) ? label : [label];
+        var txt = "";
 
-            for (var ivar = 0; ivar < vars.length; ivar++) {
-              if (vars[ivar] !== "") alleles += vars[ivar] + ';';
+        for (var l = 0; l < arr.length; l++) {
+          var this_label = arr[l];
+
+          if (d.data[this_label]) {
+            if (this_label === 'alleles') {
+              var vars = d.data.alleles.split(';');
+
+              for (var ivar = 0; ivar < vars.length; ivar++) {
+                if (vars[ivar] !== "") txt += vars[ivar] + ';';
+              }
+            } else if (this_label === 'age') {
+              txt += d.data[this_label] + 'y ';
+            } else if (this_label === 'stillbirth') {
+              txt += "SB";
+            } else if (this_label.match("_gene_test$") && 'result' in d.data[this_label]) {
+              var r = d.data[this_label]['result'].toUpperCase();
+              var t = d.data[this_label]['type'].toUpperCase();
+              txt += this_label.replace('_gene_test', '').toUpperCase();
+              txt += (r === 'P' ? '+ ' : r === 'N' ? '- ' : ' ') + '(' + t + ') ';
+            } else if (this_label.match("_bc_pathology$")) {
+              var _r = d.data[this_label].toUpperCase();
+
+              txt += this_label.replace('_bc_pathology', '').toUpperCase();
+              txt += _r === 'P' ? '+ ' : _r === 'N' ? '- ' : ' ';
+            } else {
+              txt += d.data[this_label];
             }
-
-            return alleles;
-          } else if (label === 'age') {
-            return d.data[label] + 'y';
-          } else if (label === 'stillbirth') {
-            return "SB";
           }
-
-          return d.data[label];
         }
+
+        if (txt !== "") return txt;
       }, 'indi_details');
     };
 
@@ -3510,7 +3543,7 @@ var pedigreejs = (function (exports) {
       var triid = "triangle" + makeid(3);
       ped.append("svg:defs").append("svg:marker") // arrow head
       .attr("id", triid).attr("refX", 6).attr("refY", 6).attr("markerWidth", 20).attr("markerHeight", 20).attr("orient", "auto").append("path").attr("d", "M 0 0 12 6 0 12 3 6").style("fill", "black");
-      ped.append("line").attr("x1", probandNode.x - opts.symbol_size).attr("y1", probandNode.y + opts.symbol_size).attr("x2", probandNode.x - opts.symbol_size / 2).attr("y2", probandNode.y + opts.symbol_size / 2).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
+      ped.append("line").attr("x1", probandNode.x - opts.symbol_size / 0.7).attr("y1", probandNode.y + opts.symbol_size / 1.4).attr("x2", probandNode.x - opts.symbol_size / 1.5).attr("y2", probandNode.y + opts.symbol_size / 4).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
     } // drag and zoom
 
 

@@ -156,7 +156,7 @@
 			{"name": "f12", "sex": "F", "top_level": true, "breast_cancer_diagnosis_age":55},
 			{"name": "m21", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
 			{"name": "f21", "sex": "F", "mother": "f12", "father": "m12", "breast_cancer_diagnosis_age":55, "breast_cancer2_diagnosis_age": 60, "ovarian_cancer_diagnosis_age":58, "age": 63},
-			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
+			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25, "yob": 1996}
 		];
 		$( "#pedigrees" ).append( $( "<div id='pedigree_history'></div>" ) );
 		$( "#pedigrees" ).append( $( "<div id='pedigree'></div>" ) );
@@ -295,19 +295,10 @@
 	</p>
 
 	<h2>Loading and Saving Pedigree Data</h2>
-	<p>The pedigree can be saved out and loaded back in. Preliminary support is given to loading basic
-	BOADICEA file format v4 (see the BOADICEA documentation
-	<a href="https://pluto.srl.cam.ac.uk/bd4/v4/docs/BWA_v4_Appendix_A.pdf" target="_blank">Appendix</a>).</p>
-
-	<p>Support for <a href="https://www.cog-genomics.org/plink/1.9/formats#ped">PED file format</a>
-	has been added, see <a href="docs/example4.html">example 4</a>.<p>
-
-	<h2>Future Development</h2>
-		<p>The following will be looked at:</p>
-		<ul>
-			<li>currently the maximum number of partners an individual can be represented to have is 2.</li>
-			<li><del>the ability to represent consanguineous partners between different levels in the tree.</del></li>
-		</ul>
+	<p>The pedigree can be saved out and loaded back in. Support is given to loading
+	<a href="https://canrisk.atlassian.net/wiki/x/IoCeAg" target="_blank">CanRisk files</a>,
+	<a href="https://pluto.srl.cam.ac.uk/bd4/v4/docs/BWA_v4_Appendix_A.pdf" target="_blank">BOADICEA v4 files</a>,
+	and <a href="https://www.cog-genomics.org/plink/1.9/formats#ped">PED files</a> (see <a href="docs/example4.html">example 4</a>).<p>
 
 	<h2 id="config">Configuration and Integration Notes</h2>
 	<p>The following parameters can be used to configure pedigreejs.
@@ -410,6 +401,10 @@
 	<div class="row" id="zoomOut">
 		<div class="left">zoomOut</div>
 		<div>The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
+    </div>
+	<div class="row" id="zoomSrc">
+		<div class="left">zoomSrc</div>
+		<div>The source of zoom events, default ['wheel', 'button'] (zoom with mouse wheel and zoom buttons).</div>
     </div>
 	<div class="row" id="edit">
 		<div class="left">edit</div>

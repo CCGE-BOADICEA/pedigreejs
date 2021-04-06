@@ -25,7 +25,10 @@ export function build(options) {
 					{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 					{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 					{'type': 'prostate_cancer', 'colour': '#D5494A'}],
-		labels: ['stillbirth', 'age', 'yob', 'alleles'],
+		labels: ['stillbirth', ['age', 'yob'], 'alleles',
+							   ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'],
+							   ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test'],
+							   ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
 		keep_proband_on_reset: false,
 		font_size: '.75em',
 		font_family: 'Helvetica',
@@ -67,7 +70,7 @@ export function build(options) {
 		.style("stroke", "darkgrey")
 		.style("fill", opts.background) // or none
 		.style("stroke-width", 1);
-	
+
 	let ped = svg.append("g")
 			 .attr("class", "diagram");
 
@@ -228,29 +231,51 @@ export function build(options) {
 	// display label defined in opts.labels e.g. alleles/genotype data
 	for(let ilab=0; ilab<opts.labels.length; ilab++) {
 		let label = opts.labels[ilab];
-		addLabel(opts, node, -(0.7 * opts.symbol_size),
+		addLabel(opts, node, -(opts.symbol_size),
 			function(d) {
-				if(!d.data[label])
+				let arr = (Array.isArray(label) ? label : [label]);
+				let found = false;
+				for(let l=0; l<arr.length; l++) {
+					let this_label = arr[l];
+					if(d.data[this_label]) {
+						found = true;
+					}
+				}
+				if(!found)
 					return;
-				d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2.25 : d.y_offset+font_size);
+				d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2.35 : d.y_offset+font_size);
 				return d.y_offset;
 			},
 			function(d) {
-				if(d.data[label]) {
-					if(label === 'alleles') {
-						let alleles = "";
-						let vars = d.data.alleles.split(';');
-						for(let ivar = 0;ivar < vars.length;ivar++) {
-							if(vars[ivar] !== "") alleles += vars[ivar] + ';';
+				let arr = (Array.isArray(label) ? label : [label]);
+				let txt = "";
+				for(let l=0; l<arr.length; l++) {
+					let this_label = arr[l];
+					if(d.data[this_label]) {
+						if(this_label === 'alleles') {
+							let vars = d.data.alleles.split(';');
+							for(let ivar = 0;ivar < vars.length;ivar++) {
+								if(vars[ivar] !== "") txt += vars[ivar] + ';';
+							}
+						} else if(this_label === 'age') {
+							txt += d.data[this_label] +'y ';
+						} else if(this_label === 'stillbirth') {
+							txt += "SB";
+						} else if(this_label.match("_gene_test$") && 'result' in d.data[this_label]) {
+							let r = d.data[this_label]['result'].toUpperCase();
+							let t = d.data[this_label]['type'].toUpperCase();
+							txt += this_label.replace('_gene_test', '').toUpperCase()
+							txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' ')) + '(' + t + ') ';
+						} else if(this_label.match("_bc_pathology$")) {
+							let r = d.data[this_label].toUpperCase();
+							txt += this_label.replace('_bc_pathology', '').toUpperCase()
+							txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' '));
+						} else {
+						  txt += d.data[this_label];
 						}
-						return alleles;
-					} else if(label === 'age') {
-						return d.data[label] +'y';
-					} else if(label === 'stillbirth') {
-						return "SB";
 					}
-					return d.data[label];
 				}
+				if(txt !== "") return txt;
 			}, 'indi_details');
 	}
 
@@ -478,10 +503,10 @@ export function build(options) {
 			.style("fill", "black");
 
 		ped.append("line")
-			.attr("x1", probandNode.x-opts.symbol_size)
-			.attr("y1", probandNode.y+opts.symbol_size)
-			.attr("x2", probandNode.x-opts.symbol_size/2)
-			.attr("y2", probandNode.y+opts.symbol_size/2)
+			.attr("x1", probandNode.x-opts.symbol_size/0.7)
+			.attr("y1", probandNode.y+opts.symbol_size/1.4)
+			.attr("x2", probandNode.x-opts.symbol_size/1.5)
+			.attr("y2", probandNode.y+opts.symbol_size/4)
 			.attr("stroke-width", 1)
 			.attr("stroke", "black")
 			.attr("marker-end", "url(#"+triid+")");

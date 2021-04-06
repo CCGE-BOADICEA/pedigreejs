@@ -22,8 +22,9 @@ export function init_zoom(opts, svg) {
 	// set initial position & scale
 	let xyk = getposition(opts);		// cached position
 	let k = (xyk.length == 3 ? xyk[2] : 1);
-	let x = (xyk[0] !== null ? xyk[0]: (xi*k));
-	let y = (xyk[1] !== null ? xyk[1]: (yi*k));
+	let x = (xyk[0] !== null ? xyk[0]/k: (xi*k));
+	let y = (xyk[1] !== null ? xyk[1]/k: (yi*k));
+
 	var transform = d3.zoomIdentity
       .scale(k)
       .translate(x, y);
@@ -33,7 +34,7 @@ export function init_zoom(opts, svg) {
 // scale size the pedigree
 export function btn_zoom(opts, scale) {
 	let xyk = getposition(opts);  // cached position
-	let k = (xyk.length == 3 ? xyk[2]*scale : 1*scale);
+	let k = round(xyk.length == 3 ? xyk[2]*scale : 1*scale);
 	let x = (xyk[0] !== null ? xyk[0] : 0);
 	let y = (xyk[1] !== null ? xyk[1] : 0);
 
@@ -53,13 +54,17 @@ export function btn_zoom(opts, scale) {
     svg.transition().duration(300).call(zoom.transform, transform); 	// apply new zoom transform:
 }
 
+function round(f) {
+	return Math.round(f*10000)/10000;
+}
+
 export function scale_to_fit(opts) {
 	let d = get_dimensions(opts);
 	let svg = d3.select("#"+opts.targetDiv).select("svg");
 	let wfull = svg.node().clientWidth,
 	    hfull = svg.node().clientHeight;
 	let f = (wfull-opts.symbol_size*2)/wfull;
-	let k = f / Math.max(d.wid/wfull, d.hgt/hfull);
+	let k = round(f / Math.max(d.wid/wfull, d.hgt/hfull));
 
 	var transform = d3.zoomIdentity 		// new zoom transform (using d3.zoomIdentity as a base)
       .scale(k) 
