@@ -541,7 +541,7 @@ function nodesOverlap(opts, node, diff, root) {
 }
 
 // test if x position overlaps a node at the same depth
-function overlap(opts, nodes, xnew, depth, exclude_names) {
+export function overlap(opts, nodes, xnew, depth, exclude_names) {
 	for(let n=0; n<nodes.length; n++) {
 		if(depth == nodes[n].depth && $.inArray(nodes[n].data.name, exclude_names) == -1){
 			if(Math.abs(xnew - nodes[n].x) < (opts.symbol_size*1.15))
