@@ -3302,8 +3302,7 @@ var pedigreejs = (function (exports) {
      * .attr("x", ".25em") .attr("y", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size)) .html("\uf071"); warn.append("svg:title").text("incomplete");
      */
 
-    var font_size = parseInt(getPx(opts)) + 4;
-    console.log(getPx(opts), parseInt(getPx(opts))); // display label defined in opts.labels e.g. alleles/genotype data
+    var font_size = parseInt(getPx(opts)) + 4; // display label defined in opts.labels e.g. alleles/genotype data
 
     var _loop = function _loop(ilab) {
       var label = opts.labels[ilab];
