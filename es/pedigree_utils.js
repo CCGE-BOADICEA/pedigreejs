@@ -541,7 +541,7 @@ function nodesOverlap(opts, node, diff, root) {
 }
 
 // test if x position overlaps a node at the same depth
-export function overlap(opts, nodes, xnew, depth, exclude_names) {
+function overlap(opts, nodes, xnew, depth, exclude_names) {
 	for(let n=0; n<nodes.length; n++) {
 		if(depth == nodes[n].depth && $.inArray(nodes[n].data.name, exclude_names) == -1){
 			if(Math.abs(xnew - nodes[n].x) < (opts.symbol_size*1.15))
@@ -571,7 +571,7 @@ export function urlParam(name){
 }
 
 // get grandparents index
-export function get_grandparents_idx(dataset, midx, fidx) {
+function get_grandparents_idx(dataset, midx, fidx) {
 	let gmidx = midx;
 	let gfidx = fidx;
 	while(  'mother' in dataset[gmidx] && 'mother' in dataset[gfidx] &&
@@ -593,7 +593,7 @@ export function proband_attr(opts, keys, value){
 // Set or remove node attributes.
 // If a value is not provided the attribute is removed.
 // 'key' can be a list of keys or a single key.
-export function node_attr(opts, name, keys, value){
+function node_attr(opts, name, keys, value){
 	let newdataset = copy_dataset(pedcache.current(opts));
 	let node = getNodeByName(newdataset, name);
 	if(!node){
