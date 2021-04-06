@@ -266,7 +266,6 @@ export function build(options) {
 							let t = d.data[this_label]['type'].toUpperCase();
 							txt += this_label.replace('_gene_test', '').toUpperCase()
 							txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' ')) + '(' + t + ') ';
-							console.log(txt, t, r, d.data[this_label]);
 						} else if(this_label.match("_bc_pathology$")) {
 							let r = d.data[this_label].toUpperCase();
 							txt += this_label.replace('_bc_pathology', '').toUpperCase()

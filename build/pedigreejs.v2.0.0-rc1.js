@@ -3126,7 +3126,7 @@ var pedigreejs = (function (exports) {
         'type': 'prostate_cancer',
         'colour': '#D5494A'
       }],
-      labels: ['stillbirth', ['age', 'yob'], 'alleles', ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'], ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test']],
+      labels: ['stillbirth', ['age', 'yob'], 'alleles', ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'], ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test'], ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
       keep_proband_on_reset: false,
       font_size: '.75em',
       font_family: 'Helvetica',
@@ -3343,7 +3343,12 @@ var pedigreejs = (function (exports) {
               var r = d.data[this_label]['result'].toUpperCase();
               var t = d.data[this_label]['type'].toUpperCase();
               txt += this_label.replace('_gene_test', '').toUpperCase();
-              txt += r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' ') + '(' + t + ') ';
+              txt += (r === 'P' ? '+ ' : r === 'N' ? '- ' : ' ') + '(' + t + ') ';
+            } else if (this_label.match("_bc_pathology$")) {
+              var _r = d.data[this_label].toUpperCase();
+
+              txt += this_label.replace('_bc_pathology', '').toUpperCase();
+              txt += _r === 'P' ? '+ ' : _r === 'N' ? '- ' : ' ';
             } else {
               txt += d.data[this_label];
             }
