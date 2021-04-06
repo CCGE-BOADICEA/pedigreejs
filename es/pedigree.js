@@ -243,7 +243,7 @@ export function build(options) {
 				}
 				if(!found)
 					return;
-				d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2.25 : d.y_offset+font_size);
+				d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2.35 : d.y_offset+font_size);
 				return d.y_offset;
 			},
 			function(d) {
