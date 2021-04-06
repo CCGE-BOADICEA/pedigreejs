@@ -782,6 +782,7 @@ var pedigreejs = (function (exports) {
     return false;
   } // given a persons name return the corresponding d3 tree node
 
+
   function getNodeByName(nodes, name) {
     for (var i = 0; i < nodes.length; i++) {
       if (nodes[i].data && name === nodes[i].data.name) return nodes[i];else if (name === nodes[i].name) return nodes[i];
@@ -809,6 +810,7 @@ var pedigreejs = (function (exports) {
   } // Set or remove proband attributes.
   // If a value is not provided the attribute is removed from the proband.
   // 'key' can be a list of keys or a single key.
+
 
   function proband_attr(opts, keys, value) {
     var proband = opts.dataset[getProbandIndex(opts.dataset)];
@@ -864,6 +866,7 @@ var pedigreejs = (function (exports) {
     opts.dataset = newdataset;
     rebuild(opts);
   } // add a child to the proband; giveb sex, age, yob and breastfeeding months (optional)
+
 
   function proband_add_child(opts, sex, age, yob, breastfeeding) {
     var newdataset = copy_dataset(current(opts));
@@ -961,12 +964,9 @@ var pedigreejs = (function (exports) {
     consanguity: consanguity,
     flatten: flatten,
     adjust_coords: adjust_coords,
-    overlap: overlap,
     getNodeByName: getNodeByName,
     urlParam: urlParam,
-    get_grandparents_idx: get_grandparents_idx,
     proband_attr: proband_attr,
-    node_attr: node_attr,
     proband_add_child: proband_add_child,
     delete_node_by_name: delete_node_by_name,
     exists: exists,
@@ -980,13 +980,12 @@ var pedigreejs = (function (exports) {
     xi = opts.symbol_size / 2;
     yi = -opts.symbol_size * 2.5;
     zoom = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).filter(function () {
-      if (d3.event.type === 'dblclick') return false;
-
       if (!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
         if (d3.event.type && d3.event.type === 'wheel') return false;
-      }
+      } // ignore dblclick & secondary mouse buttons
 
-      return true;
+
+      return d3.event.type !== 'dblclick' && !d3.event.button;
     }).on('zoom', function () {
       zooming(opts);
     });
