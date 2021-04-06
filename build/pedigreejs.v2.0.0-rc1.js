@@ -782,7 +782,6 @@ var pedigreejs = (function (exports) {
     return false;
   } // given a persons name return the corresponding d3 tree node
 
-
   function getNodeByName(nodes, name) {
     for (var i = 0; i < nodes.length; i++) {
       if (nodes[i].data && name === nodes[i].data.name) return nodes[i];else if (name === nodes[i].name) return nodes[i];
@@ -964,6 +963,7 @@ var pedigreejs = (function (exports) {
     consanguity: consanguity,
     flatten: flatten,
     adjust_coords: adjust_coords,
+    overlap: overlap,
     getNodeByName: getNodeByName,
     urlParam: urlParam,
     proband_attr: proband_attr,
