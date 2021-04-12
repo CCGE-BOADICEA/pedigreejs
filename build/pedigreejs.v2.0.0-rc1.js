@@ -213,10 +213,18 @@ var pedigreejs = (function (exports) {
 
   function setposition(opts, x, y, zoom) {
     if (has_browser_storage(opts)) {
-      set_browser_store(opts, get_prefix(opts) + '_X', x);
-      set_browser_store(opts, get_prefix(opts) + '_Y', y);
+      var store = opts.store_type === 'local' ? localStorage : sessionStorage;
+
+      if (x) {
+        set_browser_store(opts, get_prefix(opts) + '_X', x);
+        set_browser_store(opts, get_prefix(opts) + '_Y', y);
+      } else {
+        store.removeItem(get_prefix(opts) + '_X');
+        store.removeItem(get_prefix(opts) + '_Y');
+      }
+
       var zoomName = get_prefix(opts) + '_ZOOM';
-      if (zoom) set_browser_store(opts, zoomName, zoom);else opts.store_type === 'local' ? localStorage.removeItem(zoomName) : sessionStorage.removeItem(zoomName);
+      if (zoom) set_browser_store(opts, zoomName, zoom);else store.removeItem(zoomName);
     }
   }
   function getposition(opts) {
@@ -973,12 +981,12 @@ var pedigreejs = (function (exports) {
     print_opts: print_opts
   });
 
-  var zoom, xi, yi; // initialise zoom and drag
+  var zoom; // initialise zoom and drag
 
   function init_zoom(opts, svg) {
     // offsets
-    xi = opts.symbol_size / 2;
-    yi = -opts.symbol_size * 2.5;
+    var xi = opts.symbol_size / 2;
+    var yi = -opts.symbol_size * 2.5;
     zoom = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).filter(function () {
       if (!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
         if (d3.event.type && d3.event.type === 'wheel') return false;
@@ -1001,41 +1009,21 @@ var pedigreejs = (function (exports) {
   } // scale size the pedigree
 
   function btn_zoom(opts, scale) {
-    var xyk = getposition(opts); // cached position
-
-    var k = round(xyk.length == 3 ? xyk[2] * scale : 1 * scale);
-    var x = xyk[0] !== null ? xyk[0] : 0;
-    var y = xyk[1] !== null ? xyk[1] : 0;
-
-    if (k < opts.zoomIn || k > opts.zoomOut) {
-      if (xyk.length == 3) {
-        var zoomIn = k < xyk[2];
-        if (zoomIn && k < opts.zoomIn || !zoomIn && k > opts.zoomOut) return;
-      } else {
-        return;
-      }
-    }
-
     var svg = d3.select("#" + opts.targetDiv).select("svg");
-    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
-    .scale(k).translate(x, y);
-    svg.transition().duration(300).call(zoom.transform, transform); // apply new zoom transform:
+    svg.transition().duration(50).call(zoom.scaleBy, scale);
   }
-
-  function round(f) {
-    return Math.round(f * 10000) / 10000;
-  }
-
   function scale_to_fit(opts) {
     var d = get_dimensions(opts);
     var svg = d3.select("#" + opts.targetDiv).select("svg");
-    var wfull = svg.node().clientWidth,
-        hfull = svg.node().clientHeight;
-    var f = (wfull - opts.symbol_size * 2) / wfull;
-    var k = round(f / Math.max(d.wid / wfull, d.hgt / hfull));
-    var transform = d3.zoomIdentity // new zoom transform (using d3.zoomIdentity as a base)
-    .scale(k).translate(-(xi * 2 * k), yi * k);
-    svg.transition().delay(200).duration(300).call(zoom.transform, transform); // apply new zoom transform:
+    var size = get_svg_size(svg);
+    var f = (size.w - opts.symbol_size * 2) / size.w;
+    var k = f / Math.max(d.wid / size.w, d.hgt / size.h);
+    if (k < opts.zoomIn) zoom.scaleExtent([k, opts.zoomOut]);
+    var ped = get_pedigree_center(opts);
+    svg.call(zoom.translateTo, ped.x, ped.y);
+    setTimeout(function () {
+      svg.transition().duration(700).call(zoom.scaleTo, k);
+    }, 400);
   }
 
   function zooming(opts) {
@@ -1045,10 +1033,26 @@ var pedigreejs = (function (exports) {
     setposition(opts, t.x, t.y, k);
     var ped = d3.select("#" + opts.targetDiv).select(".diagram");
     ped.attr('transform', 'translate(' + t.x + ',' + t.y + ')' + (k ? ' scale(' + k + ')' : ''));
+  }
+
+  function get_pedigree_center(opts) {
+    var b = get_bounds(opts);
+    return {
+      x: b.xmin + (b.xmax - b.xmin) / 2,
+      y: b.ymin + (b.ymax - b.ymin) / 2
+    };
   } // find width/height of pedigree graphic
 
 
   function get_dimensions(opts) {
+    var b = get_bounds(opts);
+    return {
+      wid: Math.abs(b.xmax - b.xmin),
+      hgt: Math.abs(b.ymax - b.ymin)
+    };
+  }
+
+  function get_bounds(opts) {
     var ped = d3.select("#" + opts.targetDiv).select(".diagram");
     var xmin = Number.MAX_VALUE;
     var xmax = -1000000;
@@ -1064,8 +1068,17 @@ var pedigreejs = (function (exports) {
       }
     });
     return {
-      wid: Math.abs(xmax - xmin),
-      hgt: Math.abs(ymax - ymin)
+      xmin: xmin,
+      xmax: xmax,
+      ymin: ymin,
+      ymax: ymax
+    };
+  }
+
+  function get_svg_size(svg) {
+    return {
+      w: svg.node().clientWidth,
+      h: svg.node().clientHeight
     };
   }
 
@@ -1159,6 +1172,22 @@ var pedigreejs = (function (exports) {
           document.webkitExitFullscreen();
         }
       }
+    }); // press and hold to zoom in/out
+
+    var timeoutId = 0;
+
+    function zoomIn() {
+      btn_zoom(opts, 1.05);
+    }
+
+    function zoomOut() {
+      btn_zoom(opts, 0.95);
+    }
+
+    $('.fa-plus-circle, .fa-minus-circle').on('mousedown', function () {
+      timeoutId = setInterval($(this).hasClass("fa-plus-circle") ? zoomIn : zoomOut, 50);
+    }).on('mouseup mouseleave', function () {
+      clearInterval(timeoutId);
     }); // undo/redo/reset
 
     $("#" + opts.btn_target).on("click", function (e) {
@@ -1191,10 +1220,6 @@ var pedigreejs = (function (exports) {
             }
           }
         });
-      } else if ($(e.target).hasClass('fa-plus-circle')) {
-        btn_zoom(opts, 1.1);
-      } else if ($(e.target).hasClass('fa-minus-circle')) {
-        btn_zoom(opts, 0.9);
       } else if ($(e.target).hasClass('fa-crosshairs')) {
         scale_to_fit(opts);
       } // trigger fhChange event
@@ -2109,6 +2134,7 @@ var pedigreejs = (function (exports) {
         console.log(opts.dataset);
 
         try {
+          setposition(opts);
           rebuild(opts);
 
           if (risk_factors !== undefined) {
