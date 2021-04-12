@@ -182,14 +182,20 @@ export function clear(opts) {
 // zoom - store translation coords
 export function setposition(opts, x, y, zoom) {
 	if(has_browser_storage(opts)) {
-		set_browser_store(opts, get_prefix(opts)+'_X', x);
-		set_browser_store(opts, get_prefix(opts)+'_Y', y);
+		let store = (opts.store_type === 'local' ? localStorage : sessionStorage);
+		if(x) {
+			set_browser_store(opts, get_prefix(opts)+'_X', x);
+			set_browser_store(opts, get_prefix(opts)+'_Y', y);
+		} else {
+			store.removeItem(get_prefix(opts)+'_X');
+			store.removeItem(get_prefix(opts)+'_Y');
+		}
 
 		let zoomName = get_prefix(opts)+'_ZOOM';
 		if(zoom)
 			set_browser_store(opts, zoomName, zoom);
 		else
-			((opts.store_type === 'local' ? localStorage.removeItem(zoomName) : sessionStorage.removeItem(zoomName)));
+			store.removeItem(zoomName);
 	} else {
 		//TODO
 	}
