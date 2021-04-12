@@ -315,6 +315,7 @@ function load(e, opts) {
 			}
 			console.log(opts.dataset);
 			try{
+				pedcache.setposition(opts);		// clear position
 				rebuild(opts);
 				if(risk_factors !== undefined) {
 					console.log(risk_factors);
