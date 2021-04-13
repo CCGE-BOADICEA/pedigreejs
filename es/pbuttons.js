@@ -76,6 +76,16 @@ function click(opts) {
 		}
 	});
 
+	// press and hold to zoom in/out
+	let timeoutId = 0;
+	function zoomIn() {btn_zoom(opts, 1.05);}
+	function zoomOut() {btn_zoom(opts, 0.95);}
+	$('.fa-plus-circle, .fa-minus-circle').on('mousedown', function() {
+	    timeoutId = setInterval(($( this ).hasClass( "fa-plus-circle" ) ? zoomIn : zoomOut), 50);
+	}).on('mouseup mouseleave', function() {
+	    clearInterval(timeoutId);
+	});
+
 	// undo/redo/reset
 	$( "#"+opts.btn_target ).on( "click", function(e) {
 		e.stopPropagation();
@@ -108,10 +118,6 @@ function click(opts) {
 				    }
 				}
 			});
-		} else if ($(e.target).hasClass('fa-plus-circle')) {
-			btn_zoom(opts, 1.1);
-		} else if ($(e.target).hasClass('fa-minus-circle')) {
-			btn_zoom(opts, 0.9);
 		} else if ($(e.target).hasClass('fa-crosshairs')) {
 			scale_to_fit(opts);
 		} 
