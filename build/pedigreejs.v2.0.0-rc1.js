@@ -3370,10 +3370,10 @@ var pedigreejs = (function (exports) {
             } else if (this_label === 'stillbirth') {
               txt += "SB";
             } else if (this_label.match("_gene_test$") && 'result' in d.data[this_label]) {
-              var r = d.data[this_label]['result'].toUpperCase();
-              var t = d.data[this_label]['type'].toUpperCase();
+              var r = d.data[this_label]['result'].toUpperCase(); //let t = d.data[this_label]['type'].toUpperCase();
+
               txt += this_label.replace('_gene_test', '').toUpperCase();
-              txt += (r === 'P' ? '+ ' : r === 'N' ? '- ' : ' ') + '(' + t + ') ';
+              txt += r === 'P' ? '+ ' : r === 'N' ? '- ' : ' ';
             } else if (this_label.match("_bc_pathology$")) {
               var _r = d.data[this_label].toUpperCase();
 

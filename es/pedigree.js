@@ -263,9 +263,9 @@ export function build(options) {
 							txt += "SB";
 						} else if(this_label.match("_gene_test$") && 'result' in d.data[this_label]) {
 							let r = d.data[this_label]['result'].toUpperCase();
-							let t = d.data[this_label]['type'].toUpperCase();
+							//let t = d.data[this_label]['type'].toUpperCase();
 							txt += this_label.replace('_gene_test', '').toUpperCase()
-							txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' ')) + '(' + t + ') ';
+							txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' '));
 						} else if(this_label.match("_bc_pathology$")) {
 							let r = d.data[this_label].toUpperCase();
 							txt += this_label.replace('_bc_pathology', '').toUpperCase()
