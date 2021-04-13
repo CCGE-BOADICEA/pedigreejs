@@ -1986,16 +1986,20 @@ var pedigreejs = (function (exports) {
     var svg_div = $('<div></div>'); // create a new div
 
     var svg = $('#' + opts.targetDiv).find('svg').clone().appendTo(svg_div);
+    var a4 = {
+      w: 595 - 80,
+      h: 842 - 85
+    };
 
-    if (opts.width < tree_dimensions.width || opts.height < tree_dimensions.height || tree_dimensions.width > 595 || tree_dimensions.height > 842) {
+    if (opts.width < tree_dimensions.width || opts.height < tree_dimensions.height || tree_dimensions.width > a4.w || tree_dimensions.height > a4.h) {
       var wid = tree_dimensions.width;
       var hgt = tree_dimensions.height + 100;
       var scale = 1.0;
 
-      if (tree_dimensions.width > 595 || tree_dimensions.height > 842) {
+      if (tree_dimensions.width > a4.w || tree_dimensions.height > a4.h) {
         // scale to fit A4
-        if (tree_dimensions.width > 595) wid = 595;
-        if (tree_dimensions.height > 842) hgt = 842;
+        if (tree_dimensions.width > a4.w) wid = a4.w;
+        if (tree_dimensions.height > a4.h) hgt = a4.h;
         var xscale = wid / tree_dimensions.width;
         var yscale = hgt / tree_dimensions.height;
         scale = xscale < yscale ? xscale : yscale;
@@ -2134,7 +2138,8 @@ var pedigreejs = (function (exports) {
         console.log(opts.dataset);
 
         try {
-          setposition(opts);
+          setposition(opts); // clear position
+
           rebuild(opts);
 
           if (risk_factors !== undefined) {
