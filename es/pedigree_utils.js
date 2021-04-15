@@ -31,6 +31,19 @@ export function copy_dataset(dataset) {
 	return newdataset;
 }
 
+// check if the object contains a key with a given prefix
+export function prefixInObj(prefix, obj) {
+	let found = false;
+	if(obj)
+		$.each(obj, function(k, _n){
+			if(k.indexOf(prefix+"_") === 0 || k === prefix) {
+				found = true;
+				return found;
+			}
+		});
+	return found;
+}
+
 /**
  *  Get formatted time or data & time
  */
