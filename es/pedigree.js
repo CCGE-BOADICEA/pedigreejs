@@ -120,8 +120,8 @@ export function build(options) {
 					});
 
 	// provide a border to the node
-	node.append("path")
-		.filter(function (d) {return !d.data.hidden;})
+	node.filter(function (d) {return !d.data.hidden;})
+		.append("path")
 		.attr("shape-rendering", "geometricPrecision")
 		.attr("transform", function(d) {return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
 		.attr("d", d3.symbol().size(function(_d) { return (opts.symbol_size * opts.symbol_size) + 2;})
@@ -139,9 +139,9 @@ export function build(options) {
 		.style("fill", "none");
 
 	// set a clippath
-	node.append("clipPath")
+	node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);})
+		.append("clipPath")
 		.attr("id", function (d) {return d.data.name;}).append("path")
-		.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);})
 		.attr("class", "node")
 		.attr("transform", function(d) {return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";})
 		.attr("d", d3.symbol().size(function(d) {
@@ -155,7 +155,7 @@ export function build(options) {
 				return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}));
 
 	// pie plots for disease colours
-	let pienode = node.selectAll("pienode")
+	let pienode = node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);}).selectAll("pienode")
 	   .data(function(d) {	 		// set the disease data for the pie plot
 		   let ncancers = 0;
 		   let cancers = $.map(opts.diseases, function(_val, i){
@@ -189,8 +189,8 @@ export function build(options) {
 			});
 
 	// adopted in/out brackets
-	node.append("path")
-		.filter(function (d) {return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);})
+	node.filter(function (d) {return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);})
+		.append("path")
 		.attr("d", function(_d) { {
 			let dx = -(opts.symbol_size * 0.66);
 			let dy = -(opts.symbol_size * 0.64);
@@ -208,8 +208,8 @@ export function build(options) {
 
 
 	// alive status = 0; dead status = 1
-	node.append('line')
-		.filter(function (d) {return d.data.status == 1;})
+	node.filter(function (d) {return d.data.status == 1;})
+		.append('line')
 			.style("stroke", "black")
 			.attr("x1", function(_d, _i) {return -0.6*opts.symbol_size;})
 			.attr("y1", function(_d, _i) {return 0.6*opts.symbol_size;})
