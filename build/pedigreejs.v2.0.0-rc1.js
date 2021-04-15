@@ -2824,9 +2824,9 @@ var pedigreejs = (function (exports) {
 
     drag_handle(opts); // rectangle used to highlight on mouse over
 
-    node.append("rect").filter(function (d) {
+    node.filter(function (d) {
       return d.data.hidden && !opts.DEBUG ? false : true;
-    }).attr("class", 'indi_rect').attr("rx", 6).attr("ry", 6).attr("x", function (_d) {
+    }).append("rect").attr("class", 'indi_rect').attr("rx", 6).attr("ry", 6).attr("x", function (_d) {
       return -0.75 * opts.symbol_size;
     }).attr("y", function (_d) {
       return -opts.symbol_size;
@@ -2886,9 +2886,9 @@ var pedigreejs = (function (exports) {
     }
 
     var _loop = function _loop(key) {
-      var widget = node.append("text").filter(function (d) {
+      var widget = node.filter(function (d) {
         return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') && !(d.data.parent_node === undefined && key === 'addchild') && !(d.data.noparents === undefined && d.data.top_level === undefined && key === 'addparents');
-      }).attr("class", key).style("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
+      }).append("text").attr("class", key).style("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
         return d.x;
       }).attr("yy", function (d) {
         return d.y;
@@ -3236,7 +3236,7 @@ var pedigreejs = (function (exports) {
   function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
     node.filter(function (d) {
       return !d.data.hidden && (!labels || node_has_label(d, labels));
-    }).append("text").attr("class", (class_label ? class_label : '') + ' ped_label' || "ped_label").attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight).text(ftext);
+    }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight).text(ftext);
   } // get height in pixels
 
 
@@ -3362,9 +3362,9 @@ var pedigreejs = (function (exports) {
       return "translate(" + d.x + "," + d.y + ")";
     }); // provide a border to the node
 
-    node.append("path").filter(function (d) {
+    node.filter(function (d) {
       return !d.data.hidden;
-    }).attr("shape-rendering", "geometricPrecision").attr("transform", function (d) {
+    }).append("path").attr("shape-rendering", "geometricPrecision").attr("transform", function (d) {
       return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
     }).attr("d", d3.symbol().size(function (_d) {
       return opts.symbol_size * opts.symbol_size + 2;
@@ -3379,11 +3379,11 @@ var pedigreejs = (function (exports) {
       return !d.data.exclude ? null : "3, 3";
     }).style("fill", "none"); // set a clippath
 
-    node.append("clipPath").attr("id", function (d) {
-      return d.data.name;
-    }).append("path").filter(function (d) {
+    node.filter(function (d) {
       return !(d.data.hidden && !opts.DEBUG);
-    }).attr("class", "node").attr("transform", function (d) {
+    }).append("clipPath").attr("id", function (d) {
+      return d.data.name;
+    }).append("path").attr("class", "node").attr("transform", function (d) {
       return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
     }).attr("d", d3.symbol().size(function (d) {
       if (d.data.hidden) return opts.symbol_size * opts.symbol_size / 5;
@@ -3393,7 +3393,9 @@ var pedigreejs = (function (exports) {
       return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;
     })); // pie plots for disease colours
 
-    var pienode = node.selectAll("pienode").data(function (d) {
+    var pienode = node.filter(function (d) {
+      return !(d.data.hidden && !opts.DEBUG);
+    }).selectAll("pienode").data(function (d) {
       // set the disease data for the pie plot
       var ncancers = 0;
       var cancers = $.map(opts.diseases, function (_val, i) {
@@ -3432,9 +3434,9 @@ var pedigreejs = (function (exports) {
       return opts.diseases[i].colour;
     }); // adopted in/out brackets
 
-    node.append("path").filter(function (d) {
+    node.filter(function (d) {
       return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);
-    }).attr("d", function (_d) {
+    }).append("path").attr("d", function (_d) {
       {
         var dx = -(opts.symbol_size * 0.66);
         var dy = -(opts.symbol_size * 0.64);
@@ -3449,9 +3451,9 @@ var pedigreejs = (function (exports) {
       return !d.data.exclude ? null : "3, 3";
     }).style("fill", "none"); // alive status = 0; dead status = 1
 
-    node.append('line').filter(function (d) {
+    node.filter(function (d) {
       return d.data.status == 1;
-    }).style("stroke", "black").attr("x1", function (_d, _i) {
+    }).append('line').style("stroke", "black").attr("x1", function (_d, _i) {
       return -0.6 * opts.symbol_size;
     }).attr("y1", function (_d, _i) {
       return 0.6 * opts.symbol_size;
