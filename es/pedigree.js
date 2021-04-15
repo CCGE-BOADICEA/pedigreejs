@@ -5,6 +5,7 @@ import * as pedcache from './pedcache.js';
 import * as io from './io.js';
 import {addWidgets} from './widgets.js';
 import {init_zoom} from './zoom.js';
+import {addLabels} from './labels.js';
 
 export let roots = {};
 
@@ -158,7 +159,7 @@ export function build(options) {
 	   .data(function(d) {	 		// set the disease data for the pie plot
 		   let ncancers = 0;
 		   let cancers = $.map(opts.diseases, function(_val, i){
-			   if(prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
+			   if(pedigree_utils.prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
 		   });
 		   if(ncancers === 0) cancers = [1];
 		   return [$.map(cancers, function(val, _i){
@@ -215,89 +216,12 @@ export function build(options) {
 			.attr("x2", function(_d, _i) {return 0.6*opts.symbol_size;})
 			.attr("y2", function(_d, _i) {return -0.6*opts.symbol_size;});
 
-	// names of individuals
-	addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
-			function(d) {
-				if(opts.DEBUG)
-					return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
-				return 'display_name' in d.data ? d.data.display_name : '';});
-
 /*
  * let warn = node.filter(function (d) { return (!d.data.age || !d.data.yob) && !d.data.hidden; }).append("text") .attr('font-family', 'FontAwesome')
  * .attr("x", ".25em") .attr("y", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size)) .html("\uf071"); warn.append("svg:title").text("incomplete");
  */
-
-	let font_size = parseInt(getPx(opts)) + 4;
-	// display label defined in opts.labels e.g. alleles/genotype data
-	for(let ilab=0; ilab<opts.labels.length; ilab++) {
-		let label = opts.labels[ilab];
-		addLabel(opts, node, -(opts.symbol_size),
-			function(d) {
-				let arr = (Array.isArray(label) ? label : [label]);
-				let found = false;
-				for(let l=0; l<arr.length; l++) {
-					let this_label = arr[l];
-					if(d.data[this_label]) {
-						found = true;
-					}
-				}
-				if(!found)
-					return;
-				d.y_offset = (ilab === 0 || !d.y_offset ? font_size*2.35 : d.y_offset+font_size);
-				return d.y_offset;
-			},
-			function(d) {
-				let arr = (Array.isArray(label) ? label : [label]);
-				let txt = "";
-				for(let l=0; l<arr.length; l++) {
-					let this_label = arr[l];
-					if(d.data[this_label]) {
-						if(this_label === 'alleles') {
-							let vars = d.data.alleles.split(';');
-							for(let ivar = 0;ivar < vars.length;ivar++) {
-								if(vars[ivar] !== "") txt += vars[ivar] + ';';
-							}
-						} else if(this_label === 'age') {
-							txt += d.data[this_label] +'y ';
-						} else if(this_label === 'stillbirth') {
-							txt += "SB";
-						} else if(this_label.match("_gene_test$") && 'result' in d.data[this_label]) {
-							let r = d.data[this_label]['result'].toUpperCase();
-							//let t = d.data[this_label]['type'].toUpperCase();
-							txt += this_label.replace('_gene_test', '').toUpperCase()
-							txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' '));
-						} else if(this_label.match("_bc_pathology$")) {
-							let r = d.data[this_label].toUpperCase();
-							txt += this_label.replace('_bc_pathology', '').toUpperCase()
-							txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' '));
-						} else {
-						  txt += d.data[this_label];
-						}
-					}
-				}
-				if(txt !== "") return txt;
-			}, 'indi_details');
-	}
-
-	// individuals disease details
-	for(let i=0;i<opts.diseases.length; i++) {
-		let disease = opts.diseases[i].type;
-		addLabel(opts, node, -(opts.symbol_size),
-				function(d) {
-					let y_offset = (d.y_offset ? d.y_offset+font_size: font_size*2.2);
-					for(let j=0;j<opts.diseases.length; j++) {
-						if(disease === opts.diseases[j].type)
-							break;
-						if(prefixInObj(opts.diseases[j].type, d.data))
-							y_offset += font_size-1;
-					}
-					return y_offset;
-				},
-				function(d) {
-					let dis = disease.replace('_', ' ').replace('cancer', 'ca.');
-					return disease+'_diagnosis_age' in d.data ? dis +": "+ d.data[disease+'_diagnosis_age'] : '';
-				}, 'indi_details');
-	}
+	// add display names and labels defined by opts.labels
+	addLabels(opts, node);
 
 	//
 	addWidgets(opts, node);
@@ -505,7 +429,7 @@ export function build(options) {
 		ped.append("line")
 			.attr("x1", probandNode.x-opts.symbol_size/0.7)
 			.attr("y1", probandNode.y+opts.symbol_size/1.4)
-			.attr("x2", probandNode.x-opts.symbol_size/1.5)
+			.attr("x2", probandNode.x-opts.symbol_size/1.4)
 			.attr("y2", probandNode.y+opts.symbol_size/4)
 			.attr("stroke-width", 1)
 			.attr("stroke", "black")
@@ -594,19 +518,6 @@ function get_bracket(dx, dy, indent, opts) {
 			"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
 			"L" + dx + " " + (dy+(opts.symbol_size *  1.28)) +
 			"L" + (dx+indent) + "," + (dy+(opts.symbol_size *  1.28))
-}
-
-// check if the object contains a key with a given prefix
-function prefixInObj(prefix, obj) {
-	let found = false;
-	if(obj)
-		$.each(obj, function(k, _n){
-			if(k.indexOf(prefix+"_") === 0 || k === prefix) {
-				found = true;
-				return found;
-			}
-		});
-	return found;
 }
 
 // check for crossing of partner lines
@@ -709,35 +620,6 @@ function group_top_level(dataset) {
 	for (let i = top_level.length; i > 0; --i)
 		newdataset.unshift(top_level[i-1]);
 	return newdataset;
-}
-
-// get height in pixels
-function getPx(opts){
-	let emVal = opts.font_size;
-	if (emVal === parseInt(emVal, 10)) // test if integer
-		return emVal;
-
-	if(emVal.indexOf("px") > -1)
-		return emVal.replace('px', '');
-	else if(emVal.indexOf("em") === -1)
-		return emVal;
-	emVal = parseFloat(emVal.replace('em', ''));
-	return (parseFloat(getComputedStyle($('#'+opts.targetDiv).get(0)).fontSize)*emVal)-1.0;
-}
-
-// Add label
-function addLabel(opts, node, fx, fy, ftext, class_label) {
-	node.filter(function (d) {
-		return d.data.hidden && !opts.DEBUG ? false : true;
-	}).append("text")
-	.attr("class", class_label + ' ped_label' || "ped_label")
-	.attr("x", fx)
-	.attr("y", fy)
-	// .attr("dy", size)
-	.attr("font-family", opts.font_family)
-	.attr("font-size", opts.font_size)
-	.attr("font-weight", opts.font_weight)
-	.text(ftext);
 }
 
 export function rebuild(opts) {
