@@ -92,7 +92,7 @@ function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
 	node.filter(function (d) {
 		return !d.data.hidden && (!labels || node_has_label(d, labels));
 	}).append("text")
-	.attr("class", (class_label ? class_label : '') + ' ped_label' || "ped_label")
+	.attr("class", (class_label ? class_label + ' ped_label' : 'ped_label'))
 	.attr("x", fx)
 	.attr("y", fy)
 	.attr("font-family", opts.font_family)
