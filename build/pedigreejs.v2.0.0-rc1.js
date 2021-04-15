@@ -280,6 +280,17 @@ var pedigreejs = (function (exports) {
     }
 
     return newdataset;
+  } // check if the object contains a key with a given prefix
+
+  function prefixInObj(prefix, obj) {
+    var found = false;
+    if (obj) $.each(obj, function (k, _n) {
+      if (k.indexOf(prefix + "_") === 0 || k === prefix) {
+        found = true;
+        return found;
+      }
+    });
+    return found;
   }
   /**
    *  Get formatted time or data & time
@@ -946,6 +957,7 @@ var pedigreejs = (function (exports) {
     isIE: isIE,
     isEdge: isEdge,
     copy_dataset: copy_dataset,
+    prefixInObj: prefixInObj,
     getFormattedDate: getFormattedDate,
     messages: messages,
     validate_age_yob: validate_age_yob,
@@ -2812,9 +2824,9 @@ var pedigreejs = (function (exports) {
 
     drag_handle(opts); // rectangle used to highlight on mouse over
 
-    node.append("rect").filter(function (d) {
+    node.filter(function (d) {
       return d.data.hidden && !opts.DEBUG ? false : true;
-    }).attr("class", 'indi_rect').attr("rx", 6).attr("ry", 6).attr("x", function (_d) {
+    }).append("rect").attr("class", 'indi_rect').attr("rx", 6).attr("ry", 6).attr("x", function (_d) {
       return -0.75 * opts.symbol_size;
     }).attr("y", function (_d) {
       return -opts.symbol_size;
@@ -2874,9 +2886,9 @@ var pedigreejs = (function (exports) {
     }
 
     var _loop = function _loop(key) {
-      var widget = node.append("text").filter(function (d) {
+      var widget = node.filter(function (d) {
         return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') && !(d.data.parent_node === undefined && key === 'addchild') && !(d.data.noparents === undefined && d.data.top_level === undefined && key === 'addparents');
-      }).attr("class", key).style("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
+      }).append("text").attr("class", key).style("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
         return d.x;
       }).attr("yy", function (d) {
         return d.y;
@@ -3111,6 +3123,132 @@ var pedigreejs = (function (exports) {
     return;
   }
 
+  function addLabels(opts, node) {
+    // names of individuals
+    addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size), function (d) {
+      if (opts.DEBUG) return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
+      return 'display_name' in d.data ? d.data.display_name : '';
+    }, undefined, ['display_name']);
+    var font_size = parseInt(getPx(opts)) + 4; // display age/yob label first
+
+    var _loop = function _loop(ilab) {
+      var label = opts.labels[ilab];
+      var arr = Array.isArray(label) ? label : [label];
+
+      if (arr.indexOf('age') > -1 || arr.indexOf('yob') > -1) {
+        addLabel(opts, node, -opts.symbol_size, function (d) {
+          return ypos(d, arr, font_size);
+        }, function (d) {
+          return get_text(d, arr);
+        }, 'indi_details', arr);
+      }
+    };
+
+    for (var ilab = 0; ilab < opts.labels.length; ilab++) {
+      _loop(ilab);
+    } // individuals disease details
+
+
+    var _loop2 = function _loop2(i) {
+      var disease = opts.diseases[i].type;
+      addLabel(opts, node, -opts.symbol_size, function (d) {
+        return ypos(d, [disease], font_size);
+      }, function (d) {
+        var dis = disease.replace('_', ' ').replace('cancer', 'ca.');
+        return disease + '_diagnosis_age' in d.data ? dis + ": " + d.data[disease + '_diagnosis_age'] : '';
+      }, 'indi_details', [disease]);
+    };
+
+    for (var i = 0; i < opts.diseases.length; i++) {
+      _loop2(i);
+    } // display other labels defined in opts.labels e.g. alleles/genotype data
+
+
+    var _loop3 = function _loop3(_ilab) {
+      var label = opts.labels[_ilab];
+      var arr = Array.isArray(label) ? label : [label];
+
+      if (arr.indexOf('age') === -1 && arr.indexOf('yob') === -1) {
+        addLabel(opts, node, -opts.symbol_size, function (d) {
+          return ypos(d, arr, font_size);
+        }, function (d) {
+          return get_text(d, arr);
+        }, 'indi_details', arr);
+      }
+    };
+
+    for (var _ilab = 0; _ilab < opts.labels.length; _ilab++) {
+      _loop3(_ilab);
+    }
+  }
+
+  function get_text(d, arr) {
+    var txt = "";
+
+    for (var l = 0; l < arr.length; l++) {
+      var this_label = arr[l];
+
+      if (d.data[this_label]) {
+        if (this_label === 'alleles') {
+          var vars = d.data.alleles.split(';');
+
+          for (var ivar = 0; ivar < vars.length; ivar++) {
+            if (vars[ivar] !== "") txt += vars[ivar] + ';';
+          }
+        } else if (this_label === 'age') {
+          txt += d.data[this_label] + 'y ';
+        } else if (this_label === 'stillbirth') {
+          txt += "SB";
+        } else if (this_label.match("_gene_test$") && 'result' in d.data[this_label]) {
+          var r = d.data[this_label]['result'].toUpperCase(); //let t = d.data[this_label]['type'].toUpperCase();
+
+          txt += this_label.replace('_gene_test', '').toUpperCase();
+          txt += r === 'P' ? '+ ' : r === 'N' ? '- ' : ' ';
+        } else if (this_label.match("_bc_pathology$")) {
+          var _r = d.data[this_label].toUpperCase();
+
+          txt += this_label.replace('_bc_pathology', '').toUpperCase();
+          txt += _r === 'P' ? '+ ' : _r === 'N' ? '- ' : ' ';
+        } else {
+          txt += d.data[this_label];
+        }
+      }
+    }
+
+    if (txt !== "") return txt;
+  }
+
+  function ypos(d, arr, font_size) {
+    if (!node_has_label(d, arr)) return;
+    d.y_offset = !d.y_offset ? font_size * 2.35 : d.y_offset + font_size;
+    return d.y_offset;
+  }
+
+  function node_has_label(d, labels) {
+    for (var l = 0; l < labels.length; l++) {
+      if (prefixInObj(labels[l], d.data)) return true;
+    }
+
+    return false;
+  } // add label to node
+
+
+  function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
+    node.filter(function (d) {
+      return !d.data.hidden && (!labels || node_has_label(d, labels));
+    }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight).text(ftext);
+  } // get height in pixels
+
+
+  function getPx(opts) {
+    var emVal = opts.font_size;
+    if (emVal === parseInt(emVal, 10)) // test if integer
+      return emVal;
+    if (emVal.indexOf("px") > -1) return emVal.replace('px', '');else if (emVal.indexOf("em") === -1) return emVal;
+    emVal = parseFloat(emVal.replace('em', ''));
+    return parseFloat(getComputedStyle($('#' + opts.targetDiv).get(0)).fontSize) * emVal - 1.0;
+  }
+
   var roots = {};
   function build(options) {
     var opts = $.extend({
@@ -3224,9 +3362,9 @@ var pedigreejs = (function (exports) {
       return "translate(" + d.x + "," + d.y + ")";
     }); // provide a border to the node
 
-    node.append("path").filter(function (d) {
+    node.filter(function (d) {
       return !d.data.hidden;
-    }).attr("shape-rendering", "geometricPrecision").attr("transform", function (d) {
+    }).append("path").attr("shape-rendering", "geometricPrecision").attr("transform", function (d) {
       return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
     }).attr("d", d3.symbol().size(function (_d) {
       return opts.symbol_size * opts.symbol_size + 2;
@@ -3241,11 +3379,11 @@ var pedigreejs = (function (exports) {
       return !d.data.exclude ? null : "3, 3";
     }).style("fill", "none"); // set a clippath
 
-    node.append("clipPath").attr("id", function (d) {
-      return d.data.name;
-    }).append("path").filter(function (d) {
+    node.filter(function (d) {
       return !(d.data.hidden && !opts.DEBUG);
-    }).attr("class", "node").attr("transform", function (d) {
+    }).append("clipPath").attr("id", function (d) {
+      return d.data.name;
+    }).append("path").attr("class", "node").attr("transform", function (d) {
       return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
     }).attr("d", d3.symbol().size(function (d) {
       if (d.data.hidden) return opts.symbol_size * opts.symbol_size / 5;
@@ -3255,7 +3393,9 @@ var pedigreejs = (function (exports) {
       return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;
     })); // pie plots for disease colours
 
-    var pienode = node.selectAll("pienode").data(function (d) {
+    var pienode = node.filter(function (d) {
+      return !(d.data.hidden && !opts.DEBUG);
+    }).selectAll("pienode").data(function (d) {
       // set the disease data for the pie plot
       var ncancers = 0;
       var cancers = $.map(opts.diseases, function (_val, i) {
@@ -3294,9 +3434,9 @@ var pedigreejs = (function (exports) {
       return opts.diseases[i].colour;
     }); // adopted in/out brackets
 
-    node.append("path").filter(function (d) {
+    node.filter(function (d) {
       return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);
-    }).attr("d", function (_d) {
+    }).append("path").attr("d", function (_d) {
       {
         var dx = -(opts.symbol_size * 0.66);
         var dy = -(opts.symbol_size * 0.64);
@@ -3311,9 +3451,9 @@ var pedigreejs = (function (exports) {
       return !d.data.exclude ? null : "3, 3";
     }).style("fill", "none"); // alive status = 0; dead status = 1
 
-    node.append('line').filter(function (d) {
+    node.filter(function (d) {
       return d.data.status == 1;
-    }).style("stroke", "black").attr("x1", function (_d, _i) {
+    }).append('line').style("stroke", "black").attr("x1", function (_d, _i) {
       return -0.6 * opts.symbol_size;
     }).attr("y1", function (_d, _i) {
       return 0.6 * opts.symbol_size;
@@ -3321,100 +3461,14 @@ var pedigreejs = (function (exports) {
       return 0.6 * opts.symbol_size;
     }).attr("y2", function (_d, _i) {
       return -0.6 * opts.symbol_size;
-    }); // names of individuals
-
-    addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size), function (d) {
-      if (opts.DEBUG) return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
-      return 'display_name' in d.data ? d.data.display_name : '';
     });
     /*
      * let warn = node.filter(function (d) { return (!d.data.age || !d.data.yob) && !d.data.hidden; }).append("text") .attr('font-family', 'FontAwesome')
      * .attr("x", ".25em") .attr("y", -(0.4 * opts.symbol_size), -(0.2 * opts.symbol_size)) .html("\uf071"); warn.append("svg:title").text("incomplete");
      */
+    // add display names and labels defined by opts.labels
 
-    var font_size = parseInt(getPx(opts)) + 4; // display label defined in opts.labels e.g. alleles/genotype data
-
-    var _loop = function _loop(ilab) {
-      var label = opts.labels[ilab];
-      addLabel(opts, node, -opts.symbol_size, function (d) {
-        var arr = Array.isArray(label) ? label : [label];
-        var found = false;
-
-        for (var l = 0; l < arr.length; l++) {
-          var this_label = arr[l];
-
-          if (d.data[this_label]) {
-            found = true;
-          }
-        }
-
-        if (!found) return;
-        d.y_offset = ilab === 0 || !d.y_offset ? font_size * 2.35 : d.y_offset + font_size;
-        return d.y_offset;
-      }, function (d) {
-        var arr = Array.isArray(label) ? label : [label];
-        var txt = "";
-
-        for (var l = 0; l < arr.length; l++) {
-          var this_label = arr[l];
-
-          if (d.data[this_label]) {
-            if (this_label === 'alleles') {
-              var vars = d.data.alleles.split(';');
-
-              for (var ivar = 0; ivar < vars.length; ivar++) {
-                if (vars[ivar] !== "") txt += vars[ivar] + ';';
-              }
-            } else if (this_label === 'age') {
-              txt += d.data[this_label] + 'y ';
-            } else if (this_label === 'stillbirth') {
-              txt += "SB";
-            } else if (this_label.match("_gene_test$") && 'result' in d.data[this_label]) {
-              var r = d.data[this_label]['result'].toUpperCase();
-              var t = d.data[this_label]['type'].toUpperCase();
-              txt += this_label.replace('_gene_test', '').toUpperCase();
-              txt += (r === 'P' ? '+ ' : r === 'N' ? '- ' : ' ') + '(' + t + ') ';
-            } else if (this_label.match("_bc_pathology$")) {
-              var _r = d.data[this_label].toUpperCase();
-
-              txt += this_label.replace('_bc_pathology', '').toUpperCase();
-              txt += _r === 'P' ? '+ ' : _r === 'N' ? '- ' : ' ';
-            } else {
-              txt += d.data[this_label];
-            }
-          }
-        }
-
-        if (txt !== "") return txt;
-      }, 'indi_details');
-    };
-
-    for (var ilab = 0; ilab < opts.labels.length; ilab++) {
-      _loop(ilab);
-    } // individuals disease details
-
-
-    var _loop2 = function _loop2(i) {
-      var disease = opts.diseases[i].type;
-      addLabel(opts, node, -opts.symbol_size, function (d) {
-        var y_offset = d.y_offset ? d.y_offset + font_size : font_size * 2.2;
-
-        for (var j = 0; j < opts.diseases.length; j++) {
-          if (disease === opts.diseases[j].type) break;
-          if (prefixInObj(opts.diseases[j].type, d.data)) y_offset += font_size - 1;
-        }
-
-        return y_offset;
-      }, function (d) {
-        var dis = disease.replace('_', ' ').replace('cancer', 'ca.');
-        return disease + '_diagnosis_age' in d.data ? dis + ": " + d.data[disease + '_diagnosis_age'] : '';
-      }, 'indi_details');
-    };
-
-    for (var i = 0; i < opts.diseases.length; i++) {
-      _loop2(i);
-    } //
-
+    addLabels(opts, node); //
 
     addWidgets(opts, node); // links between partners
 
@@ -3572,7 +3626,7 @@ var pedigreejs = (function (exports) {
       var triid = "triangle" + makeid(3);
       ped.append("svg:defs").append("svg:marker") // arrow head
       .attr("id", triid).attr("refX", 6).attr("refY", 6).attr("markerWidth", 20).attr("markerHeight", 20).attr("orient", "auto").append("path").attr("d", "M 0 0 12 6 0 12 3 6").style("fill", "black");
-      ped.append("line").attr("x1", probandNode.x - opts.symbol_size / 0.7).attr("y1", probandNode.y + opts.symbol_size / 1.4).attr("x2", probandNode.x - opts.symbol_size / 1.5).attr("y2", probandNode.y + opts.symbol_size / 4).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
+      ped.append("line").attr("x1", probandNode.x - opts.symbol_size / 0.7).attr("y1", probandNode.y + opts.symbol_size / 1.4).attr("x2", probandNode.x - opts.symbol_size / 1.4).attr("y2", probandNode.y + opts.symbol_size / 4).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
     } // drag and zoom
 
 
@@ -3641,18 +3695,6 @@ var pedigreejs = (function (exports) {
 
   function get_bracket(dx, dy, indent, opts) {
     return "M" + (dx + indent) + "," + dy + "L" + dx + " " + dy + "L" + dx + " " + (dy + opts.symbol_size * 1.28) + "L" + dx + " " + (dy + opts.symbol_size * 1.28) + "L" + (dx + indent) + "," + (dy + opts.symbol_size * 1.28);
-  } // check if the object contains a key with a given prefix
-
-
-  function prefixInObj(prefix, obj) {
-    var found = false;
-    if (obj) $.each(obj, function (k, _n) {
-      if (k.indexOf(prefix + "_") === 0 || k === prefix) {
-        found = true;
-        return found;
-      }
-    });
-    return found;
   } // check for crossing of partner lines
 
 
@@ -3755,24 +3797,6 @@ var pedigreejs = (function (exports) {
     }
 
     return newdataset;
-  } // get height in pixels
-
-
-  function getPx(opts) {
-    var emVal = opts.font_size;
-    if (emVal === parseInt(emVal, 10)) // test if integer
-      return emVal;
-    if (emVal.indexOf("px") > -1) return emVal.replace('px', '');else if (emVal.indexOf("em") === -1) return emVal;
-    emVal = parseFloat(emVal.replace('em', ''));
-    return parseFloat(getComputedStyle($('#' + opts.targetDiv).get(0)).fontSize) * emVal - 1.0;
-  } // Add label
-
-
-  function addLabel(opts, node, fx, fy, ftext, class_label) {
-    node.filter(function (d) {
-      return d.data.hidden && !opts.DEBUG ? false : true;
-    }).append("text").attr("class", class_label + ' ped_label' || "ped_label").attr("x", fx).attr("y", fy) // .attr("dy", size)
-    .attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight).text(ftext);
   }
 
   function rebuild(opts) {

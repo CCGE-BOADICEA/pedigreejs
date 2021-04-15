@@ -132,10 +132,10 @@ export function addWidgets(opts, node) {
 	drag_handle(opts);
 
 	// rectangle used to highlight on mouse over
-	node.append("rect")
-		.filter(function (d) {
+	node.filter(function (d) {
 		    return d.data.hidden && !opts.DEBUG ? false : true;
 		})
+		.append("rect")
 		.attr("class", 'indi_rect')
 		.attr("rx", 6)
 		.attr("ry", 6)
@@ -174,14 +174,14 @@ export function addWidgets(opts, node) {
 	}
 
 	for(let key in widgets) {
-		let widget = node.append("text")
-			.filter(function (d) {
+		let widget = node.filter(function (d) {
 				return  (d.data.hidden && !opts.DEBUG ? false : true) &&
 						!((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
 						!(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
 						!(d.data.parent_node === undefined && key === 'addchild') &&
 						!((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
 			})
+			.append("text")
 			.attr("class", key)
 			.style("opacity", 0)
 			.attr('font-family', 'FontAwesome')
