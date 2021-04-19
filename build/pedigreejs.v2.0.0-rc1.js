@@ -1634,7 +1634,7 @@ var pedigreejs = (function (exports) {
           }
         }
 
-        ped.push(indi);
+        ped.unshift(indi);
       }
     };
 
