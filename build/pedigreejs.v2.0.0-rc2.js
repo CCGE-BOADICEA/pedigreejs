@@ -885,7 +885,6 @@ var pedigreejs = (function (exports) {
     rebuild(opts);
   } // add a child to the proband; giveb sex, age, yob and breastfeeding months (optional)
 
-
   function proband_add_child(opts, sex, age, yob, breastfeeding) {
     var newdataset = copy_dataset(current(opts));
     var proband = newdataset[getProbandIndex(newdataset)];
@@ -987,6 +986,7 @@ var pedigreejs = (function (exports) {
     getNodeByName: getNodeByName,
     urlParam: urlParam,
     proband_attr: proband_attr,
+    node_attr: node_attr,
     proband_add_child: proband_add_child,
     delete_node_by_name: delete_node_by_name,
     exists: exists,
@@ -1634,7 +1634,7 @@ var pedigreejs = (function (exports) {
           }
         }
 
-        ped.push(indi);
+        ped.unshift(indi);
       }
     };
 

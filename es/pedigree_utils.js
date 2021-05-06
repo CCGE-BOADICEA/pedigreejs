@@ -606,7 +606,7 @@ export function proband_attr(opts, keys, value){
 // Set or remove node attributes.
 // If a value is not provided the attribute is removed.
 // 'key' can be a list of keys or a single key.
-function node_attr(opts, name, keys, value){
+export function node_attr(opts, name, keys, value){
 	let newdataset = copy_dataset(pedcache.current(opts));
 	let node = getNodeByName(newdataset, name);
 	if(!node){
