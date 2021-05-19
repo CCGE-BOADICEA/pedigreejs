@@ -8,7 +8,9 @@ export let cancers = {
 		'prostate_cancer': 'prostate_cancer_diagnosis_age',
 		'pancreatic_cancer': 'pancreatic_cancer_diagnosis_age'
 	};
-export let genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d',	'rad51c', 'brip1'];
+export let genetic_test1 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d', 'rad51c', 'brip1'];
+export let genetic_test2 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 'rad51d', 'rad51c', 'brip1'];
+
 export let pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
 // risk factor to storage
@@ -83,20 +85,30 @@ function get_surgical_ops() {
 	return meta;
 }
 
-export function readCanRiskV1(boadicea_lines) {
+export function readCanRisk(boadicea_lines) {
 	let lines = boadicea_lines.trim().split('\n');
 	let ped = [];
 	let hdr = [];  // collect risk factor header lines
+	const regexp = /([0-9])/;
+	let version = 2;
+	let gt = (version === 1 ? genetic_test1 : genetic_test2);
 	// assumes two line header
 	for(let i = 0;i < lines.length;i++){
 		let ln = lines[i].trim();
 		if(ln.indexOf("##") === 0) {
-			if(ln.indexOf("##CanRisk") === 0 && ln.indexOf(";") > -1) {   // contains surgical op data
-				let ops = ln.split(";");
-				for(let j=1; j<ops.length; j++) {
-					let opdata = ops[j].split("=");
-					if(opdata.length === 2) {
-						hdr.push(ops[j]);
+			if(ln.indexOf("##CanRisk") === 0) {
+				const match = ln.match(regexp);
+				version = parseInt(match[1]);
+				gt = (version === 1 ? genetic_test1 : genetic_test2);
+				console.log("CanRisk File Format version "+version);
+
+				if(ln.indexOf(";") > -1) {   // contains surgical op data
+					let ops = ln.split(";");
+					for(let j=1; j<ops.length; j++) {
+						let opdata = ops[j].split("=");
+						if(opdata.length === 2) {
+							hdr.push(ops[j]);
+						}
 					}
 				}
 			}
@@ -141,11 +153,11 @@ export function readCanRiskV1(boadicea_lines) {
 			// BRCA1, BRCA2, PALB2, ATM, CHEK2, .... genetic tests
 			// genetic test type, 0 = untested, S = mutation search, T = direct gene test
 			// genetic test result, 0 = untested, P = positive, N = negative
-			for(let j=0; j<genetic_test.length; j++) {
+			for(let j=0; j<gt.length; j++) {
 				let gene_test = attr[idx].split(":");
 				if(gene_test[0] !== '0') {
 					if((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N'))
-						indi[genetic_test[j] + '_gene_test'] = {'type': gene_test[0], 'result': gene_test[1]};
+						indi[gt[j] + '_gene_test'] = {'type': gene_test[0], 'result': gene_test[1]};
 					else
 						console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + gene_test[0] + " " + gene_test[1]);
 				}
@@ -170,8 +182,8 @@ export function readCanRiskV1(boadicea_lines) {
 /**
  * Get CanRisk formated pedigree.
  */
-export function get_pedigree(dataset, famid, meta, isanon) {
-	let msg = "##CanRisk 1.0";
+export function get_pedigree(dataset, famid, meta, isanon, version=2) {
+	let msg = "##CanRisk " + (version === 1 ? "1.0" : "2.0");
 	if(!famid) {
 		famid = "XXXX";
 	}
@@ -234,7 +246,13 @@ export function get_pedigree(dataset, famid, meta, isanon) {
 		if(endo !== undefined)
 			msg += "\n##endo="+endo;
 	}
-	msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn\tBRCA1\tBRCA2\tPALB2\tATM\tCHEK2\tRAD51D\tRAD51C\tBRIP1\tER:PR:HER2:CK14:CK56";
+	msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn"
+
+	let gt = (version === 1 ? genetic_test1 : genetic_test2);
+	for(let i=0; i<gt.length; i++) {
+		msg += "\t"+gt[i].toUpperCase();
+	}
+	msg += "\tER:PR:HER2:CK14:CK56";
 
 	for(let i=0; i<dataset.length; i++) {
 		let p = dataset[i];
@@ -269,12 +287,12 @@ export function get_pedigree(dataset, famid, meta, isanon) {
 		// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
 		msg += ('ashkenazi' in p ? p.ashkenazi : 0)+'\t';
 
-		for(let j=0; j<genetic_test.length; j++) {
-			if(genetic_test[j]+'_gene_test' in p &&
-			   p[genetic_test[j]+'_gene_test']['type'] !== '-' &&
-			   p[genetic_test[j]+'_gene_test']['result'] !== '-') {
-				msg += p[genetic_test[j]+'_gene_test']['type'] + ':';
-				msg += p[genetic_test[j]+'_gene_test']['result'] + '\t';
+		for(let j=0; j<gt.length; j++) {
+			if(gt[j]+'_gene_test' in p &&
+			   p[gt[j]+'_gene_test']['type'] !== '-' &&
+			   p[gt[j]+'_gene_test']['result'] !== '-') {
+				msg += p[gt[j]+'_gene_test']['type'] + ':';
+				msg += p[gt[j]+'_gene_test']['result'] + '\t';
 			} else {
 				msg += '0:0\t';		// type, 0=untested, S=mutation search, T=direct gene test
 									// result, 0=untested, P=positive, N=negative
