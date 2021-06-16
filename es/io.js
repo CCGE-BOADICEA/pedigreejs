@@ -319,11 +319,9 @@ function load(e, opts) {
 			try{
 				pedcache.setposition(opts);		// clear position
 				rebuild(opts);
-				if(risk_factors !== undefined) {
-					console.log(risk_factors);
-					// load risk factors - fire riskfactorChange event
-					$(document).trigger('riskfactorChange', [opts, risk_factors]);
-				}
+				console.log(risk_factors);
+				// load risk factors - fire riskfactorChange event
+				$(document).trigger('riskfactorChange', [opts, risk_factors]);
 				$(document).trigger('fhChange', [opts]); 	// trigger fhChange event
 
 				try {
