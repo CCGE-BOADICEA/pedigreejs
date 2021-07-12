@@ -92,6 +92,7 @@ export function readCanRisk(boadicea_lines) {
 	const regexp = /([0-9])/;
 	let version = 2;
 	let gt = (version === 1 ? genetic_test1 : genetic_test2);
+	let ncol = [26, 27];	// number of columns - v1, v2
 	// assumes two line header
 	for(let i = 0;i < lines.length;i++){
 		let ln = lines[i].trim();
@@ -126,6 +127,10 @@ export function readCanRisk(boadicea_lines) {
 		let attr = $.map(ln.split(delim), function(val, _i){return val.trim();});
 
 		if(attr.length > 1) {
+			if(attr.length !== ncol[version-1]) {
+				console.error(ln, attr);
+				throw 'Found number of columns '+attr.length+'; expected '+ncol[version-1]+' for CanRisk version '+version;
+			}
 			let indi = {
 				'famid': attr[0],
 				'display_name': attr[1],

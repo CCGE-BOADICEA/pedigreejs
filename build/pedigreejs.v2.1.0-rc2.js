@@ -1552,7 +1552,9 @@ var pedigreejs = (function (exports) {
 
     var regexp = /([0-9])/;
     var version = 2;
-    var gt = version === 1 ? genetic_test1 : genetic_test2; // assumes two line header
+    var gt = version === 1 ? genetic_test1 : genetic_test2;
+    var ncol = [26, 27]; // number of columns - v1, v2
+    // assumes two line header
 
     var _loop = function _loop(i) {
       var ln = lines[i].trim();
@@ -1597,6 +1599,11 @@ var pedigreejs = (function (exports) {
       });
 
       if (attr.length > 1) {
+        if (attr.length !== ncol[version - 1]) {
+          console.error(ln, attr);
+          throw 'Found number of columns ' + attr.length + '; expected ' + ncol[version - 1] + ' for CanRisk version ' + version;
+        }
+
         var indi = {
           'famid': attr[0],
           'display_name': attr[1],
