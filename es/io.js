@@ -394,7 +394,7 @@ export function readLinkage(boadicea_lines) {
 	return process_ped(ped);
 }
 
-function readCanRiskFile(boadicea_lines) {
+export function readCanRiskFile(boadicea_lines) {
 	let [hdr, ped] = readCanRisk(boadicea_lines);
 	try {
 		return [hdr, process_ped(ped)];

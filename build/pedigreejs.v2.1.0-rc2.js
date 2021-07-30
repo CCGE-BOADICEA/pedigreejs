@@ -2261,7 +2261,6 @@ var pedigreejs = (function (exports) {
 
     return process_ped(ped);
   }
-
   function readCanRiskFile(boadicea_lines) {
     var _readCanRisk = readCanRisk(boadicea_lines),
         _readCanRisk2 = _slicedToArray(_readCanRisk, 2),
@@ -2275,7 +2274,6 @@ var pedigreejs = (function (exports) {
       return [hdr, ped];
     }
   } // read boadicea format v4 & v2
-
 
   function readBoadiceaV4(boadicea_lines, version) {
     var lines = boadicea_lines.trim().split('\n');
@@ -2511,6 +2509,7 @@ var pedigreejs = (function (exports) {
     print: print,
     save_file: save_file,
     readLinkage: readLinkage,
+    readCanRiskFile: readCanRiskFile,
     readBoadiceaV4: readBoadiceaV4
   });
 
