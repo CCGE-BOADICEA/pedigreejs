@@ -2,7 +2,7 @@
 import * as pedigree_util from './pedigree_utils.js';
 import * as pedcache from './pedcache.js';
 import {get_tree_dimensions, validate_pedigree, rebuild} from './pedigree.js';
-import {readCanRiskV1, cancers, genetic_test, pathology_tests} from './canrisk_file.js';
+import {readCanRisk, cancers, genetic_test1, pathology_tests} from './canrisk_file.js';
 
 
 export function add(opts) {
@@ -298,7 +298,7 @@ function load(e, opts) {
 					opts.dataset = readBoadiceaV4(e.target.result, 2);
 					canrisk_validation(opts);
 				} else if(e.target.result.indexOf("##") === 0 && e.target.result.indexOf("CanRisk") !== -1) {
-					let canrisk_data = readCanRisk(e.target.result);
+					let canrisk_data = readCanRiskFile(e.target.result);
 					risk_factors = canrisk_data[0];
 					opts.dataset = canrisk_data[1];
 					canrisk_validation(opts);
@@ -394,8 +394,8 @@ export function readLinkage(boadicea_lines) {
 	return process_ped(ped);
 }
 
-function readCanRisk(boadicea_lines) {
-	let [hdr, ped] = readCanRiskV1(boadicea_lines);
+export function readCanRiskFile(boadicea_lines) {
+	let [hdr, ped] = readCanRisk(boadicea_lines);
 	try {
 		return [hdr, process_ped(ped)];
 	} catch(e) {
@@ -444,7 +444,7 @@ export function readBoadiceaV4(boadicea_lines, version) {
 					idx+=2;
 					if(attr[idx-2] !== '0') {
 						if((attr[idx-2] === 'S' || attr[idx-2] === 'T') && (attr[idx-1] === 'P' || attr[idx-1] === 'N'))
-							indi[genetic_test[j] + '_gene_test'] = {'type': attr[idx-2], 'result': attr[idx-1]};
+							indi[genetic_test1[j] + '_gene_test'] = {'type': attr[idx-2], 'result': attr[idx-1]};
 						else
 							console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + attr[idx-2] + " " + attr[idx-1]);
 					}

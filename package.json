@@ -1,6 +1,6 @@
 {
 	"name": "pedigreejs",
-	"version": "v2.0.0-rc2",
+	"version": "v2.1.0-rc2",
 	"description": "pedigreejs is a javascript module for graphically building pedigree data in the web-browser.",
 	"browser": "es/pedigree.js",
 	"files": [
@@ -11,7 +11,7 @@
 	},
 	"scripts": {
 		"build": "rollup -c",
-		"build-es": "rollup es/index.js --file build/pedigreejs.es.v2.0.0-rc2.js --format es --plugin 'rollup-plugin-postcss={extract: true, minimize: true}'",
+		"build-es": "rollup es/index.js --file build/pedigreejs.es.v2.1.0-rc2.js --format es --plugin 'rollup-plugin-postcss={extract: true, minimize: true}'",
 		"server": "python -m http.server 8001",
 		"browserlist": "npx browserslist@latest --update-db"
 	},

@@ -1462,7 +1462,8 @@ var pedigreejs = (function (exports) {
     'prostate_cancer': 'prostate_cancer_diagnosis_age',
     'pancreatic_cancer': 'pancreatic_cancer_diagnosis_age'
   };
-  var genetic_test = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d', 'rad51c', 'brip1'];
+  var genetic_test1 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d', 'rad51c', 'brip1'];
+  var genetic_test2 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 'rad51d', 'rad51c', 'brip1'];
   var pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56']; // risk factor to storage
 
   var RISK_FACTOR_STORE = new Object(); // get surgical ops and PRS for canrisk header
@@ -1544,25 +1545,37 @@ var pedigreejs = (function (exports) {
     return meta;
   }
 
-  function readCanRiskV1(boadicea_lines) {
+  function readCanRisk(boadicea_lines) {
     var lines = boadicea_lines.trim().split('\n');
     var ped = [];
     var hdr = []; // collect risk factor header lines
+
+    var regexp = /([0-9])/;
+    var version = 2;
+    var gt = version === 1 ? genetic_test1 : genetic_test2;
+    var ncol = [26, 27]; // number of columns - v1, v2
     // assumes two line header
 
     var _loop = function _loop(i) {
       var ln = lines[i].trim();
 
       if (ln.indexOf("##") === 0) {
-        if (ln.indexOf("##CanRisk") === 0 && ln.indexOf(";") > -1) {
-          // contains surgical op data
-          var ops = ln.split(";");
+        if (ln.indexOf("##CanRisk") === 0) {
+          var match = ln.match(regexp);
+          version = parseInt(match[1]);
+          gt = version === 1 ? genetic_test1 : genetic_test2;
+          console.log("CanRisk File Format version " + version);
 
-          for (var j = 1; j < ops.length; j++) {
-            var opdata = ops[j].split("=");
+          if (ln.indexOf(";") > -1) {
+            // contains surgical op data
+            var ops = ln.split(";");
 
-            if (opdata.length === 2) {
-              hdr.push(ops[j]);
+            for (var j = 1; j < ops.length; j++) {
+              var opdata = ops[j].split("=");
+
+              if (opdata.length === 2) {
+                hdr.push(ops[j]);
+              }
             }
           }
         }
@@ -1586,6 +1599,11 @@ var pedigreejs = (function (exports) {
       });
 
       if (attr.length > 1) {
+        if (attr.length !== ncol[version - 1]) {
+          console.error(ln, attr);
+          throw 'Found number of columns ' + attr.length + '; expected ' + ncol[version - 1] + ' for CanRisk version ' + version;
+        }
+
         var indi = {
           'famid': attr[0],
           'display_name': attr[1],
@@ -1612,11 +1630,11 @@ var pedigreejs = (function (exports) {
         // genetic test type, 0 = untested, S = mutation search, T = direct gene test
         // genetic test result, 0 = untested, P = positive, N = negative
 
-        for (var _j = 0; _j < genetic_test.length; _j++) {
+        for (var _j = 0; _j < gt.length; _j++) {
           var gene_test = attr[idx].split(":");
 
           if (gene_test[0] !== '0') {
-            if ((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N')) indi[genetic_test[_j] + '_gene_test'] = {
+            if ((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N')) indi[gt[_j] + '_gene_test'] = {
               'type': gene_test[0],
               'result': gene_test[1]
             };else console.warn('UNRECOGNISED GENE TEST ON LINE ' + (i + 1) + ": " + gene_test[0] + " " + gene_test[1]);
@@ -1651,7 +1669,8 @@ var pedigreejs = (function (exports) {
    */
 
   function get_pedigree(dataset, famid, meta, isanon) {
-    var msg = "##CanRisk 1.0";
+    var version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 2;
+    var msg = "##CanRisk " + (version === 1 ? "1.0" : "2.0");
 
     if (!famid) {
       famid = "XXXX";
@@ -1704,10 +1723,17 @@ var pedigreejs = (function (exports) {
       if (endo !== undefined) msg += "\n##endo=" + endo;
     }
 
-    msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn\tBRCA1\tBRCA2\tPALB2\tATM\tCHEK2\tRAD51D\tRAD51C\tBRIP1\tER:PR:HER2:CK14:CK56";
+    msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn";
+    var gt = version === 1 ? genetic_test1 : genetic_test2;
 
-    var _loop2 = function _loop2(i) {
-      var p = dataset[i];
+    for (var i = 0; i < gt.length; i++) {
+      msg += "\t" + gt[i].toUpperCase();
+    }
+
+    msg += "\tER:PR:HER2:CK14:CK56";
+
+    var _loop2 = function _loop2(_i2) {
+      var p = dataset[_i2];
 
       if ($.inArray(p.name, excl) != -1) {
         console.log('EXCLUDE: ' + p.name);
@@ -1716,7 +1742,7 @@ var pedigreejs = (function (exports) {
 
       msg += '\n' + famid + '\t'; // max 13 chars
 
-      if (isanon) msg += i + '\t'; // display_name (ANONIMISE) max 8 chars
+      if (isanon) msg += _i2 + '\t'; // display_name (ANONIMISE) max 8 chars
       else msg += (p.display_name ? p.display_name : "NA") + '\t';
       msg += ('proband' in p ? '1' : 0) + '\t';
       msg += p.name + '\t'; // max 7 chars
@@ -1741,10 +1767,10 @@ var pedigreejs = (function (exports) {
 
       msg += ('ashkenazi' in p ? p.ashkenazi : 0) + '\t';
 
-      for (var j = 0; j < genetic_test.length; j++) {
-        if (genetic_test[j] + '_gene_test' in p && p[genetic_test[j] + '_gene_test']['type'] !== '-' && p[genetic_test[j] + '_gene_test']['result'] !== '-') {
-          msg += p[genetic_test[j] + '_gene_test']['type'] + ':';
-          msg += p[genetic_test[j] + '_gene_test']['result'] + '\t';
+      for (var j = 0; j < gt.length; j++) {
+        if (gt[j] + '_gene_test' in p && p[gt[j] + '_gene_test']['type'] !== '-' && p[gt[j] + '_gene_test']['result'] !== '-') {
+          msg += p[gt[j] + '_gene_test']['type'] + ':';
+          msg += p[gt[j] + '_gene_test']['result'] + '\t';
         } else {
           msg += '0:0\t'; // type, 0=untested, S=mutation search, T=direct gene test
           // result, 0=untested, P=positive, N=negative
@@ -1764,8 +1790,8 @@ var pedigreejs = (function (exports) {
       }
     };
 
-    for (var i = 0; i < dataset.length; i++) {
-      var _ret2 = _loop2(i);
+    for (var _i2 = 0; _i2 < dataset.length; _i2++) {
+      var _ret2 = _loop2(_i2);
 
       if (_ret2 === "continue") continue;
     }
@@ -1805,13 +1831,14 @@ var pedigreejs = (function (exports) {
   var canrisk_file = /*#__PURE__*/Object.freeze({
     __proto__: null,
     cancers: cancers,
-    genetic_test: genetic_test,
+    genetic_test1: genetic_test1,
+    genetic_test2: genetic_test2,
     pathology_tests: pathology_tests,
     get_meta: get_meta,
     get_non_anon_pedigree: get_non_anon_pedigree,
     hasInput: hasInput,
     get_prs_values: get_prs_values,
-    readCanRiskV1: readCanRiskV1,
+    readCanRisk: readCanRisk,
     get_pedigree: get_pedigree,
     show_risk_factor_store: show_risk_factor_store,
     save_risk_factor: save_risk_factor,
@@ -2128,7 +2155,7 @@ var pedigreejs = (function (exports) {
             opts.dataset = readBoadiceaV4(e.target.result, 2);
             canrisk_validation(opts);
           } else if (e.target.result.indexOf("##") === 0 && e.target.result.indexOf("CanRisk") !== -1) {
-            var canrisk_data = readCanRisk(e.target.result);
+            var canrisk_data = readCanRiskFile(e.target.result);
             risk_factors = canrisk_data[0];
             opts.dataset = canrisk_data[1];
             canrisk_validation(opts);
@@ -2234,12 +2261,11 @@ var pedigreejs = (function (exports) {
 
     return process_ped(ped);
   }
-
-  function readCanRisk(boadicea_lines) {
-    var _readCanRiskV = readCanRiskV1(boadicea_lines),
-        _readCanRiskV2 = _slicedToArray(_readCanRiskV, 2),
-        hdr = _readCanRiskV2[0],
-        ped = _readCanRiskV2[1];
+  function readCanRiskFile(boadicea_lines) {
+    var _readCanRisk = readCanRisk(boadicea_lines),
+        _readCanRisk2 = _slicedToArray(_readCanRisk, 2),
+        hdr = _readCanRisk2[0],
+        ped = _readCanRisk2[1];
 
     try {
       return [hdr, process_ped(ped)];
@@ -2248,7 +2274,6 @@ var pedigreejs = (function (exports) {
       return [hdr, ped];
     }
   } // read boadicea format v4 & v2
-
 
   function readBoadiceaV4(boadicea_lines, version) {
     var lines = boadicea_lines.trim().split('\n');
@@ -2292,7 +2317,7 @@ var pedigreejs = (function (exports) {
             idx += 2;
 
             if (attr[idx - 2] !== '0') {
-              if ((attr[idx - 2] === 'S' || attr[idx - 2] === 'T') && (attr[idx - 1] === 'P' || attr[idx - 1] === 'N')) indi[genetic_test[j] + '_gene_test'] = {
+              if ((attr[idx - 2] === 'S' || attr[idx - 2] === 'T') && (attr[idx - 1] === 'P' || attr[idx - 1] === 'N')) indi[genetic_test1[j] + '_gene_test'] = {
                 'type': attr[idx - 2],
                 'result': attr[idx - 1]
               };else console.warn('UNRECOGNISED GENE TEST ON LINE ' + (i + 1) + ": " + attr[idx - 2] + " " + attr[idx - 1]);
@@ -2484,6 +2509,7 @@ var pedigreejs = (function (exports) {
     print: print,
     save_file: save_file,
     readLinkage: readLinkage,
+    readCanRiskFile: readCanRiskFile,
     readBoadiceaV4: readBoadiceaV4
   });
 
