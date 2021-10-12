@@ -3389,7 +3389,7 @@ var pedigreejs = (function (exports) {
     node.filter(function (d) {
       return !d.data.hidden;
     }).append("path").attr("shape-rendering", "geometricPrecision").attr("transform", function (d) {
-      return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
+      return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
     }).attr("d", d3.symbol().size(function (_d) {
       return opts.symbol_size * opts.symbol_size + 2;
     }).type(function (d) {
@@ -3408,7 +3408,7 @@ var pedigreejs = (function (exports) {
     }).append("clipPath").attr("id", function (d) {
       return d.data.name;
     }).append("path").attr("class", "node").attr("transform", function (d) {
-      return d.data.sex == "U" && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
+      return !has_gender(d.data.sex) && !(d.data.miscarriage || d.data.termination) ? "rotate(45)" : "";
     }).attr("d", d3.symbol().size(function (d) {
       if (d.data.hidden) return opts.symbol_size * opts.symbol_size / 5;
       return opts.symbol_size * opts.symbol_size;
@@ -3656,6 +3656,10 @@ var pedigreejs = (function (exports) {
 
     init_zoom(opts, svg);
     return opts;
+  }
+
+  function has_gender(sex) {
+    return sex === "M" || sex === "F";
   }
 
   function create_err(err) {
