@@ -282,59 +282,63 @@ function canrisk_validation(opts) {
 	});
 }
 
+/** Read and load pedigree data string */
+export function load_data(d, opts) {
+	if(opts.DEBUG) console.log(d);
+	let risk_factors;
+	try {
+		if(d.indexOf("BOADICEA import pedigree file format 4.0") === 0) {
+			opts.dataset = readBoadiceaV4(d, 4);
+			canrisk_validation(opts);
+		} else if(d.indexOf("BOADICEA import pedigree file format 2.0") === 0) {
+			opts.dataset = readBoadiceaV4(d, 2);
+			canrisk_validation(opts);
+		} else if(d.indexOf("##") === 0 && d.indexOf("CanRisk") !== -1) {
+			let canrisk_data = readCanRiskFile(d);
+			risk_factors = canrisk_data[0];
+			opts.dataset = canrisk_data[1];
+			canrisk_validation(opts);
+		} else {
+			try {
+				opts.dataset = JSON.parse(d);
+			} catch(err) {
+				opts.dataset = readLinkage(d);
+			}
+		}
+		validate_pedigree(opts);
+	} catch(err1) {
+		console.error(err1, d);
+		pedigree_util.messages("File Error", ( err1.message ? err1.message : err1));
+		return;
+	}
+	if(opts.DEBUG) console.log(opts.dataset);
+	try{
+		pedcache.setposition(opts);		// clear position
+		rebuild(opts);
+		console.log(risk_factors);
+		// load risk factors - fire riskfactorChange event
+		$(document).trigger('riskfactorChange', [opts, risk_factors]);
+		$(document).trigger('fhChange', [opts]); 	// trigger fhChange event
+	
+		try {
+			// update FH section
+			acc_FamHist_ticked();
+			acc_FamHist_Leave();
+			RESULT.FLAG_FAMILY_MODAL = true;
+		} catch(err3) {
+			// ignore error
+		}
+	} catch(err2) {
+		pedigree_util.messages("File Error", ( err2.message ? err2.message : err2));
+	}
+}
+
 function load(e, opts) {
 	let f = e.target.files[0];
 	if(f) {
-		let risk_factors;
 		let reader = new FileReader();
 		reader.onload = function(e) {
-			if(opts.DEBUG)
-				console.log(e.target.result);
-			try {
-				if(e.target.result.indexOf("BOADICEA import pedigree file format 4.0") === 0) {
-					opts.dataset = readBoadiceaV4(e.target.result, 4);
-					canrisk_validation(opts);
-				} else if(e.target.result.indexOf("BOADICEA import pedigree file format 2.0") === 0) {
-					opts.dataset = readBoadiceaV4(e.target.result, 2);
-					canrisk_validation(opts);
-				} else if(e.target.result.indexOf("##") === 0 && e.target.result.indexOf("CanRisk") !== -1) {
-					let canrisk_data = readCanRiskFile(e.target.result);
-					risk_factors = canrisk_data[0];
-					opts.dataset = canrisk_data[1];
-					canrisk_validation(opts);
-				} else {
-					try {
-						opts.dataset = JSON.parse(e.target.result);
-					} catch(err) {
-						opts.dataset = readLinkage(e.target.result);
-					}
-				}
-				validate_pedigree(opts);
-			} catch(err1) {
-				console.error(err1, e.target.result);
-				pedigree_util.messages("File Error", ( err1.message ? err1.message : err1));
-				return;
-			}
-			console.log(opts.dataset);
-			try{
-				pedcache.setposition(opts);		// clear position
-				rebuild(opts);
-				console.log(risk_factors);
-				// load risk factors - fire riskfactorChange event
-				$(document).trigger('riskfactorChange', [opts, risk_factors]);
-				$(document).trigger('fhChange', [opts]); 	// trigger fhChange event
-
-				try {
-					// update FH section
-					acc_FamHist_ticked();
-					acc_FamHist_Leave();
-					RESULT.FLAG_FAMILY_MODAL = true;
-				} catch(err3) {
-					// ignore error
-				}
-			} catch(err2) {
-				pedigree_util.messages("File Error", ( err2.message ? err2.message : err2));
-			}
+			load_data(e.target.result, opts)
 		};
 		reader.onerror = function(event) {
 			pedigree_util.messages("File Error", "File could not be read! Code " + event.target.error.code);

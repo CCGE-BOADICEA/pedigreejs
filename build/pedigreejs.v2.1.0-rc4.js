@@ -2136,65 +2136,71 @@ var pedigreejs = (function (exports) {
       }
     });
   }
+  /** Read and load pedigree data string */
+
+
+  function load_data(d, opts) {
+    if (opts.DEBUG) console.log(d);
+    var risk_factors;
+
+    try {
+      if (d.indexOf("BOADICEA import pedigree file format 4.0") === 0) {
+        opts.dataset = readBoadiceaV4(d, 4);
+        canrisk_validation(opts);
+      } else if (d.indexOf("BOADICEA import pedigree file format 2.0") === 0) {
+        opts.dataset = readBoadiceaV4(d, 2);
+        canrisk_validation(opts);
+      } else if (d.indexOf("##") === 0 && d.indexOf("CanRisk") !== -1) {
+        var canrisk_data = readCanRiskFile(d);
+        risk_factors = canrisk_data[0];
+        opts.dataset = canrisk_data[1];
+        canrisk_validation(opts);
+      } else {
+        try {
+          opts.dataset = JSON.parse(d);
+        } catch (err) {
+          opts.dataset = readLinkage(d);
+        }
+      }
+
+      validate_pedigree(opts);
+    } catch (err1) {
+      console.error(err1, d);
+      messages("File Error", err1.message ? err1.message : err1);
+      return;
+    }
+
+    if (opts.DEBUG) console.log(opts.dataset);
+
+    try {
+      setposition(opts); // clear position
+
+      rebuild(opts);
+      console.log(risk_factors); // load risk factors - fire riskfactorChange event
+
+      $(document).trigger('riskfactorChange', [opts, risk_factors]);
+      $(document).trigger('fhChange', [opts]); // trigger fhChange event
+
+      try {
+        // update FH section
+        acc_FamHist_ticked();
+        acc_FamHist_Leave();
+        RESULT.FLAG_FAMILY_MODAL = true;
+      } catch (err3) {// ignore error
+      }
+    } catch (err2) {
+      messages("File Error", err2.message ? err2.message : err2);
+    }
+  }
 
   function load(e, opts) {
     var f = e.target.files[0];
 
     if (f) {
-      var risk_factors;
       var reader = new FileReader();
 
       reader.onload = function (e) {
-        if (opts.DEBUG) console.log(e.target.result);
-
-        try {
-          if (e.target.result.indexOf("BOADICEA import pedigree file format 4.0") === 0) {
-            opts.dataset = readBoadiceaV4(e.target.result, 4);
-            canrisk_validation(opts);
-          } else if (e.target.result.indexOf("BOADICEA import pedigree file format 2.0") === 0) {
-            opts.dataset = readBoadiceaV4(e.target.result, 2);
-            canrisk_validation(opts);
-          } else if (e.target.result.indexOf("##") === 0 && e.target.result.indexOf("CanRisk") !== -1) {
-            var canrisk_data = readCanRiskFile(e.target.result);
-            risk_factors = canrisk_data[0];
-            opts.dataset = canrisk_data[1];
-            canrisk_validation(opts);
-          } else {
-            try {
-              opts.dataset = JSON.parse(e.target.result);
-            } catch (err) {
-              opts.dataset = readLinkage(e.target.result);
-            }
-          }
-
-          validate_pedigree(opts);
-        } catch (err1) {
-          console.error(err1, e.target.result);
-          messages("File Error", err1.message ? err1.message : err1);
-          return;
-        }
-
-        console.log(opts.dataset);
-
-        try {
-          setposition(opts); // clear position
-
-          rebuild(opts);
-          console.log(risk_factors); // load risk factors - fire riskfactorChange event
-
-          $(document).trigger('riskfactorChange', [opts, risk_factors]);
-          $(document).trigger('fhChange', [opts]); // trigger fhChange event
-
-          try {
-            // update FH section
-            acc_FamHist_ticked();
-            acc_FamHist_Leave();
-            RESULT.FLAG_FAMILY_MODAL = true;
-          } catch (err3) {// ignore error
-          }
-        } catch (err2) {
-          messages("File Error", err2.message ? err2.message : err2);
-        }
+        load_data(e.target.result, opts);
       };
 
       reader.onerror = function (event) {
@@ -2508,6 +2514,7 @@ var pedigreejs = (function (exports) {
     svg_download: svg_download,
     print: print,
     save_file: save_file,
+    load_data: load_data,
     readLinkage: readLinkage,
     readCanRiskFile: readCanRiskFile,
     readBoadiceaV4: readBoadiceaV4
