@@ -165,6 +165,9 @@ export function readCanRisk(boadicea_lines) {
 						indi[gt[j] + '_gene_test'] = {'type': gene_test[0], 'result': gene_test[1]};
 					else
 						console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + gene_test[0] + " " + gene_test[1]);
+				} else {
+					if(gene_test[1] === 'P' || gene_test[1] === 'N')
+						indi[gt[j] + '_gene_test'] = {'type': gene_test[0], 'result': gene_test[1]};
 				}
 				idx++;
 			}
