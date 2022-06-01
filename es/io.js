@@ -619,7 +619,7 @@ function fix_n_balance_levels(ped) {
 					let m = pedigree_util.getNodeByName(ped, p.mother);
 					let f = pedigree_util.getNodeByName(ped, p.father);
 					if(m) m.level = prt_lvl;
-					if(p) p.level = prt_lvl;
+					if(f) f.level = prt_lvl;
 				}
 				updated = true;
 			}
