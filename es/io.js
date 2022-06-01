@@ -300,7 +300,7 @@ export function load_data(d, opts) {
 			canrisk_validation(opts);
 		} else {
 			try {
-				opts.dataset = JSON.parse(d);
+				opts.dataset = process_ped(JSON.parse(d));
 			} catch(err) {
 				opts.dataset = readLinkage(d);
 			}
@@ -510,6 +510,8 @@ function process_ped(ped) {
 		}
 	}
 
+	fix_n_balance_levels(ped);
+
 	// find the max level (i.e. top_level)
 	let max_level = 0;
 	for(let i=0;i<ped.length;i++) {
@@ -595,4 +597,33 @@ function update_parents_level(idx, level, dataset) {
 			update_parents_level(pidx, level, dataset);
 		}
 	}
+}
+
+// for a pedigree fix the levels of children nodes to be consistent with parent
+function fix_n_balance_levels(ped) {
+	let updated = false;
+	let l = ped.length;
+
+	for(let i=0;i<l;i++) {
+		let children = pedigree_util.getChildren(ped, ped[i]);
+		let prt_lvl = ped[i].level;
+		for(let j=0;j<children.length;j++){
+			if(prt_lvl - children[j].level > 1) {
+				children[j].level = prt_lvl-1;
+				let ptrs = pedigree_util.get_partners(ped, children[j]);
+
+				for(let k=0;k<ptrs.length;k++){
+					let p = pedigree_util.getNodeByName(ped, ptrs[k])
+					p.level = prt_lvl-1;
+
+					let m = pedigree_util.getNodeByName(ped, p.mother);
+					let f = pedigree_util.getNodeByName(ped, p.father);
+					if(m) m.level = prt_lvl;
+					if(f) f.level = prt_lvl;
+				}
+				updated = true;
+			}
+		}
+	}
+	return updated;
 }

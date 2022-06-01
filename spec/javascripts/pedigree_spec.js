@@ -59,6 +59,36 @@ describe('Test pedigree SVG ', function() {
 			"XXXX	3	0	f21	VqNY	lgzm	F	0	0	67	1950	67	0	0	0	0	0	S	P	0	0	0	0	0	0	0	0	P	0	0	0	0\n" +
 			"XXXX	4	1	ch1	m21	f21	F	0	0	43	1974	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0";
 
+	var canrisk_v2 = "##CanRisk 2.0\n" +
+			"##menarche=13\n" +
+			"##oc_use=N\n" +
+			"##mht_use=N\n" +
+			"##BMI=21.1\n" +
+			"##height=175\n" +
+			"##FamID Name    Target  IndivID FathID  MothID  Sex     MZtwin  Dead    Age     Yob     BC1     BC2     OC      PRO     PAN     Ashkn   BRCA1   BRCA2   PALB2   ATM     CHEK2   BARD1   RAD51D  RAD51C  BRIP1   ER:PR:HER2:CK14:CK56\n" +
+			"123     1       1       1       2       3       F       0       0       32      1990    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     2       0       2       4       5       M       0       0       60      1961    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     3       0       3       6       7       F       0       0       63      1959    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     4       0       4       18      19      M       0       0       94      1928    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     5       0       5       16      17      F       0       0       84      1937    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     6       0       6       0       0       M       0       0       87      1935    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     7       0       7       0       0       F       0       0       83      1939    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     8       0       8       2       3       F       0       0       35      1987    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     9       0       9       4       5       F       0       0       58      1964    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     13      0       10      4       5       F       0       0       66      1956    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     0       0       11      0       0       M       0       0       0       0       0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     11      0       13      11      9       F       0       0       33      1989    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     0       0       14      0       0       M       0       0       0       0       0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     12      0       15      14      13      M       0       0       3       2019    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     15      0       16      0       0       M       0       0       0       0       0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     14      0       17      0       0       F       0       1       0       1911    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     17      0       18      0       0       M       0       0       0       0       0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     16      0       19      0       0       F       0       1       0       1893    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     20      0       21      6       7       M       0       0       58      1964    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     0       0       24      0       0       F       0       0       0       0       0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     21      0       25      21      24      M       0       0       27      1995    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0\n" +
+			"123     22      0       26      21      24      F       0       0       23      1999    0       0       0       0       0       0       0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0     0:0:0:0:0"
+
 	var linkage_ped = 	"ex1 father 0 0 1 2 1 2\n" +
 						"ex1 mother 0 0 2 1 1 1\n" +
 						"ex1 dau1 father mother 2 1 1 2\n" +
@@ -559,6 +589,21 @@ describe('Test pedigree SVG ', function() {
 			pedigreejs.rebuild(newopts);
 			check_nodes_overlapping(newopts);
 			check_unconnected(newopts);
+		});
+
+		it('should allow canrisk v2 format', function() {
+			var canrisk_data = io.readCanRiskFile(canrisk_v2);
+			risk_factors = canrisk_data[0];
+			newopts.dataset = canrisk_data[1];
+			pedigreejs.rebuild(newopts);
+			check_nodes_overlapping(newopts);
+			check_unconnected(newopts);
+
+			// these two nodes should be on the same level
+			let node1 = pedigree_util.getNodeByName(newopts.dataset, "4");
+			let node2 = pedigree_util.getNodeByName(newopts.dataset, "7");
+			expect(node1.level).toBe(3);
+			expect(node2.level).toBe(3);
 		});
 
 		it('should allow linkage format', function() {

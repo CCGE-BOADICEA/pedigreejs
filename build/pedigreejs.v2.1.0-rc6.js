@@ -1638,6 +1638,11 @@ var pedigreejs = (function (exports) {
               'type': gene_test[0],
               'result': gene_test[1]
             };else console.warn('UNRECOGNISED GENE TEST ON LINE ' + (i + 1) + ": " + gene_test[0] + " " + gene_test[1]);
+          } else {
+            if (gene_test[1] === 'P' || gene_test[1] === 'N') indi[gt[_j] + '_gene_test'] = {
+              'type': gene_test[0],
+              'result': gene_test[1]
+            };
           }
 
           idx++;
@@ -2157,7 +2162,7 @@ var pedigreejs = (function (exports) {
         canrisk_validation(opts);
       } else {
         try {
-          opts.dataset = JSON.parse(d);
+          opts.dataset = process_ped(JSON.parse(d));
         } catch (err) {
           opts.dataset = readLinkage(d);
         }
@@ -2413,8 +2418,9 @@ var pedigreejs = (function (exports) {
       for (var i = 0; i < ped.length; i++) {
         getLevel(ped, ped[i].name);
       }
-    } // find the max level (i.e. top_level)
+    }
 
+    fix_n_balance_levels(ped); // find the max level (i.e. top_level)
 
     var max_level = 0;
 
@@ -2504,6 +2510,37 @@ var pedigreejs = (function (exports) {
         update_parents_level(pidx, level, dataset);
       }
     }
+  } // for a pedigree fix the levels of children nodes to be consistent with parent
+
+
+  function fix_n_balance_levels(ped) {
+    var updated = false;
+    var l = ped.length;
+
+    for (var i = 0; i < l; i++) {
+      var children = getChildren(ped, ped[i]);
+      var prt_lvl = ped[i].level;
+
+      for (var j = 0; j < children.length; j++) {
+        if (prt_lvl - children[j].level > 1) {
+          children[j].level = prt_lvl - 1;
+          var ptrs = get_partners(ped, children[j]);
+
+          for (var k = 0; k < ptrs.length; k++) {
+            var p = getNodeByName(ped, ptrs[k]);
+            p.level = prt_lvl - 1;
+            var m = getNodeByName(ped, p.mother);
+            var f = getNodeByName(ped, p.father);
+            if (m) m.level = prt_lvl;
+            if (f) f.level = prt_lvl;
+          }
+
+          updated = true;
+        }
+      }
+    }
+
+    return updated;
   }
 
   var io = /*#__PURE__*/Object.freeze({
