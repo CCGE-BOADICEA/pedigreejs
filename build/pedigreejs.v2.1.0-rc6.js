@@ -2530,9 +2530,9 @@ var pedigreejs = (function (exports) {
             var p = getNodeByName(ped, ptrs[k]);
             p.level = prt_lvl - 1;
             var m = getNodeByName(ped, p.mother);
-            getNodeByName(ped, p.father);
+            var f = getNodeByName(ped, p.father);
             if (m) m.level = prt_lvl;
-            if (p) p.level = prt_lvl;
+            if (f) f.level = prt_lvl;
           }
 
           updated = true;
