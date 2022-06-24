@@ -2451,9 +2451,10 @@ var pedigreejs = (function (exports) {
               if (ped[_i4].level == ped[_j2].level - 1) {
                 pidx = getPartnerIdx(ped, ped[_j2]);
 
-                if (pidx > -1) {
+                if (pidx > -1 && _i4 !== pidx) {
                   ped[_i4].mother = ped[_j2].sex === 'F' ? ped[_j2].name : ped[pidx].name;
                   ped[_i4].father = ped[_j2].sex === 'M' ? ped[_j2].name : ped[pidx].name;
+                  break;
                 }
               }
             }
