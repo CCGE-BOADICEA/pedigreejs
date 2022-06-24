@@ -541,9 +541,10 @@ function process_ped(ped) {
 					for(let j=0; j<ped.length; j++) {
 						if(ped[i].level == (ped[j].level-1)) {
 							pidx = getPartnerIdx(ped, ped[j]);
-							if(pidx > -1) {
+							if(pidx > -1 && i !== pidx) {
 								ped[i].mother = (ped[j].sex === 'F' ? ped[j].name : ped[pidx].name);
 								ped[i].father = (ped[j].sex === 'M' ? ped[j].name : ped[pidx].name);
+								break;
 							}
 						}
 					}
