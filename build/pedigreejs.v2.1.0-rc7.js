@@ -1094,6 +1094,13 @@ var pedigreejs = (function (exports) {
     };
   }
 
+  var zoom$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    init_zoom: init_zoom,
+    btn_zoom: btn_zoom,
+    scale_to_fit: scale_to_fit
+  });
+
   // undo, redo, reset buttons
   function add$1(options) {
     var opts = $.extend({
@@ -4291,6 +4298,7 @@ var pedigreejs = (function (exports) {
   exports.pedigree_form = pedigree_form;
   exports.pedigree_utils = pedigree_utils;
   exports.pedigreejs = pedigree;
+  exports.zoom = zoom$1;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
