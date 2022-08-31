@@ -365,11 +365,11 @@ export function build(options) {
 					if(twins.length >= 1) {
 						let twinx = 0;
 						let xmin = d.target.x;
-						let xmax = d.target.x;
+						//let xmax = d.target.x;
 						for(let t=0; t<twins.length; t++) {
 							let thisx = pedigree_utils.getNodeByName(flattenNodes, twins[t].name).x;
 							if(xmin > thisx) xmin = thisx;
-							if(xmax < thisx) xmax = thisx;
+							//if(xmax < thisx) xmax = thisx;
 							twinx += thisx;
 						}
 

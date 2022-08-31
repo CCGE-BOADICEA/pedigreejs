@@ -993,13 +993,13 @@ var pedigreejs = (function (exports) {
     print_opts: print_opts
   });
 
-  var zoom; // initialise zoom and drag
+  var zm; // initialise zoom and drag
 
   function init_zoom(opts, svg) {
     // offsets
     var xi = opts.symbol_size / 2;
     var yi = -opts.symbol_size * 2.5;
-    zoom = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).filter(function () {
+    zm = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).filter(function () {
       if (!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
         if (d3.event.type && d3.event.type === 'wheel') return false;
       } // ignore dblclick & secondary mouse buttons
@@ -1009,7 +1009,7 @@ var pedigreejs = (function (exports) {
     }).on('zoom', function () {
       zooming(opts);
     });
-    svg.call(zoom); // set initial position & scale
+    svg.call(zm); // set initial position & scale
 
     var xyk = getposition(opts); // cached position
 
@@ -1017,12 +1017,12 @@ var pedigreejs = (function (exports) {
     var x = xyk[0] !== null ? xyk[0] / k : xi * k;
     var y = xyk[1] !== null ? xyk[1] / k : yi * k;
     var transform = d3.zoomIdentity.scale(k).translate(x, y);
-    svg.call(zoom.transform, transform);
+    svg.call(zm.transform, transform);
   } // scale size the pedigree
 
   function btn_zoom(opts, scale) {
     var svg = d3.select("#" + opts.targetDiv).select("svg");
-    svg.transition().duration(50).call(zoom.scaleBy, scale);
+    svg.transition().duration(50).call(zm.scaleBy, scale);
   }
   function scale_to_fit(opts) {
     var d = get_dimensions(opts);
@@ -1030,11 +1030,11 @@ var pedigreejs = (function (exports) {
     var size = get_svg_size(svg);
     var f = (size.w - opts.symbol_size * 2) / size.w;
     var k = f / Math.max(d.wid / size.w, d.hgt / size.h);
-    if (k < opts.zoomIn) zoom.scaleExtent([k, opts.zoomOut]);
+    if (k < opts.zoomIn) zm.scaleExtent([k, opts.zoomOut]);
     var ped = get_pedigree_center(opts);
-    svg.call(zoom.translateTo, ped.x, ped.y);
+    svg.call(zm.translateTo, ped.x, ped.y);
     setTimeout(function () {
-      svg.transition().duration(700).call(zoom.scaleTo, k);
+      svg.transition().duration(700).call(zm.scaleTo, k);
     }, 400);
   }
 
@@ -1094,7 +1094,7 @@ var pedigreejs = (function (exports) {
     };
   }
 
-  var zoom$1 = /*#__PURE__*/Object.freeze({
+  var zoom = /*#__PURE__*/Object.freeze({
     __proto__: null,
     init_zoom: init_zoom,
     btn_zoom: btn_zoom,
@@ -3658,12 +3658,12 @@ var pedigreejs = (function (exports) {
 
         if (twins.length >= 1) {
           var twinx = 0;
-          var xmin = d.target.x;
-          d.target.x;
+          var xmin = d.target.x; //let xmax = d.target.x;
 
           for (var t = 0; t < twins.length; t++) {
             var thisx = getNodeByName(flattenNodes, twins[t].name).x;
-            if (xmin > thisx) xmin = thisx;
+            if (xmin > thisx) xmin = thisx; //if(xmax < thisx) xmax = thisx;
+
             twinx += thisx;
           }
 
@@ -4298,7 +4298,7 @@ var pedigreejs = (function (exports) {
   exports.pedigree_form = pedigree_form;
   exports.pedigree_utils = pedigree_utils;
   exports.pedigreejs = pedigree;
-  exports.zoom = zoom$1;
+  exports.zooming = zoom;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
