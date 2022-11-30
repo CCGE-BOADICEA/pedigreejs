@@ -1,6 +1,12 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 import {getposition, setposition} from './pedcache.js';
 
-let zoom;
+let zm;
 
 // initialise zoom and drag
 export function init_zoom(opts, svg) {
@@ -8,7 +14,7 @@ export function init_zoom(opts, svg) {
 	let xi = opts.symbol_size/2;
 	let yi = -opts.symbol_size*2.5;
 
-	zoom = d3.zoom()
+	zm = d3.zoom()
 	  .scaleExtent([opts.zoomIn, opts.zoomOut])
 	  .filter(function() {
 			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
@@ -17,7 +23,7 @@ export function init_zoom(opts, svg) {
 			// ignore dblclick & secondary mouse buttons
 			return (d3.event.type !== 'dblclick') && !d3.event.button})
 	  .on('zoom', function() { zooming(opts); });
-	svg.call(zoom);
+	svg.call(zm);
 
 	// set initial position & scale
 	let xyk = getposition(opts);		// cached position
@@ -28,13 +34,13 @@ export function init_zoom(opts, svg) {
 	var transform = d3.zoomIdentity
       .scale(k)
       .translate(x, y);
-    svg.call(zoom.transform, transform);
+    svg.call(zm.transform, transform);
 }
 
 // scale size the pedigree
 export function btn_zoom(opts, scale) {
 	let svg = d3.select("#"+opts.targetDiv).select("svg");
-	svg.transition().duration(50).call(zoom.scaleBy, scale);
+	svg.transition().duration(50).call(zm.scaleBy, scale);
 }
 
 export function scale_to_fit(opts) {
@@ -44,11 +50,11 @@ export function scale_to_fit(opts) {
 	let f = (size.w-opts.symbol_size*2)/size.w;
 	let k = (f / Math.max(d.wid/size.w, d.hgt/size.h));
 
-	if(k < opts.zoomIn) zoom.scaleExtent([k, opts.zoomOut]);
+	if(k < opts.zoomIn) zm.scaleExtent([k, opts.zoomOut]);
 
 	let ped = get_pedigree_center(opts);
-	svg.call(zoom.translateTo, ped.x, ped.y);
-	setTimeout(function(){svg.transition().duration(700).call(zoom.scaleTo, k)}, 400);
+	svg.call(zm.translateTo, ped.x, ped.y);
+	setTimeout(function(){svg.transition().duration(700).call(zm.scaleTo, k)}, 400);
 }
 
 function zooming(opts) {

@@ -1,3 +1,9 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 // Pedigree Tree Utils
 
 import {syncTwins, rebuild, addchild, delete_node_dataset} from './pedigree.js';
