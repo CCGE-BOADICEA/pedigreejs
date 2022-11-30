@@ -1,3 +1,9 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 // pedigree form
 import {rebuild, syncTwins} from './pedigree.js';
 import {copy_dataset, getNodeByName} from './pedigree_utils.js';

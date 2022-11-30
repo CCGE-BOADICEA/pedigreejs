@@ -1,3 +1,9 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 // aggregating modules
 import '../css/pedigreejs.css';
 

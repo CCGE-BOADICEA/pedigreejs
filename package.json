@@ -1,6 +1,6 @@
 {
 	"name": "pedigreejs",
-	"version": "v2.1.0-rc7",
+	"version": "v2.1.0-rc8",
 	"description": "pedigreejs is a javascript module for graphically building pedigree data in the web-browser.",
 	"browser": "es/pedigree.js",
 	"files": [
@@ -11,9 +11,10 @@
 	},
 	"scripts": {
 		"build": "rollup -c",
-		"build-es": "rollup es/index.js --file build/pedigreejs.es.v2.1.0-rc7.js --format es --plugin 'rollup-plugin-postcss={extract: true, minimize: true}'",
+		"build-es": "rollup es/index.js --file build/pedigreejs.es.v2.1.0-rc8.js --format es --plugin 'rollup-plugin-postcss={extract: true, minimize: true}'",
 		"server": "python -m http.server 8001",
-		"browserlist": "npx browserslist@latest --update-db"
+		"browserlist": "npx browserslist@latest --update-db",
+		"test": "jasmine server"
 	},
 	"babel": {
 		"presets": [
@@ -35,6 +36,7 @@
 	"homepage": "https://ccge-boadicea.github.io/pedigreejs/",
 	"devDependencies": {
 		"@babel/core": "^7.13.10",
+		"@babel/eslint-parser": "^7.19.1",
 		"@babel/preset-env": "^7.13.10",
 		"@rollup/plugin-babel": "^5.3.0",
 		"rollup": "^2.41.0",

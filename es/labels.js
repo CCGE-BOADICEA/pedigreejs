@@ -1,3 +1,9 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 import {prefixInObj} from './pedigree_utils.js';
 
 export function addLabels(opts, node) {

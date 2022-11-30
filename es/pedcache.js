@@ -1,3 +1,9 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 //store a history of pedigree
 
 let max_limit = 25;

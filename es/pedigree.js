@@ -1,3 +1,9 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 // Pedigree Tree Builder
 import  * as pedigree_utils from './pedigree_utils.js';
 import * as pbuttons from './pbuttons.js';

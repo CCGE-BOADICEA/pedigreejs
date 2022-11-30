@@ -1,3 +1,9 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 // pedigree I/O
 import * as pedigree_util from './pedigree_utils.js';
 import * as pedcache from './pedcache.js';

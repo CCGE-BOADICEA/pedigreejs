@@ -1,3 +1,9 @@
+/**
+/* © 2022 Cambridge University
+/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* SPDX-License-Identifier: GPL-3.0-or-later
+**/
+
 // pedigree widgets
 import {addsibling, addchild, addparents, addpartner, rebuild, delete_node_dataset} from './pedigree.js';
 import {copy_dataset, makeid, getIdxByName} from './pedigree_utils.js';
