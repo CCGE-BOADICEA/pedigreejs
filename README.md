@@ -19,3 +19,9 @@ Jasmine tests are defined in [pedigree_spec.js](spec/javascripts/pedigree_spec.j
 npm install
 npm run build
 ```
+## License
+
+This software is distributed under the GPL either version 3 or later license.
+
+## Publication
+pedigreejs: a web-based graphical pedigree editor. Carver T, et al. [Bioinformatics, Volume 34, Issue 6, 15 March 2018](http://dx.doi.org/10.1093/bioinformatics/btx705).
