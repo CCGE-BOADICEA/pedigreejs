@@ -306,7 +306,14 @@ export function load_data(d, opts) {
 			canrisk_validation(opts);
 		} else {
 			try {
-				opts.dataset = process_ped(JSON.parse(d));
+				let ped = JSON.parse(d);
+				let to_process = true;
+				for(let i=0;i<ped.length;i++) {
+					if(ped[i].top_level) {
+						to_process = false;
+					}
+				}
+				opts.dataset = (to_process ? process_ped(ped) : ped);
 			} catch(err) {
 				opts.dataset = readLinkage(d);
 			}
