@@ -988,7 +988,7 @@ var pedigreejs = (function (exports) {
 	    "fa": "fa-undo pull-left",
 	    "title": "undo"
 	  }, {
-	    "fa": "fa-repeat pull-left",
+	    "fa": "fa-redo pull-left",
 	    "title": "redo"
 	  }, {
 	    "fa": "fa-refresh pull-left",
@@ -1084,7 +1084,7 @@ var pedigreejs = (function (exports) {
 	      opts.dataset = previous(opts);
 	      $("#" + opts.targetDiv).empty();
 	      build(opts);
-	    } else if ($(e.target).hasClass('fa-repeat')) {
+	    } else if ($(e.target).hasClass('fa-redo')) {
 	      opts.dataset = next(opts);
 	      $("#" + opts.targetDiv).empty();
 	      build(opts);
@@ -1321,7 +1321,7 @@ var pedigreejs = (function (exports) {
 	  let current = get_count(opts);
 	  let nstore$1 = nstore(opts);
 	  let id = "#" + opts.btn_target;
-	  if (nstore$1 <= current) $(id + " .fa-repeat").addClass('disabled');else $(id + " .fa-repeat").removeClass('disabled');
+	  if (nstore$1 <= current) $(id + " .fa-redo").addClass('disabled');else $(id + " .fa-redo").removeClass('disabled');
 	  if (current > 1) $(id + " .fa-undo").removeClass('disabled');else $(id + " .fa-undo").addClass('disabled');
 	}
 
@@ -2597,19 +2597,19 @@ var pedigreejs = (function (exports) {
 	  let popup_selection = d3.select('.diagram');
 	  popup_selection.append("rect").attr("class", "popup_selection").attr("rx", 6).attr("ry", 6).attr("transform", "translate(-1000,-100)").style("opacity", 0).attr("width", font_size * 7.9).attr("height", font_size * 2).style("stroke", "darkgrey").attr("fill", "white");
 	  let square = popup_selection.append("text") // male
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).attr('font-size', '1.em').attr("class", "popup_selection fa-lg fa-square persontype").attr("transform", "translate(-1000,-100)").attr("x", font_size / 3).attr("y", font_size * 1.5).text("\uf096 ");
+	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.1em").attr("class", "popup_selection fa-square persontype").attr("transform", "translate(-1000,-100)").attr("x", font_size / 3).attr("y", font_size * 1.5).text("\uf096 ");
 	  let square_title = square.append("svg:title").text("add male");
 	  let circle = popup_selection.append("text") // female
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).attr('font-size', '1.em').attr("class", "popup_selection fa-lg fa-circle persontype").attr("transform", "translate(-1000,-100)").attr("x", font_size * 1.7).attr("y", font_size * 1.5).text("\uf10c ");
+	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.1em").attr("class", "popup_selection fa-circle persontype").attr("transform", "translate(-1000,-100)").attr("x", font_size * 1.71).attr("y", font_size * 1.5).text("\uf10c ");
 	  let circle_title = circle.append("svg:title").text("add female");
 	  let unspecified = popup_selection.append("text") // unspecified
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).attr('font-size', '1.em').attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-lg fa-unspecified popup_selection_rotate45 persontype").text("\uf096 ");
+	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.1em").attr("transform", "translate(-1000,-100)").attr("x", font_size * 0.065).attr("y", -font_size * 0.065).attr("class", "popup_selection fa-unspecified popup_selection_rotate45 persontype").text("\uf096 ");
 	  unspecified.append("svg:title").text("add unspecified");
 	  let dztwin = popup_selection.append("text") // dizygotic twins
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-2x fa-angle-up persontype dztwin").attr("x", font_size * 4.6).attr("y", font_size * 1.5).text("\uf106 ");
+	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.6em").attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-angle-up persontype dztwin").attr("x", font_size * 4.62).attr("y", font_size * 1.5).text("\uf106 ");
 	  dztwin.append("svg:title").text("add dizygotic/fraternal twins");
 	  let mztwin = popup_selection.append("text") // monozygotic twins
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-2x fa-caret-up persontype mztwin").attr("x", font_size * 6.2).attr("y", font_size * 1.5).text("\uf0d8");
+	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.6em").attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-caret-up persontype mztwin").attr("x", font_size * 6.4).attr("y", font_size * 1.5).text("\uf0d8 ");
 	  mztwin.append("svg:title").text("add monozygotic/identical twins");
 	  let add_person = {};
 	  // click the person type selection
@@ -2718,7 +2718,7 @@ var pedigreejs = (function (exports) {
 	      return d.x;
 	    }).attr("yy", function (d) {
 	      return d.y;
-	    }).attr("x", widgets[key].fx).attr("y", widgets[key].fy).attr('font-size', '0.9em').text(widgets[key].text);
+	    }).attr("x", widgets[key].fx).attr("y", widgets[key].fy).attr('font-size', '0.85em').text(widgets[key].text);
 	    if ('styles' in widgets[key]) for (let style in widgets[key].styles) {
 	      widget.attr(style, widgets[key].styles[style]);
 	    }

@@ -17,7 +17,7 @@ export function add(options) {
     }, options );
 
 	let btns = [{"fa": "fa-undo pull-left", "title": "undo"},
-				{"fa": "fa-repeat pull-left", "title": "redo"},
+				{"fa": "fa-redo pull-left", "title": "redo"},
 				{"fa": "fa-refresh pull-left", "title": "reset"}];
 
 	btns.push({"fa": "fa-crosshairs pull-right", "title": "scale-to-fit"});
@@ -102,7 +102,7 @@ function click(opts) {
 			opts.dataset = pedcache.previous(opts);
 			$("#"+opts.targetDiv).empty();
 			build(opts);
-		} else if ($(e.target).hasClass('fa-repeat')) {
+		} else if ($(e.target).hasClass('fa-redo')) {
 			opts.dataset = pedcache.next(opts);
 			$("#"+opts.targetDiv).empty();
 			build(opts);
@@ -197,9 +197,9 @@ export function updateButtons(opts) {
 	let nstore = pedcache.nstore(opts);
 	let id = "#"+opts.btn_target;
 	if(nstore <= current)
-		$(id+" .fa-repeat").addClass('disabled');
+		$(id+" .fa-redo").addClass('disabled');
 	else
-		$(id+" .fa-repeat").removeClass('disabled');
+		$(id+" .fa-redo").removeClass('disabled');
 
 	if(current > 1)
 		$(id+" .fa-undo").removeClass('disabled');

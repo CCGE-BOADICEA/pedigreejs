@@ -32,8 +32,8 @@ export function addWidgets(opts, node) {
 	let square = popup_selection.append("text")  // male
 		.attr('font-family', 'FontAwesome')
 		.style("opacity", 0)
-		.attr('font-size', '1.em' )
-		.attr("class", "popup_selection fa-lg fa-square persontype")
+		.style("font-size", "1.1em")
+		.attr("class", "popup_selection fa-square persontype")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("x", font_size/3)
 		.attr("y", font_size*1.5)
@@ -43,10 +43,10 @@ export function addWidgets(opts, node) {
 	let circle = popup_selection.append("text")  // female
 		.attr('font-family', 'FontAwesome')
 		.style("opacity", 0)
-		.attr('font-size', '1.em' )
-		.attr("class", "popup_selection fa-lg fa-circle persontype")
+		.style("font-size", "1.1em")
+		.attr("class", "popup_selection fa-circle persontype")
 		.attr("transform", "translate(-1000,-100)")
-		.attr("x", font_size*1.7)
+		.attr("x", font_size*1.71)
 		.attr("y", font_size*1.5)
 		.text("\uf10c ");
 	let circle_title = circle.append("svg:title").text("add female");
@@ -54,18 +54,21 @@ export function addWidgets(opts, node) {
 	let unspecified = popup_selection.append("text")  // unspecified
 		.attr('font-family', 'FontAwesome')
 		.style("opacity", 0)
-		.attr('font-size', '1.em' )
+		.style("font-size", "1.1em")
 		.attr("transform", "translate(-1000,-100)")
-		.attr("class", "popup_selection fa-lg fa-unspecified popup_selection_rotate45 persontype")
+		.attr("x", font_size*0.065)
+		.attr("y", -font_size*0.065)
+		.attr("class", "popup_selection fa-unspecified popup_selection_rotate45 persontype")
 		.text("\uf096 ");
 	unspecified.append("svg:title").text("add unspecified");
 
 	let dztwin = popup_selection.append("text")  // dizygotic twins
 		.attr('font-family', 'FontAwesome')
 		.style("opacity", 0)
+		.style("font-size", "1.6em")
 		.attr("transform", "translate(-1000,-100)")
-		.attr("class", "popup_selection fa-2x fa-angle-up persontype dztwin")
-		.attr("x", font_size*4.6)
+		.attr("class", "popup_selection fa-angle-up persontype dztwin")
+		.attr("x", font_size*4.62)
 		.attr("y", font_size*1.5)
 		.text("\uf106 ");
 	dztwin.append("svg:title").text("add dizygotic/fraternal twins");
@@ -73,11 +76,12 @@ export function addWidgets(opts, node) {
 	let mztwin = popup_selection.append("text")  // monozygotic twins
 	.attr('font-family', 'FontAwesome')
 	.style("opacity", 0)
+	.style("font-size", "1.6em")
 	.attr("transform", "translate(-1000,-100)")
-	.attr("class", "popup_selection fa-2x fa-caret-up persontype mztwin")
-	.attr("x", font_size*6.2)
+	.attr("class", "popup_selection fa-caret-up persontype mztwin")
+	.attr("x", font_size*6.4)
 	.attr("y", font_size*1.5)
-	.text("\uf0d8");
+	.text("\uf0d8 ");
 	mztwin.append("svg:title").text("add monozygotic/identical twins");
 
 	let add_person = {};
@@ -195,7 +199,7 @@ export function addWidgets(opts, node) {
 			.attr("yy", function(d){return d.y;})
 			.attr("x", widgets[key].fx)
 			.attr("y", widgets[key].fy)
-			.attr('font-size', '0.9em' )
+			.attr('font-size', '0.85em' )
 			.text(widgets[key].text);
 
 		if('styles' in widgets[key])
