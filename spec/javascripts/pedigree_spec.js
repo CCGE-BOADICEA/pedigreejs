@@ -1,3 +1,22 @@
+describe('Test mammographic density ', function() {
+	const canrisk_file = window.pedigreejs.canrisk_file;
+
+	it('birads', function() {
+		expect(canrisk_file.get_mdensity("a")).toEqual("\n##birads=a");
+		expect(canrisk_file.get_mdensity("birads=a")).toEqual("\n##birads=a");
+		expect(canrisk_file.get_mdensity("birads=3")).toEqual("\n##birads=3");
+	});
+
+	it('Volpara', function() {
+		expect(canrisk_file.get_mdensity("volpara=22.4")).toEqual("\n##volpara=22.4");
+		expect(canrisk_file.get_mdensity("volpara 22.4")).not.toEqual("\n##volpara=22.4");
+	});
+
+	it('Stratus', function() {
+		expect(canrisk_file.get_mdensity("Stratus=11.23456")).toEqual("\n##Stratus=11.23456");
+	});
+});
+
 describe('Test pedigree SVG ', function() {
 	var pedigree_util = window.pedigreejs.pedigree_utils;
 	var pedigreejs = window.pedigreejs.pedigreejs;

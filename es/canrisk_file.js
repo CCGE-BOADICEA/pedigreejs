@@ -40,8 +40,8 @@ export function get_meta() {
 }
 
 // return a non-anonimised pedigree format
-export function get_non_anon_pedigree(dataset, meta) {
-	return get_pedigree(dataset, undefined, meta, false);
+export function get_non_anon_pedigree(dataset, meta, version=2, ethnicity=undefined) {
+	return get_pedigree(dataset, undefined, meta, false, version, ethnicity);
 }
 
 //check if input has a value
@@ -194,10 +194,26 @@ export function readCanRisk(boadicea_lines) {
 }
 
 /**
+ * Get the mammographic density formatted CanRisk data file line
+ */
+export function get_mdensity(mdensity) {
+	const regexp = /^(birads|Volpara|Stratus)=/i;
+	if(regexp.test(mdensity))
+		return "\n##"+mdensity;
+		
+	const birads = /^(1|2|3|4|a|b|c|d)$/i
+	if(birads.test(mdensity))
+		return "\n##birads="+mdensity;
+
+	console.error("Unrecognised mammographic density format :: " + mdensity);
+	return ""
+}
+
+/**
  * Get CanRisk formated pedigree.
  */
-export function get_pedigree(dataset, famid, meta, isanon, version=2) {
-	let msg = "##CanRisk " + (version === 1 ? "1.0" : "2.0");
+export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=undefined) {
+	let msg = "##CanRisk " + (version === 1 ? "1.0" : (version === 2 ? "2.0" : "3.0"));
 	if(!famid) {
 		famid = "XXXX";
 	}
@@ -248,7 +264,7 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2) {
 		if(menopause !== undefined)
 			msg += "\n##menopause="+menopause;
 		if(mdensity !== undefined)
-			msg += "\n##birads="+mdensity;
+			msg += get_mdensity(mdensity);
 		if(hgt !== undefined)
 			msg += "\n##height="+hgt;
 		if(tl !== undefined)
@@ -259,6 +275,10 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2) {
 
 		if(endo !== undefined)
 			msg += "\n##endo="+endo;
+	}
+	
+	if(version > 2 && ethnicity !== undefined) {
+		msg += "\n##ethnicity="+ethnicity;
 	}
 	msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn"
 
