@@ -1366,7 +1366,9 @@ var pedigreejs = (function (exports) {
 
 	// return a non-anonimised pedigree format
 	function get_non_anon_pedigree(dataset, meta) {
-	  return get_pedigree(dataset, undefined, meta, false);
+	  let version = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 2;
+	  let ethnicity = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
+	  return get_pedigree(dataset, undefined, meta, false, version, ethnicity);
 	}
 
 	//check if input has a value
@@ -1514,11 +1516,24 @@ var pedigreejs = (function (exports) {
 	}
 
 	/**
+	 * Get the mammographic density formatted CanRisk data file line
+	 */
+	function get_mdensity(mdensity) {
+	  const regexp = /^(birads|Volpara|Stratus)=/i;
+	  if (regexp.test(mdensity)) return "\n##" + mdensity;
+	  const birads = /^(1|2|3|4|a|b|c|d)$/i;
+	  if (birads.test(mdensity)) return "\n##birads=" + mdensity;
+	  console.error("Unrecognised mammographic density format :: " + mdensity);
+	  return "";
+	}
+
+	/**
 	 * Get CanRisk formated pedigree.
 	 */
 	function get_pedigree(dataset, famid, meta, isanon) {
 	  let version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 2;
-	  let msg = "##CanRisk " + (version === 1 ? "1.0" : "2.0");
+	  let ethnicity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
+	  let msg = "##CanRisk " + (version === 1 ? "1.0" : version === 2 ? "2.0" : "3.0");
 	  if (!famid) {
 	    famid = "XXXX";
 	  }
@@ -1560,10 +1575,13 @@ var pedigreejs = (function (exports) {
 	    if (bmi !== undefined) msg += "\n##BMI=" + bmi;
 	    if (alcohol !== undefined) msg += "\n##alcohol=" + alcohol;
 	    if (menopause !== undefined) msg += "\n##menopause=" + menopause;
-	    if (mdensity !== undefined) msg += "\n##birads=" + mdensity;
+	    if (mdensity !== undefined) msg += get_mdensity(mdensity);
 	    if (hgt !== undefined) msg += "\n##height=" + hgt;
 	    if (tl !== undefined) if (tl !== "n" && tl !== "N") msg += "\n##TL=Y";else msg += "\n##TL=N";
 	    if (endo !== undefined) msg += "\n##endo=" + endo;
+	  }
+	  if (version > 2 && ethnicity !== undefined) {
+	    msg += "\n##ethnicity=" + ethnicity;
 	  }
 	  msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn";
 	  let gt = version === 1 ? genetic_test1 : genetic_test2;
@@ -1661,6 +1679,7 @@ var pedigreejs = (function (exports) {
 		hasInput: hasInput,
 		get_prs_values: get_prs_values,
 		readCanRisk: readCanRisk,
+		get_mdensity: get_mdensity,
 		get_pedigree: get_pedigree,
 		show_risk_factor_store: show_risk_factor_store,
 		save_risk_factor: save_risk_factor,
