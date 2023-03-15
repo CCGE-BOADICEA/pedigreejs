@@ -98,7 +98,7 @@ export function readCanRisk(boadicea_lines) {
 	const regexp = /([0-9])/;
 	let version = 2;
 	let gt = (version === 1 ? genetic_test1 : genetic_test2);
-	let ncol = [26, 27];	// number of columns - v1, v2
+	let ncol = [26, 27, 27];	// number of columns - v1, v2, v3
 	// assumes two line header
 	for(let i = 0;i < lines.length;i++){
 		let ln = lines[i].trim();
