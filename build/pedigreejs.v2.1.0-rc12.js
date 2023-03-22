@@ -710,91 +710,6 @@ var pedigreejs = (function (exports) {
 	  };
 	}
 
-	// Set or remove proband attributes.
-	// If a value is not provided the attribute is removed from the proband.
-	// 'key' can be a list of keys or a single key.
-	function proband_attr(opts, keys, value) {
-	  let proband = opts.dataset[getProbandIndex(opts.dataset)];
-	  node_attr(opts, proband.name, keys, value);
-	}
-
-	// Set or remove node attributes.
-	// If a value is not provided the attribute is removed.
-	// 'key' can be a list of keys or a single key.
-	function node_attr(opts, name, keys, value) {
-	  let newdataset = copy_dataset(current(opts));
-	  let node = getNodeByName(newdataset, name);
-	  if (!node) {
-	    console.warn("No person defined");
-	    return;
-	  }
-	  if (!$.isArray(keys)) {
-	    keys = [keys];
-	  }
-	  if (value) {
-	    for (let i = 0; i < keys.length; i++) {
-	      let k = keys[i];
-	      //console.log('VALUE PROVIDED', k, value, (k in node));
-	      if (k in node && keys.length === 1) {
-	        if (node[k] === value) return;
-	        try {
-	          if (JSON.stringify(node[k]) === JSON.stringify(value)) return;
-	        } catch (e) {
-	          // continue regardless of error
-	        }
-	      }
-	      node[k] = value;
-	    }
-	  } else {
-	    let found = false;
-	    for (let i = 0; i < keys.length; i++) {
-	      let k = keys[i];
-	      //console.log('NO VALUE PROVIDED', k, (k in node));
-	      if (k in node) {
-	        delete node[k];
-	        found = true;
-	      }
-	    }
-	    if (!found) return;
-	  }
-	  syncTwins(newdataset, node);
-	  opts.dataset = newdataset;
-	  rebuild(opts);
-	}
-
-	// add a child to the proband; giveb sex, age, yob and breastfeeding months (optional)
-	function proband_add_child(opts, sex, age, yob, breastfeeding) {
-	  let newdataset = copy_dataset(current(opts));
-	  let proband = newdataset[getProbandIndex(newdataset)];
-	  if (!proband) {
-	    console.warn("No proband defined");
-	    return;
-	  }
-	  let newchild = addchild(newdataset, proband, sex, 1)[0];
-	  newchild.age = age;
-	  newchild.yob = yob;
-	  if (breastfeeding !== undefined) newchild.breastfeeding = breastfeeding;
-	  opts.dataset = newdataset;
-	  rebuild(opts);
-	  return newchild.name;
-	}
-
-	// delete node using the name
-	function delete_node_by_name(opts, name) {
-	  function onDone(opts, dataset) {
-	    // assign new dataset and rebuild pedigree
-	    opts.dataset = dataset;
-	    rebuild(opts);
-	  }
-	  let newdataset = copy_dataset(current(opts));
-	  let node = getNodeByName(current(opts), name);
-	  if (!node) {
-	    console.warn("No node defined");
-	    return;
-	  }
-	  delete_node_dataset(newdataset, node, opts, onDone);
-	}
-
 	// check by name if the individual exists
 	function exists(opts, name) {
 	  return getNodeByName(current(opts), name) !== undefined;
@@ -856,10 +771,6 @@ var pedigreejs = (function (exports) {
 		overlap: overlap,
 		getNodeByName: getNodeByName,
 		urlParam: urlParam,
-		proband_attr: proband_attr,
-		node_attr: node_attr,
-		proband_add_child: proband_add_child,
-		delete_node_by_name: delete_node_by_name,
 		exists: exists,
 		print_opts: print_opts
 	});
@@ -979,7 +890,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2022 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
-	function add$1(options) {
+	function addButtons(options) {
 	  let opts = $.extend({
 	    // defaults
 	    btn_target: 'pedigree_history'
@@ -1019,12 +930,12 @@ var pedigreejs = (function (exports) {
 	    lis += '</span>';
 	  }
 	  $("#" + opts.btn_target).append(lis);
-	  click(opts);
+	  addPbuttonEvents(opts);
 	}
 	function is_fullscreen() {
 	  return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
 	}
-	function click(opts) {
+	function addPbuttonEvents(opts) {
 	  // fullscreen
 	  $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function (_e) {
 	    let local_dataset = current(opts);
@@ -1693,7 +1604,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2022 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
-	function add(opts) {
+	function addIO(opts) {
 	  $('#load').change(function (e) {
 	    load(e, opts);
 	  });
@@ -2320,7 +2231,7 @@ var pedigreejs = (function (exports) {
 
 	var io = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		add: add,
+		addIO: addIO,
 		svg2img: svg2img,
 		copy_svg: copy_svg,
 		svg_download: svg_download,
@@ -3124,8 +3035,8 @@ var pedigreejs = (function (exports) {
 	  }, options);
 	  if ($("#fullscreen").length === 0) {
 	    // add undo, redo, fullscreen buttons and event listeners once
-	    add$1(opts);
-	    add(opts);
+	    addButtons(opts);
+	    addIO(opts);
 	  }
 	  if (nstore(opts) == -1) init_cache(opts);
 	  updateButtons(opts);
@@ -3956,13 +3867,115 @@ var pedigreejs = (function (exports) {
 		delete_node_dataset: delete_node_dataset
 	});
 
-	exports.canrisk_file = canrisk_file;
-	exports.io = io;
-	exports.pedcache = pedcache;
-	exports.pedigree_form = pedigree_form;
-	exports.pedigree_utils = pedigree_utils;
+	/**
+	/* Functions used by 3rd party apps
+	/*
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
+	/* SPDX-License-Identifier: GPL-3.0-or-later
+	**/
+
+	// Set or remove node attributes.
+	// If a value is not provided the attribute is removed.
+	// 'key' can be a list of keys or a single key.
+	function node_attr(opts, name, keys, value) {
+	  let newdataset = copy_dataset(current(opts));
+	  let node = getNodeByName(newdataset, name);
+	  if (!node) {
+	    console.warn("No person defined");
+	    return;
+	  }
+	  if (!$.isArray(keys)) {
+	    keys = [keys];
+	  }
+	  if (value) {
+	    for (let i = 0; i < keys.length; i++) {
+	      let k = keys[i];
+	      //console.log('VALUE PROVIDED', k, value, (k in node));
+	      if (k in node && keys.length === 1) {
+	        if (node[k] === value) return;
+	        try {
+	          if (JSON.stringify(node[k]) === JSON.stringify(value)) return;
+	        } catch (e) {
+	          // continue regardless of error
+	        }
+	      }
+	      node[k] = value;
+	    }
+	  } else {
+	    let found = false;
+	    for (let i = 0; i < keys.length; i++) {
+	      let k = keys[i];
+	      //console.log('NO VALUE PROVIDED', k, (k in node));
+	      if (k in node) {
+	        delete node[k];
+	        found = true;
+	      }
+	    }
+	    if (!found) return;
+	  }
+	  syncTwins(newdataset, node);
+	  opts.dataset = newdataset;
+	  rebuild(opts);
+	}
+
+	// Set or remove proband attributes.
+	// If a value is not provided the attribute is removed from the proband.
+	// 'key' can be a list of keys or a single key.
+	function proband_attr(opts, keys, value) {
+	  let proband = opts.dataset[getProbandIndex(opts.dataset)];
+	  node_attr(opts, proband.name, keys, value);
+	}
+
+	// add a child to the proband; giveb sex, age, yob and breastfeeding months (optional)
+	function proband_add_child(opts, sex, age, yob, breastfeeding) {
+	  let newdataset = copy_dataset(current(opts));
+	  let proband = newdataset[getProbandIndex(newdataset)];
+	  if (!proband) {
+	    console.warn("No proband defined");
+	    return;
+	  }
+	  let newchild = addchild(newdataset, proband, sex, 1)[0];
+	  newchild.age = age;
+	  newchild.yob = yob;
+	  if (breastfeeding !== undefined) newchild.breastfeeding = breastfeeding;
+	  opts.dataset = newdataset;
+	  rebuild(opts);
+	  return newchild.name;
+	}
+
+	// delete node using the name
+	function delete_node_by_name(opts, name) {
+	  function onDone(opts, dataset) {
+	    // assign new dataset and rebuild pedigree
+	    opts.dataset = dataset;
+	    rebuild(opts);
+	  }
+	  let newdataset = copy_dataset(current(opts));
+	  let node = getNodeByName(current(opts), name);
+	  if (!node) {
+	    console.warn("No node defined");
+	    return;
+	  }
+	  delete_node_dataset(newdataset, node, opts, onDone);
+	}
+
+	var extras = /*#__PURE__*/Object.freeze({
+		__proto__: null,
+		node_attr: node_attr,
+		proband_attr: proband_attr,
+		proband_add_child: proband_add_child,
+		delete_node_by_name: delete_node_by_name
+	});
+
 	exports.pedigreejs = pedigree;
-	exports.zooming = zoom;
+	exports.pedigreejs__extras = extras;
+	exports.pedigreejs_canrisk_file = canrisk_file;
+	exports.pedigreejs_form = pedigree_form;
+	exports.pedigreejs_io = io;
+	exports.pedigreejs_pedcache = pedcache;
+	exports.pedigreejs_utils = pedigree_utils;
+	exports.pedigreejs_zooming = zoom;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 
