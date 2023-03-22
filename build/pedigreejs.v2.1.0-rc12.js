@@ -787,14 +787,14 @@ var pedigreejs = (function (exports) {
 	  // offsets
 	  let xi = opts.symbol_size / 2;
 	  let yi = -opts.symbol_size * 2.5;
-	  zm = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).filter(function () {
+	  zm = d3.zoom().scaleExtent([opts.zoomIn, opts.zoomOut]).filter(function (e) {
 	    if (!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
-	      if (d3.event.type && d3.event.type === 'wheel') return false;
+	      if (e.type && e.type === 'wheel') return false;
 	    }
 	    // ignore dblclick & secondary mouse buttons
-	    return d3.event.type !== 'dblclick' && !d3.event.button;
-	  }).on('zoom', function () {
-	    zooming(opts);
+	    return e.type !== 'dblclick' && !e.button;
+	  }).on('zoom', function (e) {
+	    zooming(e, opts);
 	  });
 	  svg.call(zm);
 
@@ -825,9 +825,9 @@ var pedigreejs = (function (exports) {
 	    svg.transition().duration(700).call(zm.scaleTo, k);
 	  }, 400);
 	}
-	function zooming(opts) {
-	  opts.DEBUG && console.log("zoom", d3.event, d3.event.transform);
-	  let t = d3.event.transform;
+	function zooming(e, opts) {
+	  opts.DEBUG && console.log("zoom", d3.event, e.transform);
+	  let t = e.transform;
 	  let k = t.k && t.k !== 1 ? t.k : undefined;
 	  setposition(opts, t.x, t.y, k);
 	  let ped = d3.select("#" + opts.targetDiv).select(".diagram");
@@ -2673,8 +2673,8 @@ var pedigreejs = (function (exports) {
 	  });
 
 	  // handle widget clicks
-	  d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings").on("click", function () {
-	    d3.event.stopPropagation();
+	  d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings").on("click", function (e) {
+	    e.stopPropagation();
 	    let opt = d3.select(this).attr('class');
 	    let d = d3.select(this.parentNode).datum();
 	    if (opts.DEBUG) {
@@ -2709,8 +2709,8 @@ var pedigreejs = (function (exports) {
 	  let highlight = [];
 	  node.filter(function (d) {
 	    return !d.data.hidden;
-	  }).on("click", function (d) {
-	    if (d3.event.ctrlKey) {
+	  }).on("click", function (e, d) {
+	    if (e.ctrlKey) {
 	      if (highlight.indexOf(d) == -1) highlight.push(d);else highlight.splice(highlight.indexOf(d), 1);
 	    } else highlight = [d];
 	    if ('nodeclick' in opts) {
@@ -2720,8 +2720,8 @@ var pedigreejs = (function (exports) {
 	        return highlight.indexOf(d) != -1;
 	      }).style("opacity", 0.5);
 	    }
-	  }).on("mouseover", function (d) {
-	    d3.event.stopPropagation();
+	  }).on("mouseover", function (e, d) {
+	    e.stopPropagation();
 	    last_mouseover = d;
 	    if (dragging) {
 	      if (dragging.data.name !== last_mouseover.data.name && dragging.data.sex !== last_mouseover.data.sex) {
@@ -2739,8 +2739,8 @@ var pedigreejs = (function (exports) {
 	    if (highlight.indexOf(d) == -1) d3.select(this).select('rect').style("opacity", 0);
 	    d3.select(this).selectAll('.indi_details').style("opacity", 1);
 	    // hide popup if it looks like the mouse is moving north
-	    let xcoord = d3.mouse(this)[0];
-	    let ycoord = d3.mouse(this)[1];
+	    let xcoord = d3.pointer(d)[0];
+	    let ycoord = d3.pointer(d)[1];
 	    if (ycoord < 0.8 * opts.symbol_size) d3.selectAll('.popup_selection').style("opacity", 0);
 	    if (!dragging) {
 	      // hide popup if it looks like the mouse is moving north, south or west
@@ -2786,17 +2786,23 @@ var pedigreejs = (function (exports) {
 	    dragging = undefined;
 	    return;
 	  }
-	  function drag(_d) {
-	    d3.event.sourceEvent.stopPropagation();
-	    let dx = d3.event.dx;
-	    let dy = d3.event.dy;
+	  function drag(e) {
+	    e.sourceEvent.stopPropagation();
+	    let dx = e.dx;
+	    let dy = e.dy;
 	    let xnew = parseFloat(d3.select(this).attr('x2')) + dx;
 	    let ynew = parseFloat(d3.select(this).attr('y2')) + dy;
 	    setLineDragPosition(opts.symbol_size - 10, 0, xnew, ynew);
 	  }
 	}
+
+	/**
+	 * Set the position and start and end of consanguineous widget.
+	 */
 	function setLineDragPosition(x1, y1, x2, y2, translate) {
-	  if (translate) d3.selectAll('.line_drag_selection').attr("transform", "translate(" + translate + ")");
+	  if (translate) {
+	    d3.selectAll('.line_drag_selection').attr("transform", "translate(" + translate + ")");
+	  }
 	  d3.selectAll('.line_drag_selection').attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2);
 	}
 	function capitaliseFirstLetter(string) {
