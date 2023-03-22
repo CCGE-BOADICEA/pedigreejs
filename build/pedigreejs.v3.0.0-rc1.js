@@ -2,8 +2,8 @@ var pedigreejs = (function (exports) {
 	'use strict';
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
@@ -168,8 +168,8 @@ var pedigreejs = (function (exports) {
 	});
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 	function isIE() {
@@ -776,8 +776,8 @@ var pedigreejs = (function (exports) {
 	});
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 	let zm;
@@ -886,8 +886,8 @@ var pedigreejs = (function (exports) {
 	});
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 	function addButtons(options) {
@@ -1237,8 +1237,8 @@ var pedigreejs = (function (exports) {
 	}
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
@@ -1600,8 +1600,8 @@ var pedigreejs = (function (exports) {
 	});
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 	function addIO(opts) {
@@ -2244,8 +2244,8 @@ var pedigreejs = (function (exports) {
 	});
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
@@ -2503,7 +2503,7 @@ var pedigreejs = (function (exports) {
 	  return x1 < x2 ? x2 - 5 : x2 + 5;
 	}
 
-	var pedigree_form = /*#__PURE__*/Object.freeze({
+	var popup_form = /*#__PURE__*/Object.freeze({
 		__proto__: null,
 		updateStatus: updateStatus,
 		nodeclick: nodeclick,
@@ -2513,8 +2513,8 @@ var pedigreejs = (function (exports) {
 	});
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 	let dragging;
@@ -2869,8 +2869,8 @@ var pedigreejs = (function (exports) {
 	}
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 	function addLabels(opts, node) {
@@ -2980,8 +2980,8 @@ var pedigreejs = (function (exports) {
 	}
 
 	/**
-	/* © 2022 Cambridge University
-	/* SPDX-FileCopyrightText: 2022 Cambridge University
+	/* © 2023 Cambridge University
+	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 	let roots = {};
@@ -3977,7 +3977,7 @@ var pedigreejs = (function (exports) {
 	exports.pedigreejs = pedigree;
 	exports.pedigreejs__extras = extras;
 	exports.pedigreejs_canrisk_file = canrisk_file;
-	exports.pedigreejs_form = pedigree_form;
+	exports.pedigreejs_form = popup_form;
 	exports.pedigreejs_io = io;
 	exports.pedigreejs_pedcache = pedcache;
 	exports.pedigreejs_utils = utils;
