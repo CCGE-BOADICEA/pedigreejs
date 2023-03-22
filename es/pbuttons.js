@@ -10,7 +10,7 @@ import {rebuild, build} from './pedigree.js';
 import {btn_zoom, scale_to_fit} from './zoom.js';
 import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
 
-export function add(options) {
+export function addButtons(options) {
 	let opts = $.extend({
         // defaults
 		btn_target: 'pedigree_history'
@@ -38,14 +38,14 @@ export function add(options) {
 		lis += '</span>';
 	}
 	$( "#"+opts.btn_target ).append(lis);
-	click(opts);
+	addPbuttonEvents(opts);
 }
 
 export function is_fullscreen(){
 	return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
 }
 
-function click(opts) {
+function addPbuttonEvents(opts) {
 	// fullscreen
     $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function(_e)  {
 		let local_dataset = pedcache.current(opts);
@@ -133,7 +133,7 @@ function click(opts) {
 }
 
 // reset pedigree and clear the history
-export function reset(opts, keep_proband) {
+function reset(opts, keep_proband) {
 	let proband;
 	if(keep_proband) {
 		let local_dataset = pedcache.current(opts);

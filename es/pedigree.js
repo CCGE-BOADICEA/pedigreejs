@@ -47,8 +47,8 @@ export function build(options) {
 
 	if ( $( "#fullscreen" ).length === 0 ) {
 		// add undo, redo, fullscreen buttons and event listeners once
-		pbuttons.add(opts);
-		io.add(opts);
+		pbuttons.addButtons(opts, rebuild, build);
+		io.addIO(opts);
 	}
 
 	if(pedcache.nstore(opts) == -1)
