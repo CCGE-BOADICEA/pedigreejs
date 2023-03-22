@@ -173,15 +173,6 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
-	// get the siblings of a given individual - sex is an optional parameter
-	// for only returning brothers or sisters
-	function getSiblings(dataset, person, sex) {
-	  if (person === undefined || !person.mother || person.noparents) return [];
-	  return $.map(dataset, function (p, _i) {
-	    return p.name !== person.name && !('noparents' in p) && p.mother && p.mother === person.mother && p.father === person.father && (!sex || p.sex == sex) ? p : null;
-	  });
-	}
-
 	// get the mono/di-zygotic twin(s)
 	function getTwins(dataset, person) {
 	  let sibs = getSiblings(dataset, person);
@@ -606,6 +597,15 @@ var pedigreejs = (function (exports) {
 	  });
 	  return children;
 	}
+
+	// get the siblings of a given individual - sex is an optional parameter
+	// for only returning brothers or sisters
+	function getSiblings(dataset, person, sex) {
+	  if (person === undefined || !person.mother || person.noparents) return [];
+	  return $.map(dataset, function (p, _i) {
+	    return p.name !== person.name && !('noparents' in p) && p.mother && p.mother === person.mother && p.father === person.father && (!sex || p.sex == sex) ? p : null;
+	  });
+	}
 	function contains_parent(arr, m, f) {
 	  for (let i = 0; i < arr.length; i++) if (arr[i].mother === m && arr[i].father === f) return true;
 	  return false;
@@ -903,6 +903,7 @@ var pedigreejs = (function (exports) {
 		unconnected: unconnected,
 		getProbandIndex: getProbandIndex,
 		getChildren: getChildren,
+		getSiblings: getSiblings,
 		getAllSiblings: getAllSiblings,
 		getAdoptedSiblings: getAdoptedSiblings,
 		getAllChildren: getAllChildren,
