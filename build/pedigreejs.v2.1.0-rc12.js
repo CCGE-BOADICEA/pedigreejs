@@ -737,7 +737,7 @@ var pedigreejs = (function (exports) {
 	  }
 	}
 
-	var pedigree_utils = /*#__PURE__*/Object.freeze({
+	var utils = /*#__PURE__*/Object.freeze({
 		__proto__: null,
 		isIE: isIE,
 		isEdge: isEdge,
@@ -3974,7 +3974,7 @@ var pedigreejs = (function (exports) {
 	exports.pedigreejs_form = pedigree_form;
 	exports.pedigreejs_io = io;
 	exports.pedigreejs_pedcache = pedcache;
-	exports.pedigreejs_utils = pedigree_utils;
+	exports.pedigreejs_utils = utils;
 	exports.pedigreejs_zooming = zoom;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
