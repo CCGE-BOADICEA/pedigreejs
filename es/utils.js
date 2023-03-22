@@ -6,6 +6,7 @@
 
 // Pedigree Tree Utils
 import * as pedcache from './pedcache.js';
+import {getTwins} from './twins.js';
 
 export function isIE() {
 	 let ua = navigator.userAgent;
@@ -357,34 +358,12 @@ function contains_parent(arr, m, f) {
 	return false;
 }
 
-// get the siblings of a given individual - sex is an optional parameter
-// for only returning brothers or sisters
-export function getSiblings(dataset, person, sex) {
-	if(person === undefined || !person.mother || person.noparents)
-		return [];
-
-	return $.map(dataset, function(p, _i){
-		return  p.name !== person.name && !('noparents' in p) && p.mother &&
-			   (p.mother === person.mother && p.father === person.father) &&
-			   (!sex || p.sex == sex) ? p : null;
-	});
-}
-
 // get the siblings + adopted siblings
 export function getAllSiblings(dataset, person, sex) {
 	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&
 			   (p.mother === person.mother && p.father === person.father) &&
 			   (!sex || p.sex == sex) ? p : null;
-	});
-}
-
-// get the mono/di-zygotic twin(s)
-export function getTwins(dataset, person) {
-	let sibs = getSiblings(dataset, person);
-	let twin_type = (person.mztwin ? "mztwin" : "dztwin");
-	return $.map(sibs, function(p, _i){
-		return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
 	});
 }
 

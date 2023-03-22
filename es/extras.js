@@ -7,7 +7,8 @@
 **/
 
 import {copy_dataset, getNodeByName, getProbandIndex} from './utils.js';
-import {syncTwins, rebuild, addchild, delete_node_dataset} from './pedigree.js';
+import {rebuild, addchild, delete_node_dataset} from './pedigree.js';
+import {syncTwins} from './twins.js';
 import * as pedcache from './pedcache.js';
 
 

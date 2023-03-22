@@ -12,6 +12,7 @@ import * as io from './io.js';
 import {addWidgets} from './widgets.js';
 import {init_zoom} from './zoom.js';
 import {addLabels} from './labels.js';
+import {checkTwins, getTwins, getUniqueTwinID, setMzTwin} from './twins.js';
 
 export let roots = {};
 
@@ -353,7 +354,7 @@ export function build(options) {
 				if(!d.target.data.adopted_in) return null;
 				let dash_len = Math.abs(d.source.y-((d.source.y + d.target.y) / 2));
 				let dash_array = [dash_len, 0, Math.abs(d.source.x-d.target.x), 0];
-				let twins = utils.getTwins(opts.dataset, d.target.data);
+				let twins = getTwins(opts.dataset, d.target.data);
 				if(twins.length >= 1) dash_len = dash_len * 3;
 				for(let usedlen = 0; usedlen < dash_len; usedlen += 10)
 					$.merge(dash_array, [5, 5]);
@@ -367,7 +368,7 @@ export function build(options) {
 			.attr("d", function(d, _i) {
 				if(d.target.data.mztwin || d.target.data.dztwin) {
 					// get twin position
-					let twins = utils.getTwins(opts.dataset, d.target.data);
+					let twins = getTwins(opts.dataset, d.target.data);
 					if(twins.length >= 1) {
 						let twinx = 0;
 						let xmin = d.target.x;
@@ -710,73 +711,6 @@ export function addsibling(dataset, node, sex, add_lhs, twin_type) {
 		idx++;
 	dataset.splice(idx, 0, newbie);
 	return newbie;
-}
-
-// set two siblings as twins
-function setMzTwin(dataset, d1, d2, twin_type) {
-	if(!d1[twin_type]) {
-		d1[twin_type] = getUniqueTwinID(dataset, twin_type);
-		if(!d1[twin_type])
-			return false;
-	}
-	d2[twin_type] = d1[twin_type];
-	if(d1.yob)
-		d2.yob = d1.yob;
-	if(d1.age && (d1.status == 0 || !d1.status))
-		d2.age = d1.age;
-	return true;
-}
-
-// get a new unique twins ID, max of 10 twins in a pedigree
-function getUniqueTwinID(dataset, twin_type) {
-	let mz = [1, 2, 3, 4, 5, 6, 7, 8, 9, "A"];
-	for(let i=0; i<dataset.length; i++) {
-		if(dataset[i][twin_type]) {
-			let idx = mz.indexOf(dataset[i][twin_type]);
-			if (idx > -1)
-				mz.splice(idx, 1);
-		}
-	}
-	if(mz.length > 0)
-		return mz[0];
-	return undefined;
-}
-
-// sync attributes of twins
-export function syncTwins(dataset, d1) {
-	if(!d1.mztwin && !d1.dztwin)
-		return;
-	let twin_type = (d1.mztwin ? "mztwin" : "dztwin");
-	for(let i=0; i<dataset.length; i++) {
-		let d2 = dataset[i];
-		if(d2[twin_type] && d1[twin_type] == d2[twin_type] && d2.name !== d1.name) {
-			if(twin_type === "mztwin")
-			  d2.sex = d1.sex;
-			if(d1.yob)
-				d2.yob = d1.yob;
-			if(d1.age && (d1.status == 0 || !d1.status))
-				d2.age = d1.age;
-		}
-	}
-}
-
-// check integrity twin settings
-function checkTwins(dataset) {
-	let twin_types = ["mztwin", "dztwin"];
-	for(let i=0; i<dataset.length; i++) {
-		for(let j=0; j<twin_types.length; j++) {
-			let twin_type = twin_types[j];
-			if(dataset[i][twin_type]) {
-				let count = 0;
-				for(let j=0; j<dataset.length; j++) {
-					if(dataset[j][twin_type] == dataset[i][twin_type])
-						count++;
-				}
-				if(count < 2)
-					delete dataset[i][[twin_type]];
-			}
-		}
-	}
 }
 
 // add parents to the 'node'

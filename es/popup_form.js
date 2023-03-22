@@ -5,7 +5,8 @@
 **/
 
 // pedigree form
-import {rebuild, syncTwins} from './pedigree.js';
+import {rebuild} from './pedigree.js';
+import {syncTwins} from './twins.js';
 import {copy_dataset, getNodeByName} from './utils.js';
 import {current as pedcache_current} from './pedcache.js';
 
