@@ -8,9 +8,10 @@
 import '../css/pedigreejs.css';
 
 export * as pedigreejs from './pedigree.js';
-export * as pedigree_utils from './pedigree_utils.js';
-export * as pedigree_form from './pedigree_form.js';
-export * as pedcache from './pedcache.js'; 
-export * as io from './io.js';
-export * as canrisk_file from './canrisk_file.js';
-export * as zooming from './zoom.js';
+export * as pedigreejs_utils from './pedigree_utils.js';
+export * as pedigreejs_form from './pedigree_form.js';
+export * as pedigreejs_pedcache from './pedcache.js'; 
+export * as pedigreejs_io from './io.js';
+export * as pedigreejs_canrisk_file from './canrisk_file.js';
+export * as pedigreejs_zooming from './zoom.js';
+export * as pedigreejs__extras from './extras.js';
