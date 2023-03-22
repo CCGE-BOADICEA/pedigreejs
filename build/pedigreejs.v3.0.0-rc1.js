@@ -3298,6 +3298,16 @@ var pedigreejs = (function (exports) {
 	  return dataset;
 	}
 
+	var widgets = /*#__PURE__*/Object.freeze({
+		__proto__: null,
+		addWidgets: addWidgets,
+		addchild: addchild,
+		addsibling: addsibling,
+		addparents: addparents,
+		addpartner: addpartner,
+		delete_node_dataset: delete_node_dataset
+	});
+
 	/**
 	/* © 2023 Cambridge University
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
@@ -3982,6 +3992,7 @@ var pedigreejs = (function (exports) {
 	exports.pedigreejs_io = io;
 	exports.pedigreejs_pedcache = pedcache;
 	exports.pedigreejs_utils = utils;
+	exports.pedigreejs_widgets = widgets;
 	exports.pedigreejs_zooming = zoom;
 
 	Object.defineProperty(exports, '__esModule', { value: true });

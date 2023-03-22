@@ -532,7 +532,7 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 }
 
 //
-function addsibling(dataset, node, sex, add_lhs, twin_type) {
+export function addsibling(dataset, node, sex, add_lhs, twin_type) {
 	if(twin_type && $.inArray(twin_type, [ "mztwin", "dztwin" ] ) === -1)
 		return new Error("INVALID TWIN TYPE SET: "+twin_type);
 
@@ -558,7 +558,7 @@ function addsibling(dataset, node, sex, add_lhs, twin_type) {
 }
 
 // add parents to the 'node'
-function addparents(opts, dataset, name) {
+export function addparents(opts, dataset, name) {
 	let mother, father;
 	let root = utils.roots[opts.targetDiv];
 	let flat_tree = utils.flatten(root);
@@ -662,7 +662,7 @@ function addparents(opts, dataset, name) {
 }
 
 // add partner
-function addpartner(opts, dataset, name) {
+export function addpartner(opts, dataset, name) {
 	let root = utils.roots[opts.targetDiv];
 	let flat_tree = utils.flatten(root);
 	let tree_node = utils.getNodeByName(flat_tree, name);
