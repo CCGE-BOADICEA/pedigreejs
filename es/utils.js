@@ -8,6 +8,9 @@
 import * as pedcache from './pedcache.js';
 import {getTwins} from './twins.js';
 
+
+export let roots = {};
+
 export function isIE() {
 	 let ua = navigator.userAgent;
 	 /* MSIE used to detect old browsers and Trident used to newer ones*/
