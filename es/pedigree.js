@@ -63,7 +63,7 @@ export function build(options) {
 
 	if(opts.DEBUG)
 		utils.print_opts(opts);
-	let svg_dimensions = get_svg_dimensions(opts);
+	let svg_dimensions = utils.get_svg_dimensions(opts);
 	let svg = d3.select("#"+opts.targetDiv)
 				 .append("svg:svg")
 				 .attr("width", svg_dimensions.width)
@@ -94,7 +94,7 @@ export function build(options) {
 	utils.roots[opts.targetDiv] = root;
 
 	// / get score at each depth used to adjust node separation
-	let tree_dimensions = get_tree_dimensions(opts);
+	let tree_dimensions = utils.get_tree_dimensions(opts);
 	if(opts.DEBUG)
 		console.log('opts.width='+svg_dimensions.width+' width='+tree_dimensions.width+
 					' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
@@ -495,39 +495,6 @@ export function check_ptr_link_clashes(opts, anode) {
 				bnode.y == dy && bnode.x > x1 && bnode.x < x2 ? bnode.x : null;
 	});
 	return clash.length > 0 ? clash : null;
-}
-
-function get_svg_dimensions(opts) {
-	return {'width' : (pbuttons.is_fullscreen()? window.innerWidth  : opts.width),
-			'height': (pbuttons.is_fullscreen()? window.innerHeight : opts.height)};
-}
-
-export function get_tree_dimensions(opts) {
-	// / get score at each depth used to adjust node separation
-	let svg_dimensions = get_svg_dimensions(opts);
-	let maxscore = 0;
-	let generation = {};
-	for(let i=0; i<opts.dataset.length; i++) {
-		let depth = utils.getDepth(opts.dataset, opts.dataset[i].name);
-		let children = utils.getAllChildren(opts.dataset, opts.dataset[i]);
-
-		// score based on no. of children and if parent defined
-		let score = 1 + (children.length > 0 ? 0.55+(children.length*0.25) : 0) + (opts.dataset[i].father ? 0.25 : 0);
-		if(depth in generation)
-			generation[depth] += score;
-		else
-			generation[depth] = score;
-
-		if(generation[depth] > maxscore)
-			maxscore = generation[depth];
-	}
-
-	let max_depth = Object.keys(generation).length*opts.symbol_size*3.5;
-	let tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
-					   svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
-	let tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
-					   svg_dimensions.height - opts.symbol_size : max_depth);
-	return {'width': tree_width, 'height': tree_height};
 }
 
 // group top_level nodes by their partners

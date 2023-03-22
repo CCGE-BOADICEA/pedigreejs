@@ -7,7 +7,7 @@
 // pedigree I/O
 import * as utils from './utils.js';
 import * as pedcache from './pedcache.js';
-import {get_tree_dimensions, rebuild} from './pedigree.js';
+import {rebuild} from './pedigree.js';
 import {readCanRisk, cancers, genetic_test1, pathology_tests} from './canrisk_file.js';
 
 
@@ -170,7 +170,7 @@ function get_printable_svg(opts) {
 		opts.dataset = local_dataset;
 	}
 
-	let tree_dimensions = get_tree_dimensions(opts);
+	let tree_dimensions = utils.get_tree_dimensions(opts);
 	let svg_div = $('<div></div>');  				// create a new div
 	let svg = $('#'+opts.targetDiv).find('svg').clone().appendTo(svg_div);
 

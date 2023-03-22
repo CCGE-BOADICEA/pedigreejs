@@ -8,7 +8,7 @@
 import * as pedcache from './pedcache.js';
 import {rebuild, build} from './pedigree.js';
 import {btn_zoom, scale_to_fit} from './zoom.js';
-import {copy_dataset, getProbandIndex} from './utils.js';
+import {copy_dataset, getProbandIndex, is_fullscreen} from './utils.js';
 
 export function addButtons(options) {
 	let opts = $.extend({
@@ -39,10 +39,6 @@ export function addButtons(options) {
 	}
 	$( "#"+opts.btn_target ).append(lis);
 	addPbuttonEvents(opts);
-}
-
-export function is_fullscreen(){
-	return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
 }
 
 function addPbuttonEvents(opts) {
