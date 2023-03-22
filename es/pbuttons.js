@@ -8,7 +8,7 @@
 import * as pedcache from './pedcache.js';
 import {rebuild, build} from './pedigree.js';
 import {btn_zoom, scale_to_fit} from './zoom.js';
-import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
+import {copy_dataset, getProbandIndex} from './utils.js';
 
 export function addButtons(options) {
 	let opts = $.extend({

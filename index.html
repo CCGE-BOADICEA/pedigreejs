@@ -143,7 +143,7 @@
 
 	<script type="text/javascript">
 	$( document ).ready(function() {
-		if(pedigreejs.pedigree_utils.isIE()) {
+		if(pedigreejs.pedigreejs_utils.isIE()) {
 			var s = document.createElement("script");
 			s.type = "text/javascript";
 			s.src = "https://cdn.jsdelivr.net/npm/canvg@3.0.7/lib/umd.js";
@@ -178,8 +178,8 @@
 							 {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 							 {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 							 {'type': 'prostate_cancer', 'colour': '#D5494A'}],
-				'DEBUG': (pedigreejs.pedigree_utils.urlParam('debug') === null ? false : true)};
-		var local_dataset = pedigreejs.pedcache.current(opts);
+				'DEBUG': (pedigreejs.pedigreejs_utils.urlParam('debug') === null ? false : true)};
+		var local_dataset = pedigreejs.pedigreejs_pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		} else {

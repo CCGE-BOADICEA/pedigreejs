@@ -4,7 +4,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
-import * as pedigree_util from './pedigree_utils.js';
+import * as pedigree_util from './utils.js';
 
 // cancers, genetic & pathology tests
 export let cancers = {

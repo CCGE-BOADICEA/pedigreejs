@@ -6,7 +6,7 @@
 
 // pedigree widgets
 import {addsibling, addchild, addparents, addpartner, rebuild, delete_node_dataset} from './pedigree.js';
-import {copy_dataset, makeid, getIdxByName} from './pedigree_utils.js';
+import {copy_dataset, makeid, getIdxByName} from './utils.js';
 import {save} from './pedigree_form.js';
 import {current as pedcache_current} from './pedcache.js';
 

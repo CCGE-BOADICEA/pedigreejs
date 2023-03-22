@@ -6,7 +6,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
-import {copy_dataset, getNodeByName, getProbandIndex} from './pedigree_utils.js';
+import {copy_dataset, getNodeByName, getProbandIndex} from './utils.js';
 import {syncTwins, rebuild, addchild, delete_node_dataset} from './pedigree.js';
 import * as pedcache from './pedcache.js';
 

@@ -8,7 +8,7 @@
 import '../css/pedigreejs.css';
 
 export * as pedigreejs from './pedigree.js';
-export * as pedigreejs_utils from './pedigree_utils.js';
+export * as pedigreejs_utils from './utils.js';
 export * as pedigreejs_form from './pedigree_form.js';
 export * as pedigreejs_pedcache from './pedcache.js'; 
 export * as pedigreejs_io from './io.js';

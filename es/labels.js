@@ -4,7 +4,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
-import {prefixInObj} from './pedigree_utils.js';
+import {prefixInObj} from './utils.js';
 
 export function addLabels(opts, node) {
 	// names of individuals

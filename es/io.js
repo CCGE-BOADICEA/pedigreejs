@@ -5,7 +5,7 @@
 **/
 
 // pedigree I/O
-import * as pedigree_util from './pedigree_utils.js';
+import * as pedigree_util from './utils.js';
 import * as pedcache from './pedcache.js';
 import {get_tree_dimensions, validate_pedigree, rebuild} from './pedigree.js';
 import {readCanRisk, cancers, genetic_test1, pathology_tests} from './canrisk_file.js';
