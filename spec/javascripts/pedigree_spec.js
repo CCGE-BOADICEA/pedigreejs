@@ -1,5 +1,5 @@
 describe('Test mammographic density ', function() {
-	const canrisk_file = window.pedigreejs.canrisk_file;
+	const canrisk_file = window.pedigreejs.pedigreejs_canrisk_file;
 
 	it('birads', function() {
 		expect(canrisk_file.get_mdensity("a")).toEqual("\n##birads=a");
@@ -18,10 +18,10 @@ describe('Test mammographic density ', function() {
 });
 
 describe('Test pedigree SVG ', function() {
-	var pedigree_util = window.pedigreejs.pedigree_utils;
+	var pedigree_util = window.pedigreejs.pedigreejs_utils;
 	var pedigreejs = window.pedigreejs.pedigreejs;
-	var pedcache = window.pedigreejs.pedcache;
-	var io = window.pedigreejs.io;
+	var pedcache = window.pedigreejs.pedigreejs_pedcache;
+	var io = window.pedigreejs.pedigreejs_io;
 
 	var wid = 600;
 	var hgt = 500;

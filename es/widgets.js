@@ -228,8 +228,8 @@ export function addWidgets(opts, node) {
 
 	// handle widget clicks
 	d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
-	  .on("click", function () {
-		  d3.event.stopPropagation();
+	  .on("click", function (e) {
+		  e.stopPropagation();
 		let opt = d3.select(this).attr('class');
 		let d = d3.select(this.parentNode).datum();
 		if(opts.DEBUG) {
@@ -265,8 +265,8 @@ export function addWidgets(opts, node) {
 	let highlight = [];
 
 	node.filter(function (d) { return !d.data.hidden; })
-	.on("click", function (d) {
-		if (d3.event.ctrlKey) {
+	.on("click", function (e, d) {
+		if (e.ctrlKey) {
 			if(highlight.indexOf(d) == -1)
 				highlight.push(d);
 			else
@@ -280,8 +280,8 @@ export function addWidgets(opts, node) {
 			d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1;}).style("opacity", 0.5);
 		}
 	})
-	.on("mouseover", function(d){
-		d3.event.stopPropagation();
+	.on("mouseover", function(e, d){
+		e.stopPropagation();
 		last_mouseover = d;
 		if(dragging) {
 			if(dragging.data.name !== last_mouseover.data.name &&
@@ -293,6 +293,7 @@ export function addWidgets(opts, node) {
 		d3.select(this).select('rect').style("opacity", 0.2);
 		d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
 		d3.select(this).selectAll('.indi_details').style("opacity", 0);
+
 		setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
 	})
 	.on("mouseout", function(d){
@@ -304,8 +305,8 @@ export function addWidgets(opts, node) {
 			d3.select(this).select('rect').style("opacity", 0);
 		d3.select(this).selectAll('.indi_details').style("opacity", 1);
 		// hide popup if it looks like the mouse is moving north
-		let xcoord = d3.mouse(this)[0];
-		let ycoord = d3.mouse(this)[1];
+		let xcoord = d3.pointer(d)[0];
+		let ycoord = d3.pointer(d)[1];
 		if(ycoord < 0.8*opts.symbol_size)
 			d3.selectAll('.popup_selection').style("opacity", 0);
 		if(!dragging) {
@@ -368,19 +369,23 @@ function drag_handle(opts) {
 		return;
 	}
 
-	function drag(_d) {
-		d3.event.sourceEvent.stopPropagation();
-		let dx = d3.event.dx;
-		let dy = d3.event.dy;
-        let xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
+	function drag(e) {
+		e.sourceEvent.stopPropagation();
+		let dx = e.dx;
+		let dy = e.dy;
+		let xnew = parseFloat(d3.select(this).attr('x2'))+ dx;
         let ynew = parseFloat(d3.select(this).attr('y2'))+ dy;
         setLineDragPosition(opts.symbol_size-10, 0, xnew, ynew);
 	}
 }
 
+/**
+ * Set the position and start and end of consanguineous widget.
+ */
 function setLineDragPosition(x1, y1, x2, y2, translate) {
-	if(translate)
+	if(translate) {
 		d3.selectAll('.line_drag_selection').attr("transform", "translate("+translate+")");
+	}
 	d3.selectAll('.line_drag_selection')
 		.attr("x1", x1)
 		.attr("y1", y1)
