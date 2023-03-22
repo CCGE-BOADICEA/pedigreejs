@@ -4,18 +4,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
-// get the siblings of a given individual - sex is an optional parameter
-// for only returning brothers or sisters
-function getSiblings(dataset, person, sex) {
-	if(person === undefined || !person.mother || person.noparents)
-		return [];
-
-	return $.map(dataset, function(p, _i){
-		return  p.name !== person.name && !('noparents' in p) && p.mother &&
-			   (p.mother === person.mother && p.father === person.father) &&
-			   (!sex || p.sex == sex) ? p : null;
-	});
-}
+import {getSiblings} from './utils.js';
 
 // get the mono/di-zygotic twin(s)
 export function getTwins(dataset, person) {
