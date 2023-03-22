@@ -18,6 +18,76 @@ export function isEdge() {
 	 return navigator.userAgent.match(/Edge/g);
 }
 
+export function create_err(err) {
+	console.error(err);
+	return new Error(err);
+}
+
+// validate pedigree data
+export function validate_pedigree(opts){
+	if(opts.validate) {
+		if (typeof opts.validate == 'function') {
+			if(opts.DEBUG)
+				console.log('CALLING CONFIGURED VALIDATION FUNCTION');
+			return opts.validate.call(this, opts);
+		}
+
+		// check consistency of parents sex
+		let uniquenames = [];
+		let famids = [];
+		let display_name;
+		for(let p=0; p<opts.dataset.length; p++) {
+			if(!p.hidden) {
+				if(opts.dataset[p].mother || opts.dataset[p].father) {
+					display_name = opts.dataset[p].display_name;
+					if(!display_name)
+						display_name = 'unnamed';
+					display_name += ' (IndivID: '+opts.dataset[p].name+')';
+					let mother = opts.dataset[p].mother;
+					let father = opts.dataset[p].father;
+					if(!mother || !father) {
+						throw create_err('Missing parent for '+display_name);
+					}
+
+					let midx = getIdxByName(opts.dataset, mother);
+					let fidx = getIdxByName(opts.dataset, father);
+					if(midx === -1)
+						throw create_err('The mother (IndivID: '+mother+') of family member '+
+										 display_name+' is missing from the pedigree.');
+					if(fidx === -1)
+						throw create_err('The father (IndivID: '+father+') of family member '+
+										 display_name+' is missing from the pedigree.');
+					if(opts.dataset[midx].sex !== "F")
+						throw create_err("The mother of family member "+display_name+
+								" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
+					if(opts.dataset[fidx].sex !== "M")
+						throw create_err("The father of family member "+display_name+
+								" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
+				}
+			}
+
+
+			if(!opts.dataset[p].name)
+				throw create_err(display_name+' has no IndivID.');
+			if($.inArray(opts.dataset[p].name, uniquenames) > -1)
+				throw create_err('IndivID for family member '+display_name+' is not unique.');
+			uniquenames.push(opts.dataset[p].name);
+
+			if($.inArray(opts.dataset[p].famid, famids) === -1 && opts.dataset[p].famid) {
+				famids.push(opts.dataset[p].famid);
+			}
+		}
+
+		if(famids.length > 1) {
+			throw create_err('More than one family found: '+famids.join(", ")+'.');
+		}
+		// warn if there is a break in the pedigree
+		let uc = unconnected(opts.dataset);
+		if(uc.length > 0)
+			console.warn("individuals unconnected to pedigree ", uc);
+	}
+}
+
 export function copy_dataset(dataset) {
 	if(dataset[0].id) { // sort by id
 		dataset.sort(function(a,b){return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));});

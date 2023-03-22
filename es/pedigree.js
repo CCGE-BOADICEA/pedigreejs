@@ -58,7 +58,7 @@ export function build(options) {
 	pbuttons.updateButtons(opts);
 
 	// validate pedigree data
-	validate_pedigree(opts);
+	utils.validate_pedigree(opts);
 	// group top level nodes by partners
 	opts.dataset = group_top_level(opts.dataset);
 
@@ -110,7 +110,7 @@ export function build(options) {
 	// check the number of visible nodes equals the size of the pedigree dataset
 	let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
 	if(vis_nodes.length != opts.dataset.length) {
-		throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
+		throw utils.create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 	}
 
 	utils.adjust_coords(opts, nodes, flattenNodes);
@@ -450,76 +450,6 @@ export function build(options) {
 
 function has_gender(sex) {
 	return sex === "M" || sex === "F";
-}
-
-function create_err(err) {
-	console.error(err);
-	return new Error(err);
-}
-
-// validate pedigree data
-export function validate_pedigree(opts){
-	if(opts.validate) {
-		if (typeof opts.validate == 'function') {
-			if(opts.DEBUG)
-				console.log('CALLING CONFIGURED VALIDATION FUNCTION');
-			return opts.validate.call(this, opts);
-		}
-
-		// check consistency of parents sex
-		let uniquenames = [];
-		let famids = [];
-		let display_name;
-		for(let p=0; p<opts.dataset.length; p++) {
-			if(!p.hidden) {
-				if(opts.dataset[p].mother || opts.dataset[p].father) {
-					display_name = opts.dataset[p].display_name;
-					if(!display_name)
-						display_name = 'unnamed';
-					display_name += ' (IndivID: '+opts.dataset[p].name+')';
-					let mother = opts.dataset[p].mother;
-					let father = opts.dataset[p].father;
-					if(!mother || !father) {
-						throw create_err('Missing parent for '+display_name);
-					}
-
-					let midx = utils.getIdxByName(opts.dataset, mother);
-					let fidx = utils.getIdxByName(opts.dataset, father);
-					if(midx === -1)
-						throw create_err('The mother (IndivID: '+mother+') of family member '+
-										 display_name+' is missing from the pedigree.');
-					if(fidx === -1)
-						throw create_err('The father (IndivID: '+father+') of family member '+
-										 display_name+' is missing from the pedigree.');
-					if(opts.dataset[midx].sex !== "F")
-						throw create_err("The mother of family member "+display_name+
-								" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
-					if(opts.dataset[fidx].sex !== "M")
-						throw create_err("The father of family member "+display_name+
-								" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
-				}
-			}
-
-
-			if(!opts.dataset[p].name)
-				throw create_err(display_name+' has no IndivID.');
-			if($.inArray(opts.dataset[p].name, uniquenames) > -1)
-				throw create_err('IndivID for family member '+display_name+' is not unique.');
-			uniquenames.push(opts.dataset[p].name);
-
-			if($.inArray(opts.dataset[p].famid, famids) === -1 && opts.dataset[p].famid) {
-				famids.push(opts.dataset[p].famid);
-			}
-		}
-
-		if(famids.length > 1) {
-			throw create_err('More than one family found: '+famids.join(", ")+'.');
-		}
-		// warn if there is a break in the pedigree
-		let uc = utils.unconnected(opts.dataset);
-		if(uc.length > 0)
-			console.warn("individuals unconnected to pedigree ", uc);
-	}
 }
 
 //adopted in/out brackets
@@ -930,7 +860,7 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		// validate new pedigree dataset
 		let newopts = $.extend({}, opts);
 		newopts.dataset = utils.copy_dataset(dataset);
-		validate_pedigree(newopts);
+		utils.validate_pedigree(newopts);
 		// check if pedigree is split
 		uc = utils.unconnected(dataset);
 	} catch(err) {
