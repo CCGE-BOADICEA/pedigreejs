@@ -4,16 +4,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
-import {getSiblings} from './utils.js';
-
-// get the mono/di-zygotic twin(s)
-export function getTwins(dataset, person) {
-	let sibs = getSiblings(dataset, person);
-	let twin_type = (person.mztwin ? "mztwin" : "dztwin");
-	return $.map(sibs, function(p, _i){
-		return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
-	});
-}
 
 // set two siblings as twins
 export function setMzTwin(dataset, d1, d2, twin_type) {

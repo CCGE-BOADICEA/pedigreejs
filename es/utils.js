@@ -6,7 +6,6 @@
 
 // Pedigree Tree Utils
 import * as pedcache from './pedcache.js';
-import {getTwins} from './twins.js';
 
 
 export let roots = {};
@@ -268,6 +267,7 @@ export function buildTree(opts, person, root, partnerLinks, id) {
 	return [partnerLinks, id];
 }
 
+
 // update parent node and sort twins
 function updateParent(p, parent, id, nodes, opts) {
 	// add to parent node
@@ -424,7 +424,23 @@ export function getChildren(dataset, mother, father) {
 	return children;
 }
 
-// get the siblings of a given individual - sex is an optional parameter
+function contains_parent(arr, m, f) {
+	for(let i=0; i<arr.length; i++)
+		if(arr[i].mother === m && arr[i].father === f)
+			return true;
+	return false;
+}
+
+// get the mono/di-zygotic twin(s)
+export function getTwins(dataset, person) {
+	let sibs = getSiblings(dataset, person);
+	let twin_type = (person.mztwin ? "mztwin" : "dztwin");
+	return $.map(sibs, function(p, _i){
+		return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
+	});
+}
+
+// get the siblings - sex is an optional parameter
 // for only returning brothers or sisters
 export function getSiblings(dataset, person, sex) {
 	if(person === undefined || !person.mother || person.noparents)
@@ -437,14 +453,8 @@ export function getSiblings(dataset, person, sex) {
 	});
 }
 
-function contains_parent(arr, m, f) {
-	for(let i=0; i<arr.length; i++)
-		if(arr[i].mother === m && arr[i].father === f)
-			return true;
-	return false;
-}
-
-// get the siblings + adopted siblings
+// get the siblings + adopted siblings - sex is an optional parameter
+// for only returning brothers or sisters
 export function getAllSiblings(dataset, person, sex) {
 	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&

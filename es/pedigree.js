@@ -12,7 +12,6 @@ import * as io from './io.js';
 import {addWidgets} from './widgets.js';
 import {init_zoom} from './zoom.js';
 import {addLabels} from './labels.js';
-import {getTwins} from './twins.js';
 
 
 export function build(options) {
@@ -353,7 +352,7 @@ export function build(options) {
 				if(!d.target.data.adopted_in) return null;
 				let dash_len = Math.abs(d.source.y-((d.source.y + d.target.y) / 2));
 				let dash_array = [dash_len, 0, Math.abs(d.source.x-d.target.x), 0];
-				let twins = getTwins(opts.dataset, d.target.data);
+				let twins = utils.getTwins(opts.dataset, d.target.data);
 				if(twins.length >= 1) dash_len = dash_len * 3;
 				for(let usedlen = 0; usedlen < dash_len; usedlen += 10)
 					$.merge(dash_array, [5, 5]);
@@ -367,7 +366,7 @@ export function build(options) {
 			.attr("d", function(d, _i) {
 				if(d.target.data.mztwin || d.target.data.dztwin) {
 					// get twin position
-					let twins = getTwins(opts.dataset, d.target.data);
+					let twins = utils.getTwins(opts.dataset, d.target.data);
 					if(twins.length >= 1) {
 						let twinx = 0;
 						let xmin = d.target.x;
