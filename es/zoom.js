@@ -1,6 +1,6 @@
 /**
-/* © 2022 Cambridge University
-/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* © 2023 Cambridge University
+/* SPDX-FileCopyrightText: 2023 Cambridge University
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
@@ -16,13 +16,13 @@ export function init_zoom(opts, svg) {
 
 	zm = d3.zoom()
 	  .scaleExtent([opts.zoomIn, opts.zoomOut])
-	  .filter(function() {
+	  .filter(function(e) {
 			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
-				if(d3.event.type && d3.event.type === 'wheel') return false
+				if(e.type && e.type === 'wheel') return false
 			}
 			// ignore dblclick & secondary mouse buttons
-			return (d3.event.type !== 'dblclick') && !d3.event.button})
-	  .on('zoom', function() { zooming(opts); });
+			return (e.type !== 'dblclick') && !e.button})
+	  .on('zoom', function(e) { zooming(e, opts); });
 	svg.call(zm);
 
 	// set initial position & scale
@@ -57,9 +57,9 @@ export function scale_to_fit(opts) {
 	setTimeout(function(){svg.transition().duration(700).call(zm.scaleTo, k)}, 400);
 }
 
-function zooming(opts) {
-	(opts.DEBUG && console.log("zoom", d3.event, d3.event.transform));
-	let t = d3.event.transform;
+function zooming(e, opts) {
+	(opts.DEBUG && console.log("zoom", d3.event, e.transform));
+	let t = e.transform;
 	let k = (t.k && t.k !== 1 ? t.k : undefined);
 	setposition(opts, t.x, t.y, k);
 	let ped = d3.select("#"+opts.targetDiv).select(".diagram");

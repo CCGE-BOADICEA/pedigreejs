@@ -1,13 +1,14 @@
 /**
-/* © 2022 Cambridge University
-/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* © 2023 Cambridge University
+/* SPDX-FileCopyrightText: 2023 Cambridge University
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
 // Pedigree Tree Utils
-
-import {syncTwins, rebuild, addchild, delete_node_dataset} from './pedigree.js';
 import * as pedcache from './pedcache.js';
+
+
+export let roots = {};
 
 export function isIE() {
 	 let ua = navigator.userAgent;
@@ -17,6 +18,76 @@ export function isIE() {
 
 export function isEdge() {
 	 return navigator.userAgent.match(/Edge/g);
+}
+
+export function create_err(err) {
+	console.error(err);
+	return new Error(err);
+}
+
+// validate pedigree data
+export function validate_pedigree(opts){
+	if(opts.validate) {
+		if (typeof opts.validate == 'function') {
+			if(opts.DEBUG)
+				console.log('CALLING CONFIGURED VALIDATION FUNCTION');
+			return opts.validate.call(this, opts);
+		}
+
+		// check consistency of parents sex
+		let uniquenames = [];
+		let famids = [];
+		let display_name;
+		for(let p=0; p<opts.dataset.length; p++) {
+			if(!p.hidden) {
+				if(opts.dataset[p].mother || opts.dataset[p].father) {
+					display_name = opts.dataset[p].display_name;
+					if(!display_name)
+						display_name = 'unnamed';
+					display_name += ' (IndivID: '+opts.dataset[p].name+')';
+					let mother = opts.dataset[p].mother;
+					let father = opts.dataset[p].father;
+					if(!mother || !father) {
+						throw create_err('Missing parent for '+display_name);
+					}
+
+					let midx = getIdxByName(opts.dataset, mother);
+					let fidx = getIdxByName(opts.dataset, father);
+					if(midx === -1)
+						throw create_err('The mother (IndivID: '+mother+') of family member '+
+										 display_name+' is missing from the pedigree.');
+					if(fidx === -1)
+						throw create_err('The father (IndivID: '+father+') of family member '+
+										 display_name+' is missing from the pedigree.');
+					if(opts.dataset[midx].sex !== "F")
+						throw create_err("The mother of family member "+display_name+
+								" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
+					if(opts.dataset[fidx].sex !== "M")
+						throw create_err("The father of family member "+display_name+
+								" is not specified as male. All fathers in the pedigree must have sex specified as 'M'.");
+				}
+			}
+
+
+			if(!opts.dataset[p].name)
+				throw create_err(display_name+' has no IndivID.');
+			if($.inArray(opts.dataset[p].name, uniquenames) > -1)
+				throw create_err('IndivID for family member '+display_name+' is not unique.');
+			uniquenames.push(opts.dataset[p].name);
+
+			if($.inArray(opts.dataset[p].famid, famids) === -1 && opts.dataset[p].famid) {
+				famids.push(opts.dataset[p].famid);
+			}
+		}
+
+		if(famids.length > 1) {
+			throw create_err('More than one family found: '+famids.join(", ")+'.');
+		}
+		// warn if there is a break in the pedigree
+		let uc = unconnected(opts.dataset);
+		if(uc.length > 0)
+			console.warn("individuals unconnected to pedigree ", uc);
+	}
 }
 
 export function copy_dataset(dataset) {
@@ -196,6 +267,7 @@ export function buildTree(opts, person, root, partnerLinks, id) {
 	return [partnerLinks, id];
 }
 
+
 // update parent node and sort twins
 function updateParent(p, parent, id, nodes, opts) {
 	// add to parent node
@@ -359,7 +431,16 @@ function contains_parent(arr, m, f) {
 	return false;
 }
 
-// get the siblings of a given individual - sex is an optional parameter
+// get the mono/di-zygotic twin(s)
+export function getTwins(dataset, person) {
+	let sibs = getSiblings(dataset, person);
+	let twin_type = (person.mztwin ? "mztwin" : "dztwin");
+	return $.map(sibs, function(p, _i){
+		return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
+	});
+}
+
+// get the siblings - sex is an optional parameter
 // for only returning brothers or sisters
 export function getSiblings(dataset, person, sex) {
 	if(person === undefined || !person.mother || person.noparents)
@@ -372,21 +453,13 @@ export function getSiblings(dataset, person, sex) {
 	});
 }
 
-// get the siblings + adopted siblings
+// get the siblings + adopted siblings - sex is an optional parameter
+// for only returning brothers or sisters
 export function getAllSiblings(dataset, person, sex) {
 	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&
 			   (p.mother === person.mother && p.father === person.father) &&
 			   (!sex || p.sex == sex) ? p : null;
-	});
-}
-
-// get the mono/di-zygotic twin(s)
-export function getTwins(dataset, person) {
-	let sibs = getSiblings(dataset, person);
-	let twin_type = (person.mztwin ? "mztwin" : "dztwin");
-	return $.map(sibs, function(p, _i){
-		return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
 	});
 }
 
@@ -601,97 +674,6 @@ function get_grandparents_idx(dataset, midx, fidx) {
 	return {'midx': gmidx, 'fidx': gfidx};
 }
 
-// Set or remove proband attributes.
-// If a value is not provided the attribute is removed from the proband.
-// 'key' can be a list of keys or a single key.
-export function proband_attr(opts, keys, value){
-	let proband = opts.dataset[ getProbandIndex(opts.dataset) ];
-	node_attr(opts, proband.name, keys, value);
-}
-
-// Set or remove node attributes.
-// If a value is not provided the attribute is removed.
-// 'key' can be a list of keys or a single key.
-export function node_attr(opts, name, keys, value){
-	let newdataset = copy_dataset(pedcache.current(opts));
-	let node = getNodeByName(newdataset, name);
-	if(!node){
-		console.warn("No person defined");
-		return;
-	}
-
-	if(!$.isArray(keys)) {
-		keys = [keys];
-	}
-
-	if(value) {
-		for(let i=0; i<keys.length; i++) {
-			let k = keys[i];
-			//console.log('VALUE PROVIDED', k, value, (k in node));
-			if(k in node && keys.length === 1) {
-				if(node[k] === value)
-					return;
-				try {
-				   if(JSON.stringify(node[k]) === JSON.stringify(value))
-					   return;
-				} catch(e){
-					// continue regardless of error
-				}
-			}
-			node[k] = value;
-		}
-	} else {
-		let found = false;
-		for(let i=0; i<keys.length; i++) {
-			let k = keys[i];
-			//console.log('NO VALUE PROVIDED', k, (k in node));
-			if(k in node) {
-				delete node[k];
-				found = true;
-			}
-		}
-		if(!found)
-			return;
-	}
-	syncTwins(newdataset, node);
-	opts.dataset = newdataset;
-	rebuild(opts);
-}
-
-// add a child to the proband; giveb sex, age, yob and breastfeeding months (optional)
-export function proband_add_child(opts, sex, age, yob, breastfeeding){
-	let newdataset = copy_dataset(pedcache.current(opts));
-	let proband = newdataset[ getProbandIndex(newdataset) ];
-	if(!proband){
-		console.warn("No proband defined");
-		return;
-	}
-	let newchild = addchild(newdataset, proband, sex, 1)[0];
-	newchild.age = age;
-	newchild.yob = yob;
-	if(breastfeeding !== undefined)
-		newchild.breastfeeding = breastfeeding;
-	opts.dataset = newdataset;
-	rebuild(opts);
-	return newchild.name;
-}
-
-// delete node using the name
-export function delete_node_by_name(opts, name){
-	function onDone(opts, dataset) {
-		// assign new dataset and rebuild pedigree
-		opts.dataset = dataset;
-		rebuild(opts);
-	}
-	let newdataset = copy_dataset(pedcache.current(opts));
-	let node = getNodeByName(pedcache.current(opts), name);
-	if(!node){
-		console.warn("No node defined");
-		return;
-	}
-	delete_node_dataset(newdataset, node, opts, onDone);
-}
-
 // check by name if the individual exists
 export function exists(opts, name){
 	return getNodeByName(pedcache.current(opts), name) !== undefined;
@@ -723,3 +705,42 @@ export function print_opts(opts){
 		$("#pedigree_data").append("<span>"+key + ":" + opts[key]+"; </span>");
 	}
 }
+
+export function is_fullscreen(){
+	return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+}
+
+
+export function get_svg_dimensions(opts) {
+	return {'width' : (is_fullscreen()? window.innerWidth  : opts.width),
+			'height': (is_fullscreen()? window.innerHeight : opts.height)};
+}
+
+export function get_tree_dimensions(opts) {
+	// / get score at each depth used to adjust node separation
+	let svg_dimensions = get_svg_dimensions(opts);
+	let maxscore = 0;
+	let generation = {};
+	for(let i=0; i<opts.dataset.length; i++) {
+		let depth = getDepth(opts.dataset, opts.dataset[i].name);
+		let children = getAllChildren(opts.dataset, opts.dataset[i]);
+
+		// score based on no. of children and if parent defined
+		let score = 1 + (children.length > 0 ? 0.55+(children.length*0.25) : 0) + (opts.dataset[i].father ? 0.25 : 0);
+		if(depth in generation)
+			generation[depth] += score;
+		else
+			generation[depth] = score;
+
+		if(generation[depth] > maxscore)
+			maxscore = generation[depth];
+	}
+
+	let max_depth = Object.keys(generation).length*opts.symbol_size*3.5;
+	let tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
+					   svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
+	let tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
+					   svg_dimensions.height - opts.symbol_size : max_depth);
+	return {'width': tree_width, 'height': tree_height};
+}
+

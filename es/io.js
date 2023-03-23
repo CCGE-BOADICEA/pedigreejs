@@ -1,17 +1,17 @@
 /**
-/* © 2022 Cambridge University
-/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* © 2023 Cambridge University
+/* SPDX-FileCopyrightText: 2023 Cambridge University
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
 // pedigree I/O
-import * as pedigree_util from './pedigree_utils.js';
+import * as utils from './utils.js';
 import * as pedcache from './pedcache.js';
-import {get_tree_dimensions, validate_pedigree, rebuild} from './pedigree.js';
+import {rebuild} from './pedigree.js';
 import {readCanRisk, cancers, genetic_test1, pathology_tests} from './canrisk_file.js';
 
 
-export function add(opts) {
+export function addIO(opts) {
 	$('#load').change(function(e) {
 		load(e, opts);
 	});
@@ -32,7 +32,7 @@ export function add(opts) {
 		let deferred = svg2img($('svg'), "pedigree");
 		$.when.apply($,[deferred]).done(function() {
 			let obj = getByName(arguments, "pedigree");
-			if(pedigree_util.isEdge() || pedigree_util.isIE()) {
+			if(utils.isEdge() || utils.isIE()) {
 				let html="<img src='"+obj.img+"' alt='canvas image'/>";
 				let newTab = window.open();		// pop-ups need to be enabled
 				newTab.document.write(html);
@@ -90,7 +90,7 @@ export function svg2img(svg, deferred_name, options) {
 	let context = canvas.getContext("2d");
 	let img = document.createElement("img");
 	img.onload = function() {
-		if(pedigree_util.isIE()) {
+		if(utils.isIE()) {
 			// change font so it isn't tiny
 			svgStr = svgStr.replace(/ font-size="\d?.\d*em"/g, '');
 			svgStr = svgStr.replace(/<text /g, '<text font-size="12px" ');
@@ -142,7 +142,7 @@ function unique_urls(svg_html) {
 		let m1 = "id=\"" + val + "\"";
 		let m2 = "url\\(" + quote + "#" + val + quote + "\\)";
 
-		let newval = val+pedigree_util.makeid(2);
+		let newval = val+utils.makeid(2);
 		svg_html = svg_html.replace(new RegExp(m1, 'g'), "id=\""+newval+"\"" );
 		svg_html = svg_html.replace(new RegExp(m2, 'g'), "url(#"+newval+")" );
    });
@@ -170,7 +170,7 @@ function get_printable_svg(opts) {
 		opts.dataset = local_dataset;
 	}
 
-	let tree_dimensions = get_tree_dimensions(opts);
+	let tree_dimensions = utils.get_tree_dimensions(opts);
 	let svg_div = $('<div></div>');  				// create a new div
 	let svg = $('#'+opts.targetDiv).find('svg').clone().appendTo(svg_div);
 
@@ -275,14 +275,14 @@ function save(opts){
 
 function canrisk_validation(opts) {
 	$.each(opts.dataset, function(_idx, p) {
-		if(!p.hidden && p.sex === 'M' && !pedigree_util.isProband(p)) {
+		if(!p.hidden && p.sex === 'M' && !utils.isProband(p)) {
 			if(p[cancers['breast_cancer2']]) {
 				let msg = 'Male family member ('+p.display_name+') with contralateral breast cancer found. '+
 						  'Please note that as the risk models do not take this into account the second '+
 						  'breast cancer is ignored.'
 				console.error(msg);
 				delete p[cancers['breast_cancer2']];
-				pedigree_util.messages("Warning", msg);
+				utils.messages("Warning", msg);
 			}
 		}
 	});
@@ -318,10 +318,10 @@ export function load_data(d, opts) {
 				opts.dataset = readLinkage(d);
 			}
 		}
-		validate_pedigree(opts);
+		utils.validate_pedigree(opts);
 	} catch(err1) {
 		console.error(err1, d);
-		pedigree_util.messages("File Error", ( err1.message ? err1.message : err1));
+		utils.messages("File Error", ( err1.message ? err1.message : err1));
 		return;
 	}
 	if(opts.DEBUG) console.log(opts.dataset);
@@ -342,7 +342,7 @@ export function load_data(d, opts) {
 			// ignore error
 		}
 	} catch(err2) {
-		pedigree_util.messages("File Error", ( err2.message ? err2.message : err2));
+		utils.messages("File Error", ( err2.message ? err2.message : err2));
 	}
 }
 
@@ -354,7 +354,7 @@ function load(e, opts) {
 			load_data(e.target.result, opts)
 		};
 		reader.onerror = function(event) {
-			pedigree_util.messages("File Error", "File could not be read! Code " + event.target.error.code);
+			utils.messages("File Error", "File could not be read! Code " + event.target.error.code);
 		};
 		reader.readAsText(f);
 	} else {
@@ -534,7 +534,7 @@ function process_ped(ped) {
 
 	// identify top_level and other nodes without parents
 	for(let i=0;i<ped.length;i++) {
-		if(pedigree_util.getDepth(ped, ped[i].name) == 1) {
+		if(utils.getDepth(ped, ped[i].name) == 1) {
 			if(ped[i].level && ped[i].level == max_level) {
 				ped[i].top_level = true;
 			} else {
@@ -575,16 +575,16 @@ function getPartnerIdx(dataset, anode) {
 	for(let i=0; i<dataset.length; i++) {
 		let bnode = dataset[i];
 		if(anode.name === bnode.mother)
-			return pedigree_util.getIdxByName(dataset, bnode.father);
+			return utils.getIdxByName(dataset, bnode.father);
 		else if(anode.name === bnode.father)
-			return pedigree_util.getIdxByName(dataset, bnode.mother);
+			return utils.getIdxByName(dataset, bnode.mother);
 	}
 	return -1;
 }
 
 // for a given individual assign levels to a parents ancestors
 function getLevel(dataset, name) {
-	let idx = pedigree_util.getIdxByName(dataset, name);
+	let idx = utils.getIdxByName(dataset, name);
 	let level = (dataset[idx].level ? dataset[idx].level : 0);
 	update_parents_level(idx, level, dataset);
 }
@@ -594,10 +594,10 @@ function update_parents_level(idx, level, dataset) {
 	let parents = ['mother', 'father'];
 	level++;
 	for(let i=0; i<parents.length; i++) {
-		let pidx = pedigree_util.getIdxByName(dataset, dataset[idx][parents[i]]);
+		let pidx = utils.getIdxByName(dataset, dataset[idx][parents[i]]);
 		if(pidx >= 0) {
-			let ma = dataset[pedigree_util.getIdxByName(dataset, dataset[idx].mother)];
-			let pa = dataset[pedigree_util.getIdxByName(dataset, dataset[idx].father)];
+			let ma = dataset[utils.getIdxByName(dataset, dataset[idx].mother)];
+			let pa = dataset[utils.getIdxByName(dataset, dataset[idx].father)];
 			if(!dataset[pidx].level || dataset[pidx].level < level) {
 				ma.level = level;
 				pa.level = level;
@@ -619,19 +619,19 @@ function fix_n_balance_levels(ped) {
 	let l = ped.length;
 
 	for(let i=0;i<l;i++) {
-		let children = pedigree_util.getChildren(ped, ped[i]);
+		let children = utils.getChildren(ped, ped[i]);
 		let prt_lvl = ped[i].level;
 		for(let j=0;j<children.length;j++){
 			if(prt_lvl - children[j].level > 1) {
 				children[j].level = prt_lvl-1;
-				let ptrs = pedigree_util.get_partners(ped, children[j]);
+				let ptrs = utils.get_partners(ped, children[j]);
 
 				for(let k=0;k<ptrs.length;k++){
-					let p = pedigree_util.getNodeByName(ped, ptrs[k])
+					let p = utils.getNodeByName(ped, ptrs[k])
 					p.level = prt_lvl-1;
 
-					let m = pedigree_util.getNodeByName(ped, p.mother);
-					let f = pedigree_util.getNodeByName(ped, p.father);
+					let m = utils.getNodeByName(ped, p.mother);
+					let f = utils.getNodeByName(ped, p.father);
 					if(m) m.level = prt_lvl;
 					if(f) f.level = prt_lvl;
 				}

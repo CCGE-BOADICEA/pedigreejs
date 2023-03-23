@@ -1,10 +1,10 @@
 /**
-/* © 2022 Cambridge University
-/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* © 2023 Cambridge University
+/* SPDX-FileCopyrightText: 2023 Cambridge University
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
-import * as pedigree_util from './pedigree_utils.js';
+import * as pedigree_util from './utils.js';
 
 // cancers, genetic & pathology tests
 export let cancers = {
@@ -40,8 +40,8 @@ export function get_meta() {
 }
 
 // return a non-anonimised pedigree format
-export function get_non_anon_pedigree(dataset, meta) {
-	return get_pedigree(dataset, undefined, meta, false);
+export function get_non_anon_pedigree(dataset, meta, version=2, ethnicity=undefined) {
+	return get_pedigree(dataset, undefined, meta, false, version, ethnicity);
 }
 
 //check if input has a value
@@ -98,7 +98,7 @@ export function readCanRisk(boadicea_lines) {
 	const regexp = /([0-9])/;
 	let version = 2;
 	let gt = (version === 1 ? genetic_test1 : genetic_test2);
-	let ncol = [26, 27];	// number of columns - v1, v2
+	let ncol = [26, 27, 27];	// number of columns - v1, v2, v3
 	// assumes two line header
 	for(let i = 0;i < lines.length;i++){
 		let ln = lines[i].trim();
@@ -194,10 +194,26 @@ export function readCanRisk(boadicea_lines) {
 }
 
 /**
+ * Get the mammographic density formatted CanRisk data file line
+ */
+export function get_mdensity(mdensity) {
+	const regexp = /^(birads|Volpara|Stratus)=/i;
+	if(regexp.test(mdensity))
+		return "\n##"+mdensity;
+		
+	const birads = /^(1|2|3|4|a|b|c|d)$/i
+	if(birads.test(mdensity))
+		return "\n##birads="+mdensity;
+
+	console.error("Unrecognised mammographic density format :: " + mdensity);
+	return ""
+}
+
+/**
  * Get CanRisk formated pedigree.
  */
-export function get_pedigree(dataset, famid, meta, isanon, version=2) {
-	let msg = "##CanRisk " + (version === 1 ? "1.0" : "2.0");
+export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=undefined) {
+	let msg = "##CanRisk " + (version === 1 ? "1.0" : (version === 2 ? "2.0" : "3.0"));
 	if(!famid) {
 		famid = "XXXX";
 	}
@@ -248,7 +264,7 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2) {
 		if(menopause !== undefined)
 			msg += "\n##menopause="+menopause;
 		if(mdensity !== undefined)
-			msg += "\n##birads="+mdensity;
+			msg += get_mdensity(mdensity);
 		if(hgt !== undefined)
 			msg += "\n##height="+hgt;
 		if(tl !== undefined)
@@ -259,6 +275,10 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2) {
 
 		if(endo !== undefined)
 			msg += "\n##endo="+endo;
+	}
+	
+	if(version > 2 && ethnicity !== undefined) {
+		msg += "\n##ethnicity="+ethnicity;
 	}
 	msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn"
 

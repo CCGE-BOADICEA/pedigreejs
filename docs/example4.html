@@ -6,13 +6,13 @@
 	<meta name="viewport" content="width=device-width,maximum-scale=2">
 
     <link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="../build/pedigreejs.v2.1.0-rc9.min.css" />
+	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
+	<link rel="stylesheet" href="../build/pedigreejs.v3.0.0-rc1.min.css" />
 
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script> 
-	<script src="https://cdn.jsdelivr.net/npm/d3@5.16.0/dist/d3.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/d3@7.8.2/dist/d3.min.js" integrity="sha256-yUdn/lyl/rHBn4bD4HkKmnR7S6Fj+tXIO0ozSay1Bik=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-	<script src="../build/pedigreejs.v2.1.0-rc9.min.js"></script>
+	<script src="../build/pedigreejs.v3.0.0-rc1.min.js"></script>
 
 	<style>
 		body {
@@ -71,7 +71,7 @@
 						"fam1 5 0 0 2 2 0 0 0 1\n"+
 						"fam1 6 0 0 1 1 0 0 0 0\n"+
 						"fam1 7 0 0 2 2 0 1 0 1";
-		var dataset = pedigreejs.io.readLinkage(pedfile);
+		var dataset = pedigreejs.pedigreejs_io.readLinkage(pedfile);
 
 		var opts = {
 			'targetDiv': 'pedigrees',
@@ -84,10 +84,10 @@
 				{'type': 'diabetes', 'colour': '#F68F35'},
 			],
 			labels: ['famid', 'id', 'alleles'],
-			'DEBUG': (pedigreejs.pedigree_utils.urlParam('debug') === null ? false : true)
+			'DEBUG': (pedigreejs.pedigreejs_utils.urlParam('debug') === null ? false : true)
 		};
 		$('#opts').append(JSON.stringify(opts, null, 4));
-		var local_dataset = pedigreejs.pedcache.current(opts);
+		var local_dataset = pedigreejs.pedigreejs_pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		} else {

@@ -1,6 +1,6 @@
 /**
-/* © 2022 Cambridge University
-/* SPDX-FileCopyrightText: 2022 Cambridge University
+/* © 2023 Cambridge University
+/* SPDX-FileCopyrightText: 2023 Cambridge University
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
@@ -8,16 +8,16 @@
 import * as pedcache from './pedcache.js';
 import {rebuild, build} from './pedigree.js';
 import {btn_zoom, scale_to_fit} from './zoom.js';
-import {copy_dataset, getProbandIndex} from './pedigree_utils.js';
+import {copy_dataset, getProbandIndex, is_fullscreen} from './utils.js';
 
-export function add(options) {
+export function addButtons(options) {
 	let opts = $.extend({
         // defaults
 		btn_target: 'pedigree_history'
     }, options );
 
 	let btns = [{"fa": "fa-undo pull-left", "title": "undo"},
-				{"fa": "fa-repeat pull-left", "title": "redo"},
+				{"fa": "fa-redo pull-left", "title": "redo"},
 				{"fa": "fa-refresh pull-left", "title": "reset"}];
 
 	btns.push({"fa": "fa-crosshairs pull-right", "title": "scale-to-fit"});
@@ -38,14 +38,10 @@ export function add(options) {
 		lis += '</span>';
 	}
 	$( "#"+opts.btn_target ).append(lis);
-	click(opts);
+	addPbuttonEvents(opts);
 }
 
-export function is_fullscreen(){
-	return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-}
-
-function click(opts) {
+function addPbuttonEvents(opts) {
 	// fullscreen
     $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function(_e)  {
 		let local_dataset = pedcache.current(opts);
@@ -102,7 +98,7 @@ function click(opts) {
 			opts.dataset = pedcache.previous(opts);
 			$("#"+opts.targetDiv).empty();
 			build(opts);
-		} else if ($(e.target).hasClass('fa-repeat')) {
+		} else if ($(e.target).hasClass('fa-redo')) {
 			opts.dataset = pedcache.next(opts);
 			$("#"+opts.targetDiv).empty();
 			build(opts);
@@ -133,7 +129,7 @@ function click(opts) {
 }
 
 // reset pedigree and clear the history
-export function reset(opts, keep_proband) {
+function reset(opts, keep_proband) {
 	let proband;
 	if(keep_proband) {
 		let local_dataset = pedcache.current(opts);
@@ -197,9 +193,9 @@ export function updateButtons(opts) {
 	let nstore = pedcache.nstore(opts);
 	let id = "#"+opts.btn_target;
 	if(nstore <= current)
-		$(id+" .fa-repeat").addClass('disabled');
+		$(id+" .fa-redo").addClass('disabled');
 	else
-		$(id+" .fa-repeat").removeClass('disabled');
+		$(id+" .fa-redo").removeClass('disabled');
 
 	if(current > 1)
 		$(id+" .fa-undo").removeClass('disabled');
