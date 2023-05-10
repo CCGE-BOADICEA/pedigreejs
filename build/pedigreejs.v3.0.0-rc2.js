@@ -972,7 +972,8 @@ var pedigreejs = (function (exports) {
 		__proto__: null,
 		init_zoom: init_zoom,
 		btn_zoom: btn_zoom,
-		scale_to_fit: scale_to_fit
+		scale_to_fit: scale_to_fit,
+		get_bounds: get_bounds
 	});
 
 	/**
@@ -1850,30 +1851,23 @@ var pedigreejs = (function (exports) {
 	  if (local_dataset !== undefined && local_dataset !== null) {
 	    opts.dataset = local_dataset;
 	  }
-	  let tree_dimensions = get_tree_dimensions(opts);
 	  let svg_div = $('<div></div>'); // create a new div
 	  let svg = $('#' + opts.targetDiv).find('svg').clone().appendTo(svg_div);
 	  let a4 = {
-	    w: 595 - 80,
-	    h: 842 - 85
+	    w: 595 - 40,
+	    h: 842 - 50
 	  };
-	  if (opts.width < tree_dimensions.width || opts.height < tree_dimensions.height || tree_dimensions.width > a4.w || tree_dimensions.height > a4.h) {
-	    let wid = tree_dimensions.width;
-	    let hgt = tree_dimensions.height + 100;
-	    let scale = 1.0;
-	    if (tree_dimensions.width > a4.w || tree_dimensions.height > a4.h) {
-	      // scale to fit A4
-	      if (tree_dimensions.width > a4.w) wid = a4.w;
-	      if (tree_dimensions.height > a4.h) hgt = a4.h;
-	      let xscale = wid / tree_dimensions.width;
-	      let yscale = hgt / tree_dimensions.height;
-	      scale = xscale < yscale ? xscale : yscale;
-	    }
-	    svg.attr('width', wid); // adjust dimensions
-	    svg.attr('height', hgt);
-	    let ytransform = -opts.symbol_size * 1.5 * scale;
-	    svg.find(".diagram").attr("transform", "translate(0, " + ytransform + ") scale(" + scale + ")");
-	  }
+	  svg.attr('width', a4.w);
+	  svg.attr('height', a4.h);
+	  let b = get_bounds(opts);
+	  let d = {
+	    wid: Math.abs(b.xmax - b.xmin),
+	    hgt: Math.abs(b.ymax - b.ymin)
+	  };
+	  let f = (a4.w - opts.symbol_size * 1.5) / a4.w;
+	  let k = f / Math.max(d.wid / a4.w, d.hgt / a4.h);
+	  let t = -opts.symbol_size * 1.5 * k;
+	  svg.find(".diagram").attr("transform", "translate(" + t + ", " + t + ") scale(" + k + ")");
 	  return svg_div;
 	}
 
