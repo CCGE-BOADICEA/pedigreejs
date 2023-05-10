@@ -77,7 +77,7 @@ function get_dimensions(opts) {
 	return {wid: Math.abs(b.xmax-b.xmin), hgt: Math.abs(b.ymax-b.ymin)};
 }
 
-function get_bounds(opts) {
+export function get_bounds(opts) {
 	let ped = d3.select("#"+opts.targetDiv).select(".diagram");
 	let xmin = Number.MAX_VALUE;
 	let xmax = -1000000;
