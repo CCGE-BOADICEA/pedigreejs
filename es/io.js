@@ -183,8 +183,10 @@ function get_printable_svg(opts) {
 	let f = (a4.w-(opts.symbol_size*1.5))/a4.w;
 	let k = (f / Math.max(d.wid/a4.w, d.hgt/a4.h));
 
-	let t = (-opts.symbol_size*1.5*k);
-	svg.find(".diagram").attr("transform", "translate("+t+", "+t+") scale("+k+")");
+	let xi = -(b.xmin-(opts.symbol_size/2))*k;
+	let yi = -(b.ymin-(opts.symbol_size/2))*k;
+
+	svg.find(".diagram").attr("transform", "translate("+xi+", "+yi+") scale("+k+")");
 	return svg_div;
 }
 
