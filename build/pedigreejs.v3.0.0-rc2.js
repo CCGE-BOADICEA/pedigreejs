@@ -906,11 +906,11 @@ var pedigreejs = (function (exports) {
 	  let d = get_dimensions(opts);
 	  let svg = d3.select("#" + opts.targetDiv).select("svg");
 	  let size = get_svg_size(svg);
-	  let f = (size.w - opts.symbol_size * 2) / size.w;
+	  let f = 1;
 	  let k = f / Math.max(d.wid / size.w, d.hgt / size.h);
 	  if (k < opts.zoomIn) zm.scaleExtent([k, opts.zoomOut]);
 	  let ped = get_pedigree_center(opts);
-	  svg.call(zm.translateTo, ped.x, ped.y);
+	  svg.call(zm.translateTo, ped.x - opts.symbol_size, ped.y - opts.symbol_size);
 	  setTimeout(function () {
 	    svg.transition().duration(700).call(zm.scaleTo, k);
 	  }, 400);
@@ -945,13 +945,17 @@ var pedigreejs = (function (exports) {
 	  let xmax = -1000000;
 	  let ymin = Number.MAX_VALUE;
 	  let ymax = -1000000;
-	  let sym2 = opts.symbol_size / 2;
+	  let sym = opts.symbol_size;
 	  ped.selectAll('g').each(function (d, _i) {
 	    if (d.x && d.data.name !== 'hidden_root') {
-	      if (d.x - sym2 < xmin) xmin = d.x - sym2;
-	      if (d.x + sym2 > xmax) xmax = d.x + sym2;
-	      if (d.y - sym2 < ymin) ymin = d.y - sym2;
-	      if (d.y + sym2 > ymax) ymax = d.y + sym2;
+	      let node = d3.select(this).node();
+	      let dg = node.getBBox();
+	      let w = dg.width;
+	      let h = dg.height;
+	      if (d.x - sym < xmin) xmin = d.x - sym;
+	      if (d.x + w + sym > xmax) xmax = d.x + w + sym;
+	      if (d.y < ymin) ymin = d.y;
+	      if (d.y + h + sym > ymax) ymax = d.y + h + sym;
 	    }
 	  });
 	  return {
@@ -1857,17 +1861,17 @@ var pedigreejs = (function (exports) {
 	    w: 595 - 40,
 	    h: 842 - 50
 	  };
-	  svg.attr('width', a4.w);
-	  svg.attr('height', a4.h);
 	  let b = get_bounds(opts);
 	  let d = {
-	    wid: Math.abs(b.xmax - b.xmin),
-	    hgt: Math.abs(b.ymax - b.ymin)
+	    w: Math.abs(b.xmax - b.xmin),
+	    h: Math.abs(b.ymax - b.ymin)
 	  };
-	  let f = (a4.w - opts.symbol_size * 1.5) / a4.w;
-	  let k = f / Math.max(d.wid / a4.w, d.hgt / a4.h);
-	  let xi = -(b.xmin - opts.symbol_size / 2) * k;
-	  let yi = -(b.ymin - opts.symbol_size / 2) * k;
+	  let f = 1;
+	  let k = f / Math.max(d.w / a4.w, d.h / a4.h);
+	  let xi = -b.xmin * k;
+	  let yi = -(b.ymin - opts.symbol_size) * k;
+	  svg.attr('width', a4.w);
+	  svg.attr('height', (d.h + opts.symbol_size + opts.symbol_size) * k);
 	  svg.find(".diagram").attr("transform", "translate(" + xi + ", " + yi + ") scale(" + k + ")");
 	  return svg_div;
 	}
