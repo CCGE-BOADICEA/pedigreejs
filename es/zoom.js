@@ -47,13 +47,13 @@ export function scale_to_fit(opts) {
 	let d = get_dimensions(opts);
 	let svg = d3.select("#"+opts.targetDiv).select("svg");
 	let size = get_svg_size(svg);
-	let f = (size.w-opts.symbol_size*2)/size.w;
+	let f = 1;
 	let k = (f / Math.max(d.wid/size.w, d.hgt/size.h));
 
 	if(k < opts.zoomIn) zm.scaleExtent([k, opts.zoomOut]);
 
 	let ped = get_pedigree_center(opts);
-	svg.call(zm.translateTo, ped.x, ped.y);
+	svg.call(zm.translateTo, ped.x-(opts.symbol_size), ped.y-(opts.symbol_size));
 	setTimeout(function(){svg.transition().duration(700).call(zm.scaleTo, k)}, 400);
 }
 
@@ -83,13 +83,18 @@ export function get_bounds(opts) {
 	let xmax = -1000000;
 	let ymin = Number.MAX_VALUE;
 	let ymax = -1000000;
-	let sym2 = opts.symbol_size/2;
+	let sym = opts.symbol_size;
 	ped.selectAll('g').each(function(d, _i) {
 		if(d.x && d.data.name !== 'hidden_root') {
-			if(d.x-sym2 < xmin) xmin = d.x-sym2;
-			if(d.x+sym2 > xmax) xmax = d.x+sym2;
-			if(d.y-sym2 < ymin) ymin = d.y-sym2;
-			if(d.y+sym2 > ymax) ymax = d.y+sym2;
+			let node = d3.select(this).node();
+			let dg = node.getBBox();
+			let w = dg.width;
+			let h = dg.height;
+
+			if(d.x-sym < xmin) xmin = d.x-sym;
+			if(d.x+w+sym > xmax) xmax = d.x+w+sym;
+			if(d.y < ymin) ymin = d.y;
+			if(d.y+h+sym > ymax) ymax = d.y+h+sym;
 		}
 	});
 	return {xmin:xmin, xmax:xmax, ymin:ymin, ymax:ymax};
