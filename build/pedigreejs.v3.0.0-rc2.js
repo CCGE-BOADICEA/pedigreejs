@@ -916,7 +916,7 @@ var pedigreejs = (function (exports) {
 	  }, 400);
 	}
 	function zooming(e, opts) {
-	  opts.DEBUG && console.log("zoom", d3.event, e.transform);
+	  opts.DEBUG && console.log("zoom", e.transform);
 	  let t = e.transform;
 	  let k = t.k && t.k !== 1 ? t.k : undefined;
 	  setposition(opts, t.x, t.y, k);
