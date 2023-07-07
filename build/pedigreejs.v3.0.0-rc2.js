@@ -947,7 +947,7 @@ var pedigreejs = (function (exports) {
 	  let ymax = -1000000;
 	  let sym = opts.symbol_size;
 	  ped.selectAll('g').each(function (d, _i) {
-	    if (d.x && d.data.name !== 'hidden_root') {
+	    if (d.x && d.data.name !== 'hidden_root' && !d.data.hidden) {
 	      let node = d3.select(this).node();
 	      let dg = node.getBBox();
 	      let w = dg.width;
@@ -1868,10 +1868,10 @@ var pedigreejs = (function (exports) {
 	  };
 	  let f = 1;
 	  let k = f / Math.max(d.w / a4.w, d.h / a4.h);
-	  let xi = -b.xmin * k;
+	  let xi = -(b.xmin - opts.symbol_size) * k;
 	  let yi = -(b.ymin - opts.symbol_size) * k;
 	  svg.attr('width', a4.w);
-	  svg.attr('height', (d.h + opts.symbol_size + opts.symbol_size) * k);
+	  svg.attr('height', d.h * k);
 	  svg.find(".diagram").attr("transform", "translate(" + xi + ", " + yi + ") scale(" + k + ")");
 	  return svg_div;
 	}

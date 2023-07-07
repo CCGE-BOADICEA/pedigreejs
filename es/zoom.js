@@ -85,7 +85,7 @@ export function get_bounds(opts) {
 	let ymax = -1000000;
 	let sym = opts.symbol_size;
 	ped.selectAll('g').each(function(d, _i) {
-		if(d.x && d.data.name !== 'hidden_root') {
+		if(d.x && d.data.name !== 'hidden_root' && !d.data.hidden) {
 			let node = d3.select(this).node();
 			let dg = node.getBBox();
 			let w = dg.width;
