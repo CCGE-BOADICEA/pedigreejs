@@ -952,6 +952,24 @@ var pedigreejs = (function (exports) {
 	      let dg = node.getBBox();
 	      let w = dg.width;
 	      let h = dg.height;
+	      if (w === 0 && h === 0) {
+	        // pedigree not shown yet (family history section not opened)
+	        try {
+	          w = sym * 2;
+	          h = sym * 2;
+	          let text_elements = d3.select(this).selectAll(".indi_details"); // get individuals details
+	          for (let i = 0; i < text_elements._groups[0].length; i++) {
+	            let txt = text_elements._groups[0][i].firstChild.nodeValue;
+	            let txtsize = getTextSize(txt, opts.font_family, opts.font_size);
+	            w = Math.max(txtsize.w + sym / 2, w);
+	            h = Math.max(sym * 2 + i * txtsize.h, h);
+	          }
+	        } catch (err) {
+	          console.error(err);
+	          w = sym * 2;
+	          h = sym * 2;
+	        }
+	      }
 	      if (d.x - sym < xmin) xmin = d.x - sym;
 	      if (d.x + w + sym > xmax) xmax = d.x + w + sym;
 	      if (d.y < ymin) ymin = d.y;
@@ -964,6 +982,26 @@ var pedigreejs = (function (exports) {
 	    ymin: ymin,
 	    ymax: ymax
 	  };
+	}
+
+	/**
+	 * Calculate width and height of text
+	 */
+	function getTextSize(txt, font, fontSize) {
+	  let o = $('<div></div>').text(txt).css({
+	    'position': 'absolute',
+	    'float': 'left',
+	    'white-space': 'nowrap',
+	    'visibility': 'hidden',
+	    'font': font || 'Helvetica',
+	    'fontSize': fontSize || '1em'
+	  }).appendTo($('body'));
+	  let s = {
+	    w: o.width(),
+	    h: o.height()
+	  };
+	  o.remove();
+	  return s;
 	}
 	function get_svg_size(svg) {
 	  return {
