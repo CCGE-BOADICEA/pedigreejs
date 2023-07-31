@@ -1589,7 +1589,8 @@ var pedigreejs = (function (exports) {
 	function get_pedigree(dataset, famid, meta, isanon) {
 	  let version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 2;
 	  let ethnicity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
-	  let msg = "##CanRisk " + (version === 1 ? "1.0" : version === 2 ? "2.0" : "3.0");
+	  let v = Number.isInteger(version) ? version + ".0" : version.toString();
+	  let msg = "##CanRisk " + v;
 	  if (!famid) {
 	    famid = "XXXX";
 	  }
