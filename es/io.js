@@ -181,11 +181,11 @@ function get_printable_svg(opts) {
 	let f = 1;
 	let k = (f / Math.max(d.w/a4.w, d.h/a4.h));
 
-	let xi = -(b.xmin)*k;
+	let xi = -(b.xmin-(opts.symbol_size))*k;
 	let yi = -(b.ymin-(opts.symbol_size))*k;
 
 	svg.attr('width', a4.w);
-	svg.attr('height', (d.h+opts.symbol_size+opts.symbol_size)*k);	
+	svg.attr('height', d.h*k);	
 
 	svg.find(".diagram").attr("transform", "translate("+xi+", "+yi+") scale("+k+")");
 	return svg_div;

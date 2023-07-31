@@ -213,7 +213,8 @@ export function get_mdensity(mdensity) {
  * Get CanRisk formated pedigree.
  */
 export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=undefined) {
-	let msg = "##CanRisk " + (version === 1 ? "1.0" : (version === 2 ? "2.0" : "3.0"));
+	let v = (Number.isInteger(version) ? version+".0" : version.toString());
+	let msg = "##CanRisk " + v;
 	if(!famid) {
 		famid = "XXXX";
 	}
