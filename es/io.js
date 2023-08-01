@@ -114,10 +114,10 @@ export function svg2img(svg, deferred_name, options) {
 
 function getMatches(str, myRegexp) {
 	let matches = [];
-	let match;
 	let c = 0;
 	myRegexp.lastIndex = 0;
-	while ((match = myRegexp.exec(str))) {
+	let match = myRegexp.exec(str);
+	while (match) {
 		c++;
 		if(c > 400) {
 			console.error("getMatches: counter exceeded 800");
@@ -127,6 +127,7 @@ function getMatches(str, myRegexp) {
 		if (myRegexp.lastIndex === match.index) {
 			myRegexp.lastIndex++;
 		}
+		match = myRegexp.exec(str);
 	}
 	return matches;
 }

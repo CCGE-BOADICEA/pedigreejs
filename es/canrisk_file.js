@@ -311,13 +311,15 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=
 		msg += ('age' in p ? p.age : 0)+'\t';								// Age at last follow up or 0 = unspecified
 		msg += ('yob' in p ? p.yob : 0)+'\t';								// YOB or 0 = unspecified
 
+		let cmsg = "";
 		$.each(cancers, function(cancer, diagnosis_age) {
 			// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
 			if(diagnosis_age in p)
-				msg += (diagnosis_age in p ? p[diagnosis_age] : 'AU')+'\t';
+				cmsg += (diagnosis_age in p ? p[diagnosis_age] : 'AU')+'\t';
 			else
-				msg += '0\t';
+				cmsg += '0\t';
 		});
+		msg+=cmsg;
 
 		// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
 		msg += ('ashkenazi' in p ? p.ashkenazi : 0)+'\t';
