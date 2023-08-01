@@ -153,9 +153,9 @@ export function previous(opts, previous) {
 		previous = get_count(opts) - 2;
 
 	if(previous < 0) {
-		let nstore = nstore(opts);
-		if(nstore < max_limit)
-			previous = nstore - 1;
+		let nst = nstore(opts);
+		if(nst < max_limit)
+			previous = nst - 1;
 		else
 			previous = max_limit - 1;
 	}

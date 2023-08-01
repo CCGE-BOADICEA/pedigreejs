@@ -20,7 +20,7 @@ export let genetic_test2 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 
 export let pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
 // risk factor to storage
-let RISK_FACTOR_STORE = new Object();
+let RISK_FACTOR_STORE = {};
 
 // get surgical ops and PRS for canrisk header
 export function get_meta() {
@@ -135,7 +135,7 @@ export function readCanRisk(boadicea_lines) {
 		if(attr.length > 1) {
 			if(attr.length !== ncol[version-1]) {
 				console.error(ln, attr);
-				throw 'Found number of columns '+attr.length+'; expected '+ncol[version-1]+' for CanRisk version '+version;
+				throw new Error('Found number of columns '+attr.length+'; expected '+ncol[version-1]+' for CanRisk version '+version);
 			}
 			let indi = {
 				'famid': attr[0],
@@ -311,13 +311,15 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=
 		msg += ('age' in p ? p.age : 0)+'\t';								// Age at last follow up or 0 = unspecified
 		msg += ('yob' in p ? p.yob : 0)+'\t';								// YOB or 0 = unspecified
 
+		let cmsg = "";
 		$.each(cancers, function(cancer, diagnosis_age) {
 			// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
 			if(diagnosis_age in p)
-				msg += (diagnosis_age in p ? p[diagnosis_age] : 'AU')+'\t';
+				cmsg += (diagnosis_age in p ? p[diagnosis_age] : 'AU')+'\t';
 			else
-				msg += '0\t';
+				cmsg += '0\t';
 		});
+		msg+=cmsg;
 
 		// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
 		msg += ('ashkenazi' in p ? p.ashkenazi : 0)+'\t';

@@ -20,6 +20,13 @@ module.exports = {
 	"no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
 	"no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
 	eqeqeq: ["error", "smart"],
-	"no-mixed-operators": "error"
+	"no-mixed-operators": "error",
+	"no-cond-assign": "error",
+	"no-loop-func": "error",
+	"no-throw-literal": "error",
+	"no-new-object": "error",
+	"no-useless-concat": "error",
+	"no-lone-blocks": "error",
+	"no-empty": "error"
     }
 };

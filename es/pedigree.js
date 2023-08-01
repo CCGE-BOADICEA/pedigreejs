@@ -196,12 +196,12 @@ export function build(options) {
 	// adopted in/out brackets
 	node.filter(function (d) {return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);})
 		.append("path")
-		.attr("d", function(_d) { {
+		.attr("d", function(_d) {
 			let dx = -(opts.symbol_size * 0.66);
 			let dy = -(opts.symbol_size * 0.64);
 			let indent = opts.symbol_size/4;
 			return get_bracket(dx, dy, indent, opts)+get_bracket(-dx, dy, -indent, opts);
-			}})
+			})
 		.style("stroke", function (d) {
 			return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 		})

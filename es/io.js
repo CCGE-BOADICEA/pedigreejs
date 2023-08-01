@@ -114,10 +114,10 @@ export function svg2img(svg, deferred_name, options) {
 
 function getMatches(str, myRegexp) {
 	let matches = [];
-	let match;
 	let c = 0;
 	myRegexp.lastIndex = 0;
-	while ((match = myRegexp.exec(str))) {
+	let match = myRegexp.exec(str);
+	while (match) {
 		c++;
 		if(c > 400) {
 			console.error("getMatches: counter exceeded 800");
@@ -127,6 +127,7 @@ function getMatches(str, myRegexp) {
 		if (myRegexp.lastIndex === match.index) {
 			myRegexp.lastIndex++;
 		}
+		match = myRegexp.exec(str);
 	}
 	return matches;
 }
@@ -374,7 +375,7 @@ export function readLinkage(boadicea_lines) {
 	for(let i = 0;i < lines.length;i++){
 	   let attr = $.map(lines[i].trim().split(/\s+/), function(val, _i){return val.trim();});
 	   if(attr.length < 5)
-		   throw('unknown format');
+		   throw new Error('unknown format');
 	   let sex = (attr[4] === '1' ? 'M' : (attr[4] === '2' ? 'F' : 'U'));
 	   let indi = {
 			'famid': attr[0],

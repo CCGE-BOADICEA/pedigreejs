@@ -113,8 +113,8 @@ var pedigreejs = (function (exports) {
 	function previous(opts, previous) {
 	  if (previous === undefined) previous = get_count(opts) - 2;
 	  if (previous < 0) {
-	    let nstore = nstore(opts);
-	    if (nstore < max_limit) previous = nstore - 1;else previous = max_limit - 1;
+	    let nst = nstore(opts);
+	    if (nst < max_limit) previous = nst - 1;else previous = max_limit - 1;
 	  }
 	  set_count(opts, previous + 1);
 	  if (has_browser_storage(opts)) return JSON.parse(get_browser_store(opts, get_prefix(opts) + previous));else return JSON.parse(get_arr(opts)[previous]);
@@ -154,17 +154,17 @@ var pedigreejs = (function (exports) {
 
 	var pedcache = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		clear_pedigree_data: clear_pedigree_data,
-		get_count: get_count,
-		init_cache: init_cache,
-		nstore: nstore,
-		current: current,
-		last: last,
-		previous: previous,
-		next: next,
 		clear: clear,
-		setposition: setposition,
-		getposition: getposition
+		clear_pedigree_data: clear_pedigree_data,
+		current: current,
+		get_count: get_count,
+		getposition: getposition,
+		init_cache: init_cache,
+		last: last,
+		next: next,
+		nstore: nstore,
+		previous: previous,
+		setposition: setposition
 	});
 
 	/**
@@ -172,6 +172,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
+
 	let roots = {};
 	function isIE() {
 	  let ua = navigator.userAgent;
@@ -466,7 +467,7 @@ var pedigreejs = (function (exports) {
 	  if (!target) {
 	    console.warn("No target defined");
 	    if (dataset.length === 0) {
-	      throw "empty pedigree data set";
+	      throw new Error("empty pedigree data set");
 	    }
 	    target = dataset[0];
 	  }
@@ -823,46 +824,46 @@ var pedigreejs = (function (exports) {
 
 	var utils = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		roots: roots,
-		isIE: isIE,
-		isEdge: isEdge,
-		create_err: create_err,
-		validate_pedigree: validate_pedigree,
-		copy_dataset: copy_dataset,
-		prefixInObj: prefixInObj,
-		getFormattedDate: getFormattedDate,
-		messages: messages,
-		validate_age_yob: validate_age_yob,
-		capitaliseFirstLetter: capitaliseFirstLetter$1,
-		makeid: makeid,
+		adjust_coords: adjust_coords,
+		ancestors: ancestors,
 		buildTree: buildTree,
-		isProband: isProband,
-		setProband: setProband,
-		get_partners: get_partners,
-		unconnected: unconnected,
-		getProbandIndex: getProbandIndex,
-		getChildren: getChildren,
-		getTwins: getTwins,
-		getSiblings: getSiblings,
-		getAllSiblings: getAllSiblings,
+		capitaliseFirstLetter: capitaliseFirstLetter$1,
+		consanguity: consanguity,
+		copy_dataset: copy_dataset,
+		create_err: create_err,
+		exists: exists,
+		flatten: flatten,
 		getAdoptedSiblings: getAdoptedSiblings,
 		getAllChildren: getAllChildren,
+		getAllSiblings: getAllSiblings,
+		getChildren: getChildren,
 		getDepth: getDepth,
+		getFormattedDate: getFormattedDate,
 		getIdxByName: getIdxByName,
-		getNodesAtDepth: getNodesAtDepth,
-		linkNodes: linkNodes,
-		ancestors: ancestors,
-		consanguity: consanguity,
-		flatten: flatten,
-		adjust_coords: adjust_coords,
-		overlap: overlap,
 		getNodeByName: getNodeByName,
-		urlParam: urlParam,
-		exists: exists,
-		print_opts: print_opts,
-		is_fullscreen: is_fullscreen,
+		getNodesAtDepth: getNodesAtDepth,
+		getProbandIndex: getProbandIndex,
+		getSiblings: getSiblings,
+		getTwins: getTwins,
+		get_partners: get_partners,
 		get_svg_dimensions: get_svg_dimensions,
-		get_tree_dimensions: get_tree_dimensions
+		get_tree_dimensions: get_tree_dimensions,
+		isEdge: isEdge,
+		isIE: isIE,
+		isProband: isProband,
+		is_fullscreen: is_fullscreen,
+		linkNodes: linkNodes,
+		makeid: makeid,
+		messages: messages,
+		overlap: overlap,
+		prefixInObj: prefixInObj,
+		print_opts: print_opts,
+		roots: roots,
+		setProband: setProband,
+		unconnected: unconnected,
+		urlParam: urlParam,
+		validate_age_yob: validate_age_yob,
+		validate_pedigree: validate_pedigree
 	});
 
 	/**
@@ -870,6 +871,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
+
 	let zm;
 
 	// initialise zoom and drag
@@ -1027,10 +1029,10 @@ var pedigreejs = (function (exports) {
 
 	var zoom = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		init_zoom: init_zoom,
 		btn_zoom: btn_zoom,
-		scale_to_fit: scale_to_fit,
-		get_bounds: get_bounds
+		get_bounds: get_bounds,
+		init_zoom: init_zoom,
+		scale_to_fit: scale_to_fit
 	});
 
 	/**
@@ -1038,6 +1040,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
+
 	function addButtons(options) {
 	  let opts = $.extend({
 	    // defaults
@@ -1387,6 +1390,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
+
 	// cancers, genetic & pathology tests
 	let cancers = {
 	  'breast_cancer': 'breast_cancer_diagnosis_age',
@@ -1400,7 +1404,7 @@ var pedigreejs = (function (exports) {
 	let pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
 	// risk factor to storage
-	let RISK_FACTOR_STORE = new Object();
+	let RISK_FACTOR_STORE = {};
 
 	// get surgical ops and PRS for canrisk header
 	function get_meta() {
@@ -1516,7 +1520,7 @@ var pedigreejs = (function (exports) {
 	    if (attr.length > 1) {
 	      if (attr.length !== ncol[version - 1]) {
 	        console.error(ln, attr);
-	        throw 'Found number of columns ' + attr.length + '; expected ' + ncol[version - 1] + ' for CanRisk version ' + version;
+	        throw new Error('Found number of columns ' + attr.length + '; expected ' + ncol[version - 1] + ' for CanRisk version ' + version);
 	      }
 	      let indi = {
 	        'famid': attr[0],
@@ -1665,10 +1669,12 @@ var pedigreejs = (function (exports) {
 	    msg += ('age' in p ? p.age : 0) + '\t'; // Age at last follow up or 0 = unspecified
 	    msg += ('yob' in p ? p.yob : 0) + '\t'; // YOB or 0 = unspecified
 
+	    let cmsg = "";
 	    $.each(cancers, function (cancer, diagnosis_age) {
 	      // Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
-	      if (diagnosis_age in p) msg += (diagnosis_age in p ? p[diagnosis_age] : 'AU') + '\t';else msg += '0\t';
+	      if (diagnosis_age in p) cmsg += (diagnosis_age in p ? p[diagnosis_age] : 'AU') + '\t';else cmsg += '0\t';
 	    });
+	    msg += cmsg;
 
 	    // Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
 	    msg += ('ashkenazi' in p ? p.ashkenazi : 0) + '\t';
@@ -1730,18 +1736,18 @@ var pedigreejs = (function (exports) {
 		cancers: cancers,
 		genetic_test1: genetic_test1,
 		genetic_test2: genetic_test2,
-		pathology_tests: pathology_tests,
+		get_mdensity: get_mdensity,
 		get_meta: get_meta,
 		get_non_anon_pedigree: get_non_anon_pedigree,
-		hasInput: hasInput,
-		get_prs_values: get_prs_values,
-		readCanRisk: readCanRisk,
-		get_mdensity: get_mdensity,
 		get_pedigree: get_pedigree,
-		show_risk_factor_store: show_risk_factor_store,
-		save_risk_factor: save_risk_factor,
+		get_prs_values: get_prs_values,
 		get_risk_factor: get_risk_factor,
+		hasInput: hasInput,
+		pathology_tests: pathology_tests,
+		readCanRisk: readCanRisk,
 		remove_risk_factor: remove_risk_factor,
+		save_risk_factor: save_risk_factor,
+		show_risk_factor_store: show_risk_factor_store,
 		store_name: store_name
 	});
 
@@ -1750,6 +1756,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
+
 	function addIO(opts) {
 	  $('#load').change(function (e) {
 	    load(e, opts);
@@ -1857,10 +1864,10 @@ var pedigreejs = (function (exports) {
 	}
 	function getMatches(str, myRegexp) {
 	  let matches = [];
-	  let match;
 	  let c = 0;
 	  myRegexp.lastIndex = 0;
-	  while (match = myRegexp.exec(str)) {
+	  let match = myRegexp.exec(str);
+	  while (match) {
 	    c++;
 	    if (c > 400) {
 	      console.error("getMatches: counter exceeded 800");
@@ -1870,6 +1877,7 @@ var pedigreejs = (function (exports) {
 	    if (myRegexp.lastIndex === match.index) {
 	      myRegexp.lastIndex++;
 	    }
+	    match = myRegexp.exec(str);
 	  }
 	  return matches;
 	}
@@ -2101,7 +2109,7 @@ var pedigreejs = (function (exports) {
 	    let attr = $.map(lines[i].trim().split(/\s+/), function (val, _i) {
 	      return val.trim();
 	    });
-	    if (attr.length < 5) throw 'unknown format';
+	    if (attr.length < 5) throw new Error('unknown format');
 	    let sex = attr[4] === '1' ? 'M' : attr[4] === '2' ? 'F' : 'U';
 	    let indi = {
 	      'famid': attr[0],
@@ -2372,15 +2380,15 @@ var pedigreejs = (function (exports) {
 	var io = /*#__PURE__*/Object.freeze({
 		__proto__: null,
 		addIO: addIO,
-		svg2img: svg2img,
 		copy_svg: copy_svg,
-		svg_download: svg_download,
-		print: print,
-		save_file: save_file,
 		load_data: load_data,
-		readLinkage: readLinkage,
+		print: print,
+		readBoadiceaV4: readBoadiceaV4,
 		readCanRiskFile: readCanRiskFile,
-		readBoadiceaV4: readBoadiceaV4
+		readLinkage: readLinkage,
+		save_file: save_file,
+		svg2img: svg2img,
+		svg_download: svg_download
 	});
 
 	/**
@@ -2450,6 +2458,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
+
 
 	// handle family history change events (undo/redo/delete)
 	$(document).on('fhChange', function (e, opts) {
@@ -2707,10 +2716,10 @@ var pedigreejs = (function (exports) {
 
 	var popup_form = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		updateStatus: updateStatus,
 		nodeclick: nodeclick,
-		save_ashkn: save_ashkn,
 		save: save,
+		save_ashkn: save_ashkn,
+		updateStatus: updateStatus,
 		update_diagnosis_age_widget: update_diagnosis_age_widget
 	});
 
@@ -2719,6 +2728,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
+
 	let dragging;
 	let last_mouseover;
 	//
@@ -3358,9 +3368,9 @@ var pedigreejs = (function (exports) {
 		__proto__: null,
 		addWidgets: addWidgets,
 		addchild: addchild,
-		addsibling: addsibling,
 		addparents: addparents,
 		addpartner: addpartner,
+		addsibling: addsibling,
 		delete_node_dataset: delete_node_dataset
 	});
 
@@ -3369,6 +3379,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
+
 	function addLabels(opts, node) {
 	  // names of individuals
 	  addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size), function (d) {
@@ -3480,6 +3491,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-FileCopyrightText: 2023 Cambridge University
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
+
 	function build(options) {
 	  let opts = $.extend({
 	    // defaults
@@ -3668,12 +3680,10 @@ var pedigreejs = (function (exports) {
 	  node.filter(function (d) {
 	    return !d.data.hidden && (d.data.adopted_in || d.data.adopted_out);
 	  }).append("path").attr("d", function (_d) {
-	    {
-	      let dx = -(opts.symbol_size * 0.66);
-	      let dy = -(opts.symbol_size * 0.64);
-	      let indent = opts.symbol_size / 4;
-	      return get_bracket(dx, dy, indent, opts) + get_bracket(-dx, dy, -indent, opts);
-	    }
+	    let dx = -(opts.symbol_size * 0.66);
+	    let dy = -(opts.symbol_size * 0.64);
+	    let indent = opts.symbol_size / 4;
+	    return get_bracket(dx, dy, indent, opts) + get_bracket(-dx, dy, -indent, opts);
 	  }).style("stroke", function (d) {
 	    return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 	  }).style("stroke-width", function (_d) {
@@ -3948,6 +3958,7 @@ var pedigreejs = (function (exports) {
 	/* SPDX-License-Identifier: GPL-3.0-or-later
 	**/
 
+
 	// Set or remove node attributes.
 	// If a value is not provided the attribute is removed.
 	// 'key' can be a list of keys or a single key.
@@ -4035,10 +4046,10 @@ var pedigreejs = (function (exports) {
 
 	var extras = /*#__PURE__*/Object.freeze({
 		__proto__: null,
+		delete_node_by_name: delete_node_by_name,
 		node_attr: node_attr,
-		proband_attr: proband_attr,
 		proband_add_child: proband_add_child,
-		delete_node_by_name: delete_node_by_name
+		proband_attr: proband_attr
 	});
 
 	exports.pedigreejs = pedigree;
@@ -4050,8 +4061,6 @@ var pedigreejs = (function (exports) {
 	exports.pedigreejs_utils = utils;
 	exports.pedigreejs_widgets = widgets;
 	exports.pedigreejs_zooming = zoom;
-
-	Object.defineProperty(exports, '__esModule', { value: true });
 
 	return exports;
 

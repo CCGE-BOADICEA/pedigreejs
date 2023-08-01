@@ -10,11 +10,13 @@
 		"doc": "docs"
 	},
 	"scripts": {
-		"build": "rollup -c",
+		"build": "rollup -c --bundleConfigAsCjs",
 		"build-es": "rollup es/index.js --file build/pedigreejs.es.v3.0.0-rc3.js --format es --plugin 'rollup-plugin-postcss={extract: true, minimize: true}'",
 		"server": "python -m http.server 8001",
 		"browserlist": "npx browserslist@latest --update-db",
-		"test": "jasmine server"
+		"test": "jasmine server",
+		"check-updates": "ncu",
+		"update": "ncu -u"
 	},
 	"babel": {
 		"presets": [
@@ -35,17 +37,18 @@
 	},
 	"homepage": "https://ccge-boadicea.github.io/pedigreejs/",
 	"devDependencies": {
-		"@babel/core": "^7.13.10",
-		"@babel/eslint-parser": "^7.19.1",
-		"@babel/preset-env": "^7.13.10",
-		"@rollup/plugin-babel": "^5.3.0",
-		"rollup": "^2.41.0",
+		"@babel/core": "^7.22.9",
+		"@babel/eslint-parser": "^7.22.9",
+		"@babel/preset-env": "^7.22.9",
+		"@rollup/plugin-babel": "^6.0.3",
+		"npm-check-updates": "^16.10.17",
+		"rollup": "^3.27.0",
 		"rollup-plugin-eslint": "^7.0.0",
-		"rollup-plugin-postcss": "^4.0.0",
+		"rollup-plugin-postcss": "^4.0.2",
 		"rollup-plugin-sourcemaps": "^0.6.3",
 		"rollup-plugin-terser": "^7.0.2"
 	},
 	"dependencies": {
-		"postcss": "^8.2.8"
+		"postcss": "^8.4.27"
 	}
 }
