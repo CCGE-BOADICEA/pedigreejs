@@ -50,7 +50,7 @@ export function build(options) {
 		io.addIO(opts);
 	}
 
-	if(pedcache.nstore(opts) == -1)
+	if(pedcache.nstore(opts) === -1)
 		pedcache.init_cache(opts);
 
 	pbuttons.updateButtons(opts);
@@ -107,7 +107,7 @@ export function build(options) {
 
 	// check the number of visible nodes equals the size of the pedigree dataset
 	let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
-	if(vis_nodes.length != opts.dataset.length) {
+	if(vis_nodes.length !== opts.dataset.length) {
 		throw utils.create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 	}
 
@@ -133,7 +133,7 @@ export function build(options) {
 				.type(function(d) {
 					if(d.data.miscarriage || d.data.termination)
 						return d3.symbolTriangle;
-					return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;}))
+					return d.data.sex === "F" ? d3.symbolCircle : d3.symbolSquare;}))
 		.style("stroke", function (d) {
 			return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 		})
@@ -157,7 +157,7 @@ export function build(options) {
 			.type(function(d) {
 				if(d.data.miscarriage || d.data.termination)
 					return d3.symbolTriangle;
-				return d.data.sex == "F" ? d3.symbolCircle :d3.symbolSquare;}));
+				return d.data.sex === "F" ? d3.symbolCircle :d3.symbolSquare;}));
 
 	// pie plots for disease colours
 	let pienode = node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);}).selectAll("pienode")
@@ -213,7 +213,7 @@ export function build(options) {
 
 
 	// alive status = 0; dead status = 1
-	node.filter(function (d) {return d.data.status == 1;})
+	node.filter(function (d) {return d.data.status === 1;})
 		.append('line')
 			.style("stroke", "black")
 			.attr("x1", function(_d, _i) {return -0.6*opts.symbol_size;})
@@ -491,7 +491,7 @@ export function check_ptr_link_clashes(opts, anode) {
 	let clash = $.map(flattenNodes, function(bnode, _i){
 		return !bnode.data.hidden &&
 				bnode.data.name !== mother.data.name &&  bnode.data.name !== father.data.name &&
-				bnode.y == dy && bnode.x > x1 && bnode.x < x2 ? bnode.x : null;
+				bnode.y === dy && bnode.x > x1 && bnode.x < x2 ? bnode.x : null;
 	});
 	return clash.length > 0 ? clash : null;
 }
@@ -501,7 +501,7 @@ function group_top_level(dataset) {
 	// let top_level = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
 	// calculate top_level nodes
 	for(let i=0;i<dataset.length;i++) {
-		if(utils.getDepth(dataset, dataset[i].name) == 2)
+		if(utils.getDepth(dataset, dataset[i].name) === 2)
 			dataset[i].top_level = true;
 	}
 
@@ -509,12 +509,12 @@ function group_top_level(dataset) {
 	let top_level_seen = [];
 	for(let i=0;i<dataset.length;i++) {
 		let node = dataset[i];
-		if('top_level' in node && $.inArray(node.name, top_level_seen) == -1){
+		if('top_level' in node && $.inArray(node.name, top_level_seen) === -1){
 			top_level_seen.push(node.name);
 			top_level.push(node);
 			let ptrs = utils.get_partners(dataset, node);
 			for(let j=0; j<ptrs.length; j++){
-				if($.inArray(ptrs[j], top_level_seen) == -1) {
+				if($.inArray(ptrs[j], top_level_seen) === -1) {
 					top_level_seen.push(ptrs[j]);
 					top_level.push(utils.getNodeByName(dataset, ptrs[j]));
 				}

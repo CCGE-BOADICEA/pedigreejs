@@ -22,9 +22,9 @@ export function addButtons(options) {
 
 	btns.push({"fa": "fa-crosshairs pull-right", "title": "scale-to-fit"});
 	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
-		if(opts.zoomOut != 1)
+		if(opts.zoomOut !== 1)
 			btns.push({"fa": "fa-minus-circle pull-right", "title": "zoom-out"});
-		if(opts.zoomIn != 1)
+		if(opts.zoomIn !== 1)
 			btns.push({"fa": "fa-plus-circle pull-right", "title": "zoom-in"});
 	}
 	btns.push({"fa": "fa-arrows-alt pull-right", "title": "fullscreen"});
@@ -33,7 +33,7 @@ export function addButtons(options) {
 	for(let i=0; i<btns.length; i++) {
 		lis += '<span>';
 		lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' +
-		               (btns[i].fa == "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') +
+		               (btns[i].fa === "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') +
 		               ' aria-hidden="true" title="'+ btns[i].title +'"></i>';
 		lis += '</span>';
 	}
@@ -151,7 +151,7 @@ function reset(opts, keep_proband) {
 	delete opts.dataset;
 
 	let selected = $("input[name='default_fam']:checked");
-	if(selected.length > 0 && selected.val() == 'extended2') {    // secondary relatives
+	if(selected.length > 0 && selected.val() === 'extended2') {    // secondary relatives
 		opts.dataset = [
 			{"name":"wZA","sex":"M","top_level":true,"status":"0","display_name":"paternal grandfather"},
 			{"name":"MAk","sex":"F","top_level":true,"status":"0","display_name":"paternal grandmother"},
@@ -169,7 +169,7 @@ function reset(opts, keep_proband) {
 			{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"},
 			{"name":"uuc","display_name":"maternal aunt","sex":"F","mother":"dOH","father":"zwB","status":"0"},
 			{"name":"xIw","display_name":"maternal uncle","sex":"M","mother":"dOH","father":"zwB","status":"0"}];
-	} else if(selected.length > 0 && selected.val() == 'extended1') {    // primary relatives
+	} else if(selected.length > 0 && selected.val() === 'extended1') {    // primary relatives
 		opts.dataset = [
 			{"name":"m21","sex":"M","mother":null,"father":null,"status":"0","display_name":"father","noparents":true},
 			{"name":"f21","sex":"F","mother":null,"father":null,"status":"0","display_name":"mother","noparents":true},

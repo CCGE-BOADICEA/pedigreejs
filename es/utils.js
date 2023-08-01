@@ -100,7 +100,7 @@ export function copy_dataset(dataset) {
 	for(let i=0; i<dataset.length; i++){
 		let obj = {};
 		for(let key in dataset[i]) {
-			if(disallowed.indexOf(key) == -1)
+			if(disallowed.indexOf(key) === -1)
 				obj[key] = dataset[i][key];
 		}
 		newdataset.push(obj);
@@ -181,7 +181,7 @@ export function messages(title, msg, onConfirm, opts, dataset) {
 export function validate_age_yob(age, yob, status) {
 	let year = new Date().getFullYear();
 	let sum = parseInt(age) + parseInt(yob);
-	if(status == 1) {   // deceased
+	if(status === 1) {   // deceased
 		return year >= sum;
 	}
 	return Math.abs(year - sum) <= 1 && year >= sum;
@@ -291,9 +291,9 @@ function updateParent(p, parent, id, nodes, opts) {
 function setChildrenId(children, id) {
 	// sort twins to lie next to each other
 	children.sort(function(a, b) {
-		if(a.mztwin && b.mztwin && a.mztwin == b.mztwin)
+		if(a.mztwin && b.mztwin && a.mztwin === b.mztwin)
 			return 0;
-		else if(a.dztwin && b.dztwin && a.dztwin == b.dztwin)
+		else if(a.dztwin && b.dztwin && a.dztwin === b.dztwin)
 			return 0;
 		else if(a.mztwin || b.mztwin || a.dztwin || b.dztwin)
 			return 1;
@@ -322,16 +322,16 @@ export function setProband(dataset, name, is_proband) {
 //combine arrays ignoring duplicates
 function combineArrays(arr1, arr2) {
 	for(let i=0; i<arr2.length; i++)
-		if($.inArray( arr2[i], arr1 ) == -1) arr1.push(arr2[i]);
+		if($.inArray( arr2[i], arr1 ) === -1) arr1.push(arr2[i]);
 }
 
 function include_children(connected, p, dataset) {
-	if($.inArray( p.name, connected ) == -1)
+	if($.inArray( p.name, connected ) === -1)
 		return;
 	combineArrays(connected, get_partners(dataset, p));
 	let children = getAllChildren(dataset, p);
 	$.each(children, function( _child_idx, child ) {
-		if($.inArray( child.name, connected ) == -1) {
+		if($.inArray( child.name, connected ) === -1) {
 			connected.push(child.name);
 			combineArrays(connected, get_partners(dataset, child));
 		}
@@ -343,9 +343,9 @@ export function get_partners(dataset, anode) {
 	let ptrs = [];
 	for(let i=0; i<dataset.length; i++) {
 		let bnode = dataset[i];
-		if(anode.name === bnode.mother && $.inArray(bnode.father, ptrs) == -1)
+		if(anode.name === bnode.mother && $.inArray(bnode.father, ptrs) === -1)
 			ptrs.push(bnode.father);
-		else if(anode.name === bnode.father && $.inArray(bnode.mother, ptrs) == -1)
+		else if(anode.name === bnode.father && $.inArray(bnode.mother, ptrs) === -1)
 			ptrs.push(bnode.mother);
 	}
 	return ptrs;
@@ -356,7 +356,7 @@ export function unconnected(dataset){
 	let target = dataset[ getProbandIndex(dataset) ];
 	if(!target){
 		console.warn("No target defined");
-		if(dataset.length == 0) {
+		if(dataset.length === 0) {
 			throw "empty pedigree data set";
 		}
 		target = dataset[0];
@@ -368,7 +368,7 @@ export function unconnected(dataset){
 		ii++;
 		let nconnect = connected.length;
 		$.each(dataset, function( _idx, p ) {
-			if($.inArray( p.name, connected ) != -1) {
+			if($.inArray( p.name, connected ) !== -1) {
 				// check if this person or a partner has a parent
 				let ptrs = get_partners(dataset, p);
 				let has_parent = (p.name === target.name || !p.noparents);
@@ -378,23 +378,23 @@ export function unconnected(dataset){
 				}
 
 				if(has_parent){
-					if(p.mother && $.inArray( p.mother, connected ) == -1)
+					if(p.mother && $.inArray( p.mother, connected ) === -1)
 						connected.push(p.mother);
-					if(p.father && $.inArray( p.father, connected ) == -1)
+					if(p.father && $.inArray( p.father, connected ) === -1)
 						connected.push(p.father);
 				}
 			} else if( !p.noparents &&
-					  ((p.mother && $.inArray( p.mother, connected ) != -1) ||
-					   (p.father && $.inArray( p.father, connected ) != -1))){
+					  ((p.mother && $.inArray( p.mother, connected ) !== -1) ||
+					   (p.father && $.inArray( p.father, connected ) !== -1))){
 				connected.push(p.name);
 			}
 			// include any children
 			include_children(connected, p, dataset);
 		});
-		change = (nconnect != connected.length);
+		change = (nconnect !== connected.length);
 	}
 	let names = $.map(dataset, function(val, _i){return val.name;});
-	return $.map(names, function(name, _i){return $.inArray(name, connected) == -1 ? name : null;});
+	return $.map(names, function(name, _i){return $.inArray(name, connected) === -1 ? name : null;});
 }
 
 export function getProbandIndex(dataset) {
@@ -414,7 +414,7 @@ export function getChildren(dataset, mother, father) {
 	if(mother.sex === 'F')
 		$.each(dataset, function(_i, p) {
 			if(mother.name === p.mother)
-				if(!father || father.name == p.father) {
+				if(!father || father.name === p.father) {
 					if($.inArray(p.name, names) === -1){
 						children.push(p);
 						names.push(p.name);
@@ -436,7 +436,7 @@ export function getTwins(dataset, person) {
 	let sibs = getSiblings(dataset, person);
 	let twin_type = (person.mztwin ? "mztwin" : "dztwin");
 	return $.map(sibs, function(p, _i){
-		return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
+		return p.name !== person.name && p[twin_type] === person[twin_type] ? p : null;
 	});
 }
 
@@ -449,7 +449,7 @@ export function getSiblings(dataset, person, sex) {
 	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&
 			   (p.mother === person.mother && p.father === person.father) &&
-			   (!sex || p.sex == sex) ? p : null;
+			   (!sex || p.sex === sex) ? p : null;
 	});
 }
 
@@ -459,7 +459,7 @@ export function getAllSiblings(dataset, person, sex) {
 	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&
 			   (p.mother === person.mother && p.father === person.father) &&
-			   (!sex || p.sex == sex) ? p : null;
+			   (!sex || p.sex === sex) ? p : null;
 	});
 }
 
@@ -506,7 +506,7 @@ export function getIdxByName(arr, name) {
 // get the nodes at a given depth sorted by their x position
 export function getNodesAtDepth(fnodes, depth, exclude_names) {
 	return $.map(fnodes, function(p, _i){
-		return p.depth == depth && !p.data.hidden && $.inArray(p.data.name, exclude_names) == -1 ? p : null;
+		return p.depth === depth && !p.data.hidden && $.inArray(p.data.name, exclude_names) === -1 ? p : null;
 	}).sort(function (a,b) {return a.x - b.x;});
 }
 
@@ -579,7 +579,7 @@ export function adjust_coords(opts, root, flattenNodes) {
 				if(!overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
 					node.x = xmid;   // centralise parent nodes
 					let diff = node.x - xmid;
-					if(node.children.length == 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
+					if(node.children.length === 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
 						if(!(node.children[0].data.hidden && node.children[1].data.hidden)) {
 							let child1 = (node.children[0].data.hidden ? node.children[1] : node.children[0]);
 							let child2 = (node.children[0].data.hidden ? node.children[0] : node.children[1]);
@@ -588,12 +588,12 @@ export function adjust_coords(opts, root, flattenNodes) {
 								child1.x = xmid;
 							}
 						}
-					} else if(node.children.length == 1 && !node.children[0].data.hidden) {
+					} else if(node.children.length === 1 && !node.children[0].data.hidden) {
 						if(!overlap(opts, root.descendants(), xmid, node.children[0].depth, [node.children[0].data.name]))
 							node.children[0].x = xmid;
 					} else {
 						if(diff !== 0 && !nodesOverlap(opts, node, diff, root)){
-							if(node.children.length == 1) {
+							if(node.children.length === 1) {
 								node.children[0].x = xmid;
 							} else {
 								let descendants = node.descendants();
@@ -635,7 +635,7 @@ function nodesOverlap(opts, node, diff, root) {
 // test if x position overlaps a node at the same depth
 export function overlap(opts, nodes, xnew, depth, exclude_names) {
 	for(let n=0; n<nodes.length; n++) {
-		if(depth == nodes[n].depth && $.inArray(nodes[n].data.name, exclude_names) == -1){
+		if(depth === nodes[n].depth && $.inArray(nodes[n].data.name, exclude_names) === -1){
 			if(Math.abs(xnew - nodes[n].x) < (opts.symbol_size*1.15))
 				return true;
 		}

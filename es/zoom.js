@@ -27,7 +27,7 @@ export function init_zoom(opts, svg) {
 
 	// set initial position & scale
 	let xyk = getposition(opts);		// cached position
-	let k = (xyk.length == 3 ? xyk[2] : 1);
+	let k = (xyk.length === 3 ? xyk[2] : 1);
 	let x = (xyk[0] !== null ? xyk[0]/k: (xi*k));
 	let y = (xyk[1] !== null ? xyk[1]/k: (yi*k));
 

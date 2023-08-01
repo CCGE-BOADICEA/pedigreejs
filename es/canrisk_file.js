@@ -144,7 +144,7 @@ export function readCanRisk(boadicea_lines) {
 				'sex': attr[6],
 				'status': attr[8]
 			};
-			if(attr[2] == 1) indi.proband = true;
+			if(attr[2] === 1) indi.proband = true;
 			if(attr[4] !== "0") indi.father = attr[4];
 			if(attr[5] !== "0") indi.mother = attr[5];
 			if(attr[7] !== "0") indi.mztwin = attr[7];
@@ -291,7 +291,7 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=
 
 	for(let i=0; i<dataset.length; i++) {
 		let p = dataset[i];
-		if($.inArray(p.name, excl) != -1) {
+		if($.inArray(p.name, excl) !== -1) {
 			console.log('EXCLUDE: '+p.name);
 			continue;
 		}
@@ -303,8 +303,8 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=
 			msg += (p.display_name ? p.display_name : "NA")+'\t';
 		msg += ('proband' in p ? '1' : 0)+'\t';
 		msg += p.name+'\t';													// max 7 chars
-		msg += ('father' in p && !('noparents' in p) && ($.inArray(p.mother, excl) == -1)? p.father : 0)+'\t';	// max 7 chars
-		msg += ('mother' in p && !('noparents' in p) && ($.inArray(p.mother, excl) == -1)? p.mother : 0)+'\t';	// max 7 chars
+		msg += ('father' in p && !('noparents' in p) && ($.inArray(p.mother, excl) === -1)? p.father : 0)+'\t';	// max 7 chars
+		msg += ('mother' in p && !('noparents' in p) && ($.inArray(p.mother, excl) === -1)? p.mother : 0)+'\t';	// max 7 chars
 		msg += p.sex+'\t';
 		msg += ('mztwin' in p ? p.mztwin : 0)+'\t'; 						// MZtwin
 		msg += ('status' in p ? p.status : 0)+'\t';							// current status: 0 = alive, 1 = dead

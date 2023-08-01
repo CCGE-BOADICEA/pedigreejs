@@ -18,6 +18,8 @@ module.exports = {
     },
     "rules": {
 	"no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
-	"no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+	"no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+	eqeqeq: ["error", "smart"],
+	"no-mixed-operators": "error"
     }
 };
