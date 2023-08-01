@@ -26,6 +26,7 @@ module.exports = {
 	"no-throw-literal": "error",
 	"no-new-object": "error",
 	"no-useless-concat": "error",
-	"no-lone-blocks": "error"
+	"no-lone-blocks": "error",
+	"no-empty": "error"
     }
 };
