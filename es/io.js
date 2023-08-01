@@ -52,7 +52,7 @@ export function addIO(opts) {
  * Get object from array by the name attribute.
  */
 function getByName(arr, name) {
-	return $.grep(arr, function(o){ return o && o.name == name; })[0];
+	return $.grep(arr, function(o){ return o && o.name === name; })[0];
 }
 
 /**
@@ -328,9 +328,9 @@ export function load_data(d, opts) {
 	
 		try {
 			// update FH section
-			acc_FamHist_ticked();
-			acc_FamHist_Leave();
-			RESULT.FLAG_FAMILY_MODAL = true;
+			acc_FamHist_ticked();				// eslint-disable-line no-undef
+			acc_FamHist_Leave();				// eslint-disable-line no-undef
+			RESULT.FLAG_FAMILY_MODAL = true;	// eslint-disable-line no-undef
 		} catch(err3) {
 			// ignore error
 		}
@@ -375,7 +375,7 @@ export function readLinkage(boadicea_lines) {
 	   let attr = $.map(lines[i].trim().split(/\s+/), function(val, _i){return val.trim();});
 	   if(attr.length < 5)
 		   throw('unknown format');
-	   let sex = (attr[4] == '1' ? 'M' : (attr[4] == '2' ? 'F' : 'U'));
+	   let sex = (attr[4] === '1' ? 'M' : (attr[4] === '2' ? 'F' : 'U'));
 	   let indi = {
 			'famid': attr[0],
 			'display_name': attr[1],
@@ -389,7 +389,7 @@ export function readLinkage(boadicea_lines) {
 			console.error('multiple family IDs found only using famid = '+famid);
 			break;
 		}
-		if(attr[5] == "2") indi.affected = 2;
+		if(attr[5] === "2") indi.affected = 2;
 		// add genotype columns
 		if(attr.length > 6) {
 			indi.alleles = "";
@@ -429,7 +429,7 @@ export function readBoadiceaV4(boadicea_lines, version) {
 				'sex': attr[6],
 				'status': attr[8]
 			};
-			if(attr[2] == 1) indi.proband = true;
+			if(attr[2] === 1) indi.proband = true;
 			if(attr[4] !== "0") indi.father = attr[4];
 			if(attr[5] !== "0") indi.mother = attr[5];
 			if(attr[7] !== "0") indi.mztwin = attr[7];
@@ -527,8 +527,8 @@ function process_ped(ped) {
 
 	// identify top_level and other nodes without parents
 	for(let i=0;i<ped.length;i++) {
-		if(utils.getDepth(ped, ped[i].name) == 1) {
-			if(ped[i].level && ped[i].level == max_level) {
+		if(utils.getDepth(ped, ped[i].name) === 1) {
+			if(ped[i].level && ped[i].level === max_level) {
 				ped[i].top_level = true;
 			} else {
 				ped[i].noparents = true;
@@ -545,7 +545,7 @@ function process_ped(ped) {
 				// 2. or adopt parents from level above
 				if(!ped[i].mother){
 					for(let j=0; j<ped.length; j++) {
-						if(ped[i].level == (ped[j].level-1)) {
+						if(ped[i].level === (ped[j].level-1)) {
 							pidx = getPartnerIdx(ped, ped[j]);
 							if(pidx > -1 && i !== pidx) {
 								ped[i].mother = (ped[j].sex === 'F' ? ped[j].name : ped[pidx].name);

@@ -27,7 +27,7 @@ export function init_zoom(opts, svg) {
 
 	// set initial position & scale
 	let xyk = getposition(opts);		// cached position
-	let k = (xyk.length == 3 ? xyk[2] : 1);
+	let k = (xyk.length === 3 ? xyk[2] : 1);
 	let x = (xyk[0] !== null ? xyk[0]/k: (xi*k));
 	let y = (xyk[1] !== null ? xyk[1]/k: (yi*k));
 
@@ -68,7 +68,7 @@ function zooming(e, opts) {
 
 function get_pedigree_center(opts) {
 	let b = get_bounds(opts);
-	return {x: b.xmin+(b.xmax-b.xmin)/2, y: b.ymin+(b.ymax-b.ymin)/2};
+	return {x: b.xmin+((b.xmax-b.xmin)/2), y: b.ymin+((b.ymax-b.ymin)/2)};
 }
 
 // find width/height of pedigree graphic
@@ -116,7 +116,7 @@ function getNodeSize(opts, g_elm, sym) {
 				let txt = text_elements._groups[0][i].firstChild.nodeValue;
 				let txtsize = getTextSize(txt, opts.font_family, opts.font_size);
 	
-				w = Math.max(txtsize.w+sym/2, w);
+				w = Math.max(txtsize.w+(sym/2), w);
 				h = Math.max((sym*2)+(i*txtsize.h), h);
 			}
 		} catch(err) {

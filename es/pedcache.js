@@ -64,7 +64,7 @@ export function clear_pedigree_data(opts) {
 	let store = (opts.store_type === 'local' ? localStorage : sessionStorage);
 	let items = [];
 	for(let i = 0; i < store.length; i++){
-		if(store.key(i).indexOf(prefix) == 0)
+		if(store.key(i).indexOf(prefix) === 0)
 			items.push(store.key(i));
 	}
 	for(let i = 0; i < items.length; i++)
@@ -123,7 +123,7 @@ export function nstore(opts) {
 
 export function current(opts) {
 	let current = get_count(opts)-1;
-	if(current == -1)
+	if(current === -1)
 		current = max_limit;
 	if(has_browser_storage(opts))
 		return JSON.parse(get_browser_store(opts, get_prefix(opts)+current));

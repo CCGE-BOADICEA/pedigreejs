@@ -134,7 +134,7 @@ export function addWidgets(opts, node) {
 	// handle mouse out of popup selection
 	d3.selectAll(".popup_selection").on("mouseout", function () {
 		// hide rect and popup selection
-		if(add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) == -1)
+		if(add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) === -1)
 			add_person.node.select('rect').style("opacity", 0);
 		d3.selectAll('.popup_selection').style("opacity", 0);
 	});
@@ -161,7 +161,7 @@ export function addWidgets(opts, node) {
 		.attr("fill", "lightgrey");
 
 	// widgets
-	let fx = function(_d) {return off - 0.75*opts.symbol_size;};
+	let fx = function(_d) {return off - (0.75*opts.symbol_size);};
 	let fy = opts.symbol_size -2;
 	let off = 0;
 	let widgets = {
@@ -175,14 +175,14 @@ export function addWidgets(opts, node) {
 		},
 		'delete': {
 			'text': 'X', 'title': 'delete',
-			'fx': opts.symbol_size/2 - 1,
+			'fx': (opts.symbol_size/2) - 1,
 			'fy': - opts.symbol_size + 12,
 			'styles': {"font-weight": "bold", "fill": "darkred", "font-family": "monospace"}
 		}
 	};
 
 	if(opts.edit) {
-		widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
+		widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': (-font_size/2)+2, 'fy': -opts.symbol_size + 11};
 	}
 
 	for(let key in widgets) {
@@ -225,7 +225,7 @@ export function addWidgets(opts, node) {
 		  let y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y"));
 		  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
 		  d3.selectAll('.popup_selection_rotate45')
-			.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
+			.attr("transform", "translate("+(x+(3*font_size))+","+(y+(font_size*1.2))+") rotate(45)");
 	  });
 
 	// handle widget clicks
@@ -269,7 +269,7 @@ export function addWidgets(opts, node) {
 	node.filter(function (d) { return !d.data.hidden; })
 	.on("click", function (e, d) {
 		if (e.ctrlKey) {
-			if(highlight.indexOf(d) == -1)
+			if(highlight.indexOf(d) === -1)
 				highlight.push(d);
 			else
 				highlight.splice(highlight.indexOf(d), 1);
@@ -279,7 +279,7 @@ export function addWidgets(opts, node) {
 		if('nodeclick' in opts) {
 			opts.nodeclick(d.data);
 			d3.selectAll(".indi_rect").style("opacity", 0);
-			d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1;}).style("opacity", 0.5);
+			d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) !== -1;}).style("opacity", 0.5);
 		}
 	})
 	.on("mouseover", function(e, d){
@@ -303,7 +303,7 @@ export function addWidgets(opts, node) {
 			return;
 
 		d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
-		if(highlight.indexOf(d) == -1)
+		if(highlight.indexOf(d) === -1)
 			d3.select(this).select('rect').style("opacity", 0);
 		d3.select(this).selectAll('.indi_details').style("opacity", 1);
 		// hide popup if it looks like the mouse is moving north
@@ -470,7 +470,7 @@ function openEditDialog(opts, d) {
 
 	table += '<tr><td colspan="2" style="line-height:1px;"></td></tr>';
 	$.each(d.data, function(k, v) {
-		if($.inArray(k, exclude) == -1) {
+		if($.inArray(k, exclude) === -1) {
 			let kk = capitaliseFirstLetter(k);
 			if(v === true || v === false) {
 				table += "<tr><td style='text-align:right'>"+kk+"&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" +
@@ -570,12 +570,12 @@ export function addparents(opts, dataset, name) {
 	let ptr_name;
 	let children = utils.getAllChildren(dataset, node);
 	if(children.length > 0){
-		ptr_name = children[0].mother == node.name ? children[0].father : children[0].mother;
+		ptr_name = children[0].mother === node.name ? children[0].father : children[0].mother;
 		pid = utils.getNodeByName(flat_tree, ptr_name).data.id;
 	}
 
 	let i;
-	if(depth == 1) {
+	if(depth === 1) {
 		mother = {"name": utils.makeid(4), "sex": "F", "top_level": true};
 		father = {"name": utils.makeid(4), "sex": "M", "top_level": true};
 		dataset.splice(0, 0, mother);
@@ -604,7 +604,7 @@ export function addparents(opts, dataset, name) {
 			if(sid < lid)
 				lid = sid;
 		}
-		let add_lhs = (lid >= tree_node.data.id || (pid == lid && rid < 10000));
+		let add_lhs = (lid >= tree_node.data.id || (pid === lid && rid < 10000));
 		if(opts.DEBUG)
 			console.log('lid='+lid+' rid='+rid+' nid='+tree_node.data.id+' ADD_LHS='+add_lhs);
 		let midx;
@@ -640,7 +640,7 @@ export function addparents(opts, dataset, name) {
 		}
 	}
 
-	if(depth == 2) {
+	if(depth === 2) {
 		mother.top_level = true;
 		father.top_level = true;
 	} else if(depth > 2) {
