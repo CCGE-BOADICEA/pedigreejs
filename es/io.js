@@ -328,9 +328,9 @@ export function load_data(d, opts) {
 	
 		try {
 			// update FH section
-			acc_FamHist_ticked();
-			acc_FamHist_Leave();
-			RESULT.FLAG_FAMILY_MODAL = true;
+			acc_FamHist_ticked();				// eslint-disable-line no-undef
+			acc_FamHist_Leave();				// eslint-disable-line no-undef
+			RESULT.FLAG_FAMILY_MODAL = true;	// eslint-disable-line no-undef
 		} catch(err3) {
 			// ignore error
 		}
