@@ -51,7 +51,7 @@ var pedigreejs = (function (exports) {
 	  let store = opts.store_type === 'local' ? localStorage : sessionStorage;
 	  let items = [];
 	  for (let i = 0; i < store.length; i++) {
-	    if (store.key(i).indexOf(prefix) == 0) items.push(store.key(i));
+	    if (store.key(i).indexOf(prefix) === 0) items.push(store.key(i));
 	  }
 	  for (let i = 0; i < items.length; i++) store.removeItem(items[i]);
 	}
@@ -92,7 +92,7 @@ var pedigreejs = (function (exports) {
 	}
 	function current(opts) {
 	  let current = get_count(opts) - 1;
-	  if (current == -1) current = max_limit;
+	  if (current === -1) current = max_limit;
 	  if (has_browser_storage(opts)) return JSON.parse(get_browser_store(opts, get_prefix(opts) + current));else if (get_arr(opts)) return JSON.parse(get_arr(opts)[current]);
 	}
 	function last(opts) {
@@ -244,7 +244,7 @@ var pedigreejs = (function (exports) {
 	  for (let i = 0; i < dataset.length; i++) {
 	    let obj = {};
 	    for (let key in dataset[i]) {
-	      if (disallowed.indexOf(key) == -1) obj[key] = dataset[i][key];
+	      if (disallowed.indexOf(key) === -1) obj[key] = dataset[i][key];
 	    }
 	    newdataset.push(obj);
 	  }
@@ -322,7 +322,7 @@ var pedigreejs = (function (exports) {
 	function validate_age_yob(age, yob, status) {
 	  let year = new Date().getFullYear();
 	  let sum = parseInt(age) + parseInt(yob);
-	  if (status == 1) {
+	  if (status === 1) {
 	    // deceased
 	    return year >= sum;
 	  }
@@ -417,7 +417,7 @@ var pedigreejs = (function (exports) {
 	function setChildrenId(children, id) {
 	  // sort twins to lie next to each other
 	  children.sort(function (a, b) {
-	    if (a.mztwin && b.mztwin && a.mztwin == b.mztwin) return 0;else if (a.dztwin && b.dztwin && a.dztwin == b.dztwin) return 0;else if (a.mztwin || b.mztwin || a.dztwin || b.dztwin) return 1;
+	    if (a.mztwin && b.mztwin && a.mztwin === b.mztwin) return 0;else if (a.dztwin && b.dztwin && a.dztwin === b.dztwin) return 0;else if (a.mztwin || b.mztwin || a.dztwin || b.dztwin) return 1;
 	    return 0;
 	  });
 	  $.each(children, function (_i, p) {
@@ -436,14 +436,14 @@ var pedigreejs = (function (exports) {
 
 	//combine arrays ignoring duplicates
 	function combineArrays(arr1, arr2) {
-	  for (let i = 0; i < arr2.length; i++) if ($.inArray(arr2[i], arr1) == -1) arr1.push(arr2[i]);
+	  for (let i = 0; i < arr2.length; i++) if ($.inArray(arr2[i], arr1) === -1) arr1.push(arr2[i]);
 	}
 	function include_children(connected, p, dataset) {
-	  if ($.inArray(p.name, connected) == -1) return;
+	  if ($.inArray(p.name, connected) === -1) return;
 	  combineArrays(connected, get_partners(dataset, p));
 	  let children = getAllChildren(dataset, p);
 	  $.each(children, function (_child_idx, child) {
-	    if ($.inArray(child.name, connected) == -1) {
+	    if ($.inArray(child.name, connected) === -1) {
 	      connected.push(child.name);
 	      combineArrays(connected, get_partners(dataset, child));
 	    }
@@ -455,7 +455,7 @@ var pedigreejs = (function (exports) {
 	  let ptrs = [];
 	  for (let i = 0; i < dataset.length; i++) {
 	    let bnode = dataset[i];
-	    if (anode.name === bnode.mother && $.inArray(bnode.father, ptrs) == -1) ptrs.push(bnode.father);else if (anode.name === bnode.father && $.inArray(bnode.mother, ptrs) == -1) ptrs.push(bnode.mother);
+	    if (anode.name === bnode.mother && $.inArray(bnode.father, ptrs) === -1) ptrs.push(bnode.father);else if (anode.name === bnode.father && $.inArray(bnode.mother, ptrs) === -1) ptrs.push(bnode.mother);
 	  }
 	  return ptrs;
 	}
@@ -465,7 +465,7 @@ var pedigreejs = (function (exports) {
 	  let target = dataset[getProbandIndex(dataset)];
 	  if (!target) {
 	    console.warn("No target defined");
-	    if (dataset.length == 0) {
+	    if (dataset.length === 0) {
 	      throw "empty pedigree data set";
 	    }
 	    target = dataset[0];
@@ -477,7 +477,7 @@ var pedigreejs = (function (exports) {
 	    ii++;
 	    let nconnect = connected.length;
 	    $.each(dataset, function (_idx, p) {
-	      if ($.inArray(p.name, connected) != -1) {
+	      if ($.inArray(p.name, connected) !== -1) {
 	        // check if this person or a partner has a parent
 	        let ptrs = get_partners(dataset, p);
 	        let has_parent = p.name === target.name || !p.noparents;
@@ -485,22 +485,22 @@ var pedigreejs = (function (exports) {
 	          if (!getNodeByName(dataset, ptrs[i]).noparents) has_parent = true;
 	        }
 	        if (has_parent) {
-	          if (p.mother && $.inArray(p.mother, connected) == -1) connected.push(p.mother);
-	          if (p.father && $.inArray(p.father, connected) == -1) connected.push(p.father);
+	          if (p.mother && $.inArray(p.mother, connected) === -1) connected.push(p.mother);
+	          if (p.father && $.inArray(p.father, connected) === -1) connected.push(p.father);
 	        }
-	      } else if (!p.noparents && (p.mother && $.inArray(p.mother, connected) != -1 || p.father && $.inArray(p.father, connected) != -1)) {
+	      } else if (!p.noparents && (p.mother && $.inArray(p.mother, connected) !== -1 || p.father && $.inArray(p.father, connected) !== -1)) {
 	        connected.push(p.name);
 	      }
 	      // include any children
 	      include_children(connected, p, dataset);
 	    });
-	    change = nconnect != connected.length;
+	    change = nconnect !== connected.length;
 	  }
 	  let names = $.map(dataset, function (val, _i) {
 	    return val.name;
 	  });
 	  return $.map(names, function (name, _i) {
-	    return $.inArray(name, connected) == -1 ? name : null;
+	    return $.inArray(name, connected) === -1 ? name : null;
 	  });
 	}
 	function getProbandIndex(dataset) {
@@ -517,7 +517,7 @@ var pedigreejs = (function (exports) {
 	  let children = [];
 	  let names = [];
 	  if (mother.sex === 'F') $.each(dataset, function (_i, p) {
-	    if (mother.name === p.mother) if (!father || father.name == p.father) {
+	    if (mother.name === p.mother) if (!father || father.name === p.father) {
 	      if ($.inArray(p.name, names) === -1) {
 	        children.push(p);
 	        names.push(p.name);
@@ -536,7 +536,7 @@ var pedigreejs = (function (exports) {
 	  let sibs = getSiblings(dataset, person);
 	  let twin_type = person.mztwin ? "mztwin" : "dztwin";
 	  return $.map(sibs, function (p, _i) {
-	    return p.name !== person.name && p[twin_type] == person[twin_type] ? p : null;
+	    return p.name !== person.name && p[twin_type] === person[twin_type] ? p : null;
 	  });
 	}
 
@@ -545,7 +545,7 @@ var pedigreejs = (function (exports) {
 	function getSiblings(dataset, person, sex) {
 	  if (person === undefined || !person.mother || person.noparents) return [];
 	  return $.map(dataset, function (p, _i) {
-	    return p.name !== person.name && !('noparents' in p) && p.mother && p.mother === person.mother && p.father === person.father && (!sex || p.sex == sex) ? p : null;
+	    return p.name !== person.name && !('noparents' in p) && p.mother && p.mother === person.mother && p.father === person.father && (!sex || p.sex === sex) ? p : null;
 	  });
 	}
 
@@ -553,7 +553,7 @@ var pedigreejs = (function (exports) {
 	// for only returning brothers or sisters
 	function getAllSiblings(dataset, person, sex) {
 	  return $.map(dataset, function (p, _i) {
-	    return p.name !== person.name && !('noparents' in p) && p.mother && p.mother === person.mother && p.father === person.father && (!sex || p.sex == sex) ? p : null;
+	    return p.name !== person.name && !('noparents' in p) && p.mother && p.mother === person.mother && p.father === person.father && (!sex || p.sex === sex) ? p : null;
 	  });
 	}
 
@@ -595,7 +595,7 @@ var pedigreejs = (function (exports) {
 	// get the nodes at a given depth sorted by their x position
 	function getNodesAtDepth(fnodes, depth, exclude_names) {
 	  return $.map(fnodes, function (p, _i) {
-	    return p.depth == depth && !p.data.hidden && $.inArray(p.data.name, exclude_names) == -1 ? p : null;
+	    return p.depth === depth && !p.data.hidden && $.inArray(p.data.name, exclude_names) === -1 ? p : null;
 	  }).sort(function (a, b) {
 	    return a.x - b.x;
 	  });
@@ -675,7 +675,7 @@ var pedigreejs = (function (exports) {
 	        if (!overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
 	          node.x = xmid; // centralise parent nodes
 	          let diff = node.x - xmid;
-	          if (node.children.length == 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
+	          if (node.children.length === 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
 	            if (!(node.children[0].data.hidden && node.children[1].data.hidden)) {
 	              let child1 = node.children[0].data.hidden ? node.children[1] : node.children[0];
 	              let child2 = node.children[0].data.hidden ? node.children[0] : node.children[1];
@@ -683,11 +683,11 @@ var pedigreejs = (function (exports) {
 	                child1.x = xmid;
 	              }
 	            }
-	          } else if (node.children.length == 1 && !node.children[0].data.hidden) {
+	          } else if (node.children.length === 1 && !node.children[0].data.hidden) {
 	            if (!overlap(opts, root.descendants(), xmid, node.children[0].depth, [node.children[0].data.name])) node.children[0].x = xmid;
 	          } else {
 	            if (diff !== 0 && !nodesOverlap(opts, node, diff, root)) {
-	              if (node.children.length == 1) {
+	              if (node.children.length === 1) {
 	                node.children[0].x = xmid;
 	              } else {
 	                let descendants = node.descendants();
@@ -729,7 +729,7 @@ var pedigreejs = (function (exports) {
 	// test if x position overlaps a node at the same depth
 	function overlap(opts, nodes, xnew, depth, exclude_names) {
 	  for (let n = 0; n < nodes.length; n++) {
-	    if (depth == nodes[n].depth && $.inArray(nodes[n].data.name, exclude_names) == -1) {
+	    if (depth === nodes[n].depth && $.inArray(nodes[n].data.name, exclude_names) === -1) {
 	      if (Math.abs(xnew - nodes[n].x) < opts.symbol_size * 1.15) return true;
 	    }
 	  }
@@ -890,7 +890,7 @@ var pedigreejs = (function (exports) {
 
 	  // set initial position & scale
 	  let xyk = getposition(opts); // cached position
-	  let k = xyk.length == 3 ? xyk[2] : 1;
+	  let k = xyk.length === 3 ? xyk[2] : 1;
 	  let x = xyk[0] !== null ? xyk[0] / k : xi * k;
 	  let y = xyk[1] !== null ? xyk[1] / k : yi * k;
 	  var transform = d3.zoomIdentity.scale(k).translate(x, y);
@@ -1058,11 +1058,11 @@ var pedigreejs = (function (exports) {
 	    "title": "scale-to-fit"
 	  });
 	  if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
-	    if (opts.zoomOut != 1) btns.push({
+	    if (opts.zoomOut !== 1) btns.push({
 	      "fa": "fa-minus-circle pull-right",
 	      "title": "zoom-out"
 	    });
-	    if (opts.zoomIn != 1) btns.push({
+	    if (opts.zoomIn !== 1) btns.push({
 	      "fa": "fa-plus-circle pull-right",
 	      "title": "zoom-in"
 	    });
@@ -1074,7 +1074,7 @@ var pedigreejs = (function (exports) {
 	  let lis = "";
 	  for (let i = 0; i < btns.length; i++) {
 	    lis += '<span>';
-	    lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' + (btns[i].fa == "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') + ' aria-hidden="true" title="' + btns[i].title + '"></i>';
+	    lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' + (btns[i].fa === "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') + ' aria-hidden="true" title="' + btns[i].title + '"></i>';
 	    lis += '</span>';
 	  }
 	  $("#" + opts.btn_target).append(lis);
@@ -1198,7 +1198,7 @@ var pedigreejs = (function (exports) {
 
 	  delete opts.dataset;
 	  let selected = $("input[name='default_fam']:checked");
-	  if (selected.length > 0 && selected.val() == 'extended2') {
+	  if (selected.length > 0 && selected.val() === 'extended2') {
 	    // secondary relatives
 	    opts.dataset = [{
 	      "name": "wZA",
@@ -1303,7 +1303,7 @@ var pedigreejs = (function (exports) {
 	      "father": "zwB",
 	      "status": "0"
 	    }];
-	  } else if (selected.length > 0 && selected.val() == 'extended1') {
+	  } else if (selected.length > 0 && selected.val() === 'extended1') {
 	    // primary relatives
 	    opts.dataset = [{
 	      "name": "m21",
@@ -1525,7 +1525,7 @@ var pedigreejs = (function (exports) {
 	        'sex': attr[6],
 	        'status': attr[8]
 	      };
-	      if (attr[2] == 1) indi.proband = true;
+	      if (attr[2] === 1) indi.proband = true;
 	      if (attr[4] !== "0") indi.father = attr[4];
 	      if (attr[5] !== "0") indi.mother = attr[5];
 	      if (attr[7] !== "0") indi.mztwin = attr[7];
@@ -1648,7 +1648,7 @@ var pedigreejs = (function (exports) {
 	  msg += "\tER:PR:HER2:CK14:CK56";
 	  for (let i = 0; i < dataset.length; i++) {
 	    let p = dataset[i];
-	    if ($.inArray(p.name, excl) != -1) {
+	    if ($.inArray(p.name, excl) !== -1) {
 	      console.log('EXCLUDE: ' + p.name);
 	      continue;
 	    }
@@ -1657,8 +1657,8 @@ var pedigreejs = (function (exports) {
 	    else msg += (p.display_name ? p.display_name : "NA") + '\t';
 	    msg += ('proband' in p ? '1' : 0) + '\t';
 	    msg += p.name + '\t'; // max 7 chars
-	    msg += ('father' in p && !('noparents' in p) && $.inArray(p.mother, excl) == -1 ? p.father : 0) + '\t'; // max 7 chars
-	    msg += ('mother' in p && !('noparents' in p) && $.inArray(p.mother, excl) == -1 ? p.mother : 0) + '\t'; // max 7 chars
+	    msg += ('father' in p && !('noparents' in p) && $.inArray(p.mother, excl) === -1 ? p.father : 0) + '\t'; // max 7 chars
+	    msg += ('mother' in p && !('noparents' in p) && $.inArray(p.mother, excl) === -1 ? p.mother : 0) + '\t'; // max 7 chars
 	    msg += p.sex + '\t';
 	    msg += ('mztwin' in p ? p.mztwin : 0) + '\t'; // MZtwin
 	    msg += ('status' in p ? p.status : 0) + '\t'; // current status: 0 = alive, 1 = dead
@@ -1789,7 +1789,7 @@ var pedigreejs = (function (exports) {
 	 */
 	function getByName(arr, name) {
 	  return $.grep(arr, function (o) {
-	    return o && o.name == name;
+	    return o && o.name === name;
 	  })[0];
 	}
 
@@ -2055,9 +2055,9 @@ var pedigreejs = (function (exports) {
 
 	    try {
 	      // update FH section
-	      acc_FamHist_ticked();
-	      acc_FamHist_Leave();
-	      RESULT.FLAG_FAMILY_MODAL = true;
+	      acc_FamHist_ticked(); // eslint-disable-line no-undef
+	      acc_FamHist_Leave(); // eslint-disable-line no-undef
+	      RESULT.FLAG_FAMILY_MODAL = true; // eslint-disable-line no-undef
 	    } catch (err3) {
 	      // ignore error
 	    }
@@ -2102,7 +2102,7 @@ var pedigreejs = (function (exports) {
 	      return val.trim();
 	    });
 	    if (attr.length < 5) throw 'unknown format';
-	    let sex = attr[4] == '1' ? 'M' : attr[4] == '2' ? 'F' : 'U';
+	    let sex = attr[4] === '1' ? 'M' : attr[4] === '2' ? 'F' : 'U';
 	    let indi = {
 	      'famid': attr[0],
 	      'display_name': attr[1],
@@ -2115,7 +2115,7 @@ var pedigreejs = (function (exports) {
 	      console.error('multiple family IDs found only using famid = ' + famid);
 	      break;
 	    }
-	    if (attr[5] == "2") indi.affected = 2;
+	    if (attr[5] === "2") indi.affected = 2;
 	    // add genotype columns
 	    if (attr.length > 6) {
 	      indi.alleles = "";
@@ -2155,7 +2155,7 @@ var pedigreejs = (function (exports) {
 	        'sex': attr[6],
 	        'status': attr[8]
 	      };
-	      if (attr[2] == 1) indi.proband = true;
+	      if (attr[2] === 1) indi.proband = true;
 	      if (attr[4] !== "0") indi.father = attr[4];
 	      if (attr[5] !== "0") indi.mother = attr[5];
 	      if (attr[7] !== "0") indi.mztwin = attr[7];
@@ -2268,8 +2268,8 @@ var pedigreejs = (function (exports) {
 
 	  // identify top_level and other nodes without parents
 	  for (let i = 0; i < ped.length; i++) {
-	    if (getDepth(ped, ped[i].name) == 1) {
-	      if (ped[i].level && ped[i].level == max_level) {
+	    if (getDepth(ped, ped[i].name) === 1) {
+	      if (ped[i].level && ped[i].level === max_level) {
 	        ped[i].top_level = true;
 	      } else {
 	        ped[i].noparents = true;
@@ -2286,7 +2286,7 @@ var pedigreejs = (function (exports) {
 	        // 2. or adopt parents from level above
 	        if (!ped[i].mother) {
 	          for (let j = 0; j < ped.length; j++) {
-	            if (ped[i].level == ped[j].level - 1) {
+	            if (ped[i].level === ped[j].level - 1) {
 	              pidx = getPartnerIdx(ped, ped[j]);
 	              if (pidx > -1 && i !== pidx) {
 	                ped[i].mother = ped[j].sex === 'F' ? ped[j].name : ped[pidx].name;
@@ -2397,7 +2397,7 @@ var pedigreejs = (function (exports) {
 	  }
 	  d2[twin_type] = d1[twin_type];
 	  if (d1.yob) d2.yob = d1.yob;
-	  if (d1.age && (d1.status == 0 || !d1.status)) d2.age = d1.age;
+	  if (d1.age && (d1.status === 0 || !d1.status)) d2.age = d1.age;
 	  return true;
 	}
 
@@ -2420,10 +2420,10 @@ var pedigreejs = (function (exports) {
 	  let twin_type = d1.mztwin ? "mztwin" : "dztwin";
 	  for (let i = 0; i < dataset.length; i++) {
 	    let d2 = dataset[i];
-	    if (d2[twin_type] && d1[twin_type] == d2[twin_type] && d2.name !== d1.name) {
+	    if (d2[twin_type] && d1[twin_type] === d2[twin_type] && d2.name !== d1.name) {
 	      if (twin_type === "mztwin") d2.sex = d1.sex;
 	      if (d1.yob) d2.yob = d1.yob;
-	      if (d1.age && (d1.status == 0 || !d1.status)) d2.age = d1.age;
+	      if (d1.age && (d1.status === 0 || !d1.status)) d2.age = d1.age;
 	    }
 	  }
 	}
@@ -2437,7 +2437,7 @@ var pedigreejs = (function (exports) {
 	      if (dataset[i][twin_type]) {
 	        let count = 0;
 	        for (let j = 0; j < dataset.length; j++) {
-	          if (dataset[j][twin_type] == dataset[i][twin_type]) count++;
+	          if (dataset[j][twin_type] === dataset[i][twin_type]) count++;
 	        }
 	        if (count < 2) delete dataset[i][[twin_type]];
 	      }
@@ -2465,9 +2465,9 @@ var pedigreejs = (function (exports) {
 	// update status field and age label - 0 = alive, 1 = dead
 	function updateStatus(status) {
 	  $('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
-	  status == 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock');
+	  status === 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock');
 	  $('#id_age_' + status).removeClass("hidden");
-	  $('#id_age_' + (status == 1 ? '0' : '1')).addClass("hidden");
+	  $('#id_age_' + (status === 1 ? '0' : '1')).addClass("hidden");
 	}
 	function nodeclick(node) {
 	  $('form > fieldset').prop('disabled', false);
@@ -2776,7 +2776,7 @@ var pedigreejs = (function (exports) {
 	  // handle mouse out of popup selection
 	  d3.selectAll(".popup_selection").on("mouseout", function () {
 	    // hide rect and popup selection
-	    if (add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) == -1) add_person.node.select('rect').style("opacity", 0);
+	    if (add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) === -1) add_person.node.select('rect').style("opacity", 0);
 	    d3.selectAll('.popup_selection').style("opacity", 0);
 	  });
 
@@ -2913,13 +2913,13 @@ var pedigreejs = (function (exports) {
 	    return !d.data.hidden;
 	  }).on("click", function (e, d) {
 	    if (e.ctrlKey) {
-	      if (highlight.indexOf(d) == -1) highlight.push(d);else highlight.splice(highlight.indexOf(d), 1);
+	      if (highlight.indexOf(d) === -1) highlight.push(d);else highlight.splice(highlight.indexOf(d), 1);
 	    } else highlight = [d];
 	    if ('nodeclick' in opts) {
 	      opts.nodeclick(d.data);
 	      d3.selectAll(".indi_rect").style("opacity", 0);
 	      d3.selectAll('.indi_rect').filter(function (d) {
-	        return highlight.indexOf(d) != -1;
+	        return highlight.indexOf(d) !== -1;
 	      }).style("opacity", 0.5);
 	    }
 	  }).on("mouseover", function (e, d) {
@@ -2938,7 +2938,7 @@ var pedigreejs = (function (exports) {
 	  }).on("mouseout", function (d) {
 	    if (dragging) return;
 	    d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
-	    if (highlight.indexOf(d) == -1) d3.select(this).select('rect').style("opacity", 0);
+	    if (highlight.indexOf(d) === -1) d3.select(this).select('rect').style("opacity", 0);
 	    d3.select(this).selectAll('.indi_details').style("opacity", 1);
 	    // hide popup if it looks like the mouse is moving north
 	    let xcoord = d3.pointer(d)[0];
@@ -3052,7 +3052,7 @@ var pedigreejs = (function (exports) {
 	  });
 	  table += '<tr><td colspan="2" style="line-height:1px;"></td></tr>';
 	  $.each(d.data, function (k, v) {
-	    if ($.inArray(k, exclude) == -1) {
+	    if ($.inArray(k, exclude) === -1) {
 	      let kk = capitaliseFirstLetter(k);
 	      if (v === true || v === false) {
 	        table += "<tr><td style='text-align:right'>" + kk + "&nbsp;</td><td><input type='checkbox' id='id_" + k + "' name='" + k + "' value=" + v + " " + (v ? "checked" : "") + "></td></tr>";
@@ -3141,11 +3141,11 @@ var pedigreejs = (function (exports) {
 	  let ptr_name;
 	  let children = getAllChildren(dataset, node);
 	  if (children.length > 0) {
-	    ptr_name = children[0].mother == node.name ? children[0].father : children[0].mother;
+	    ptr_name = children[0].mother === node.name ? children[0].father : children[0].mother;
 	    pid = getNodeByName(flat_tree, ptr_name).data.id;
 	  }
 	  let i;
-	  if (depth == 1) {
+	  if (depth === 1) {
 	    mother = {
 	      "name": makeid(4),
 	      "sex": "F",
@@ -3179,7 +3179,7 @@ var pedigreejs = (function (exports) {
 	      if (sid < rid && sid > tree_node.data.id) rid = sid;
 	      if (sid < lid) lid = sid;
 	    }
-	    let add_lhs = lid >= tree_node.data.id || pid == lid && rid < 10000;
+	    let add_lhs = lid >= tree_node.data.id || pid === lid && rid < 10000;
 	    if (opts.DEBUG) console.log('lid=' + lid + ' rid=' + rid + ' nid=' + tree_node.data.id + ' ADD_LHS=' + add_lhs);
 	    let midx;
 	    if (!add_lhs && node_father.data.id > node_mother.data.id || add_lhs && node_father.data.id < node_mother.data.id) midx = getIdxByName(dataset, node.father);else midx = getIdxByName(dataset, node.mother);
@@ -3206,7 +3206,7 @@ var pedigreejs = (function (exports) {
 	      }
 	    }
 	  }
-	  if (depth == 2) {
+	  if (depth === 2) {
 	    mother.top_level = true;
 	    father.top_level = true;
 	  } else if (depth > 2) {
@@ -3539,7 +3539,7 @@ var pedigreejs = (function (exports) {
 	    addButtons(opts);
 	    addIO(opts);
 	  }
-	  if (nstore(opts) == -1) init_cache(opts);
+	  if (nstore(opts) === -1) init_cache(opts);
 	  updateButtons(opts);
 
 	  // validate pedigree data
@@ -3580,7 +3580,7 @@ var pedigreejs = (function (exports) {
 	  let vis_nodes = $.map(opts.dataset, function (p, _i) {
 	    return p.hidden ? null : p;
 	  });
-	  if (vis_nodes.length != opts.dataset.length) {
+	  if (vis_nodes.length !== opts.dataset.length) {
 	    throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
 	  }
 	  adjust_coords(opts, nodes, flattenNodes);
@@ -3600,7 +3600,7 @@ var pedigreejs = (function (exports) {
 	    return opts.symbol_size * opts.symbol_size + 2;
 	  }).type(function (d) {
 	    if (d.data.miscarriage || d.data.termination) return d3.symbolTriangle;
-	    return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;
+	    return d.data.sex === "F" ? d3.symbolCircle : d3.symbolSquare;
 	  })).style("stroke", function (d) {
 	    return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 	  }).style("stroke-width", function (d) {
@@ -3621,7 +3621,7 @@ var pedigreejs = (function (exports) {
 	    return opts.symbol_size * opts.symbol_size;
 	  }).type(function (d) {
 	    if (d.data.miscarriage || d.data.termination) return d3.symbolTriangle;
-	    return d.data.sex == "F" ? d3.symbolCircle : d3.symbolSquare;
+	    return d.data.sex === "F" ? d3.symbolCircle : d3.symbolSquare;
 	  }));
 
 	  // pie plots for disease colours
@@ -3684,7 +3684,7 @@ var pedigreejs = (function (exports) {
 
 	  // alive status = 0; dead status = 1
 	  node.filter(function (d) {
-	    return d.data.status == 1;
+	    return d.data.status === 1;
 	  }).append('line').style("stroke", "black").attr("x1", function (_d, _i) {
 	    return -0.6 * opts.symbol_size;
 	  }).attr("y1", function (_d, _i) {
@@ -3883,7 +3883,7 @@ var pedigreejs = (function (exports) {
 
 	  // identify clashes with other nodes at the same depth
 	  let clash = $.map(flattenNodes, function (bnode, _i) {
-	    return !bnode.data.hidden && bnode.data.name !== mother.data.name && bnode.data.name !== father.data.name && bnode.y == dy && bnode.x > x1 && bnode.x < x2 ? bnode.x : null;
+	    return !bnode.data.hidden && bnode.data.name !== mother.data.name && bnode.data.name !== father.data.name && bnode.y === dy && bnode.x > x1 && bnode.x < x2 ? bnode.x : null;
 	  });
 	  return clash.length > 0 ? clash : null;
 	}
@@ -3893,18 +3893,18 @@ var pedigreejs = (function (exports) {
 	  // let top_level = $.map(dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
 	  // calculate top_level nodes
 	  for (let i = 0; i < dataset.length; i++) {
-	    if (getDepth(dataset, dataset[i].name) == 2) dataset[i].top_level = true;
+	    if (getDepth(dataset, dataset[i].name) === 2) dataset[i].top_level = true;
 	  }
 	  let top_level = [];
 	  let top_level_seen = [];
 	  for (let i = 0; i < dataset.length; i++) {
 	    let node = dataset[i];
-	    if ('top_level' in node && $.inArray(node.name, top_level_seen) == -1) {
+	    if ('top_level' in node && $.inArray(node.name, top_level_seen) === -1) {
 	      top_level_seen.push(node.name);
 	      top_level.push(node);
 	      let ptrs = get_partners(dataset, node);
 	      for (let j = 0; j < ptrs.length; j++) {
-	        if ($.inArray(ptrs[j], top_level_seen) == -1) {
+	        if ($.inArray(ptrs[j], top_level_seen) === -1) {
 	          top_level_seen.push(ptrs[j]);
 	          top_level.push(getNodeByName(dataset, ptrs[j]));
 	        }
@@ -3927,7 +3927,7 @@ var pedigreejs = (function (exports) {
 	    throw e;
 	  }
 	  try {
-	    templates.update(opts);
+	    templates.update(opts); // eslint-disable-line no-undef
 	  } catch (e) {
 	    // templates not declared
 	  }
