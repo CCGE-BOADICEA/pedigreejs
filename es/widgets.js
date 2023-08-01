@@ -161,7 +161,7 @@ export function addWidgets(opts, node) {
 		.attr("fill", "lightgrey");
 
 	// widgets
-	let fx = function(_d) {return off - 0.75*opts.symbol_size;};
+	let fx = function(_d) {return off - (0.75*opts.symbol_size);};
 	let fy = opts.symbol_size -2;
 	let off = 0;
 	let widgets = {
@@ -175,14 +175,14 @@ export function addWidgets(opts, node) {
 		},
 		'delete': {
 			'text': 'X', 'title': 'delete',
-			'fx': opts.symbol_size/2 - 1,
+			'fx': (opts.symbol_size/2) - 1,
 			'fy': - opts.symbol_size + 12,
 			'styles': {"font-weight": "bold", "fill": "darkred", "font-family": "monospace"}
 		}
 	};
 
 	if(opts.edit) {
-		widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
+		widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': (-font_size/2)+2, 'fy': -opts.symbol_size + 11};
 	}
 
 	for(let key in widgets) {
@@ -225,7 +225,7 @@ export function addWidgets(opts, node) {
 		  let y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y"));
 		  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
 		  d3.selectAll('.popup_selection_rotate45')
-			.attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
+			.attr("transform", "translate("+(x+(3*font_size))+","+(y+(font_size*1.2))+") rotate(45)");
 	  });
 
 	// handle widget clicks

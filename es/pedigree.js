@@ -287,7 +287,7 @@ export function build(options) {
 						clash_depth[d.mother.depth] = 4;
 
 					dy1 -= clash_depth[d.mother.depth];
-					dx = clash_depth[d.mother.depth] + opts.symbol_size/2 + 2;
+					dx = clash_depth[d.mother.depth] + (opts.symbol_size/2) + 2;
 
 					let parent_nodes = d.mother.data.parent_node;
 					let parent_node_name = parent_nodes[0];
@@ -300,7 +300,7 @@ export function build(options) {
 					parent_node.y = dy1; // adjust hgt of parent node
 					clash.sort(function (a,b) {return a - b;});
 
-					dy2 = (dy1-opts.symbol_size/2-3);
+					dy2 = (dy1-(opts.symbol_size/2)-3);
 					path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
 				}
 
@@ -385,7 +385,7 @@ export function build(options) {
 						if(xmin === d.target.x && d.target.data.mztwin) {
 							// horizontal bar for mztwins
 							let xx = (xmid + d.target.x)/2;
-							let yy = (ymid + (d.target.y-opts.symbol_size/2))/2;
+							let yy = (ymid + (d.target.y-(opts.symbol_size/2)))/2;
 							xhbar = "M" + xx + "," + yy +
 									"L" + (xmid + (xmid-xx)) + " " + yy;
 						}
@@ -393,7 +393,7 @@ export function build(options) {
 						return "M" + (d.source.x) + "," + (d.source.y ) +
 							   "V" + ymid +
 							   "H" + xmid +
-							   "L" + (d.target.x) + " " + (d.target.y-opts.symbol_size/2) +
+							   "L" + (d.target.x) + " " + (d.target.y-(opts.symbol_size/2)) +
 							   xhbar;
 					}
 				}
@@ -432,10 +432,10 @@ export function build(options) {
 			.style("fill", "black");
 
 		ped.append("line")
-			.attr("x1", probandNode.x-opts.symbol_size/0.7)
-			.attr("y1", probandNode.y+opts.symbol_size/1.4)
-			.attr("x2", probandNode.x-opts.symbol_size/1.4)
-			.attr("y2", probandNode.y+opts.symbol_size/4)
+			.attr("x1", probandNode.x-(opts.symbol_size/0.7))
+			.attr("y1", probandNode.y+(opts.symbol_size/1.4))
+			.attr("x2", probandNode.x-(opts.symbol_size/1.4))
+			.attr("y2", probandNode.y+(opts.symbol_size/4))
 			.attr("stroke-width", 1)
 			.attr("stroke", "black")
 			.attr("marker-end", "url(#"+triid+")");
@@ -539,7 +539,7 @@ export function rebuild(opts) {
 	}
 
 	try {
-		templates.update(opts);
+		templates.update(opts);		// eslint-disable-line no-undef
 	} catch(e) {
 		// templates not declared
 	}
