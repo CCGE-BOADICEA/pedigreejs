@@ -375,7 +375,7 @@ export function readLinkage(boadicea_lines) {
 	for(let i = 0;i < lines.length;i++){
 	   let attr = $.map(lines[i].trim().split(/\s+/), function(val, _i){return val.trim();});
 	   if(attr.length < 5)
-		   throw('unknown format');
+		   throw new Error('unknown format');
 	   let sex = (attr[4] === '1' ? 'M' : (attr[4] === '2' ? 'F' : 'U'));
 	   let indi = {
 			'famid': attr[0],

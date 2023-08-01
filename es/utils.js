@@ -357,7 +357,7 @@ export function unconnected(dataset){
 	if(!target){
 		console.warn("No target defined");
 		if(dataset.length === 0) {
-			throw "empty pedigree data set";
+			throw new Error("empty pedigree data set");
 		}
 		target = dataset[0];
 	}
