@@ -323,7 +323,7 @@ var pedigreejs = (function (exports) {
 	function validate_age_yob(age, yob, status) {
 	  let year = new Date().getFullYear();
 	  let sum = parseInt(age) + parseInt(yob);
-	  if (status === 1) {
+	  if (status === "1") {
 	    // deceased
 	    return year >= sum;
 	  }
@@ -2405,7 +2405,7 @@ var pedigreejs = (function (exports) {
 	  }
 	  d2[twin_type] = d1[twin_type];
 	  if (d1.yob) d2.yob = d1.yob;
-	  if (d1.age && (d1.status === 0 || !d1.status)) d2.age = d1.age;
+	  if (d1.age && (d1.status === "0" || !d1.status)) d2.age = d1.age;
 	  return true;
 	}
 
@@ -2719,7 +2719,6 @@ var pedigreejs = (function (exports) {
 		nodeclick: nodeclick,
 		save: save,
 		save_ashkn: save_ashkn,
-		updateStatus: updateStatus,
 		update_diagnosis_age_widget: update_diagnosis_age_widget
 	});
 
@@ -3694,7 +3693,7 @@ var pedigreejs = (function (exports) {
 
 	  // alive status = 0; dead status = 1
 	  node.filter(function (d) {
-	    return d.data.status === 1;
+	    return d.data.status === "1";
 	  }).append('line').style("stroke", "black").attr("x1", function (_d, _i) {
 	    return -0.6 * opts.symbol_size;
 	  }).attr("y1", function (_d, _i) {

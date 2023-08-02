@@ -181,7 +181,7 @@ export function messages(title, msg, onConfirm, opts, dataset) {
 export function validate_age_yob(age, yob, status) {
 	let year = new Date().getFullYear();
 	let sum = parseInt(age) + parseInt(yob);
-	if(status === 1) {   // deceased
+	if(status === "1") {   // deceased
 		return year >= sum;
 	}
 	return Math.abs(year - sum) <= 1 && year >= sum;

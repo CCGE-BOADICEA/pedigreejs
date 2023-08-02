@@ -213,7 +213,7 @@ export function build(options) {
 
 
 	// alive status = 0; dead status = 1
-	node.filter(function (d) {return d.data.status === 1;})
+	node.filter(function (d) {return d.data.status === "1";})
 		.append('line')
 			.style("stroke", "black")
 			.attr("x1", function(_d, _i) {return -0.6*opts.symbol_size;})

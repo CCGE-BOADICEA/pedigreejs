@@ -26,7 +26,7 @@ $(document).on('fhChange', function(e, opts){
 })
 
 // update status field and age label - 0 = alive, 1 = dead
-export function updateStatus(status) {
+function updateStatus(status) {
 	$('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
 	(status === 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock'));
 	$('#id_age_'+status).removeClass("hidden");
