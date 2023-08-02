@@ -15,7 +15,7 @@ export function setMzTwin(dataset, d1, d2, twin_type) {
 	d2[twin_type] = d1[twin_type];
 	if(d1.yob)
 		d2.yob = d1.yob;
-	if(d1.age && (d1.status === 0 || !d1.status))
+	if(d1.age && (d1.status === "0" || !d1.status))
 		d2.age = d1.age;
 	return true;
 }
