@@ -430,7 +430,7 @@ export function readBoadiceaV4(boadicea_lines, version) {
 				'sex': attr[6],
 				'status': attr[8]
 			};
-			if(attr[2] === 1) indi.proband = true;
+			if(attr[2] === "1") indi.proband = true;
 			if(attr[4] !== "0") indi.father = attr[4];
 			if(attr[5] !== "0") indi.mother = attr[5];
 			if(attr[7] !== "0") indi.mztwin = attr[7];
