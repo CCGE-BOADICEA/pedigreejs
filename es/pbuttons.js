@@ -1,6 +1,6 @@
 /**
-/* © 2023 Cambridge University
-/* SPDX-FileCopyrightText: 2023 Cambridge University
+/* © 2023 University of Cambridge
+/* SPDX-FileCopyrightText: 2023 University of Cambridge
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
@@ -8,7 +8,7 @@
 import * as pedcache from './pedcache.js';
 import {rebuild, build} from './pedigree.js';
 import {btn_zoom, scale_to_fit} from './zoom.js';
-import {copy_dataset, getProbandIndex, is_fullscreen} from './utils.js';
+import {copy_dataset, getProbandIndex, is_fullscreen, messages} from './utils.js';
 
 export function addButtons(options) {
 	let opts = $.extend({
@@ -103,23 +103,9 @@ function addPbuttonEvents(opts) {
 			$("#"+opts.targetDiv).empty();
 			build(opts);
 		} else if ($(e.target).hasClass('fa-refresh')) {
-			$('<div id="msgDialog">Resetting the pedigree may result in loss of some data.</div>').dialog({
-				title: 'Confirm Reset',
-				resizable: false,
-				height: "auto",
-				width: 400,
-				modal: true,
-				buttons: {
-					Continue: function() {
-						reset(opts, opts.keep_proband_on_reset);
-						$(this).dialog( "close" );
-					},
-					Cancel: function() {
-						$(this).dialog( "close" );
-						return;
-				    }
-				}
-			});
+			messages("Pedigree Reset",
+			         "This may result in loss of some data. Reset now?",
+			         reset, opts);
 		} else if ($(e.target).hasClass('fa-crosshairs')) {
 			scale_to_fit(opts);
 		} 
@@ -129,9 +115,9 @@ function addPbuttonEvents(opts) {
 }
 
 // reset pedigree and clear the history
-function reset(opts, keep_proband) {
+function reset(opts) {
 	let proband;
-	if(keep_proband) {
+	if(opts.keep_proband_on_reset) {
 		let local_dataset = pedcache.current(opts);
 		let newdataset =  copy_dataset(local_dataset);
 		proband = newdataset[getProbandIndex(newdataset)];

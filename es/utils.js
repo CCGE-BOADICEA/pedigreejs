@@ -1,6 +1,6 @@
 /**
-/* © 2023 Cambridge University
-/* SPDX-FileCopyrightText: 2023 Cambridge University
+/* © 2023 University of Cambridge
+/* SPDX-FileCopyrightText: 2023 University of Cambridge
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
@@ -132,6 +132,25 @@ export function getFormattedDate(time){
 		return d.getFullYear() + "-" + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + ('0' + d.getDate()).slice(-2) + " " + ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + ":" + ('0' + d.getSeconds()).slice(-2);
  }
 
+function showDialog(title, msg, onConfirm, opts, dataset) {
+	const errModalEl = document.getElementById('errModal');
+	const modalTitle = errModalEl.querySelector('.modal-title');
+	const modalBodyInput = errModalEl.querySelector('.modal-body');
+	if(onConfirm) {
+		$('#errModal button.hidden').removeClass("hidden");
+		$('#errModal button:contains("OK")').on( "click", function() {
+			onConfirm(opts, dataset);
+		});
+	} else {
+		const cancelBtn = $('#errModal button:contains("CANCEL")');
+		if(!cancelBtn.hasClass("hidden")) cancelBtn.addClass("hidden");
+	}
+
+	modalTitle.textContent = title;
+	modalBodyInput.textContent = msg;
+	$("#errModal").modal("show");
+}
+
 /**
  * Show message or confirmation dialog.
  * @param title	 - dialog window title
@@ -141,30 +160,34 @@ export function getFormattedDate(time){
  * @param dataset	- pedigree dataset
  */
 export function messages(title, msg, onConfirm, opts, dataset) {
-	if(onConfirm) {
-		$('<div id="msgDialog">'+msg+'</div>').dialog({
-				modal: true,
+	try {
+		if(onConfirm) {
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
+					modal: true,
+					title: title,
+					width: 350,
+					buttons: {
+						"Yes": function () {
+							$(this).dialog('close');
+							onConfirm(opts, dataset);
+						},
+						"No": function () {
+							$(this).dialog('close');
+						}
+					}
+				});
+		} else {
+			$('<div id="msgDialog">'+msg+'</div>').dialog({
 				title: title,
 				width: 350,
-				buttons: {
-					"Yes": function () {
-						$(this).dialog('close');
-						onConfirm(opts, dataset);
-					},
-					"No": function () {
-						$(this).dialog('close');
-					}
-				}
+				buttons: [{
+					text: "OK",
+					click: function() { $( this ).dialog( "close" );}
+				}]
 			});
-	} else {
-		$('<div id="msgDialog">'+msg+'</div>').dialog({
-			title: title,
-			width: 350,
-			buttons: [{
-				text: "OK",
-				click: function() { $( this ).dialog( "close" );}
-			}]
-		});
+		}
+	} catch(err) {
+		showDialog(title, msg, onConfirm, opts);
 	}
 }
 
@@ -181,6 +204,10 @@ export function messages(title, msg, onConfirm, opts, dataset) {
 export function validate_age_yob(age, yob, status) {
 	let year = new Date().getFullYear();
 	let sum = parseInt(age) + parseInt(yob);
+	// check status is an expected string
+	if (status !== "1" && status !== "0")
+		return false
+
 	if(status === "1") {   // deceased
 		return year >= sum;
 	}

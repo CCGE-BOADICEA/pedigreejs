@@ -1,6 +1,6 @@
 /**
-/* © 2023 Cambridge University
-/* SPDX-FileCopyrightText: 2023 Cambridge University
+/* © 2023 University of Cambridge
+/* SPDX-FileCopyrightText: 2023 University of Cambridge
 /* SPDX-License-Identifier: GPL-3.0-or-later
 **/
 
@@ -56,6 +56,28 @@ function getByName(arr, name) {
 }
 
 /**
+ * Provide font style to svg
+ */
+function copyStylesInline(destinationNode, sourceNode) {
+	let containerElements = ["svg","g"];
+	for (let cd = 0; cd < destinationNode.childNodes.length; cd++) {
+		let child = destinationNode.childNodes[cd];
+		if (containerElements.indexOf(child.tagName) !== -1) {
+			copyStylesInline(child, sourceNode.childNodes[cd]);
+			continue;
+		}
+		try {
+			let style = sourceNode.childNodes[cd].currentStyle || window.getComputedStyle(sourceNode.childNodes[cd]);
+			if (style === "undefined" || style === null) continue;
+
+			for (let st = 0; st < style.length; st++){
+				if(style[st].indexOf("text") > -1 || style[st].indexOf("font") > -1) child.style.setProperty(style[st], style.getPropertyValue(style[st]));
+			}
+		} catch(err) { continue; }
+   }
+}
+
+/**
  * Given a SVG document element convert to image (e.g. jpeg, png - default png).
  */
 export function svg2img(svg, deferred_name, options) {
@@ -65,52 +87,71 @@ export function svg2img(svg, deferred_name, options) {
 		if(!(key in options)) {options[key] = value;}
 	});
 
-	// set SVG background to white - fix for jpeg creation
-	if (svg.find(".pdf-white-bg").length === 0){
-		let d3obj = d3.select(svg.get(0));
-		d3obj.append("rect")
-			.attr("width", "100%")
-			.attr("height", "100%")
-			.attr("class", "pdf-white-bg")
-			.attr("fill", "white");
-		d3obj.select(".pdf-white-bg").lower();
-	}
-
+	let copy = svg.get(0).cloneNode(true);
+	copyStylesInline(copy, svg.get(0));
 	let deferred = $.Deferred();
-	let svgStr;
-	if (typeof window.XMLSerializer != "undefined") {
-		svgStr = (new XMLSerializer()).serializeToString(svg.get(0));
-	} else if (typeof svg.xml != "undefined") {
-		svgStr = svg.get(0).xml;
-	}
+	let svgStr = (new XMLSerializer()).serializeToString(copy);
 
-	let imgsrc = 'data:image/svg+xml;base64,'+ btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
+	let imgsrc = 'data:image/svg+xml;base64,'+ window.btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
 	let canvas = document.createElement("canvas");
 	canvas.width = svg.width()*options.resolution;
 	canvas.height = svg.height()*options.resolution;
 	let context = canvas.getContext("2d");
+	// provide a white background
+	context.fillStyle = "white";
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	
 	let img = document.createElement("img");
 	img.onload = function() {
-		if(utils.isIE()) {
-			// change font so it isn't tiny
-			svgStr = svgStr.replace(/ font-size="\d?.\d*em"/g, '');
-			svgStr = svgStr.replace(/<text /g, '<text font-size="12px" ');
-			let v = canvg.Canvg.fromString(context, svgStr, {
-				scaleWidth: canvas.width,
-				scaleHeight: canvas.height,
-				ignoreDimensions: true
-			});
-			v.start();
-			console.log(deferred_name, options.img_type, "use canvg to create image");
-		} else {
-			context.drawImage(img, 0, 0, canvas.width, canvas.height);
-			console.log(deferred_name, options.img_type);
-		}
-		deferred.resolve({'name': deferred_name, 'resolution': options.resolution, 'img':canvas.toDataURL(options.img_type, 1), 'w':canvas.width, 'h':canvas.height});
+		context.drawImage(img, 0, 0, canvas.width, canvas.height);
+		console.log(deferred_name, options.img_type);
+		deferred.resolve(
+			{'name': deferred_name,
+			'resolution': options.resolution,
+			'img':canvas.toDataURL(options.img_type, 1),
+			'w':canvas.width,
+			'h':canvas.height});
+		context.clearRect(0, 0, canvas.width, canvas.height);
 	};
 	img.src = imgsrc;
 	return deferred.promise();
 }
+
+/** TODO ::: test the following
+export function svg2imgA(svgJQ, deferred_name, options) {
+	let defaults = {iscanvg: false, resolution: 1, img_type: "image/png"};
+	if(!options) options = defaults;
+	$.each(defaults, function(key, value) {
+		if(!(key in options)) {options[key] = value;}
+	});
+
+	let svg = svgJQ.get(0);
+	let deferred = $.Deferred();
+  	var copy = svg.cloneNode(true);
+	copyStylesInline(copy, svg);
+	var canvas = document.createElement("canvas");
+	canvas.width = svgJQ.width()*options.resolution;
+	canvas.height = svgJQ.height()*options.resolution;
+	var context = canvas.getContext("2d");
+	var data = (new XMLSerializer()).serializeToString(copy);
+	var DOMURL = window.URL || window.webkitURL || window;
+	var img = new Image();
+	var svgBlob = new Blob([data], {type: "image/svg+xml;charset=utf-8"});
+	var url = DOMURL.createObjectURL(svgBlob);
+	img.onload = function () {
+		context.drawImage(img, 0, 0, canvas.width, canvas.height);
+		console.log(deferred_name, options.img_type);
+		deferred.resolve(
+			{'name': deferred_name,
+			'resolution': options.resolution,
+			'img':canvas.toDataURL(options.img_type, 1),
+			'w':canvas.width,
+			'h':canvas.height})
+	};
+	img.src = url;
+	return deferred.promise();
+}
+ */
 
 function getMatches(str, myRegexp) {
 	let matches = [];
