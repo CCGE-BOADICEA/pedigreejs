@@ -635,12 +635,12 @@ describe('Test pedigree SVG ', function() {
 	});
 
 	// utils
-	describe('the age and year of birth', function() {
+	describe('the status, age and year of birth', function() {
 		var year = new Date().getFullYear();
 		var age = 48;
 		var yob = year - age;
 		it('should be consistent with current year for alive individuals', function() {
-			var status = 0;       // status - 0 = alive, 1 = dead
+			var status = "0";       // status - 0 = alive, 1 = dead
 			expect(pedigree_util.validate_age_yob(age, yob, status)).toBe(true);
 			expect(pedigree_util.validate_age_yob(age-1, yob, status)).toBe(true);
 			expect(pedigree_util.validate_age_yob(age+1, yob, status)).toBe(false);
@@ -648,10 +648,16 @@ describe('Test pedigree SVG ', function() {
 		});
 
 		it('should be consistent with current year for decesased individuals', function() {
-			var status = 1;       // status - 0 = alive, 1 = dead
+			var status = "1";       // status - 0 = alive, 1 = dead
 			expect(pedigree_util.validate_age_yob(age, yob, status)).toBe(true);
-			expect(pedigree_util.validate_age_yob(age-2, yob, status)).toBe(true);
+			expect(pedigree_util.validate_age_yob(age-1, yob, status)).toBe(true);
+			expect(pedigree_util.validate_age_yob(age-10, yob, status)).toBe(true);
 			expect(pedigree_util.validate_age_yob(age+1, yob, status)).toBe(false);
+		});
+
+		it('status should be a string and 0 or 1', function() {
+			expect(pedigree_util.validate_age_yob(age, yob, 1)).toBe(false);
+			expect(pedigree_util.validate_age_yob(age, yob, "2")).toBe(false);
 		});
 	});
 

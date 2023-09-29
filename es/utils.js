@@ -204,6 +204,10 @@ export function messages(title, msg, onConfirm, opts, dataset) {
 export function validate_age_yob(age, yob, status) {
 	let year = new Date().getFullYear();
 	let sum = parseInt(age) + parseInt(yob);
+	// check status is an expected string
+	if (status !== "1" && status !== "0")
+		return false
+
 	if(status === "1") {   // deceased
 		return year >= sum;
 	}
