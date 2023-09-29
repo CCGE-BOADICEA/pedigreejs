@@ -103,7 +103,7 @@ function addPbuttonEvents(opts) {
 			$("#"+opts.targetDiv).empty();
 			build(opts);
 		} else if ($(e.target).hasClass('fa-refresh')) {
-			messages("Resetting the pedigree",
+			messages("Pedigree Reset",
 			         "This may result in loss of some data. Reset now?",
 			         reset, opts);
 		} else if ($(e.target).hasClass('fa-crosshairs')) {
