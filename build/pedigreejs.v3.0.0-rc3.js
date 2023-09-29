@@ -344,6 +344,8 @@ var pedigreejs = (function (exports) {
 	function validate_age_yob(age, yob, status) {
 	  let year = new Date().getFullYear();
 	  let sum = parseInt(age) + parseInt(yob);
+	  // check status is an expected string
+	  if (status !== "1" && status !== "0") return false;
 	  if (status === "1") {
 	    // deceased
 	    return year >= sum;
@@ -3214,7 +3216,7 @@ var pedigreejs = (function (exports) {
 	    dataset.splice(0, 0, mother);
 	    dataset.splice(0, 0, father);
 	    for (i = 0; i < dataset.length; i++) {
-	      if (dataset[i].top_level && dataset[i].name !== mother.name && dataset[i].name !== father.name) {
+	      if ((dataset[i].top_level || getDepth(dataset, dataset[i].name) === 2) && dataset[i].name !== mother.name && dataset[i].name !== father.name) {
 	        delete dataset[i].top_level;
 	        dataset[i].noparents = true;
 	        dataset[i].mother = mother.name;
