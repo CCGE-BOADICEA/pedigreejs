@@ -28,7 +28,7 @@ export function build(options) {
 		zoomOut: 1.0,
 		diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
 					{'type': 'breast_cancer2', 'colour': 'pink'},
-					{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
+					{'type': 'ovarian_cancer', 'colour': '#306430'},
 					{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 					{'type': 'prostate_cancer', 'colour': '#D5494A'}],
 		labels: ['stillbirth', ['age', 'yob'], 'alleles',
@@ -39,7 +39,7 @@ export function build(options) {
 		font_size: '.75em',
 		font_family: 'Helvetica',
 		font_weight: 700,
-		background: "#EEE",
+		background: "#FAFAFA",
 		node_background: '#fdfdfd',
 		validate: true,
 		DEBUG: false}, options );
