@@ -2522,9 +2522,9 @@ var pedigreejs = (function (exports) {
 	// update status field and age label - 0 = alive, 1 = dead
 	function updateStatus(status) {
 	  $('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
-	  status === 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock');
+	  status === "1" ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock');
 	  $('#id_age_' + status).removeClass("hidden");
-	  $('#id_age_' + (status === 1 ? '0' : '1')).addClass("hidden");
+	  $('#id_age_' + (status === "1" ? '0' : '1')).addClass("hidden");
 	}
 	function nodeclick(node) {
 	  $('form > fieldset').prop('disabled', false);
@@ -2767,6 +2767,7 @@ var pedigreejs = (function (exports) {
 		nodeclick: nodeclick,
 		save: save,
 		save_ashkn: save_ashkn,
+		updateStatus: updateStatus,
 		update_diagnosis_age_widget: update_diagnosis_age_widget
 	});
 
@@ -3575,7 +3576,7 @@ var pedigreejs = (function (exports) {
 	      'colour': 'pink'
 	    }, {
 	      'type': 'ovarian_cancer',
-	      'colour': '#4DAA4D'
+	      'colour': '#306430'
 	    }, {
 	      'type': 'pancreatic_cancer',
 	      'colour': '#4289BA'
@@ -3588,7 +3589,7 @@ var pedigreejs = (function (exports) {
 	    font_size: '.75em',
 	    font_family: 'Helvetica',
 	    font_weight: 700,
-	    background: "#EEE",
+	    background: "#FAFAFA",
 	    node_background: '#fdfdfd',
 	    validate: true,
 	    DEBUG: false
