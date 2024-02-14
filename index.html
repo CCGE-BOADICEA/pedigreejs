@@ -166,8 +166,8 @@
 				'targetDiv': 'pedigree',
 				'btn_target': 'pedigree_history',
 			//	'nodeclick': pedigree_form.nodeclick,
-				'width': ($(window).width() > 450 ? 390 : $(window).width()- 30),
-				'height': 280,
+				'width': ($(window).width() > 540 ? 500 : $(window).width()- 30),
+				'height': 350,
 				'symbol_size': 30,
 				'edit': true,
 				'zoomIn': .5,
@@ -186,6 +186,108 @@
 			opts.dataset = dataset;
 		}
 		opts = pedigreejs.pedigreejs.build(opts);
+
+		/**
+		 * Funtion to get the pedigree data in BOADICEA v4 format
+		 */
+		function get_pedigree_bwa4(dataset) {
+			let msg = "BOADICEA import pedigree file format 4.0 ";
+			let famid = opts.dataset[0].famid;
+
+			// female risk factors
+			let probandIdx  = pedigreejs.pedigreejs_utils.getProbandIndex(dataset);
+			let sex = 'F';
+			if(probandIdx) {
+				sex = dataset[probandIdx].sex;
+			}
+
+			msg += "\nFamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob";
+			msg += "\t1stBrCa\t2ndBrCa\tOvCa\tProCa\tPanCa\tAshkn";
+			msg += "\tBRCA1t\tBRCA1r\tBRCA2t\tBRCA2r\tPALB2t\tPALB2r\tATMt\tATMr\tCHEK2t\tCHEK2r\tER\tPR\tHER2\tCK14\tCK56";
+
+			for(let i=0; i<dataset.length; i++) {
+				let p = dataset[i];
+
+				msg += '\n'+famid+'\t';												// max 13 chars
+				msg += (p.display_name ? p.display_name : "NA")+'\t';				// display_name 
+				msg += ('proband' in p ? '1' : 0)+'\t';
+				msg += p.name+'\t';													// max 7 chars
+				msg += ('father' in p && !('noparents' in p)? p.father : 0)+'\t';	// max 7 chars
+				msg += ('mother' in p && !('noparents' in p)? p.mother : 0)+'\t';	// max 7 chars
+				msg += p.sex+'\t';
+				msg += ('mztwin' in p ? p.mztwin : 0)+'\t'; 						// MZtwin
+				msg += ('status' in p ? p.status : 0)+'\t';							// current status: 0 = alive, 1 = dead
+				msg += ('age' in p ? p.age : 0)+'\t';								// Age at last follow up or 0 = unspecified
+				msg += ('yob' in p ? p.yob : 0)+'\t';								// YOB or 0 = unspecified
+
+				let cmsg = "";
+				$.each(pedigreejs.pedigreejs_canrisk_file.cancers, function(cancer, diagnosis_age) {
+					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
+					if(diagnosis_age in p)
+						cmsg += (diagnosis_age in p ? p[diagnosis_age] : 'AU')+'\t';
+					else
+						cmsg += '0\t';
+				});
+				msg+=cmsg;
+
+				// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
+				msg += ('ashkenazi' in p ? p.ashkenazi : 0)+'\t';
+
+				let gt = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
+				for(let j=0; j<gt.length; j++) {
+					if(gt[j]+'_gene_test' in p &&
+					   p[gt[j]+'_gene_test']['type'] !== '-' &&
+					   p[gt[j]+'_gene_test']['result'] !== '-') {
+						msg += p[gt[j]+'_gene_test']['type'] + '\t';
+						msg += p[gt[j]+'_gene_test']['result'] + '\t';
+					} else {
+						msg += '0\t0\t';		// type, 0=untested, S=mutation search, T=direct gene test
+												// result, 0=untested, P=positive, N=negative
+					}
+				}
+
+				let ptests = pedigreejs.pedigreejs_canrisk_file.pathology_tests;
+				for(let j=0; j<ptests.length; j++) {
+					// status, 0 = unspecified, N = negative, P = positive
+					if(ptests[j]+'_bc_pathology' in p) {
+						msg += p[ptests[j]+'_bc_pathology'];
+					} else {
+						msg += '0';
+					}
+					if(j<(ptests.length-1))
+						msg += "\t";
+				}
+			}
+			return msg;
+		}
+
+		function save(asCanRisk) {
+			let curr = pedigreejs.pedigreejs_pedcache.current(opts);
+			var content;
+			var fileName;
+			if (asCanRisk){
+				content = pedigreejs.pedigreejs_canrisk_file.get_non_anon_pedigree(opts.dataset);
+				filename = "ped.canrisk";
+			} else {
+				content = get_pedigree_bwa4(opts.dataset);
+				filename = "ped.boadicea";
+			}
+
+			let file = new Blob([content], {type: "text/plain"});
+			let a = document.createElement("a");
+			let url = URL.createObjectURL(file);
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			setTimeout(function() {
+			   document.body.removeChild(a);
+			   window.URL.revokeObjectURL(url);
+			}, 0);
+		}
+		
+		$('#save-boadicea').click(function(_e) { save(false); });
+		$('#save-canrisk').click(function(_e)  { save(true); });
 	});
 	</script>
 </head>
@@ -212,6 +314,7 @@
 				<label class="btn">
 						<input id="save" type="button" style="display: none;"/>Save
 				</label>
+
 				<label class="btn">
 						<input id="print" type="button" style="display: none;"/>Print
 				</label>
@@ -224,6 +327,14 @@
 
 				<div id="pedigrees"></div>
 				<div id="node_properties"></div>
+
+				<br/>
+				<label class="btn">
+						<input id="save-boadicea" type="button" style="display: none;"/>Save (BOADICEA v4 format)
+				</label>
+				<label class="btn">
+						<input id="save-canrisk" type="button" style="display: none;"/>Save (CanRisk format)
+				</label>
 			</div>
 		</div>
 		<div>
