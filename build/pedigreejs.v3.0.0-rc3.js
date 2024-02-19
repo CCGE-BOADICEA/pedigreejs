@@ -728,7 +728,6 @@ var pedigreejs = (function (exports) {
 	      }
 	    }
 	  }
-
 	  recurse(root);
 	  recurse(root);
 	}
@@ -1205,7 +1204,6 @@ var pedigreejs = (function (exports) {
 	    };
 	    clear(opts); // clear all storage data
 	  }
-
 	  delete opts.dataset;
 	  let selected = $("input[name='default_fam']:checked");
 	  if (selected.length > 0 && selected.val() === 'extended2') {
@@ -1579,6 +1577,11 @@ var pedigreejs = (function (exports) {
 	      ped.unshift(indi);
 	    }
 	  }
+
+	  // group mztwins
+	  ped.sort(function (a, b) {
+	    return a.mztwin !== undefined ? a.mztwin.localeCompare(b.mztwin) : 0;
+	  });
 	  return [hdr, ped];
 	}
 
@@ -1694,7 +1697,6 @@ var pedigreejs = (function (exports) {
 	        // result, 0=untested, P=positive, N=negative
 	      }
 	    }
-
 	    for (let j = 0; j < pathology_tests.length; j++) {
 	      // status, 0 = unspecified, N = negative, P = positive
 	      if (pathology_tests[j] + '_bc_pathology' in p) {
@@ -2522,9 +2524,9 @@ var pedigreejs = (function (exports) {
 	// update status field and age label - 0 = alive, 1 = dead
 	function updateStatus(status) {
 	  $('#age_yob_lock').removeClass('fa-lock fa-unlock-alt');
-	  status === 1 ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock');
+	  status === "1" ? $('#age_yob_lock').addClass('fa-unlock-alt') : $('#age_yob_lock').addClass('fa-lock');
 	  $('#id_age_' + status).removeClass("hidden");
-	  $('#id_age_' + (status === 1 ? '0' : '1')).addClass("hidden");
+	  $('#id_age_' + (status === "1" ? '0' : '1')).addClass("hidden");
 	}
 	function nodeclick(node) {
 	  $('form > fieldset').prop('disabled', false);
@@ -2767,6 +2769,7 @@ var pedigreejs = (function (exports) {
 		nodeclick: nodeclick,
 		save: save,
 		save_ashkn: save_ashkn,
+		updateStatus: updateStatus,
 		update_diagnosis_age_widget: update_diagnosis_age_widget
 	});
 
@@ -3575,7 +3578,7 @@ var pedigreejs = (function (exports) {
 	      'colour': 'pink'
 	    }, {
 	      'type': 'ovarian_cancer',
-	      'colour': '#4DAA4D'
+	      'colour': '#306430'
 	    }, {
 	      'type': 'pancreatic_cancer',
 	      'colour': '#4289BA'
@@ -3588,7 +3591,7 @@ var pedigreejs = (function (exports) {
 	    font_size: '.75em',
 	    font_family: 'Helvetica',
 	    font_weight: 700,
-	    background: "#EEE",
+	    background: "#FAFAFA",
 	    node_background: '#fdfdfd',
 	    validate: true,
 	    DEBUG: false
@@ -3741,7 +3744,7 @@ var pedigreejs = (function (exports) {
 
 	  // alive status = 0; dead status = 1
 	  node.filter(function (d) {
-	    return d.data.status === "1";
+	    return d.data.status === "1" || d.data.status === 1;
 	  }).append('line').style("stroke", "black").attr("x1", function (_d, _i) {
 	    return -0.6 * opts.symbol_size;
 	  }).attr("y1", function (_d, _i) {

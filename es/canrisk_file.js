@@ -190,6 +190,12 @@ export function readCanRisk(boadicea_lines) {
 			ped.unshift(indi);
 		}
 	}
+
+	// group mztwins
+	ped.sort(function(a, b) {
+		return a.mztwin !== undefined ? a.mztwin.localeCompare(b.mztwin) : 0;
+	});
+
 	return [hdr, ped];
 }
 
