@@ -193,7 +193,7 @@ export function readCanRisk(boadicea_lines) {
 
 	// group mztwins
 	ped.sort(function(a, b) {
-    	return a.mztwin !== undefined ? a.mztwin.localeCompare(b.mztwin) : 0;
+		return a.mztwin !== undefined ? a.mztwin.localeCompare(b.mztwin) : 0;
 	});
 
 	return [hdr, ped];

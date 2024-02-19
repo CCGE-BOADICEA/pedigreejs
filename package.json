@@ -37,18 +37,19 @@
 	},
 	"homepage": "https://ccge-boadicea.github.io/pedigreejs/",
 	"devDependencies": {
-		"@babel/core": "^7.22.9",
-		"@babel/eslint-parser": "^7.22.9",
-		"@babel/preset-env": "^7.22.9",
-		"@rollup/plugin-babel": "^6.0.3",
-		"npm-check-updates": "^16.10.17",
-		"rollup": "^3.27.0",
+		"@babel/core": "^7.23.9",
+		"@babel/eslint-parser": "^7.23.10",
+		"@babel/preset-env": "^7.23.9",
+		"@rollup/plugin-babel": "^6.0.4",
+		"npm-check-updates": "^16.14.15",
+		"rollup": "^4.12.0",
 		"rollup-plugin-eslint": "^7.0.0",
 		"rollup-plugin-postcss": "^4.0.2",
 		"rollup-plugin-sourcemaps": "^0.6.3",
 		"rollup-plugin-terser": "^7.0.2"
 	},
 	"dependencies": {
-		"postcss": "^8.4.27"
+		"caniuse-lite": "^1.0.30001588",
+		"postcss": "^8.4.35"
 	}
 }
