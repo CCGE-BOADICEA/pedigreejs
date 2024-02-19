@@ -728,7 +728,6 @@ var pedigreejs = (function (exports) {
 	      }
 	    }
 	  }
-
 	  recurse(root);
 	  recurse(root);
 	}
@@ -1205,7 +1204,6 @@ var pedigreejs = (function (exports) {
 	    };
 	    clear(opts); // clear all storage data
 	  }
-
 	  delete opts.dataset;
 	  let selected = $("input[name='default_fam']:checked");
 	  if (selected.length > 0 && selected.val() === 'extended2') {
@@ -1699,7 +1697,6 @@ var pedigreejs = (function (exports) {
 	        // result, 0=untested, P=positive, N=negative
 	      }
 	    }
-
 	    for (let j = 0; j < pathology_tests.length; j++) {
 	      // status, 0 = unspecified, N = negative, P = positive
 	      if (pathology_tests[j] + '_bc_pathology' in p) {
@@ -3747,7 +3744,7 @@ var pedigreejs = (function (exports) {
 
 	  // alive status = 0; dead status = 1
 	  node.filter(function (d) {
-	    return d.data.status === "1";
+	    return d.data.status === "1" || d.data.status === 1;
 	  }).append('line').style("stroke", "black").attr("x1", function (_d, _i) {
 	    return -0.6 * opts.symbol_size;
 	  }).attr("y1", function (_d, _i) {
