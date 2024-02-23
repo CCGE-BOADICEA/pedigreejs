@@ -1423,6 +1423,9 @@ var pedigreejs = (function (exports) {
 	    if (prs.ovarian_cancer_prs && prs.ovarian_cancer_prs.alpha !== 0 && prs.ovarian_cancer_prs.zscore !== 0) {
 	      meta += "\n##PRS_OC=alpha=" + prs.ovarian_cancer_prs.alpha + ",zscore=" + prs.ovarian_cancer_prs.zscore;
 	    }
+	    if (prs.prostate_cancer_prs && prs.prostate_cancer_prs.alpha !== 0 && prs.prostate_cancer_prs.zscore !== 0) {
+	      meta += "\n##PRS_PC=alpha=" + prs.prostate_cancer_prs.alpha + ",zscore=" + prs.prostate_cancer_prs.zscore;
+	    }
 	  } catch (err) {
 	    console.warn("PRS", prs);
 	  }
@@ -1466,6 +1469,13 @@ var pedigreejs = (function (exports) {
 	      'alpha': parseFloat($('#ovarian_prs_a').val()),
 	      'zscore': parseFloat($('#ovarian_prs_z').val()),
 	      'percent': parseFloat($('#ovarian_prs_percent').val())
+	    };
+	  }
+	  if (hasInput("prostate_prs_a") && hasInput("prostate_prs_z")) {
+	    prs['prostate_cancer_prs'] = {
+	      'alpha': parseFloat($('#prostate_prs_a').val()),
+	      'zscore': parseFloat($('#prostate_prs_z').val()),
+	      'percent': parseFloat($('#prostate_prs_percent').val())
 	    };
 	  }
 	  console.log(prs);
