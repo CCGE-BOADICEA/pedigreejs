@@ -217,6 +217,7 @@ export function build(options) {
 		.append('line')
 			.style("stroke", "black")
 			.attr("x1", function(_d, _i) {return -0.6*opts.symbol_size;})
+			.attr("y1", function(_d, _i) {return 0.6*opts.symbol_size;})
 			.attr("x2", function(_d, _i) {return 0.6*opts.symbol_size;})
 			.attr("y2", function(_d, _i) {return -0.6*opts.symbol_size;});
 
