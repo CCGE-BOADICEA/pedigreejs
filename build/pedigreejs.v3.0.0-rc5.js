@@ -1406,6 +1406,7 @@ var pedigreejs = (function (exports) {
 	};
 	let genetic_test1 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d', 'rad51c', 'brip1'];
 	let genetic_test2 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 'rad51d', 'rad51c', 'brip1'];
+	let genetic_test4 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 'rad51d', 'rad51c', 'brip1', 'hoxb13'];
 	let pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
 	// risk factor to storage
@@ -1491,14 +1492,23 @@ var pedigreejs = (function (exports) {
 	  }
 	  return meta;
 	}
+
+	/**
+	 * Get genetic test genes based on CanRisk version
+	 */
+	function getGeneticTest(version) {
+	  version = parseInt(version);
+	  if (version === 1) return genetic_test1;else if (version === 2) return genetic_test2;else if (version === 3) return genetic_test2;
+	  return genetic_test4;
+	}
 	function readCanRisk(boadicea_lines) {
 	  let lines = boadicea_lines.trim().split('\n');
 	  let ped = [];
 	  let hdr = []; // collect risk factor header lines
 	  const regexp = /([0-9])/;
-	  let version = 2;
-	  let gt = version === 1 ? genetic_test1 : genetic_test2;
-	  let ncol = [26, 27, 27]; // number of columns - v1, v2, v3
+	  let version = 3;
+	  let gt = getGeneticTest(version);
+	  let ncol = [26, 27, 27, 28]; // number of columns - v1, v2, v3, v4
 	  // assumes two line header
 	  for (let i = 0; i < lines.length; i++) {
 	    let ln = lines[i].trim();
@@ -1506,7 +1516,7 @@ var pedigreejs = (function (exports) {
 	      if (ln.indexOf("##CanRisk") === 0) {
 	        const match = ln.match(regexp);
 	        version = parseInt(match[1]);
-	        gt = version === 1 ? genetic_test1 : genetic_test2;
+	        gt = getGeneticTest(version);
 	        console.log("CanRisk File Format version " + version);
 	        if (ln.indexOf(";") > -1) {
 	          // contains surgical op data
@@ -1611,7 +1621,7 @@ var pedigreejs = (function (exports) {
 	 * Get CanRisk formated pedigree.
 	 */
 	function get_pedigree(dataset, famid, meta, isanon) {
-	  let version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 2;
+	  let version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 3;
 	  let ethnicity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
 	  let v = Number.isInteger(version) ? version + ".0" : version.toString();
 	  let msg = "##CanRisk " + v;
@@ -1665,7 +1675,7 @@ var pedigreejs = (function (exports) {
 	    msg += "\n##ethnicity=" + ethnicity;
 	  }
 	  msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn";
-	  let gt = version === 1 ? genetic_test1 : genetic_test2;
+	  let gt = getGeneticTest(version);
 	  for (let i = 0; i < gt.length; i++) {
 	    msg += "\t" + gt[i].toUpperCase();
 	  }
@@ -1755,6 +1765,7 @@ var pedigreejs = (function (exports) {
 		cancers: cancers,
 		genetic_test1: genetic_test1,
 		genetic_test2: genetic_test2,
+		genetic_test4: genetic_test4,
 		get_mdensity: get_mdensity,
 		get_meta: get_meta,
 		get_non_anon_pedigree: get_non_anon_pedigree,
@@ -3596,7 +3607,7 @@ var pedigreejs = (function (exports) {
 	      'type': 'prostate_cancer',
 	      'colour': '#D5494A'
 	    }],
-	    labels: ['stillbirth', ['age', 'yob'], 'alleles', ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'], ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test'], ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
+	    labels: ['stillbirth', ['age', 'yob'], 'alleles', ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'], ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test', 'hoxb13_gene_test'], ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
 	    keep_proband_on_reset: false,
 	    font_size: '.75em',
 	    font_family: 'Helvetica',

@@ -1,6 +1,6 @@
 {
 	"name": "pedigreejs",
-	"version": "v3.0.0-rc4",
+	"version": "v3.0.0-rc5",
 	"description": "pedigreejs is a javascript module for graphically building pedigree data in the web-browser.",
 	"browser": "es/pedigree.js",
 	"files": [
