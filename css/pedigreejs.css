@@ -8,6 +8,5 @@
 .addsibling, .addchild {
 	cursor: default;
 }
-.pull-right { float: right; margin-left:.3em; line-height: 1; }
-.pull-left { float: left; margin-right:.3em; line-height: 1;  }
+.pe-2 { padding-right: 0.75em; }
 svg {overflow:hidden}

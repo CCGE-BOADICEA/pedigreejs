@@ -16,25 +16,27 @@ export function addButtons(options) {
 		btn_target: 'pedigree_history'
     }, options );
 
-	let btns = [{"fa": "fa-undo pull-left", "title": "undo"},
-				{"fa": "fa-redo pull-left", "title": "redo"},
-				{"fa": "fa-refresh pull-left", "title": "reset"}];
+	let btns = [{"fa": "fa-file-image", "title": "download PNG image"},
+				{"fa": "fa-undo", "title": "undo"},
+				{"fa": "fa-redo", "title": "redo"},
+				{"fa": "fa-refresh", "title": "reset"}];
 
-	btns.push({"fa": "fa-crosshairs pull-right", "title": "scale-to-fit"});
+	btns.push({"fa": "fa-crosshairs", "title": "scale-to-fit"});
 	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
 		if(opts.zoomOut !== 1)
-			btns.push({"fa": "fa-minus-circle pull-right", "title": "zoom-out"});
+			btns.push({"fa": "fa-minus-circle", "title": "zoom-out"});
 		if(opts.zoomIn !== 1)
-			btns.push({"fa": "fa-plus-circle pull-right", "title": "zoom-in"});
+			btns.push({"fa": "fa-plus-circle", "title": "zoom-in"});
 	}
-	btns.push({"fa": "fa-arrows-alt pull-right", "title": "fullscreen"});
+	btns.push({"fa": "fa-arrows-alt", "title": "fullscreen"});
 
 	let lis = "";
 	for(let i=0; i<btns.length; i++) {
 		lis += '<span>';
-		lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' +
-		               (btns[i].fa === "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') +
-		               ' aria-hidden="true" title="'+ btns[i].title +'"></i>';
+		lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2" aria-hidden="true" title="'+ btns[i].title + '"' +
+		(btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
+		'></i>';
+
 		lis += '</span>';
 	}
 	$( "#"+opts.btn_target ).append(lis);
@@ -108,7 +110,10 @@ function addPbuttonEvents(opts) {
 			         reset, opts);
 		} else if ($(e.target).hasClass('fa-crosshairs')) {
 			scale_to_fit(opts);
+		} else if ($(e.target).hasClass('fa-file-image')) {
+			return;
 		} 
+
 		// trigger fhChange event
 		$(document).trigger('fhChange', [opts]);
 	});
