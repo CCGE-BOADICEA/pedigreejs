@@ -1069,37 +1069,40 @@ var pedigreejs = (function (exports) {
 	    btn_target: 'pedigree_history'
 	  }, options);
 	  let btns = [{
-	    "fa": "fa-undo pull-left",
+	    "fa": "fa-file-image",
+	    "title": "download PNG image"
+	  }, {
+	    "fa": "fa-undo",
 	    "title": "undo"
 	  }, {
-	    "fa": "fa-redo pull-left",
+	    "fa": "fa-redo",
 	    "title": "redo"
 	  }, {
-	    "fa": "fa-refresh pull-left",
+	    "fa": "fa-refresh",
 	    "title": "reset"
 	  }];
 	  btns.push({
-	    "fa": "fa-crosshairs pull-right",
+	    "fa": "fa-crosshairs",
 	    "title": "scale-to-fit"
 	  });
 	  if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
 	    if (opts.zoomOut !== 1) btns.push({
-	      "fa": "fa-minus-circle pull-right",
+	      "fa": "fa-minus-circle",
 	      "title": "zoom-out"
 	    });
 	    if (opts.zoomIn !== 1) btns.push({
-	      "fa": "fa-plus-circle pull-right",
+	      "fa": "fa-plus-circle",
 	      "title": "zoom-in"
 	    });
 	  }
 	  btns.push({
-	    "fa": "fa-arrows-alt pull-right",
+	    "fa": "fa-arrows-alt",
 	    "title": "fullscreen"
 	  });
 	  let lis = "";
 	  for (let i = 0; i < btns.length; i++) {
 	    lis += '<span>';
-	    lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' + (btns[i].fa === "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') + ' aria-hidden="true" title="' + btns[i].title + '"></i>';
+	    lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2" aria-hidden="true" title="' + btns[i].title + '"' + (btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') + '></i>';
 	    lis += '</span>';
 	  }
 	  $("#" + opts.btn_target).append(lis);
@@ -1173,7 +1176,10 @@ var pedigreejs = (function (exports) {
 	      messages("Pedigree Reset", "This may result in loss of some data. Reset now?", reset, opts);
 	    } else if ($(e.target).hasClass('fa-crosshairs')) {
 	      scale_to_fit(opts);
+	    } else if ($(e.target).hasClass('fa-file-image')) {
+	      return;
 	    }
+
 	    // trigger fhChange event
 	    $(document).trigger('fhChange', [opts]);
 	  });
@@ -1800,24 +1806,9 @@ var pedigreejs = (function (exports) {
 	  $('#svg_download').click(function (_e) {
 	    svg_download(get_printable_svg(opts));
 	  });
-	  $('#png_download').click(function (_e) {
-	    let deferred = svg2img($('svg'), "pedigree");
-	    $.when.apply($, [deferred]).done(function () {
-	      let obj = getByName(arguments, "pedigree");
-	      if (isEdge() || isIE()) {
-	        let html = "<img src='" + obj.img + "' alt='canvas image'/>";
-	        let newTab = window.open(); // pop-ups need to be enabled
-	        newTab.document.write(html);
-	      } else {
-	        let a = document.createElement('a');
-	        a.href = obj.img;
-	        a.download = 'plot.png';
-	        a.target = '_blank';
-	        document.body.appendChild(a);
-	        a.click();
-	        document.body.removeChild(a);
-	      }
-	    });
+	  $('#png_download, .fa-file-image').click(function (_e) {
+	    let resolution = 1;
+	    img_download(opts, resolution, "image/png");
 	  });
 	}
 
@@ -1851,6 +1842,32 @@ var pedigreejs = (function (exports) {
 	      continue;
 	    }
 	  }
+	}
+
+	/**
+	 * Export pedigree as image, e.g. PNG
+	 */
+	function img_download(opts, resolution, img_type) {
+	  let deferred = svg2img($('#' + opts.targetDiv).find('svg'), "pedigree", {
+	    resolution: resolution,
+	    img_type: img_type
+	  });
+	  $.when.apply($, [deferred]).done(function () {
+	    let obj = getByName(arguments, "pedigree");
+	    if (isEdge() || isIE()) {
+	      let html = "<img src='" + obj.img + "' alt='canvas image'/>";
+	      let newTab = window.open(); // pop-ups need to be enabled
+	      newTab.document.write(html);
+	    } else {
+	      let a = document.createElement('a');
+	      a.href = obj.img;
+	      a.download = 'plot.png';
+	      a.target = '_blank';
+	      document.body.appendChild(a);
+	      a.click();
+	      document.body.removeChild(a);
+	    }
+	  });
 	}
 
 	/**
@@ -2452,6 +2469,7 @@ var pedigreejs = (function (exports) {
 		__proto__: null,
 		addIO: addIO,
 		copy_svg: copy_svg,
+		img_download: img_download,
 		load_data: load_data,
 		print: print,
 		readBoadiceaV4: readBoadiceaV4,
