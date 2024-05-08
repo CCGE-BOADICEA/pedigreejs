@@ -33,7 +33,7 @@ export function build(options) {
 					{'type': 'prostate_cancer', 'colour': '#D5494A'}],
 		labels: ['stillbirth', ['age', 'yob'], 'alleles',
 							   ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'],
-							   ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test'],
+							   ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test', 'hoxb13_gene_test'],
 							   ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
 		keep_proband_on_reset: false,
 		font_size: '.75em',
@@ -217,6 +217,7 @@ export function build(options) {
 		.append('line')
 			.style("stroke", "black")
 			.attr("x1", function(_d, _i) {return -0.6*opts.symbol_size;})
+			.attr("y1", function(_d, _i) {return 0.6*opts.symbol_size;})
 			.attr("x2", function(_d, _i) {return 0.6*opts.symbol_size;})
 			.attr("y2", function(_d, _i) {return -0.6*opts.symbol_size;});
 

@@ -29,22 +29,9 @@ export function addIO(opts) {
 		svg_download(get_printable_svg(opts));
 	});
 
-	$('#png_download').click(function(_e) {
-		let deferred = svg2img($('svg'), "pedigree");
-		$.when.apply($,[deferred]).done(function() {
-			let obj = getByName(arguments, "pedigree");
-			if(utils.isEdge() || utils.isIE()) {
-				let html="<img src='"+obj.img+"' alt='canvas image'/>";
-				let newTab = window.open();		// pop-ups need to be enabled
-				newTab.document.write(html);
-			} else {
-				let a	  = document.createElement('a');
-				a.href	 = obj.img;
-				a.download = 'plot.png';
-				a.target   = '_blank';
-				document.body.appendChild(a); a.click(); document.body.removeChild(a);
-			}
-		});
+	$('#png_download, .fa-file-image').click(function(_e) {
+		let resolution = 1;
+		img_download(opts, resolution, "image/png");
 	});
 }
 
@@ -75,6 +62,27 @@ function copyStylesInline(destinationNode, sourceNode) {
 			}
 		} catch(err) { continue; }
    }
+}
+
+/**
+ * Export pedigree as image, e.g. PNG
+ */
+export function img_download(opts, resolution, img_type) {
+	let deferred = svg2img($('#'+opts.targetDiv).find('svg'), "pedigree", {resolution: resolution, img_type: img_type});
+	$.when.apply($,[deferred]).done(function() {
+		let obj = getByName(arguments, "pedigree");
+		if(utils.isEdge() || utils.isIE()) {
+			let html="<img src='"+obj.img+"' alt='canvas image'/>";
+			let newTab = window.open();		// pop-ups need to be enabled
+			newTab.document.write(html);
+		} else {
+			let a	  = document.createElement('a');
+			a.href	 = obj.img;
+			a.download = 'plot.png';
+			a.target   = '_blank';
+			document.body.appendChild(a); a.click(); document.body.removeChild(a);
+		}
+	});
 }
 
 /**

@@ -1,6 +1,6 @@
 {
 	"name": "pedigreejs",
-	"version": "v3.0.0-rc3",
+	"version": "v3.0.0-rc5",
 	"description": "pedigreejs is a javascript module for graphically building pedigree data in the web-browser.",
 	"browser": "es/pedigree.js",
 	"files": [
@@ -37,19 +37,22 @@
 	},
 	"homepage": "https://ccge-boadicea.github.io/pedigreejs/",
 	"devDependencies": {
-		"@babel/core": "^7.23.9",
-		"@babel/eslint-parser": "^7.23.10",
-		"@babel/preset-env": "^7.23.9",
+		"@babel/core": "^7.24.3",
+		"@babel/eslint-parser": "^7.24.1",
+		"@babel/preset-env": "^7.24.3",
 		"@rollup/plugin-babel": "^6.0.4",
-		"npm-check-updates": "^16.14.15",
-		"rollup": "^4.12.0",
+		"@rollup/plugin-terser": "^0.4.4",
+		"jasmine-browser-runner": "^2.4.0",
+		"jasmine-core": "^5.1.2",
+		"npm-check-updates": "^16.14.17",
+		"rollup": "^4.13.0",
 		"rollup-plugin-eslint": "^7.0.0",
 		"rollup-plugin-postcss": "^4.0.2",
-		"rollup-plugin-sourcemaps": "^0.6.3",
-		"rollup-plugin-terser": "^7.0.2"
+		"rollup-plugin-sourcemaps": "^0.6.3"
 	},
 	"dependencies": {
-		"caniuse-lite": "^1.0.30001588",
-		"postcss": "^8.4.35"
+		"@rollup/pluginutils": "^5.1.0",
+		"caniuse-lite": "^1.0.30001600",
+		"postcss": "^8.4.38"
 	}
 }

@@ -327,7 +327,7 @@ var pedigreejs = (function (exports) {
 	      });
 	    }
 	  } catch (err) {
-	    showDialog(title, msg, onConfirm, opts);
+	    showDialog(title, msg, onConfirm, opts, dataset);
 	  }
 	}
 
@@ -1069,37 +1069,40 @@ var pedigreejs = (function (exports) {
 	    btn_target: 'pedigree_history'
 	  }, options);
 	  let btns = [{
-	    "fa": "fa-undo pull-left",
+	    "fa": "fa-file-image",
+	    "title": "download PNG image"
+	  }, {
+	    "fa": "fa-undo",
 	    "title": "undo"
 	  }, {
-	    "fa": "fa-redo pull-left",
+	    "fa": "fa-redo",
 	    "title": "redo"
 	  }, {
-	    "fa": "fa-refresh pull-left",
+	    "fa": "fa-refresh",
 	    "title": "reset"
 	  }];
 	  btns.push({
-	    "fa": "fa-crosshairs pull-right",
+	    "fa": "fa-crosshairs",
 	    "title": "scale-to-fit"
 	  });
 	  if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
 	    if (opts.zoomOut !== 1) btns.push({
-	      "fa": "fa-minus-circle pull-right",
+	      "fa": "fa-minus-circle",
 	      "title": "zoom-out"
 	    });
 	    if (opts.zoomIn !== 1) btns.push({
-	      "fa": "fa-plus-circle pull-right",
+	      "fa": "fa-plus-circle",
 	      "title": "zoom-in"
 	    });
 	  }
 	  btns.push({
-	    "fa": "fa-arrows-alt pull-right",
+	    "fa": "fa-arrows-alt",
 	    "title": "fullscreen"
 	  });
 	  let lis = "";
 	  for (let i = 0; i < btns.length; i++) {
 	    lis += '<span>';
-	    lis += '&nbsp;<i class="fa fa-lg ' + btns[i].fa + '" ' + (btns[i].fa === "fa-arrows-alt pull-right" ? 'id="fullscreen" ' : '') + ' aria-hidden="true" title="' + btns[i].title + '"></i>';
+	    lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2" aria-hidden="true" title="' + btns[i].title + '"' + (btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') + '></i>';
 	    lis += '</span>';
 	  }
 	  $("#" + opts.btn_target).append(lis);
@@ -1173,7 +1176,10 @@ var pedigreejs = (function (exports) {
 	      messages("Pedigree Reset", "This may result in loss of some data. Reset now?", reset, opts);
 	    } else if ($(e.target).hasClass('fa-crosshairs')) {
 	      scale_to_fit(opts);
+	    } else if ($(e.target).hasClass('fa-file-image')) {
+	      return;
 	    }
+
 	    // trigger fhChange event
 	    $(document).trigger('fhChange', [opts]);
 	  });
@@ -1406,6 +1412,7 @@ var pedigreejs = (function (exports) {
 	};
 	let genetic_test1 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d', 'rad51c', 'brip1'];
 	let genetic_test2 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 'rad51d', 'rad51c', 'brip1'];
+	let genetic_test4 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 'rad51d', 'rad51c', 'brip1', 'hoxb13'];
 	let pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
 	// risk factor to storage
@@ -1422,6 +1429,9 @@ var pedigreejs = (function (exports) {
 	    }
 	    if (prs.ovarian_cancer_prs && prs.ovarian_cancer_prs.alpha !== 0 && prs.ovarian_cancer_prs.zscore !== 0) {
 	      meta += "\n##PRS_OC=alpha=" + prs.ovarian_cancer_prs.alpha + ",zscore=" + prs.ovarian_cancer_prs.zscore;
+	    }
+	    if (prs.prostate_cancer_prs && prs.prostate_cancer_prs.alpha !== 0 && prs.prostate_cancer_prs.zscore !== 0) {
+	      meta += "\n##PRS_PC=alpha=" + prs.prostate_cancer_prs.alpha + ",zscore=" + prs.prostate_cancer_prs.zscore;
 	    }
 	  } catch (err) {
 	    console.warn("PRS", prs);
@@ -1468,6 +1478,13 @@ var pedigreejs = (function (exports) {
 	      'percent': parseFloat($('#ovarian_prs_percent').val())
 	    };
 	  }
+	  if (hasInput("prostate_prs_a") && hasInput("prostate_prs_z")) {
+	    prs['prostate_cancer_prs'] = {
+	      'alpha': parseFloat($('#prostate_prs_a').val()),
+	      'zscore': parseFloat($('#prostate_prs_z').val()),
+	      'percent': parseFloat($('#prostate_prs_percent').val())
+	    };
+	  }
 	  console.log(prs);
 	  return isEmpty(prs) ? 0 : prs;
 	}
@@ -1481,14 +1498,23 @@ var pedigreejs = (function (exports) {
 	  }
 	  return meta;
 	}
+
+	/**
+	 * Get genetic test genes based on CanRisk version
+	 */
+	function getGeneticTest(version) {
+	  version = parseInt(version);
+	  if (version === 1) return genetic_test1;else if (version === 2) return genetic_test2;else if (version === 3) return genetic_test2;
+	  return genetic_test4;
+	}
 	function readCanRisk(boadicea_lines) {
 	  let lines = boadicea_lines.trim().split('\n');
 	  let ped = [];
 	  let hdr = []; // collect risk factor header lines
 	  const regexp = /([0-9])/;
-	  let version = 2;
-	  let gt = version === 1 ? genetic_test1 : genetic_test2;
-	  let ncol = [26, 27, 27]; // number of columns - v1, v2, v3
+	  let version = 3;
+	  let gt = getGeneticTest(version);
+	  let ncol = [26, 27, 27, 28]; // number of columns - v1, v2, v3, v4
 	  // assumes two line header
 	  for (let i = 0; i < lines.length; i++) {
 	    let ln = lines[i].trim();
@@ -1496,7 +1522,7 @@ var pedigreejs = (function (exports) {
 	      if (ln.indexOf("##CanRisk") === 0) {
 	        const match = ln.match(regexp);
 	        version = parseInt(match[1]);
-	        gt = version === 1 ? genetic_test1 : genetic_test2;
+	        gt = getGeneticTest(version);
 	        console.log("CanRisk File Format version " + version);
 	        if (ln.indexOf(";") > -1) {
 	          // contains surgical op data
@@ -1601,7 +1627,7 @@ var pedigreejs = (function (exports) {
 	 * Get CanRisk formated pedigree.
 	 */
 	function get_pedigree(dataset, famid, meta, isanon) {
-	  let version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 2;
+	  let version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 3;
 	  let ethnicity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
 	  let v = Number.isInteger(version) ? version + ".0" : version.toString();
 	  let msg = "##CanRisk " + v;
@@ -1655,7 +1681,7 @@ var pedigreejs = (function (exports) {
 	    msg += "\n##ethnicity=" + ethnicity;
 	  }
 	  msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn";
-	  let gt = version === 1 ? genetic_test1 : genetic_test2;
+	  let gt = getGeneticTest(version);
 	  for (let i = 0; i < gt.length; i++) {
 	    msg += "\t" + gt[i].toUpperCase();
 	  }
@@ -1745,6 +1771,7 @@ var pedigreejs = (function (exports) {
 		cancers: cancers,
 		genetic_test1: genetic_test1,
 		genetic_test2: genetic_test2,
+		genetic_test4: genetic_test4,
 		get_mdensity: get_mdensity,
 		get_meta: get_meta,
 		get_non_anon_pedigree: get_non_anon_pedigree,
@@ -1779,24 +1806,9 @@ var pedigreejs = (function (exports) {
 	  $('#svg_download').click(function (_e) {
 	    svg_download(get_printable_svg(opts));
 	  });
-	  $('#png_download').click(function (_e) {
-	    let deferred = svg2img($('svg'), "pedigree");
-	    $.when.apply($, [deferred]).done(function () {
-	      let obj = getByName(arguments, "pedigree");
-	      if (isEdge() || isIE()) {
-	        let html = "<img src='" + obj.img + "' alt='canvas image'/>";
-	        let newTab = window.open(); // pop-ups need to be enabled
-	        newTab.document.write(html);
-	      } else {
-	        let a = document.createElement('a');
-	        a.href = obj.img;
-	        a.download = 'plot.png';
-	        a.target = '_blank';
-	        document.body.appendChild(a);
-	        a.click();
-	        document.body.removeChild(a);
-	      }
-	    });
+	  $('#png_download, .fa-file-image').click(function (_e) {
+	    let resolution = 1;
+	    img_download(opts, resolution, "image/png");
 	  });
 	}
 
@@ -1830,6 +1842,32 @@ var pedigreejs = (function (exports) {
 	      continue;
 	    }
 	  }
+	}
+
+	/**
+	 * Export pedigree as image, e.g. PNG
+	 */
+	function img_download(opts, resolution, img_type) {
+	  let deferred = svg2img($('#' + opts.targetDiv).find('svg'), "pedigree", {
+	    resolution: resolution,
+	    img_type: img_type
+	  });
+	  $.when.apply($, [deferred]).done(function () {
+	    let obj = getByName(arguments, "pedigree");
+	    if (isEdge() || isIE()) {
+	      let html = "<img src='" + obj.img + "' alt='canvas image'/>";
+	      let newTab = window.open(); // pop-ups need to be enabled
+	      newTab.document.write(html);
+	    } else {
+	      let a = document.createElement('a');
+	      a.href = obj.img;
+	      a.download = 'plot.png';
+	      a.target = '_blank';
+	      document.body.appendChild(a);
+	      a.click();
+	      document.body.removeChild(a);
+	    }
+	  });
 	}
 
 	/**
@@ -2431,6 +2469,7 @@ var pedigreejs = (function (exports) {
 		__proto__: null,
 		addIO: addIO,
 		copy_svg: copy_svg,
+		img_download: img_download,
 		load_data: load_data,
 		print: print,
 		readBoadiceaV4: readBoadiceaV4,
@@ -3586,7 +3625,7 @@ var pedigreejs = (function (exports) {
 	      'type': 'prostate_cancer',
 	      'colour': '#D5494A'
 	    }],
-	    labels: ['stillbirth', ['age', 'yob'], 'alleles', ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'], ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test'], ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
+	    labels: ['stillbirth', ['age', 'yob'], 'alleles', ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'], ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test', 'hoxb13_gene_test'], ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
 	    keep_proband_on_reset: false,
 	    font_size: '.75em',
 	    font_family: 'Helvetica',

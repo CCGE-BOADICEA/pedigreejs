@@ -16,6 +16,7 @@ export let cancers = {
 	};
 export let genetic_test1 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'rad51d', 'rad51c', 'brip1'];
 export let genetic_test2 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 'rad51d', 'rad51c', 'brip1'];
+export let genetic_test4 = ['brca1', 'brca2', 'palb2', 'atm', 'chek2', 'bard1', 'rad51d', 'rad51c', 'brip1', 'hoxb13'];
 
 export let pathology_tests = ['er', 'pr', 'her2', 'ck14', 'ck56'];
 
@@ -34,6 +35,10 @@ export function get_meta() {
 
 		if(prs.ovarian_cancer_prs && prs.ovarian_cancer_prs.alpha !== 0 && prs.ovarian_cancer_prs.zscore !== 0) {
 			meta += "\n##PRS_OC=alpha="+prs.ovarian_cancer_prs.alpha+",zscore="+prs.ovarian_cancer_prs.zscore;
+		}
+
+		if(prs.prostate_cancer_prs && prs.prostate_cancer_prs.alpha !== 0 && prs.prostate_cancer_prs.zscore !== 0) {
+			meta += "\n##PRS_PC=alpha="+prs.prostate_cancer_prs.alpha+",zscore="+prs.prostate_cancer_prs.zscore;
 		}
 	} catch(err) { console.warn("PRS", prs); }
 	return meta;
@@ -76,6 +81,13 @@ export function get_prs_values() {
 			'percent': parseFloat($('#ovarian_prs_percent').val())
 		};
 	}
+	if(hasInput("prostate_prs_a") && hasInput("prostate_prs_z")) {
+		prs['prostate_cancer_prs'] = {
+			'alpha': parseFloat($('#prostate_prs_a').val()),
+			'zscore': parseFloat($('#prostate_prs_z').val()),
+			'percent': parseFloat($('#prostate_prs_percent').val())
+		};
+	}
 	console.log(prs);
 	return (isEmpty(prs) ? 0 : prs);
 }
@@ -91,14 +103,28 @@ function get_surgical_ops() {
 	return meta;
 }
 
+/**
+ * Get genetic test genes based on CanRisk version
+ */
+function getGeneticTest(version) {
+	version = parseInt(version);
+	if(version === 1)
+		return genetic_test1;
+	else if(version === 2)
+		return genetic_test2;
+	else if(version === 3)
+		return genetic_test2;
+	return genetic_test4;
+}
+
 export function readCanRisk(boadicea_lines) {
 	let lines = boadicea_lines.trim().split('\n');
 	let ped = [];
 	let hdr = [];  // collect risk factor header lines
 	const regexp = /([0-9])/;
-	let version = 2;
-	let gt = (version === 1 ? genetic_test1 : genetic_test2);
-	let ncol = [26, 27, 27];	// number of columns - v1, v2, v3
+	let version = 3;
+	let gt = getGeneticTest(version);
+	let ncol = [26, 27, 27, 28];	// number of columns - v1, v2, v3, v4
 	// assumes two line header
 	for(let i = 0;i < lines.length;i++){
 		let ln = lines[i].trim();
@@ -106,7 +132,7 @@ export function readCanRisk(boadicea_lines) {
 			if(ln.indexOf("##CanRisk") === 0) {
 				const match = ln.match(regexp);
 				version = parseInt(match[1]);
-				gt = (version === 1 ? genetic_test1 : genetic_test2);
+				gt = getGeneticTest(version);
 				console.log("CanRisk File Format version "+version);
 
 				if(ln.indexOf(";") > -1) {   // contains surgical op data
@@ -218,7 +244,7 @@ export function get_mdensity(mdensity) {
 /**
  * Get CanRisk formated pedigree.
  */
-export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=undefined) {
+export function get_pedigree(dataset, famid, meta, isanon, version=3, ethnicity=undefined) {
 	let v = (Number.isInteger(version) ? version+".0" : version.toString());
 	let msg = "##CanRisk " + v;
 	if(!famid) {
@@ -289,7 +315,7 @@ export function get_pedigree(dataset, famid, meta, isanon, version=2, ethnicity=
 	}
 	msg += "\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn"
 
-	let gt = (version === 1 ? genetic_test1 : genetic_test2);
+	let gt = getGeneticTest(version);
 	for(let i=0; i<gt.length; i++) {
 		msg += "\t"+gt[i].toUpperCase();
 	}
