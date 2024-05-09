@@ -144,6 +144,7 @@ function showDialog(title, msg, onConfirm, opts, dataset) {
 	} else {
 		const cancelBtn = $('#errModal button:contains("CANCEL")');
 		if(!cancelBtn.hasClass("hidden")) cancelBtn.addClass("hidden");
+		$('#errModal button:contains("OK")').off('click');
 	}
 
 	modalTitle.textContent = title;
