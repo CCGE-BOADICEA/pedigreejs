@@ -89,7 +89,7 @@
  			$('#node_properties').html(table);
 			$('#node_properties').dialog({title: d.data.display_name});
 			$('#node_properties input[type=checkbox]').change(function() {
-		    	pedigree_form.save(opts);
+				pedigreejs.pedigreejs_form.save(opts);
 		    });
 		}
 		var opts = {
@@ -164,7 +164,7 @@ Below is the funtion used to display attributes and the configuration options us
  			$('#node_properties').html(table);
 			$('#node_properties').dialog({title: d.data.display_name});
 			$('#node_properties input[type=checkbox]').change(function() {
-		    	pedigree_form.save(opts);
+		    	pedigreejs.pedigreejs_form.save(opts);
 		    });
 		}
 
@@ -179,7 +179,7 @@ Below is the funtion used to display attributes and the configuration options us
 			'font_weight': 400,
 			'edit': openDialog,
 			'node_background': '#fff',
-			'DEBUG': (pedigree_util.urlParam('debug') === null ? false : true)
+			'DEBUG': (pedigreejs.pedigreejs_util.urlParam('debug') === null ? false : true)
 		};
 </pre>
 </div>
