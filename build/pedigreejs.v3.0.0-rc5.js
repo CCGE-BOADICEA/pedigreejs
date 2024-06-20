@@ -279,10 +279,12 @@ var pedigreejs = (function (exports) {
 	    $('#errModal button.hidden').removeClass("hidden");
 	    $('#errModal button:contains("OK")').on("click", function () {
 	      onConfirm(opts, dataset);
+	      $('#errModal button:contains("OK")').off('click');
 	    });
 	  } else {
 	    const cancelBtn = $('#errModal button:contains("CANCEL")');
 	    if (!cancelBtn.hasClass("hidden")) cancelBtn.addClass("hidden");
+	    $('#errModal button:contains("OK")').off('click');
 	  }
 	  modalTitle.textContent = title;
 	  modalBodyInput.textContent = msg;
@@ -2752,6 +2754,17 @@ var pedigreejs = (function (exports) {
 	      delete person[$(this).attr('name')];
 	    }
 	  });
+
+	  // record HOXB13 genetic test
+	  let hoxb13_result = $('#person_details select[name="hoxb13_gene_test_result"]').val();
+	  if (hoxb13_result !== undefined && hoxb13_result !== '-') {
+	    person["hoxb13_gene_test"] = {
+	      'type': 'T',
+	      'result': hoxb13_result
+	    }; // assume direct test
+	  } else {
+	    delete person["hoxb13_gene_test"];
+	  }
 	  try {
 	    $('#person_details').find('form').valid();
 	  } catch (err) {
