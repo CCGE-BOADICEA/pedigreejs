@@ -61,7 +61,6 @@ export function init_dragging(opts, node) {
 				lft_node = dnodes[i];
 				xlft = dnodes[i].x;
 			} else if(dnodes[i].x > xnew && dnodes[i].x < xrgt) {
-				console.log(i, dnodes[i].x, xrgt);
 				rgt_node = dnodes[i];
 				xrgt = dnodes[i].x;
 			}
@@ -77,10 +76,10 @@ export function init_dragging(opts, node) {
 			adj_node = rgt_node;
 		}
 
-		console.log("ADJACENT NODE DISPLAY NAME", adj_node.data.display_name, adjIdx, indir, isMovingRight);
-
         let newdataset = utils.copy_dataset(pedcache_current(opts));
-        let idx = utils.getIdxByName(newdataset, me.name);
+        let idx = utils.getIdxByName(opts.dataset, me.name);
+
+		console.log("ADJACENT NODE DISPLAY NAME", adj_node.data.display_name, adjIdx, me.display_name, idx, isMovingRight);
 
         array_move(newdataset, idx, adjIdx);
         if(pnrName !== -1 && pnrName !== adj_node.data.name) {
