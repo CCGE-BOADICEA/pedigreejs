@@ -50,19 +50,33 @@ export function init_dragging(opts, node) {
 		
 		// nodes at same depth
 		let dnodes = utils.getNodesAtDepth(utils.flatten(root), meNode.depth);
-		let adj_node;
-		xnew+=meNode.x;
+		let lft_node, rgt_node, adj_node;
+		xnew += meNode.x;
+		let xlft = -Number.MAX_VALUE;
+		let xrgt =  Number.MAX_VALUE;
 		for(let i=0; i<dnodes.length; i++) {
-			console.log(dnodes[i].data.display_name, utils.getIdxByName(opts.dataset, dnodes[i].data.name), dnodes[i].x, xnew, meNode.x, (dnodes[i].x < xnew));
-			if(isMovingRight) {
-				if(dnodes[i].x < xnew)
-					adj_node = dnodes[i];
-			} else if(dnodes[i].x > xnew) {
-				adj_node = dnodes[i];
+			console.log(dnodes[i].data.display_name, utils.getIdxByName(opts.dataset, dnodes[i].data.name), 
+			            dnodes[i].x, "xnew "+xnew, "xold "+meNode.x, (dnodes[i].x < xnew), (dnodes[i].x > xnew));
+			if(dnodes[i].x < xnew && dnodes[i].x > xlft) {
+				lft_node = dnodes[i];
+				xlft = dnodes[i].x;
+			} else if(dnodes[i].x > xnew && dnodes[i].x < xrgt) {
+				console.log(i, dnodes[i].x, xrgt);
+				rgt_node = dnodes[i];
+				xrgt = dnodes[i].x;
 			}
 		}
-		if(adj_node === undefined) return;
-		let adjIdx = utils.getIdxByName(opts.dataset, adj_node.data.name)+(isMovingRight? 1: -1);
+		if(lft_node === undefined && rgt_node === undefined) return;
+		let adjIdx;
+		
+		if(isMovingRight) {
+			adjIdx = utils.getIdxByName(opts.dataset, lft_node.data.name);
+			adj_node = lft_node;
+		} else {
+			adjIdx = utils.getIdxByName(opts.dataset, rgt_node.data.name);
+			adj_node = rgt_node;
+		}
+
 		console.log("ADJACENT NODE DISPLAY NAME", adj_node.data.display_name, adjIdx, indir, isMovingRight);
 
         let newdataset = utils.copy_dataset(pedcache_current(opts));
@@ -74,9 +88,6 @@ export function init_dragging(opts, node) {
         	array_move(newdataset, idx, adjIdx);
         }
 
-       	/*for(let i=0; i<dnodes.length; i++) {
-			console.log(dnodes[i].data.display_name, utils.getIdxByName(newdataset, dnodes[i].data.name), newdataset);
-		}*/
         opts.dataset = newdataset;
         rebuild(opts);
 	}
@@ -84,7 +95,6 @@ export function init_dragging(opts, node) {
 
 function array_move(arr, old_index, new_index) {
     if (new_index >= arr.length) {
-		console.log("XXXXXXXXX", new_index, arr.length);
         var k = new_index - arr.length + 1;
         while (k--) {
             arr.push(undefined);
