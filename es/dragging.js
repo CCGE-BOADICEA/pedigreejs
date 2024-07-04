@@ -8,7 +8,7 @@ export function init_dragging(opts, node) {
 	// add drag
 	node.filter(function (d) {return !d.data.hidden;})
 	    .call(d3.drag()
-	    		.filter(function filter(event) { 
+				.filter(function filter(event) {
 					return !event.ctrlKey && !event.button && event.shiftKey; 	// shift and drag
 				})
                 .on("start", dragstart)
@@ -25,8 +25,8 @@ export function init_dragging(opts, node) {
 	function drag(e) {
 		e.sourceEvent.stopPropagation();
 		let dx = e.dx;
- 		let indir = d3.select(this).select('.indi_rect');
- 		xnew = parseFloat(indir.attr('x'))+ dx;
+		let indir = d3.select(this).select('.indi_rect');
+		xnew = parseFloat(indir.attr('x'))+ dx;
         indir.attr("x", xnew);
 	}
 	
@@ -48,6 +48,8 @@ export function init_dragging(opts, node) {
 		
 		// nodes at same depth
 		let dnodes = utils.getNodesAtDepth(utils.flatten(root), meNode.depth);
+
+		// locate adjacent nodes
 		let lft_node, rgt_node, adj_node;
 		xnew += meNode.x;
 		let xlft = -Number.MAX_VALUE;
@@ -71,19 +73,21 @@ export function init_dragging(opts, node) {
 			adj_node = rgt_node;
 		}
 
+		// move node to new location in dataset
         let newdataset = utils.copy_dataset(pedcache_current(opts));
         let idx = utils.getIdxByName(opts.dataset, me.name);
-        array_move(newdataset, idx, adjIdx);
+        el_move(newdataset, idx, adjIdx);
         if(pnrName !== -1 && pnrName !== adj_node.data.name) {
-        	idx = utils.getIdxByName(newdataset, pnrName);
-        	array_move(newdataset, idx, adjIdx);
+			idx = utils.getIdxByName(newdataset, pnrName);
+			el_move(newdataset, idx, adjIdx);
         }
         opts.dataset = newdataset;
         rebuild(opts);
 	}
 }
 
-function array_move(arr, old_index, new_index) {
+// move element in array
+function el_move(arr, old_index, new_index) {
     if (new_index >= arr.length) {
         var k = new_index - arr.length + 1;
         while (k--) {
@@ -92,4 +96,4 @@ function array_move(arr, old_index, new_index) {
     }
     arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
     return arr;
-};
+}
