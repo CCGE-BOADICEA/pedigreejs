@@ -38,9 +38,7 @@ export function init_dragging(opts, node) {
 		// reset individuals rectangle
 		let indir = d3.select(this).select('.indi_rect');
 		indir.attr("x", xstart);
-		
-		console.log("START "+xstart, "END "+xnew);
-		
+
 		const isMovingRight = (xnew>xstart);
 		
 		// get depth of node being dragged
@@ -55,8 +53,6 @@ export function init_dragging(opts, node) {
 		let xlft = -Number.MAX_VALUE;
 		let xrgt =  Number.MAX_VALUE;
 		for(let i=0; i<dnodes.length; i++) {
-			console.log(dnodes[i].data.display_name, utils.getIdxByName(opts.dataset, dnodes[i].data.name), 
-			            dnodes[i].x, "xnew "+xnew, "xold "+meNode.x, (dnodes[i].x < xnew), (dnodes[i].x > xnew));
 			if(dnodes[i].x < xnew && dnodes[i].x > xlft) {
 				lft_node = dnodes[i];
 				xlft = dnodes[i].x;
@@ -67,7 +63,6 @@ export function init_dragging(opts, node) {
 		}
 		if(lft_node === undefined && rgt_node === undefined) return;
 		let adjIdx;
-		
 		if(isMovingRight) {
 			adjIdx = utils.getIdxByName(opts.dataset, lft_node.data.name);
 			adj_node = lft_node;
@@ -78,15 +73,11 @@ export function init_dragging(opts, node) {
 
         let newdataset = utils.copy_dataset(pedcache_current(opts));
         let idx = utils.getIdxByName(opts.dataset, me.name);
-
-		console.log("ADJACENT NODE DISPLAY NAME", adj_node.data.display_name, adjIdx, me.display_name, idx, isMovingRight);
-
         array_move(newdataset, idx, adjIdx);
         if(pnrName !== -1 && pnrName !== adj_node.data.name) {
         	idx = utils.getIdxByName(newdataset, pnrName);
         	array_move(newdataset, idx, adjIdx);
         }
-
         opts.dataset = newdataset;
         rebuild(opts);
 	}
