@@ -3588,6 +3588,93 @@ var pedigreejs = (function (exports) {
 	  return parseFloat(getComputedStyle($('#' + opts.targetDiv).get(0)).fontSize) * emVal - 1.0;
 	}
 
+	// initialise node dragging - SHIFT + DRAG
+	function init_dragging(opts, node) {
+	  // add drag
+	  node.filter(function (d) {
+	    return !d.data.hidden;
+	  }).call(d3.drag().filter(function filter(event) {
+	    return !event.ctrlKey && !event.button && event.shiftKey; // shift and drag
+	  }).on("start", dragstart).on("drag", drag).on("end", dragstop));
+	  let xstart;
+	  let xnew;
+	  function dragstart() {
+	    xstart = d3.select(this).select('.indi_rect').attr('x');
+	  }
+	  function drag(e) {
+	    e.sourceEvent.stopPropagation();
+	    let dx = e.dx;
+	    let indir = d3.select(this).select('.indi_rect');
+	    xnew = parseFloat(indir.attr('x')) + dx;
+	    indir.attr("x", xnew);
+	  }
+	  function dragstop(_d) {
+	    let me = d3.select(this).datum().data;
+	    let pnrs = get_partners(opts.dataset, me);
+	    let pnrName = pnrs.length === 1 ? get_partners(opts.dataset, me)[0] : -1;
+
+	    // reset individuals rectangle
+	    let indir = d3.select(this).select('.indi_rect');
+	    indir.attr("x", xstart);
+	    const isMovingRight = xnew > xstart;
+
+	    // get depth of node being dragged
+	    let root = roots[opts.targetDiv];
+	    let flat_tree = flatten(root);
+	    let meNode = getNodeByName(flat_tree, me.name);
+
+	    // nodes at same depth
+	    let dnodes = getNodesAtDepth(flatten(root), meNode.depth);
+
+	    // locate adjacent nodes
+	    let lft_node, rgt_node, adj_node;
+	    xnew += meNode.x;
+	    let xlft = -Number.MAX_VALUE;
+	    let xrgt = Number.MAX_VALUE;
+	    for (let i = 0; i < dnodes.length; i++) {
+	      if (dnodes[i].x < xnew && dnodes[i].x > xlft) {
+	        lft_node = dnodes[i];
+	        xlft = dnodes[i].x;
+	      } else if (dnodes[i].x > xnew && dnodes[i].x < xrgt) {
+	        rgt_node = dnodes[i];
+	        xrgt = dnodes[i].x;
+	      }
+	    }
+	    if (lft_node === undefined && rgt_node === undefined) return;
+	    let adjIdx;
+	    if (isMovingRight) {
+	      adjIdx = getIdxByName(opts.dataset, lft_node.data.name);
+	      adj_node = lft_node;
+	    } else {
+	      adjIdx = getIdxByName(opts.dataset, rgt_node.data.name);
+	      adj_node = rgt_node;
+	    }
+
+	    // move node to new location in dataset
+	    let newdataset = copy_dataset(current(opts));
+	    let idx = getIdxByName(opts.dataset, me.name);
+	    el_move(newdataset, idx, adjIdx);
+	    if (pnrName !== -1 && pnrName !== adj_node.data.name) {
+	      idx = getIdxByName(newdataset, pnrName);
+	      el_move(newdataset, idx, adjIdx);
+	    }
+	    opts.dataset = newdataset;
+	    rebuild(opts);
+	  }
+	}
+
+	// move element in array
+	function el_move(arr, old_index, new_index) {
+	  if (new_index >= arr.length) {
+	    var k = new_index - arr.length + 1;
+	    while (k--) {
+	      arr.push(undefined);
+	    }
+	  }
+	  arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+	  return arr;
+	}
+
 	/**
 	/* © 2023 University of Cambridge
 	/* SPDX-FileCopyrightText: 2023 University of Cambridge
@@ -3622,6 +3709,8 @@ var pedigreejs = (function (exports) {
 	    zoomSrc: ['wheel', 'button'],
 	    zoomIn: 1.0,
 	    zoomOut: 1.0,
+	    dragNode: true,
+	    showWidgets: true,
 	    diseases: [{
 	      'type': 'breast_cancer',
 	      'colour': '#F68F35'
@@ -3815,7 +3904,7 @@ var pedigreejs = (function (exports) {
 	  addLabels(opts, node);
 
 	  //
-	  addWidgets(opts, node);
+	  if (opts.showWidgets) addWidgets(opts, node);
 
 	  // links between partners
 	  let clash_depth = {};
@@ -3958,6 +4047,8 @@ var pedigreejs = (function (exports) {
 
 	  // drag and zoom
 	  init_zoom(opts, svg);
+	  // drag nodes
+	  if (opts.dragNode) init_dragging(opts, node);
 	  return opts;
 	}
 	function has_gender(sex) {

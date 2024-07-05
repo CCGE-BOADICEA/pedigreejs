@@ -12,6 +12,7 @@ import * as io from './io.js';
 import {addWidgets} from './widgets.js';
 import {init_zoom} from './zoom.js';
 import {addLabels} from './labels.js';
+import {init_dragging} from './dragging.js';
 
 
 export function build(options) {
@@ -26,6 +27,8 @@ export function build(options) {
 		zoomSrc: ['wheel', 'button'],
 		zoomIn: 1.0,
 		zoomOut: 1.0,
+		dragNode: true,
+		showWidgets: true,
 		diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
 					{'type': 'breast_cancer2', 'colour': 'pink'},
 					{'type': 'ovarian_cancer', 'colour': '#306430'},
@@ -229,7 +232,7 @@ export function build(options) {
 	addLabels(opts, node);
 
 	//
-	addWidgets(opts, node);
+	if(opts.showWidgets) addWidgets(opts, node);
 
 	// links between partners
 	let clash_depth = {};
@@ -443,6 +446,8 @@ export function build(options) {
 
 	// drag and zoom
 	init_zoom(opts, svg);
+	// drag nodes
+	if(opts.dragNode) init_dragging(opts, node);
 	return opts;
 }
 
