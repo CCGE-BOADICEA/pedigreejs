@@ -3710,6 +3710,7 @@ var pedigreejs = (function (exports) {
 	    zoomIn: 1.0,
 	    zoomOut: 1.0,
 	    dragNode: true,
+	    showWidgets: true,
 	    diseases: [{
 	      'type': 'breast_cancer',
 	      'colour': '#F68F35'
@@ -3903,7 +3904,7 @@ var pedigreejs = (function (exports) {
 	  addLabels(opts, node);
 
 	  //
-	  addWidgets(opts, node);
+	  if (opts.showWidgets) addWidgets(opts, node);
 
 	  // links between partners
 	  let clash_depth = {};
