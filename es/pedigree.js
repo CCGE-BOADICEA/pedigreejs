@@ -28,6 +28,7 @@ export function build(options) {
 		zoomIn: 1.0,
 		zoomOut: 1.0,
 		dragNode: true,
+		showWidgets: true,
 		diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
 					{'type': 'breast_cancer2', 'colour': 'pink'},
 					{'type': 'ovarian_cancer', 'colour': '#306430'},
@@ -231,7 +232,7 @@ export function build(options) {
 	addLabels(opts, node);
 
 	//
-	addWidgets(opts, node);
+	if(opts.showWidgets) addWidgets(opts, node);
 
 	// links between partners
 	let clash_depth = {};
