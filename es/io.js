@@ -30,7 +30,7 @@ export function addIO(opts) {
 	});
 
 	$('#png_download, .fa-file-image').click(function(_e) {
-		let resolution = 1;
+		let resolution = 4;
 		img_download(opts, resolution, "image/png");
 	});
 }
