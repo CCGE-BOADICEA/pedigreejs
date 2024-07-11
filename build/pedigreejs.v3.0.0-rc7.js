@@ -1117,7 +1117,7 @@ var pedigreejs = (function (exports) {
 	    if (local_dataset !== undefined && local_dataset !== null) {
 	      opts.dataset = local_dataset;
 	    }
-	    rebuild(opts);
+	    $(document).trigger('rebuild', [opts]);
 	    setTimeout(function () {
 	      scale_to_fit(opts);
 	    }, 500);
@@ -1169,11 +1169,11 @@ var pedigreejs = (function (exports) {
 	    if ($(e.target).hasClass('fa-undo')) {
 	      opts.dataset = previous(opts);
 	      $("#" + opts.targetDiv).empty();
-	      build(opts);
+	      $(document).trigger('build', [opts]);
 	    } else if ($(e.target).hasClass('fa-redo')) {
 	      opts.dataset = next(opts);
 	      $("#" + opts.targetDiv).empty();
-	      build(opts);
+	      $(document).trigger('build', [opts]);
 	    } else if ($(e.target).hasClass('fa-refresh')) {
 	      messages("Pedigree Reset", "This may result in loss of some data. Reset now?", reset, opts);
 	    } else if ($(e.target).hasClass('fa-crosshairs')) {
@@ -1387,7 +1387,7 @@ var pedigreejs = (function (exports) {
 	      "top_level": true
 	    }, proband];
 	  }
-	  rebuild(opts);
+	  $(document).trigger('rebuild', [opts]);
 	}
 	function updateButtons(opts) {
 	  let current = get_count(opts);
@@ -2145,7 +2145,7 @@ var pedigreejs = (function (exports) {
 	  if (opts.DEBUG) console.log(opts.dataset);
 	  try {
 	    setposition(opts); // clear position
-	    rebuild(opts);
+	    $(document).trigger('rebuild', [opts]);
 	    console.log(risk_factors);
 	    // load risk factors - fire riskfactorChange event
 	    $(document).trigger('riskfactorChange', [opts, risk_factors]);
@@ -2667,7 +2667,7 @@ var pedigreejs = (function (exports) {
 	  let newdataset = copy_dataset(dataset);
 	  update_ashkn(newdataset);
 	  opts.dataset = newdataset;
-	  rebuild(opts);
+	  $(document).trigger('rebuild', [opts]);
 	}
 	function save(opts) {
 	  let dataset = current(opts);
@@ -2772,7 +2772,7 @@ var pedigreejs = (function (exports) {
 	  }
 	  syncTwins(newdataset, person);
 	  opts.dataset = newdataset;
-	  rebuild(opts);
+	  $(document).trigger('rebuild', [opts]);
 	}
 	function update_diagnosis_age_widget() {
 	  if ($("#id_approx").is(':checked')) {
@@ -2871,7 +2871,7 @@ var pedigreejs = (function (exports) {
 	    }
 	    if (add_person.type === 'addsibling') addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);else if (add_person.type === 'addchild') addchild(newdataset, add_person.node.datum().data, twin_type ? 'U' : sex, twin_type ? 2 : 1, twin_type);else return;
 	    opts.dataset = newdataset;
-	    rebuild(opts);
+	    $(document).trigger('rebuild', [opts]);
 	    d3.selectAll('.popup_selection').style("opacity", 0);
 	    add_person = {};
 	  }).on("mouseover", function () {
@@ -3008,12 +3008,12 @@ var pedigreejs = (function (exports) {
 	      newdataset = copy_dataset(current(opts));
 	      opts.dataset = newdataset;
 	      addparents(opts, newdataset, d.data.name);
-	      rebuild(opts);
+	      $(document).trigger('rebuild', [opts]);
 	    } else if (opt === 'addpartner') {
 	      newdataset = copy_dataset(current(opts));
 	      addpartner(opts, newdataset, d.data.name);
 	      opts.dataset = newdataset;
-	      rebuild(opts);
+	      $(document).trigger('rebuild', [opts]);
 	    }
 	    // trigger fhChange event
 	    $(document).trigger('fhChange', [opts]);
@@ -3067,7 +3067,7 @@ var pedigreejs = (function (exports) {
 	function onDone(opts, dataset) {
 	  // assign new dataset and rebuild pedigree
 	  opts.dataset = dataset;
-	  rebuild(opts);
+	  $(document).trigger('rebuild', [opts]);
 	}
 
 	// drag line between nodes to create partners
@@ -3093,7 +3093,7 @@ var pedigreejs = (function (exports) {
 	      opts.dataset = newdataset;
 	      let idx = getIdxByName(opts.dataset, dragging.data.name) + 1;
 	      opts.dataset.splice(idx, 0, child);
-	      rebuild(opts);
+	      $(document).trigger('rebuild', [opts]);
 	    }
 	    setLineDragPosition(0, 0, 0, 0);
 	    d3.selectAll('.line_drag_selection').attr("stroke", "black");
@@ -3659,7 +3659,7 @@ var pedigreejs = (function (exports) {
 	      el_move(newdataset, idx, adjIdx);
 	    }
 	    opts.dataset = newdataset;
-	    rebuild(opts);
+	    $(document).trigger('rebuild', [opts]);
 	  }
 	}
 
@@ -4135,6 +4135,12 @@ var pedigreejs = (function (exports) {
 	    // templates not declared
 	  }
 	}
+	$(document).on('rebuild', function (_e, opts) {
+	  rebuild(opts);
+	});
+	$(document).on('build', function (_e, opts) {
+	  build(opts);
+	});
 
 	var pedigree = /*#__PURE__*/Object.freeze({
 		__proto__: null,

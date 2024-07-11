@@ -5,7 +5,6 @@
 **/
 
 // pedigree form
-import {rebuild} from './pedigree.js';
 import {syncTwins} from './twins.js';
 import {copy_dataset, getNodeByName} from './utils.js';
 import {current as pedcache_current} from './pedcache.js';
@@ -142,7 +141,7 @@ export function save_ashkn(opts) {
 	let newdataset = copy_dataset(dataset);
 	update_ashkn(newdataset);
 	opts.dataset = newdataset;
-	rebuild(opts);
+	$(document).trigger('rebuild', [opts]);
 }
 
 export function save(opts) {
@@ -255,7 +254,7 @@ export function save(opts) {
 
 	syncTwins(newdataset, person);
 	opts.dataset = newdataset;
-	rebuild(opts);
+	$(document).trigger('rebuild', [opts]);
 }
 
 export function update_diagnosis_age_widget() {

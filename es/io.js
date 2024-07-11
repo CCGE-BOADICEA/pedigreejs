@@ -7,7 +7,6 @@
 // pedigree I/O
 import * as utils from './utils.js';
 import * as pedcache from './pedcache.js';
-import {rebuild} from './pedigree.js';
 import {readCanRisk, cancers, genetic_test1, pathology_tests} from './canrisk_file.js';
 import {get_bounds} from './zoom.js';
 
@@ -370,7 +369,7 @@ export function load_data(d, opts) {
 	if(opts.DEBUG) console.log(opts.dataset);
 	try{
 		pedcache.setposition(opts);		// clear position
-		rebuild(opts);
+		$(document).trigger('rebuild', [opts]);
 		console.log(risk_factors);
 		// load risk factors - fire riskfactorChange event
 		$(document).trigger('riskfactorChange', [opts, risk_factors]);

@@ -6,7 +6,6 @@
 
 // undo, redo, reset buttons
 import * as pedcache from './pedcache.js';
-import {rebuild, build} from './pedigree.js';
 import {btn_zoom, scale_to_fit} from './zoom.js';
 import {copy_dataset, getProbandIndex, is_fullscreen, messages} from './utils.js';
 
@@ -50,7 +49,7 @@ function addPbuttonEvents(opts) {
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		}
-		rebuild(opts);
+		$(document).trigger('rebuild', [opts]);
 		setTimeout(function(){ scale_to_fit(opts); }, 500);
     });
 
@@ -99,11 +98,11 @@ function addPbuttonEvents(opts) {
 		if($(e.target).hasClass('fa-undo')) {
 			opts.dataset = pedcache.previous(opts);
 			$("#"+opts.targetDiv).empty();
-			build(opts);
+			$(document).trigger('build', [opts]);
 		} else if ($(e.target).hasClass('fa-redo')) {
 			opts.dataset = pedcache.next(opts);
 			$("#"+opts.targetDiv).empty();
-			build(opts);
+			$(document).trigger('build', [opts]);
 		} else if ($(e.target).hasClass('fa-refresh')) {
 			messages("Pedigree Reset",
 			         "This may result in loss of some data. Reset now?",
@@ -176,7 +175,7 @@ function reset(opts) {
 			{"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
 			proband];
 	}
-	rebuild(opts);
+	$(document).trigger('rebuild', [opts]);
 }
 
 export function updateButtons(opts) {

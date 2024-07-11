@@ -549,3 +549,11 @@ export function rebuild(opts) {
 		// templates not declared
 	}
 }
+
+$(document).on('rebuild', function(_e, opts){
+	rebuild(opts);
+})
+
+$(document).on('build', function(_e, opts){
+	build(opts);
+})
