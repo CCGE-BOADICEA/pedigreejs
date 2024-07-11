@@ -1,6 +1,5 @@
 import  * as utils from './utils.js';
 import {current as pedcache_current} from './pedcache.js';
-import {rebuild} from './pedigree.js';
 
 
 // initialise node dragging - SHIFT + DRAG
@@ -82,7 +81,7 @@ export function init_dragging(opts, node) {
 			el_move(newdataset, idx, adjIdx);
         }
         opts.dataset = newdataset;
-        rebuild(opts);
+        $(document).trigger('rebuild', [opts]);
 	}
 }
 

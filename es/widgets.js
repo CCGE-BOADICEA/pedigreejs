@@ -5,7 +5,6 @@
 **/
 
 // pedigree widgets
-import {rebuild} from './pedigree.js';
 import * as utils from './utils.js';
 import {save} from './popup_form.js';
 import {current as pedcache_current} from './pedcache.js';
@@ -109,7 +108,7 @@ export function addWidgets(opts, node) {
 		else
 			return;
 		opts.dataset = newdataset;
-		rebuild(opts);
+		$(document).trigger('rebuild', [opts]);
 		d3.selectAll('.popup_selection').style("opacity", 0);
 		add_person = {};
 	  })
@@ -252,12 +251,12 @@ export function addWidgets(opts, node) {
 			newdataset = utils.copy_dataset(pedcache_current(opts));
 			opts.dataset = newdataset;
 			addparents(opts, newdataset, d.data.name);
-			rebuild(opts);
+			$(document).trigger('rebuild', [opts]);
 		} else if(opt === 'addpartner') {
 			newdataset = utils.copy_dataset(pedcache_current(opts));
 			addpartner(opts, newdataset, d.data.name);
 			opts.dataset = newdataset;
-			rebuild(opts);
+			$(document).trigger('rebuild', [opts]);
 		}
 		// trigger fhChange event
 		$(document).trigger('fhChange', [opts]);
@@ -325,7 +324,7 @@ export function addWidgets(opts, node) {
 function onDone(opts, dataset) {
 	// assign new dataset and rebuild pedigree
 	opts.dataset = dataset;
-	rebuild(opts);
+	$(document).trigger('rebuild', [opts]);
 }
 
 // drag line between nodes to create partners
@@ -362,7 +361,7 @@ function drag_handle(opts) {
 
 			let idx = utils.getIdxByName(opts.dataset, dragging.data.name)+1;
 			opts.dataset.splice(idx, 0, child);
-			rebuild(opts);
+			$(document).trigger('rebuild', [opts]);
 		}
 		setLineDragPosition(0, 0, 0, 0);
 		d3.selectAll('.line_drag_selection')
