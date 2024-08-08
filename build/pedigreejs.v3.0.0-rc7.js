@@ -1828,17 +1828,22 @@ var pedigreejs = (function (exports) {
 	 */
 	function copyStylesInline(destinationNode, sourceNode) {
 	  let containerElements = ["svg", "g"];
-	  for (let cd = 0; cd < destinationNode.childNodes.length; cd++) {
-	    let child = destinationNode.childNodes[cd];
+	  let destChildNodes = destinationNode.childNodes;
+	  let srcChildNodes = sourceNode.childNodes;
+	  for (let cd = 0; cd < destChildNodes.length; cd++) {
+	    let child = destChildNodes[cd];
 	    if (containerElements.indexOf(child.tagName) !== -1) {
-	      copyStylesInline(child, sourceNode.childNodes[cd]);
+	      copyStylesInline(child, srcChildNodes[cd]);
 	      continue;
 	    }
 	    try {
-	      let style = sourceNode.childNodes[cd].currentStyle || window.getComputedStyle(sourceNode.childNodes[cd]);
+	      let style = srcChildNodes[cd].currentStyle || window.getComputedStyle(srcChildNodes[cd]);
 	      if (style === "undefined" || style === null) continue;
-	      for (let st = 0; st < style.length; st++) {
-	        if (style[st].indexOf("text") > -1 || style[st].indexOf("font") > -1) child.style.setProperty(style[st], style.getPropertyValue(style[st]));
+	      let styleLength = style.length;
+	      let childStyle = child.style;
+	      for (let st = 0; st < styleLength; st++) {
+	        let mySt = style[st];
+	        if (mySt.indexOf("text-") > -1 || mySt.indexOf("font-") > -1) childStyle.setProperty(mySt, style.getPropertyValue(mySt));
 	      }
 	    } catch (err) {
 	      continue;
