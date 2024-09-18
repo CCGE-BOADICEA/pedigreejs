@@ -786,16 +786,16 @@ export function get_tree_dimensions(opts) {
 	}
 
 	let max_depth = Object.keys(generation).length*opts.symbol_size*3.5;
-	let max_height = 1500;
+	// let max_height = 1500;
 	let tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
 					   svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
 	let tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
 					   svg_dimensions.height - opts.symbol_size : max_depth);
 		
-	if(is_fullscreen() && tree_height > max_height){
-		tree_height = max_height
-		console.log("Resized");
-	}
+	// if(is_fullscreen() && tree_height > max_height){
+	// 	tree_height = max_height
+	// 	console.log("Resized");
+	// }
 	return {'width': tree_width , 'height': tree_height};
 }
 

@@ -857,13 +857,14 @@ var pedigreejs = (function (exports) {
 	    if (generation[depth] > maxscore) maxscore = generation[depth];
 	  }
 	  let max_depth = Object.keys(generation).length * opts.symbol_size * 3.5;
-	  let max_height = 1500;
+	  // let max_height = 1500;
 	  let tree_width = svg_dimensions.width - opts.symbol_size > maxscore * opts.symbol_size * 1.65 ? svg_dimensions.width - opts.symbol_size : maxscore * opts.symbol_size * 1.65;
 	  let tree_height = svg_dimensions.height - opts.symbol_size > max_depth ? svg_dimensions.height - opts.symbol_size : max_depth;
-	  if (is_fullscreen() && tree_height > max_height) {
-	    tree_height = max_height;
-	    console.log("Resized");
-	  }
+
+	  // if(is_fullscreen() && tree_height > max_height){
+	  // 	tree_height = max_height
+	  // 	console.log("Resized");
+	  // }
 	  return {
 	    'width': tree_width,
 	    'height': tree_height
@@ -3367,7 +3368,12 @@ var pedigreejs = (function (exports) {
 	  let root = roots[opts.targetDiv];
 	  let flat_tree = flatten(root);
 	  let tree_node = getNodeByName(flat_tree, name);
-	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
+	  let tree_partner = get_partners(dataset, tree_node.data);
+	  console.log(tree_partner);
+	  let partner_node = getNodeByName(flat_tree, tree_partner[0]);
+	  console.log(partner_node);
+	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_partner.length > 0 ? tree_node.x < partner_node.x : tree_node.data.sex === 'F');
+	  // let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 	  partner.noparents = true;
 	  let child = {
 	    "name": makeid(4),
