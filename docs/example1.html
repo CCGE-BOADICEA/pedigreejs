@@ -1,135 +1,915 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width,maximum-scale=2">
-	
-	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="../build/pedigreejs.v3.0.0-rc7.min.css" />
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,maximum-scale=2" />
 
-	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script> 
-	<script src="https://cdn.jsdelivr.net/npm/d3@7.8.2/dist/d3.min.js" integrity="sha256-yUdn/lyl/rHBn4bD4HkKmnR7S6Fj+tXIO0ozSay1Bik=" crossorigin="anonymous"></script>
-	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-	<script src="../build/pedigreejs.v3.0.0-rc7.min.js"></script>
+  <link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css"
+    media="all" />
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet"
+    type="text/css" media="all" />
+  <link rel="stylesheet" href="../build/pedigreejs.v3.0.0-rc7.min.css" />
 
-	<style>
-		body {
-		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-		    font-size: 14px;
-		    line-height: 1.42857143;
-		    color: #333;
-		    background-color: #fff;
-		}
-		.container {
-		    width: 90%;
-		    max-width: 1140px;
-		    margin-right: auto;
-		    margin-left: auto;
-		}
-		
-		#ped {text-align:center;}
-		.btn {
-		color: #333;
-		    background-color: #fff;
-		    border: 1px solid #ccc;
-		    display: inline-block;
-		    padding: 6px 12px;
-		    cursor: pointer;
-		    margin-left: 5px;
-		    border-radius: 4px;
-		}
-		#opts {
-			background-color: #F5F5F5;
-			padding: 10px;
-			border: 1px solid #ccc;
-			font-size: 13px;
-    		line-height: 1.42857143;
-			overflow: auto;word-wrap: normal;
-			border-radius: 4px;
-		}
-		#history_ex1 {
-			padding: 10px;
-		}
-		.text-center {
-			text-align: center;
-			padding: 0 20px;
-		}
-	</style>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.8.2/dist/d3.min.js"
+    integrity="sha256-yUdn/lyl/rHBn4bD4HkKmnR7S6Fj+tXIO0ozSay1Bik=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <script src="../build/pedigreejs.v3.0.0-rc7.min.js"></script>
 
-	<script type="text/javascript">
-	$( document ).ready(function() {
-		var parent_width = $('#ped').parent().width();
-		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
-		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
+  <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.42857143;
+      color: #333;
+      background-color: #fff;
+    }
 
-		var dataset = [
-			{"name": "m11", "display_name": "John",  "sex": "M", "diabetes_diagnosis_age": 55, "top_level": true},
-			{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true},
-			{"name": "m12", "display_name": "Jack", "sex": "M", "top_level": true},
-			{"name": "f12", "display_name": "Jill", "sex": "F", "top_level": true},
-			{"name": "m21", "display_name": "Jim", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
-			{"name": "f21", "display_name": "Jan", "sex": "F", "mother": "f12", "father": "m12", "age": 63},
-			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
-		];
-		var opts = {
-			'targetDiv': 'ped',
-			'btn_target': 'history_ex1',
-			'store_type': 'session',
-			'width': svg_width,
-			'height': 500,
-			'symbol_size': 35,
-			'edit': true,
-			'diseases': [
-				{'type': 'diabetes', 'colour': '#F68F35'},
-			],
-			'DEBUG': (pedigreejs.pedigreejs_utils.urlParam('debug') === null ? false : true)
-		};
-		$('#opts').append(JSON.stringify(opts, null, 4));
-		var local_dataset = pedigreejs.pedigreejs_pedcache.current(opts);
-		if (local_dataset !== undefined && local_dataset !== null) {
-			opts.dataset = local_dataset;
-		} else {
-			opts.dataset = dataset;
-		}
-		opts= pedigreejs.pedigreejs.build(opts);
-		$('#history_ex1').css('max-width', svg_width);
-		$('#history_ex1').css('margin', 'auto');
-	});
-	</script>
+    .container {
+      width: 90%;
+      max-width: 1140px;
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    #ped {
+      text-align: center;
+    }
+
+    .btn {
+      color: #333;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      display: inline-block;
+      padding: 6px 12px;
+      cursor: pointer;
+      margin-left: 5px;
+      border-radius: 4px;
+    }
+
+    #opts {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+      line-height: 1.42857143;
+      overflow: auto;
+      word-wrap: normal;
+      border-radius: 4px;
+    }
+
+    #history_ex1 {
+      padding: 10px;
+    }
+
+    .text-center {
+      text-align: center;
+      padding: 0 20px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      var parent_width = $("#ped").parent().width();
+      var margin = $(window).width() - parent_width > 10 ? 100 : 30;
+      var svg_width = parent_width - margin;
+
+      // var dataset = [
+      // 	{"name": "m11", "display_name": "John",  "sex": "M", "diabetes_diagnosis_age": 55, "top_level": true},
+      // 	{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true},
+      // 	{"name": "m12", "display_name": "Jack", "sex": "M", "top_level": true},
+      // 	{"name": "f12", "display_name": "Jill", "sex": "F", "top_level": true},
+      // 	{"name": "m21", "display_name": "Jim", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
+      // 	{"name": "f21", "display_name": "Jan", "sex": "F", "mother": "f12", "father": "m12", "age": 63},
+      // 	{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
+      // ];
+
+      // 38's dummy parents should be 15,36
+
+//   var dataset =     [
+//     {
+//         "name": "1",
+//         "display_name": "dsdd ",
+//         "sex": "F",
+//         "age": "98",
+//         "yob": "",
+//         "top_level": true,
+//         "level": 2,
+//         "key": "PMG"
+//     },
+//     {
+//         "name": "2",
+//         "display_name": "kk ",
+//         "sex": "M",
+//         "age": "54",
+//         "yob": "",
+//         "mother": "1",
+//         "father": "16",
+//         "level": 1,
+//         "key": "PMS"
+//     },
+//     {
+//         "name": "3",
+//         "display_name": "p",
+//         "sex": "M",
+//         "mother": "1",
+//         "father": "16",
+//         "noparents": true,
+//         "level": 1,
+//         "key": "PHS"
+//     },
+//     {
+//         "name": "4",
+//         "display_name": "fg m",
+//         "sex": "M",
+//         "age": "34",
+//         "yob": "",
+//         "mother": "5",
+//         "father": "3",
+//         "key": "PHS",
+//         "level": 0
+//     },
+//     {
+//         "name": "5",
+//         "display_name": "N S",
+//         "sex": "F",
+//         "age": "65",
+//         "yob": "",
+//         "mother": "1",
+//         "father": "16",
+//         "level": 1,
+//         "key": "PP"
+//     },
+//     {
+//         "name": "6",
+//         "display_name": "Abortion",
+//         "mother": "5",
+//         "father": "18",
+//         "termination": true,
+//         "status": "1",
+//         "key": "PP",
+//         "lost_pregnancies": 1,
+//         "level": 0
+//     },
+//     {
+//         "name": "7",
+//         "display_name": "Shivani  ",
+//         "sex": "F",
+//         "age": "45",
+//         "mother": "5",
+//         "father": "18",
+//         "proband": true,
+//         "level": 0,
+//         "key": "P"
+//     },
+//     {
+//         "name": "8",
+//         "display_name": "R S",
+//         "sex": "M",
+//         "age": "34",
+//         "yob": "",
+//         "mother": "5",
+//         "father": "18",
+//         "level": 0,
+//         "key": "PS"
+//     },
+//     {
+//         "name": "9",
+//         "display_name": "ri ",
+//         "sex": "F",
+//         "age": "23",
+//         "yob": "",
+//         "mother": "5",
+//         "father": "18",
+//         "level": 0,
+//         "key": "PS"
+//     },
+//     {
+//         "name": "10",
+//         "display_name": "b s",
+//         "sex": "M",
+//         "age": "23",
+//         "yob": "",
+//         "mother": "5",
+//         "father": "18",
+//         "level": 0,
+//         "key": "PS"
+//     },
+//     {
+//         "name": "11",
+//         "display_name": "dd s",
+//         "sex": "M",
+//         "age": "24",
+//         "yob": "",
+//         "mother": "5",
+//         "father": "18",
+//         "level": 0,
+//         "key": "PS"
+//     },
+//     {
+//         "name": "12",
+//         "display_name": "mmllkj ",
+//         "sex": "M",
+//         "age": "34",
+//         "yob": "",
+//         "mother": "5",
+//         "father": "13",
+//         "key": "PHS",
+//         "level": 0
+//     },
+//     {
+//         "name": "13",
+//         "display_name": "mm",
+//         "sex": "M",
+//         "mother": "1",
+//         "father": "16",
+//         "noparents": true,
+//         "level": 1,
+//         "key": "PHS"
+//     },
+//     {
+//         "name": "14",
+//         "display_name": "mjkjk",
+//         "sex": "F",
+//         "top_level": true,
+//         "level": 2,
+//         "key": "PMHS"
+//     },
+//     {
+//         "name": "15",
+//         "display_name": "llmnlop ",
+//         "sex": "M",
+//         "age": "45",
+//         "yob": "",
+//         "mother": "14",
+//         "father": "16",
+//         "key": "PMHS",
+//         "level": 1
+//     },
+//     {
+//         "name": "16",
+//         "display_name": "ppp ",
+//         "sex": "M",
+//         "age": "78",
+//         "yob": "",
+//         "status": "1",
+//         "top_level": true,
+//         "level": 2,
+//         "key": "PMG"
+//     },
+//     {
+//         "name": "17",
+//         "display_name": "oo ",
+//         "sex": "M",
+//         "age": "88",
+//         "yob": "",
+//         "status": "1",
+//         "top_level": true,
+//         "level": 2,
+//         "key": "PPG"
+//     },
+//     {
+//         "name": "18",
+//         "display_name": "S ",
+//         "sex": "M",
+//         "age": "67",
+//         "yob": "",
+//         "mother": "29",
+//         "father": "17",
+//         "level": 1,
+//         "key": "PP"
+//     },
+//     {
+//         "name": "19",
+//         "display_name": "pp mm",
+//         "sex": "F",
+//         "age": "34",
+//         "yob": "",
+//         "mother": "20",
+//         "father": "18",
+//         "key": "PHS",
+//         "level": 0
+//     },
+//     {
+//         "name": "20",
+//         "display_name": "km",
+//         "sex": "F",
+//         "mother": "29",
+//         "father": "17",
+//         "noparents": true,
+//         "level": 1,
+//         "key": "PHS"
+//     },
+//     {
+//         "name": "21",
+//         "display_name": "mcfg ",
+//         "sex": "M",
+//         "noparents": true,
+//         "key": "PFS",
+//         "mother": "29",
+//         "father": "17",
+//         "level": 1
+//     },
+//     {
+//         "name": "22",
+//         "display_name": "mmlopghfg ",
+//         "sex": "F",
+//         "yob": "",
+//         "age": "12",
+//         "mother": "23",
+//         "father": "21",
+//         "key": "PFS",
+//         "level": 0
+//     },
+//     {
+//         "name": "23",
+//         "display_name": "mnb ",
+//         "sex": "F",
+//         "age": "45",
+//         "yob": "",
+//         "mother": "29",
+//         "father": "17",
+//         "level": 1,
+//         "key": "PFS"
+//     },
+//     {
+//         "name": "24",
+//         "display_name": "mm ",
+//         "sex": "F",
+//         "noparents": true,
+//         "key": "PFS",
+//         "mother": "29",
+//         "father": "17",
+//         "level": 1
+//     },
+//     {
+//         "name": "25",
+//         "display_name": "bcvc ",
+//         "sex": "M",
+//         "yob": "",
+//         "age": "33",
+//         "mother": "24",
+//         "father": "28",
+//         "key": "PFS",
+//         "level": 0
+//     },
+//     {
+//         "name": "26",
+//         "display_name": "mmm ",
+//         "sex": "F",
+//         "yob": "",
+//         "age": "34",
+//         "mother": "24",
+//         "father": "28",
+//         "key": "PFS",
+//         "level": 0
+//     },
+//     {
+//         "name": "27",
+//         "display_name": "lpo ",
+//         "sex": "F",
+//         "yob": "",
+//         "age": "12",
+//         "mother": "24",
+//         "father": "28",
+//         "key": "PFS",
+//         "level": 0
+//     },
+//     {
+//         "name": "28",
+//         "display_name": "llmm ",
+//         "sex": "M",
+//         "age": "65",
+//         "yob": "",
+//         "mother": "29",
+//         "father": "17",
+//         "level": 1,
+//         "key": "PFS"
+//     },
+//     {
+//         "name": "29",
+//         "display_name": "mndfmdjhf ",
+//         "sex": "F",
+//         "age": "88",
+//         "yob": "",
+//         "top_level": true,
+//         "level": 2,
+//         "key": "PPG"
+//     },
+//     {
+//         "name": "30",
+//         "display_name": "nmlkhgfftft None",
+//         "sex": "F",
+//         "noparents": true,
+//         "key": "PFHS",
+//         "mother": "29",
+//         "father": "33",
+//         "level": 1
+//     },
+//     {
+//         "name": "31",
+//         "display_name": "ml ",
+//         "sex": "M",
+//         "yob": "",
+//         "age": "24",
+//         "mother": "30",
+//         "father": "32",
+//         "key": "PFHS",
+//         "level": 0
+//     },
+//     {
+//         "name": "32",
+//         "display_name": "troy ",
+//         "sex": "M",
+//         "age": "76",
+//         "yob": "",
+//         "mother": "29",
+//         "father": "33",
+//         "status": "1",
+//         "key": "PFHS",
+//         "level": 1
+//     },
+//     {
+//         "name": "33",
+//         "display_name": "kjhl",
+//         "sex": "M",
+//         "top_level": true,
+//         "level": 2,
+//         "key": "PFHS"
+//     }
+// ]
+
+      var dataset = [
+
+        { "name": "1", "display_name": "tt", "sex": "M", "top_level": true },
+        { "name": "2", "display_name": "oooo None", "sex": "F", "noparents": true, "mother": "5", "father": "1" },
+        { "name": "3", "display_name": "ii ", "sex": "M", "yob": "", "age": "95", "mother": "2", "father": "4" },
+        { "name": "4", "display_name": "jif ", "sex": "M", "age": "94", "yob": "", "mother": "5", "father": "1" },
+        { "name": "5", "display_name": "jjnmm, ", "sex": "F", "age": "99", "yob": "", "top_level": true },
+        { "name": "6", "display_name": "StillBirth", "mother": "5", "father": "25", "stillbirth": true, "status": "1" },
+        { "name": "7", "display_name": "Miscarriage", "mother": "5", "father": "25", "miscarriage": true },
+        { "name": "8", "display_name": "Abortion", "mother": "5", "father": "25", "termination": true, "status": "1" },
+        { "name": "9", "display_name": "pregnancy loss", "mother": "5", "father": "25" },
+        { "name": "10", "display_name": "fr None", "sex": "F", "noparents": true, "mother": "5", "father": "25" },
+        { "name": "11", "display_name": "iop ", "sex": "M", "yob": "", "age": "94", "mother": "10", "father": "12" },
+        { "name": "12", "display_name": "fhg ", "sex": "M", "age": "94", "yob": "", "mother": "5", "father": "25" },
+        { "name": "13", "display_name": "mio", "sex": "M", "mother": "5", "father": "25", "noparents": true },
+        { "name": "14", "display_name": "mm ", "sex": "M", "age": "500", "yob": "", "mother": "16", "father": "13" },
+        { "name": "15", "display_name": "j ", "sex": "M", "age": "500", "yob": "", "mother": "16", "father": "13" },
+        { "name": "16", "display_name": "klop ", "sex": "F", "age": "200", "yob": "", "mother": "5", "father": "25" },
+        { "name": "17", "display_name": "Miscarriage", "mother": "16", "father": "28", "miscarriage": true },
+        { "name": "18", "display_name": "StillBirth", "mother": "16", "father": "28", "stillbirth": true, "status": "1" },
+        { "name": "19", "display_name": "pregnancy loss", "mother": "16", "father": "28" },
+        { "name": "20", "display_name": "n ", "sex": "M", "age": "49", "yob": "", "mother": "16", "father": "28" },
+        { "name": "21", "display_name": "dd ", "sex": "M", "age": "49", "yob": "", "mother": "16", "father": "28" },
+        { "name": "22", "display_name": "uuu ", "sex": "F", "age": "95", "yob": "", "mother": "16", "father": "28", "noparents": true },
+        { "name": "23", "display_name": "g ", "sex": "M", "yob": "", "age": "94", "mother": "22", "father": "24" },
+        { "name": "24", "display_name": "ser ", "sex": "M", "age": "345", "mother": "16", "father": "28", "proband": true },
+        { "name": "25", "display_name": "jj ", "sex": "M", "age": "99", "yob": "", "top_level": true },
+        { "name": "26", "display_name": "jkl ", "sex": "M", "age": "345", "yob": "", "top_level": true },
+        { "name": "27", "display_name": "kl ", "sex": "M", "age": "94", "yob": "", "mother": "31", "father": "26" },
+        { "name": "28", "display_name": "jkl ", "sex": "M", "age": "345", "yob": "", "mother": "31", "father": "26" },
+        { "name": "29", "display_name": "cd ", "sex": "M", "age": "95", "yob": "", "mother": "30", "father": "28" },
+        { "name": "30", "display_name": "n", "sex": "F", "mother": "31", "father": "26", "noparents": true },
+        { "name": "31", "display_name": "klopddd ", "sex": "F", "age": "99", "yob": "", "top_level": true },
+        { "name": "32", "display_name": "k None", "sex": "F", "noparents": true, "mother": "31", "father": "36" },
+        { "name": "33", "display_name": "hh ", "sex": "M", "yob": "", "age": "93", "mother": "32", "father": "35" },
+        { "name": "34", "display_name": "ff ", "sex": "M", "yob": "", "age": "94", "mother": "32", "father": "35" },
+        { "name": "35", "display_name": "jio ", "sex": "M", "age": "92", "yob": "", "mother": "31", "father": "36" },
+        { "name": "36", "display_name": "rr", "sex": "M", "top_level": true },
+        { "name": "37", "display_name": "nbv None", "sex": "F", "noparents": true, "mother": "31", "father": "41" },
+        { "name": "38", "display_name": "jjdf ", "sex": "M", "yob": "", "age": "91", "mother": "37", "father": "40" },
+        { "name": "39", "display_name": "pp ", "sex": "M", "yob": "", "age": "92", "mother": "37", "father": "40" },
+        { "name": "40", "display_name": "kl ", "sex": "M", "age": "93", "yob": "", "mother": "31", "father": "41" },
+        { "name": "41", "display_name": "lo", "sex": "M", "top_level": true },
+
+      ]
+
+//       var dataset = [
+//   { "name": "26", "display_name": "SS", "sex": "M", "top_level": true },
+//   {
+//     "name": "10",
+//     "display_name": "NJ",
+//     "sex": "M",
+//     "age": "45",
+//     "yob": "",
+//     "top_level": true
+//   },
+//   {
+//     "name": "11",
+//     "display_name": "DRT",
+//     "sex": "F",
+//     "age": "56",
+//     "yob": "",
+//     "top_level": true
+//   },
+//   {
+//     "name": "12",
+//     "display_name": "HJU",
+//     "sex": "M",
+//     "age": "34",
+//     "yob": "",
+//     "top_level": true
+//   },
+//   {
+//     "name": "13",
+//     "display_name": "FGHD",
+//     "sex": "F",
+//     "age": "345",
+//     "yob": "",
+//     "top_level": true
+//   },
+//   { "name": "16", "display_name": "AAA", "sex": "M", "top_level": true },
+//   {
+//     "name": "27",
+//     "display_name": "KIOL",
+//     "sex": "M",
+//     "age": "33",
+//     "yob": "",
+//     "mother": "11",
+//     "father": "26"
+//   },
+//   {
+//     "name": "31",
+//     "display_name": "JNHY",
+//     "sex": "M",
+//     "age": "345",
+//     "yob": "",
+//     "mother": "11",
+//     "father": "26"
+//   },
+//   {
+//     "name": "28",
+//     "display_name": "NJKVVV None",
+//     "sex": "F",
+//     "noparents": true,
+//     "mother": "11",
+//     "father": "26"
+//   },
+//   {
+//     "name": "32",
+//     "display_name": "MJK None",
+//     "sex": "F",
+//     "noparents": true,
+//     "mother": "11",
+//     "father": "26"
+//   },
+//   {
+//     "name": "25",
+//     "display_name": "JK",
+//     "sex": "M",
+//     "age": "34",
+//     "yob": "",
+//     "mother": "11",
+//     "father": "10"
+//   },
+//   {
+//     "name": "6",
+//     "display_name": "CC",
+//     "sex": "M",
+//     "mother": "11",
+//     "father": "10",
+//     "noparents": true
+//   },
+//   {
+//     "name": "2",
+//     "display_name": "JUK",
+//     "sex": "M",
+//     "age": "34",
+//     "yob": "",
+//     "mother": "13",
+//     "father": "12"
+//   },
+//   {
+//     "name": "3",
+//     "display_name": "ERR",
+//     "sex": "F",
+//     "age": "344",
+//     "yob": "",
+//     "mother": "11",
+//     "father": "10"
+//   },
+//   {
+//     "name": "8",
+//     "display_name": "BB",
+//     "sex": "F",
+//     "mother": "13",
+//     "father": "12",
+//     "noparents": true
+//   },
+//   {
+//     "name": "14",
+//     "display_name": "JUIO",
+//     "sex": "M",
+//     "age": "33",
+//     "yob": "",
+//     "mother": "13",
+//     "father": "12"
+//   },
+//   {
+//     "name": "15",
+//     "display_name": "WER",
+//     "sex": "M",
+//     "age": "45",
+//     "yob": "",
+//     "mother": "13",
+//     "father": "12"
+//   },
+//   {
+//     "name": "17",
+//     "display_name": "HYU",
+//     "sex": "M",
+//     "age": "23",
+//     "yob": "",
+//     "mother": "13",
+//     "father": "16"
+//   },
+//   {
+//     "name": "21",
+//     "display_name": "WWW",
+//     "sex": "M",
+//     "age": "23",
+//     "yob": "",
+//     "mother": "13",
+//     "father": "16"
+//   },
+//   {
+//     "name": "18",
+//     "display_name": "REW None",
+//     "sex": "F",
+//     "noparents": true,
+//     "mother": "13",
+//     "father": "16"
+//   },
+//   {
+//     "name": "22",
+//     "display_name": "NJKCCC None",
+//     "sex": "F",
+//     "noparents": true,
+//     "mother": "13",
+//     "father": "16"
+//   },
+//   {
+//     "name": "1",
+//     "display_name": "AS",
+//     "sex": "M",
+//     "age": "23",
+//     "mother": "3",
+//     "father": "2",
+//     "proband": true
+//   },
+//   {
+//     "name": "4",
+//     "display_name": "NJK",
+//     "sex": "M",
+//     "age": "12",
+//     "yob": "",
+//     "mother": "3",
+//     "father": "2"
+//   },
+//   {
+//     "name": "5",
+//     "display_name": "DD",
+//     "sex": "F",
+//     "age": "22",
+//     "yob": "",
+//     "mother": "3",
+//     "father": "2"
+//   },
+//   {
+//     "name": "7",
+//     "display_name": "JKI",
+//     "sex": "M",
+//     "age": "23",
+//     "yob": "",
+//     "mother": "3",
+//     "father": "6"
+//   },
+//   {
+//     "name": "9",
+//     "display_name": "DFCV",
+//     "sex": "M",
+//     "age": "34",
+//     "yob": "",
+//     "mother": "8",
+//     "father": "2"
+//   },
+//   {
+//     "name": "19",
+//     "display_name": "NN",
+//     "sex": "M",
+//     "yob": "",
+//     "age": "23",
+//     "mother": "18",
+//     "father": "17"
+//   },
+//   {
+//     "name": "20",
+//     "display_name": "ASDE",
+//     "sex": "F",
+//     "yob": "",
+//     "age": "23",
+//     "mother": "18",
+//     "father": "17"
+//   },
+//   {
+//     "name": "23",
+//     "display_name": "FF",
+//     "sex": "M",
+//     "yob": "",
+//     "age": "33",
+//     "mother": "22",
+//     "father": "21"
+//   },
+//   {
+//     "name": "24",
+//     "display_name": "DFERR",
+//     "sex": "F",
+//     "yob": "",
+//     "age": "45",
+//     "mother": "22",
+//     "father": "21"
+//   },
+//   {
+//     "name": "29",
+//     "display_name": "MM",
+//     "sex": "F",
+//     "yob": "",
+//     "age": "33",
+//     "mother": "28",
+//     "father": "27"
+//   },
+//   {
+//     "name": "30",
+//     "display_name": "DCDFEDE",
+//     "sex": "M",
+//     "yob": "",
+//     "age": "11",
+//     "mother": "28",
+//     "father": "27"
+//   },
+//   {
+//     "name": "33",
+//     "display_name": "FFFWEW",
+//     "sex": "M",
+//     "yob": "",
+//     "age": "44",
+//     "mother": "32",
+//     "father": "31"
+//   }
+// ]
+
+      //     var dataset = [
+      // {"name": "1", "display_name": "ser ", "sex": "M", "age": "345", "mother": "3", "father": "2", "proband": true},
+      // {"name": "2", "display_name": "jkl ", "sex": "M", "age": "345", "yob": "", "mother": "21", "father": "20"},
+      // {"name": "3", "display_name": "klop ", "sex": "F", "age": "200", "yob": "", "mother": "15", "father": "14"},
+      // {"name": "4", "display_name": "Miscarriage", "mother": "3", "father": "2", "miscarriage": true},
+      // {"name": "5", "display_name": "StillBirth", "mother": "3", "father": "2", "stillbirth": true, "status": "1"},
+      // {"name": "6", "display_name": "pregnancy loss", "mother": "3", "father": "2"},
+      // {"name": "7", "display_name": "n ", "sex": "M", "age": "49", "yob": "", "mother": "3", "father": "2"},
+      // {"name": "8", "display_name": "dd ", "sex": "M", "age": "49", "yob": "", "mother": "3", "father": "2"},
+      // {"name": "9", "display_name": "mio", "sex": "M", "mother": "15", "father": "14", "noparents": true},
+      // {"name": "10", "display_name": "mm ", "sex": "M", "age": "500", "yob": "", "mother": "3", "father": "9"},
+      // {"name": "11", "display_name": "j ", "sex": "M", "age": "500", "yob": "", "mother": "3", "father": "9"},
+      // {"name": "12", "display_name": "n", "sex": "F", "mother": "21", "father": "20", "noparents": true},
+      // {"name": "13", "display_name": "cd ", "sex": "M", "age": "95", "yob": "", "mother": "12", "father": "2"},
+      // {"name": "14", "display_name": "jj ", "sex": "M", "age": "99", "yob": "", "top_level": true},
+      // {"name": "15", "display_name": "jjnmm, ", "sex": "F", "age": "99", "yob": "", "top_level": true},
+      // {"name": "16", "display_name": "StillBirth", "mother": "15", "father": "14", "stillbirth": true, "status": "1"},
+      // {"name": "17", "display_name": "Miscarriage", "mother": "15", "father": "14", "miscarriage": true},
+      // {"name": "18", "display_name": "Abortion", "mother": "15", "father": "14", "termination": true, "status": "1"},
+      // {"name": "19", "display_name": "pregnancy loss", "mother": "15", "father": "14"},
+      // {"name": "20", "display_name": "jkl ", "sex": "M", "age": "345", "yob": "", "top_level": true},
+      // {"name": "21", "display_name": "klopddd ", "sex": "F", "age": "99", "yob": "", "top_level": true},
+      // {"name": "22", "display_name": "kl ", "sex": "M", "age": "94", "yob": "", "mother": "21", "father": "20"},
+      // {"name": "23", "display_name": "lo", "sex": "M", "top_level": true},
+      // {"name": "24", "display_name": "kl ", "sex": "M", "age": "93", "yob": "", "mother": "21", "father": "23"},
+      // {"name": "25", "display_name": "nbv None", "sex": "F", "noparents": true, "mother": "21", "father": "20"},
+      // {"name": "26", "display_name": "jjdf ", "sex": "M", "yob": "", "age": "91", "mother": "25", "father": "24"},
+      // {"name": "27", "display_name": "pp ", "sex": "M", "yob": "", "age": "92", "mother": "25", "father": "24"},
+      // {"name": "28", "display_name": "rr", "sex": "M", "top_level": true},
+      // {"name": "29", "display_name": "jio ", "sex": "M", "age": "92", "yob": "", "mother": "21", "father": "28"},
+      // {"name": "30", "display_name": "k None", "sex": "F", "noparents": true, "mother": "21", "father": "28"},
+      // {"name": "31", "display_name": "hh ", "sex": "M", "yob": "", "age": "93", "mother": "30", "father": "29"},
+      // {"name": "32", "display_name": "ff ", "sex": "M", "yob": "", "age": "94", "mother": "30", "father": "29"},
+      // {"name": "33", "display_name": "fhg ", "sex": "M", "age": "94", "yob": "", "mother": "15", "father": "14"},
+      // {"name": "34", "display_name": "fr None", "sex": "F", "noparents": true, "mother": "15", "father": "14"},
+      // {"name": "35", "display_name": "iop ", "sex": "M", "yob": "", "age": "94", "mother": "34", "father": "33"},
+      // {"name": "36", "display_name": "tt", "sex": "M", "top_level": true},
+      // {"name": "37", "display_name": "jif ", "sex": "M", "age": "94", "yob": "", "mother": "15", "father": "36"},
+      // {"name": "38", "display_name": "oooo None", "sex": "F", "noparents": true, "mother": "15", "father": "36"},
+      // {"name": "39", "display_name": "ii ", "sex": "M", "yob": "", "age": "95", "mother": "38", "father": "37"},
+      // {"name": "40", "display_name": "uuu ", "sex": "F", "age": "95", "yob": "", "mother": "3", "father": "2", "noparents": true},
+      // {"name": "41", "display_name": "g ", "sex": "M", "yob": "", "age": "94", "mother": "40", "father": "1"}
+
+      // ]
+      // var dataset = [{'name': '1', 'display_name': 'tt', 'sex': 'M', 'top_level': true}, {'name': '2', 'display_name': 'oooo None', 'sex': 'F', 'noparents': true, 'mother': '5', 'father': '1'}, {'name': '3', 'display_name': 'ii ', 'sex': 'M', 'yob': '', 'age': '95', 'mother': '2', 'father': '4'}, {'name': '4', 'display_name': 'jif ', 'sex': 'M', 'age': '94', 'yob': '', 'mother': '5', 'father': '1'}, {'name': '5', 'display_name': 'jjnmm, ', 'sex': 'F', 'age': '99', 'yob': '', 'top_level': true}, {'name': '6', 'display_name': 'StillBirth', 'mother': '5', 'father': '28', 'stillbirth': true, 'status': '1'}, {'name': '7', 'display_name': 'Miscarriage', 'mother': '5', 'father': '28', 'miscarriage': true}, {'name': '8', 'display_name': 'Abortion', 'mother': '5', 'father': '28', 'termination': true, 'status': '1'}, {'name': '9', 'display_name': 'pregnancy loss', 'mother': '5', 'father': '28'}, {'name': '10', 'display_name': 'fr None', 'sex': 'F', 'noparents': true, 'mother': '5', 'father': '28'}, {'name': '11', 'display_name': 'iop ', 'sex': 'M', 'yob': '', 'age': '94', 'mother': '10', 'father': '12'}, {'name': '12', 'display_name': 'fhg ', 'sex': 'M', 'age': '94', 'yob': '', 'mother': '5', 'father': '28'}, {'name': '13', 'display_name': 'mio', 'sex': 'M', 'mother': '5', 'father': '28', 'noparents': true}, {'name': '14', 'display_name': 'mm ', 'sex': 'M', 'age': '500', 'yob': '', 'mother': '16', 'father': '13'}, {'name': '15', 'display_name': 'j ', 'sex': 'M', 'age': '500', 'yob': '', 'mother': '16', 'father': '13'}, {'name': '16', 'display_name': 'klop ', 'sex': 'F', 'age': '200', 'yob': '', 'mother': '5', 'father': '28'}, {'name': '17', 'display_name': 'Miscarriage', 'mother': '16', 'father': '25', 'miscarriage': true}, {'name': '18', 'display_name': 'StillBirth', 'mother': '16', 'father': '25', 'stillbirth': true, 'status': '1'}, {'name': '19', 'display_name': 'pregnancy loss', 'mother': '16', 'father': '25'}, {'name': '20', 'display_name': 'n ', 'sex': 'M', 'age': '49', 'yob': '', 'mother': '16', 'father': '25'}, {'name': '21', 'display_name': 'dd ', 'sex': 'M', 'age': '49', 'yob': '', 'mother': '16', 'father': '25'}, {'name': '22', 'display_name': 'uuu ', 'sex': 'F', 'age': '95', 'yob': '', 'mother': '16', 'father': '25', 'noparents': true}, {'name': '23', 'display_name': 'g ', 'sex': 'M', 'yob': '', 'age': '94', 'mother': '22', 'father': '24'}, {'name': '24', 'display_name': 'ser ', 'sex': 'M', 'age': '345', 'mother': '16', 'father': '25', 'proband': true}, {'name': '25', 'display_name': 'jkl ', 'sex': 'M', 'age': '345', 'yob': '', 'mother': '40', 'father': '29'}, {'name': '26', 'display_name': 'cd ', 'sex': 'M', 'age': '95', 'yob': '', 'mother': '27', 'father': '25'}, {'name': '27', 'display_name': 'n', 'sex': 'F', 'mother': '40', 'father': '29', 'noparents': true}, {'name': '28', 'display_name': 'jj ', 'sex': 'M', 'age': '99', 'yob': '', 'top_level': true}, {'name': '29', 'display_name': 'jkl ', 'sex': 'M', 'age': '345', 'yob': '', 'top_level': true}, {'name': '30', 'display_name': 'kl ', 'sex': 'M', 'age': '94', 'yob': '', 'mother': '40', 'father': '29'}, {'name': '31', 'display_name': 'nbv None', 'sex': 'F', 'noparents': true, 'mother': '40', 'father': '29'}, {'name': '32', 'display_name': 'jjdf ', 'sex': 'M', 'yob': '', 'age': '91', 'mother': '31', 'father': '34'}, {'name': '33', 'display_name': 'pp ', 'sex': 'M', 'yob': '', 'age': '92', 'mother': '31', 'father': '34'}, {'name': '34', 'display_name': 'kl ', 'sex': 'M', 'age': '93', 'yob': '', 'mother': '40', 'father': '41'}, {'name': '35', 'display_name': 'rr', 'sex': 'M', 'top_level': true}, {'name': '36', 'display_name': 'k None', 'sex': 'F', 'noparents': true, 'mother': '40', 'father': '35'}, {'name': '37', 'display_name': 'hh ', 'sex': 'M', 'yob': '', 'age': '93', 'mother': '36', 'father': '39'}, {'name': '38', 'display_name': 'ff ', 'sex': 'M', 'yob': '', 'age': '94', 'mother': '36', 'father': '39'}, {'name': '39', 'display_name': 'jio ', 'sex': 'M', 'age': '92', 'yob': '', 'mother': '40', 'father': '35'}, {'name': '40', 'display_name': 'klopddd ', 'sex': 'F', 'age': '99', 'yob': '', 'top_level': true}, {'name': '41', 'display_name': 'lo', 'sex': 'M', 'top_level': true}]
+      // var dataset = [{'name': '1', 'display_name': 'dsdd ', 'sex': 'F', 'age': '98', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PMG'}, {'name': '2', 'display_name': 'kk ', 'sex': 'M', 'age': '54', 'yob': '', 'mother': '1', 'father': '16', 'level': 1, 'key': 'PMS'}, {'name': '3', 'display_name': 'p', 'sex': 'M', 'mother': '1', 'father': '16', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '4', 'display_name': 'fg m', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '5', 'father': '3', 'key': 'PHS', 'level': 0}, {'name': '5', 'display_name': 'N S', 'sex': 'F', 'age': '65', 'yob': '', 'mother': '1', 'father': '16', 'level': 1, 'key': 'PP'}, {'name': '6', 'display_name': 'Abortion', 'mother': '5', 'father': '18', 'termination': true, 'status': '1', 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '7', 'display_name': 'Shivani  ', 'sex': 'F', 'age': '45', 'mother': '5', 'father': '18', 'proband': true, 'level': 0, 'key': 'P'}, {'name': '8', 'display_name': 'R S', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '5', 'father': '18', 'level': 0, 'key': 'PS'}, {'name': '9', 'display_name': 'ri ', 'sex': 'F', 'age': '23', 'yob': '', 'mother': '5', 'father': '18', 'level': 0, 'key': 'PS'}, {'name': '10', 'display_name': 'b s', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '5', 'father': '18', 'level': 0, 'key': 'PS'}, {'name': '11', 'display_name': 'dd s', 'sex': 'M', 'age': '24', 'yob': '', 'mother': '5', 'father': '18', 'level': 0, 'key': 'PS'}, {'name': '12', 'display_name': 'mmllkj ', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '5', 'father': '13', 'key': 'PHS', 'level': 0}, {'name': '13', 'display_name': 'mm', 'sex': 'M', 'mother': '1', 'father': '16', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '14', 'display_name': 'mjkjk', 'sex': 'F', 'top_level': true, 'level': 2, 'key': 'PMHS'}, {'name': '15', 'display_name': 'llmnlop ', 'sex': 'M', 'age': '45', 'yob': '', 'mother': '14', 'father': '16', 'key': 'PMHS', 'level': 1}, {'name': '16', 'display_name': 'ppp ', 'sex': 'M', 'age': '78', 'yob': '', 'status': '1', 'top_level': true, 'level': 2, 'key': 'PMG'}, {'name': '17', 'display_name': 'oo ', 'sex': 'M', 'age': '88', 'yob': '', 'status': '1', 'top_level': true, 'level': 2, 'key': 'PPG'}, {'name': '18', 'display_name': 'S ', 'sex': 'M', 'age': '67', 'yob': '', 'mother': '29', 'father': '17', 'level': 1, 'key': 'PP'}, {'name': '19', 'display_name': 'pp mm', 'sex': 'F', 'age': '34', 'yob': '', 'mother': '20', 'father': '18', 'key': 'PHS', 'level': 0}, {'name': '20', 'display_name': 'km', 'sex': 'F', 'mother': '29', 'father': '17', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '21', 'display_name': 'mcfg ', 'sex': 'M', 'noparents': true, 'key': 'PFS', 'mother': '29', 'father': '17', 'level': 1}, {'name': '22', 'display_name': 'mmlopghfg ', 'sex': 'F', 'yob': '', 'age': '12', 'mother': '23', 'father': '21', 'key': 'PFS', 'level': 0}, {'name': '23', 'display_name': 'mnb ', 'sex': 'F', 'age': '45', 'yob': '', 'mother': '29', 'father': '17', 'level': 1, 'key': 'PFS'}, {'name': '24', 'display_name': 'mm ', 'sex': 'F', 'noparents': true, 'key': 'PFS', 'mother': '29', 'father': '17', 'level': 1}, {'name': '25', 'display_name': 'bcvc ', 'sex': 'M', 'yob': '', 'age': '33', 'mother': '24', 'father': '28', 'key': 'PFS', 'level': 0}, {'name': '26', 'display_name': 'mmm ', 'sex': 'F', 'yob': '', 'age': '34', 'mother': '24', 'father': '28', 'key': 'PFS', 'level': 0}, {'name': '27', 'display_name': 'lpo ', 'sex': 'F', 'yob': '', 'age': '12', 'mother': '24', 'father': '28', 'key': 'PFS', 'level': 0}, {'name': '28', 'display_name': 'llmm ', 'sex': 'M', 'age': '65', 'yob': '', 'mother': '29', 'father': '17', 'level': 1, 'key': 'PFS'}, {'name': '29', 'display_name': 'mndfmdjhf ', 'sex': 'F', 'age': '88', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PPG'}, {'name': '30', 'display_name': 'nmlkhgfftft None', 'sex': 'F', 'noparents': true, 'key': 'PFHS', 'mother': '29', 'father': '33', 'level': 1}, {'name': '31', 'display_name': 'ml ', 'sex': 'M', 'yob': '', 'age': '24', 'mother': '30', 'father': '32', 'key': 'PFHS', 'level': 0}, {'name': '32', 'display_name': 'troy ', 'sex': 'M', 'age': '76', 'yob': '', 'mother': '29', 'father': '33', 'status': '1', 'key': 'PFHS', 'level': 1}, {'name': '33', 'display_name': 'kjhl', 'sex': 'M', 'top_level': true, 'level': 2, 'key': 'PFHS'}]
+      // var dataset = [{'name': '1', 'display_name': 'AAA', 'sex': 'M', 'top_level': true, 'level': 2, 'key': 'PMHS'}, {'name': '2', 'display_name': 'JK ', 'sex': 'M', 'age': '22', 'yob': '', 'mother': '7', 'father': '1', 'key': 'PMHS', 'level': 1}, {'name': '3', 'display_name': 'kio ', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '7', 'father': '1', 'key': 'PMHS', 'level': 1}, {'name': '4', 'display_name': 'mmmm ', 'sex': 'M', 'yob': '', 'age': '1', 'mother': '6', 'father': '3', 'key': 'PMHS', 'level': 0}, {'name': '5', 'display_name': 'ddsdsd ', 'sex': 'F', 'yob': '', 'age': '2', 'mother': '6', 'father': '3', 'key': 'PMHS', 'level': 0}, {'name': '6', 'display_name': 'lbdcldsa None', 'sex': 'F', 'noparents': true, 'key': 'PMHS', 'mother': '7', 'father': '24', 'level': 1}, {'name': '7', 'display_name': 'dedede ', 'sex': 'F', 'age': '32', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PMG'}, {'name': '8', 'display_name': 'dldkdNL ', 'sex': 'M', 'age': '2', 'yob': '', 'mother': '7', 'father': '24', 'level': 1, 'key': 'PMS'}, {'name': '9', 'display_name': 'v', 'sex': 'M', 'mother': '7', 'father': '24', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '10', 'display_name': 'mkl ', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '11', 'father': '9', 'key': 'PHS', 'level': 0}, {'name': '11', 'display_name': 'dd ', 'sex': 'F', 'age': '4', 'yob': '', 'mother': '7', 'father': '24', 'level': 1, 'key': 'PP'}, {'name': '12', 'display_name': 'StillBirth', 'mother': '11', 'father': '21', 'stillbirth': true, 'status': '1', 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '13', 'display_name': 'pregnancy loss', 'mother': '11', 'father': '21', 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '14', 'display_name': 'StillBirth', 'mother': '11', 'father': '21', 'stillbirth': true, 'status': '1', 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '15', 'display_name': 'Miscarriage', 'mother': '11', 'father': '21', 'miscarriage': true, 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '16', 'display_name': 'jki ', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '11', 'father': '21', 'level': 0, 'key': 'PS'}, {'name': '17', 'display_name': 'dddd ', 'sex': 'F', 'age': '23', 'yob': '', 'mother': '11', 'father': '21', 'level': 0, 'key': 'PS'}, {'name': '18', 'display_name': 'kl ', 'sex': 'F', 'age': '23', 'yob': '', 'mother': '11', 'father': '21', 'level': 0, 'key': 'PPT', 'noparents': true}, {'name': '19', 'display_name': 'iop ', 'sex': 'M', 'yob': '', 'age': '2', 'mother': '18', 'father': '20', 'key': 'PPT', 'level': -1}, {'name': '20', 'display_name': 'sd ', 'sex': 'M', 'age': '12', 'mother': '11', 'father': '21', 'proband': true, 'level': 0, 'key': 'P'}, {'name': '21', 'display_name': 'jk ', 'sex': 'M', 'age': '12', 'yob': '', 'mother': '36', 'father': '25', 'level': 1, 'key': 'PP'}, {'name': '22', 'display_name': 'ff ', 'sex': 'M', 'age': '3', 'yob': '', 'mother': '23', 'father': '21', 'key': 'PHS', 'level': 0}, {'name': '23', 'display_name': 'g', 'sex': 'F', 'mother': '36', 'father': '25', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '24', 'display_name': 'kk ', 'sex': 'M', 'age': '12', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PMG'}, {'name': '25', 'display_name': 'gfg ', 'sex': 'M', 'age': '32', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PPG'}, {'name': '26', 'display_name': 'Miscarriage', 'mother': '36', 'father': '25', 'miscarriage': true, 'key': 'PPG', 'lost_pregnancies': 1, 'level': 1}, {'name': '27', 'display_name': 'StillBirth', 'mother': '36', 'father': '25', 'stillbirth': true, 'status': '1', 'key': 'PPG', 'lost_pregnancies': 1, 'level': 1}, {'name': '28', 'display_name': 'm ', 'sex': 'F', 'noparents': true, 'key': 'PFS', 'mother': '36', 'father': '25', 'level': 1}, {'name': '29', 'display_name': 'kjiu ', 'sex': 'M', 'yob': '', 'age': '4', 'mother': '28', 'father': '31', 'key': 'PFS', 'level': 0}, {'name': '30', 'display_name': 'ewewhliudew ', 'sex': 'M', 'yob': '', 'age': '7', 'mother': '28', 'father': '31', 'key': 'PFS', 'level': 0}, {'name': '31', 'display_name': 'hffoirwjfoo ', 'sex': 'M', 'age': '3', 'yob': '', 'mother': '36', 'father': '25', 'level': 1, 'key': 'PFS'}, {'name': '32', 'display_name': 'hui None', 'sex': 'F', 'noparents': true, 'key': 'PFHS', 'mother': '36', 'father': '25', 'level': 1}, {'name': '33', 'display_name': 'fdfd ', 'sex': 'F', 'yob': '', 'age': '34', 'mother': '32', 'father': '35', 'key': 'PFHS', 'level': 0}, {'name': '34', 'display_name': 'rrr ', 'sex': 'M', 'yob': '', 'age': '33', 'mother': '32', 'father': '35', 'key': 'PFHS', 'level': 0}, {'name': '35', 'display_name': 'kio ', 'sex': 'M', 'age': '22', 'yob': '', 'mother': '36', 'father': '37', 'key': 'PFHS', 'level': 1}, {'name': '36', 'display_name': 'll ', 'sex': 'F', 'age': '12', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PPG'}, {'name': '37', 'display_name': 'mj', 'sex': 'M', 'top_level': true, 'level': 2, 'key': 'PFHS'}]
+
+      // var dataset = [{'name': '1', 'display_name': 'sd ', 'sex': 'M', 'age': '12', 'mother': '3', 'father': '2', 'proband': true, 'level': 0, 'key': 'P'}, {'name': '2', 'display_name': 'jk ', 'sex': 'M', 'age': '12', 'yob': '', 'mother': '17', 'father': '16', 'level': 1, 'key': 'PP'}, {'name': '3', 'display_name': 'dd ', 'sex': 'F', 'age': '4', 'yob': '', 'mother': '15', 'father': '14', 'level': 1, 'key': 'PP'}, {'name': '4', 'display_name': 'StillBirth', 'mother': '3', 'father': '2', 'stillbirth': true, 'status': '1', 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '5', 'display_name': 'pregnancy loss', 'mother': '3', 'father': '2', 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '6', 'display_name': 'StillBirth', 'mother': '3', 'father': '2', 'stillbirth': true, 'status': '1', 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '7', 'display_name': 'Miscarriage', 'mother': '3', 'father': '2', 'miscarriage': true, 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '8', 'display_name': 'jki ', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '3', 'father': '2', 'level': 0, 'key': 'PS'}, {'name': '9', 'display_name': 'dddd ', 'sex': 'F', 'age': '23', 'yob': '', 'mother': '3', 'father': '2', 'level': 0, 'key': 'PS'}, {'name': '10', 'display_name': 'v', 'sex': 'M', 'mother': '15', 'father': '14', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '11', 'display_name': 'mkl ', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '3', 'father': '10', 'key': 'PHS', 'level': 0}, {'name': '12', 'display_name': 'g', 'sex': 'F', 'mother': '17', 'father': '16', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '13', 'display_name': 'ff ', 'sex': 'M', 'age': '3', 'yob': '', 'mother': '12', 'father': '2', 'key': 'PHS', 'level': 0}, {'name': '14', 'display_name': 'kk ', 'sex': 'M', 'age': '12', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PMG'}, {'name': '15', 'display_name': 'dedede ', 'sex': 'F', 'age': '32', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PMG'}, {'name': '16', 'display_name': 'gfg ', 'sex': 'M', 'age': '32', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PPG'}, {'name': '17', 'display_name': 'll ', 'sex': 'F', 'age': '12', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PPG'}, {'name': '18', 'display_name': 'Miscarriage', 'mother': '17', 'father': '16', 'miscarriage': true, 'key': 'PPG', 'lost_pregnancies': 1, 'level': 1}, {'name': '19', 'display_name': 'StillBirth', 'mother': '17', 'father': '16', 'stillbirth': true, 'status': '1', 'key': 'PPG', 'lost_pregnancies': 1, 'level': 1}, {'name': '20', 'display_name': 'hffoirwjfoo ', 'sex': 'M', 'age': '3', 'yob': '', 'mother': '17', 'father': '16', 'level': 1, 'key': 'PFS'}, {'name': '21', 'display_name': 'm ', 'sex': 'F', 'noparents': true, 'key': 'PFS', 'mother': '17', 'father': '16', 'level': 1}, {'name': '22', 'display_name': 'kjiu ', 'sex': 'M', 'yob': '', 'age': '4', 'mother': '21', 'father': '20', 'key': 'PFS', 'level': 0}, {'name': '23', 'display_name': 'ewewhliudew ', 'sex': 'M', 'yob': '', 'age': '7', 'mother': '21', 'father': '20', 'key': 'PFS', 'level': 0}, {'name': '24', 'display_name': 'mj', 'sex': 'M', 'top_level': true, 'level': 2, 'key': 'PFHS'}, {'name': '25', 'display_name': 'kio ', 'sex': 'M', 'age': '22', 'yob': '', 'mother': '17', 'father': '24', 'key': 'PFHS', 'level': 1}, {'name': '26', 'display_name': 'hui None', 'sex': 'F', 'noparents': true, 'key': 'PFHS', 'mother': '17', 'father': '16', 'level': 1}, {'name': '27', 'display_name': 'fdfd ', 'sex': 'F', 'yob': '', 'age': '34', 'mother': '26', 'father': '25', 'key': 'PFHS', 'level': 0}, {'name': '28', 'display_name': 'rrr ', 'sex': 'M', 'yob': '', 'age': '33', 'mother': '26', 'father': '25', 'key': 'PFHS', 'level': 0}, {'name': '29', 'display_name': 'dldkdNL ', 'sex': 'M', 'age': '2', 'yob': '', 'mother': '15', 'father': '14', 'level': 1, 'key': 'PMS'}, {'name': '30', 'display_name': 'AAA', 'sex': 'M', 'top_level': true, 'level': 2, 'key': 'PMHS'}, {'name': '31', 'display_name': 'JK ', 'sex': 'M', 'age': '22', 'yob': '', 'mother': '15', 'father': '30', 'key': 'PMHS', 'level': 1}, {'name': '32', 'display_name': 'kio ', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '15', 'father': '30', 'key': 'PMHS', 'level': 1}, {'name': '33', 'display_name': 'lbdcldsa None', 'sex': 'F', 'noparents': true, 'key': 'PMHS', 'mother': '15', 'father': '14', 'level': 1}, {'name': '34', 'display_name': 'mmmm ', 'sex': 'M', 'yob': '', 'age': '1', 'mother': '33', 'father': '32', 'key': 'PMHS', 'level': 0}, {'name': '35', 'display_name': 'ddsdsd ', 'sex': 'F', 'yob': '', 'age': '2', 'mother': '33', 'father': '32', 'key': 'PMHS', 'level': 0}, {'name': '36', 'display_name': 'kl ', 'sex': 'F', 'age': '23', 'yob': '', 'mother': '3', 'father': '2', 'level': 0, 'key': 'PPT', 'noparents': true}, {'name': '37', 'display_name': 'iop ', 'sex': 'M', 'yob': '', 'age': '2', 'mother': '36', 'father': '1', 'key': 'PPT', 'level': -1}]
+      // var dataset = [  {'name': '26', 'display_name': 'SS', 'sex': 'M', 'top_level': true},
+      //     {'name': '10', 'display_name': 'NJ', 'sex': 'M', 'age': '45', 'yob': '', 'top_level': true},
+      //     {'name': '11', 'display_name': 'DRT', 'sex': 'F', 'age': '56', 'yob': '', 'top_level': true},
+      //     {'name': '12', 'display_name': 'HJU', 'sex': 'M', 'age': '34', 'yob': '', 'top_level': true},
+      //     {'name': '13', 'display_name': 'FGHD', 'sex': 'F', 'age': '345', 'yob': '', 'top_level': true},
+      //     {'name': '16', 'display_name': 'AAA', 'sex': 'M', 'top_level': true},
+      //     {'name': '27', 'display_name': 'KIOL', 'sex': 'M', 'age': '33', 'yob': '', 'mother': '11', 'father': '26'},
+      //     {'name': '31', 'display_name': 'JNHY', 'sex': 'M', 'age': '345', 'yob': '', 'mother': '11', 'father': '26'},
+      //     {'name': '28', 'display_name': 'NJKVVV None', 'sex': 'F', 'noparents': true, 'mother': '11', 'father': '26'},
+      //     {'name': '32', 'display_name': 'MJK None', 'sex': 'F', 'noparents': true, 'mother': '11', 'father': '26'},
+      //     {'name': '25', 'display_name': 'JK', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '11', 'father': '10'},
+      //     {'name': '6', 'display_name': 'CC', 'sex': 'M', 'mother': '11', 'father': '10', 'noparents': true},
+      //     {'name': '2', 'display_name': 'JUK', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '13', 'father': '12'},
+      //     {'name': '3', 'display_name': 'ERR', 'sex': 'F', 'age': '344', 'yob': '', 'mother': '11', 'father': '10'},
+      //     {'name': '8', 'display_name': 'BB', 'sex': 'F', 'mother': '13', 'father': '12', 'noparents': true},
+      //     {'name': '14', 'display_name': 'JUIO', 'sex': 'M', 'age': '33', 'yob': '', 'mother': '13', 'father': '12'},
+      //     {'name': '15', 'display_name': 'WER', 'sex': 'M', 'age': '45', 'yob': '', 'mother': '13', 'father': '12'},
+      //     {'name': '17', 'display_name': 'HYU', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '13', 'father': '16'},
+      //     {'name': '21', 'display_name': 'WWW', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '13', 'father': '16'},
+      //     {'name': '18', 'display_name': 'REW None', 'sex': 'F', 'noparents': true, 'mother': '13', 'father': '16'},
+      //     {'name': '22', 'display_name': 'NJKCCC None', 'sex': 'F', 'noparents': true, 'mother': '13', 'father': '16'},
+      //     {'name': '1', 'display_name': 'AS', 'sex': 'M', 'age': '23', 'mother': '3', 'father': '2', 'proband': true},
+      //     {'name': '4', 'display_name': 'NJK', 'sex': 'M', 'age': '12', 'yob': '', 'mother': '3', 'father': '2'},
+      //     {'name': '5', 'display_name': 'DD', 'sex': 'F', 'age': '22', 'yob': '', 'mother': '3', 'father': '2'},
+      //     {'name': '7', 'display_name': 'JKI', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '3', 'father': '6'},
+      //     {'name': '9', 'display_name': 'DFCV', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '8', 'father': '2'},
+      //     {'name': '19', 'display_name': 'NN', 'sex': 'M', 'yob': '', 'age': '23', 'mother': '18', 'father': '17'},
+      //     {'name': '20', 'display_name': 'ASDE', 'sex': 'F', 'yob': '', 'age': '23', 'mother': '18', 'father': '17'},
+      //     {'name': '23', 'display_name': 'FF', 'sex': 'M', 'yob': '', 'age': '33', 'mother': '22', 'father': '21'},
+      //     {'name': '24', 'display_name': 'DFERR', 'sex': 'F', 'yob': '', 'age': '45', 'mother': '22', 'father': '21'},
+      //     {'name': '29', 'display_name': 'MM', 'sex': 'F', 'yob': '', 'age': '33', 'mother': '28', 'father': '27'},
+      //     {'name': '30', 'display_name': 'DCDFEDE', 'sex': 'M', 'yob': '', 'age': '11', 'mother': '28', 'father': '27'},
+      //     {'name': '33', 'display_name': 'FFFWEW', 'sex': 'M', 'yob': '', 'age': '44', 'mother': '32', 'father': '31'}]
+
+      // var dataset = [{'name': '1', 'display_name': 'NJ', 'sex': 'M', 'age': '45', 'yob': '', 'top_level': true}, {'name': '2', 'display_name': 'JK', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '12', 'father': '1'}, {'name': '3', 'display_name': 'CC', 'sex': 'M', 'mother': '12', 'father': '1', 'noparents': true}, {'name': '4', 'display_name': 'JKI', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '5', 'father': '3'}, {'name': '5', 'display_name': 'ERR', 'sex': 'F', 'age': '344', 'yob': '', 'mother': '12', 'father': '1'}, {'name': '6', 'display_name': 'AS', 'sex': 'M', 'age': '23', 'mother': '5', 'father': '9', 'proband': true}, {'name': '7', 'display_name': 'NJK', 'sex': 'M', 'age': '12', 'yob': '', 'mother': '5', 'father': '9'}, {'name': '8', 'display_name': 'DD', 'sex': 'F', 'age': '22', 'yob': '', 'mother': '5', 'father': '9'}, {'name': '9', 'display_name': 'JUK', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '30', 'father': '33'}, {'name': '10', 'display_name': 'DFCV', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '11', 'father': '9'}, {'name': '11', 'display_name': 'BB', 'sex': 'F', 'mother': '30', 'father': '33', 'noparents': true}, {'name': '12', 'display_name': 'DRT', 'sex': 'F', 'age': '56', 'yob': '', 'top_level': true}, {'name': '13', 'display_name': 'MJK None', 'sex': 'F', 'noparents': true, 'mother': '12', 'father': '20'}, {'name': '14', 'display_name': 'FFFWEW', 'sex': 'M', 'yob': '', 'age': '44', 'mother': '13', 'father': '15'}, {'name': '15', 'display_name': 'JNHY', 'sex': 'M', 'age': '345', 'yob': '', 'mother': '12', 'father': '20'}, {'name': '16', 'display_name': 'NJKVVV None', 'sex': 'F', 'noparents': true, 'mother': '12', 'father': '20'}, {'name': '17', 'display_name': 'MM', 'sex': 'F', 'yob': '', 'age': '33', 'mother': '16', 'father': '19'}, {'name': '18', 'display_name': 'DCDFEDE', 'sex': 'M', 'yob': '', 'age': '11', 'mother': '16', 'father': '19'}, {'name': '19', 'display_name': 'KIOL', 'sex': 'M', 'age': '33', 'yob': '', 'mother': '12', 'father': '20'}, {'name': '20', 'display_name': 'SS', 'sex': 'M', 'top_level': true}, {'name': '21', 'display_name': 'AAA', 'sex': 'M', 'top_level': true}, {'name': '22', 'display_name': 'REW None', 'sex': 'F', 'noparents': true, 'mother': '30', 'father': '21'}, {'name': '23', 'display_name': 'NN', 'sex': 'M', 'yob': '', 'age': '23', 'mother': '22', 'father': '25'}, {'name': '24', 'display_name': 'ASDE', 'sex': 'F', 'yob': '', 'age': '23', 'mother': '22', 'father': '25'}, {'name': '25', 'display_name': 'HYU', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '30', 'father': '21'}, {'name': '26', 'display_name': 'NJKCCC None', 'sex': 'F', 'noparents': true, 'mother': '30', 'father': '21'}, {'name': '27', 'display_name': 'FF', 'sex': 'M', 'yob': '', 'age': '33', 'mother': '26', 'father': '29'}, {'name': '28', 'display_name': 'DFERR', 'sex': 'F', 'yob': '', 'age': '45', 'mother': '26', 'father': '29'}, {'name': '29', 'display_name': 'WWW', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '30', 'father': '21'}, {'name': '30', 'display_name': 'FGHD', 'sex': 'F', 'age': '345', 'yob': '', 'top_level': true}, {'name': '31', 'display_name': 'JUIO', 'sex': 'M', 'age': '33', 'yob': '', 'mother': '30', 'father': '33'}, {'name': '32', 'display_name': 'WER', 'sex': 'M', 'age': '45', 'yob': '', 'mother': '30', 'father': '33'}, {'name': '33', 'display_name': 'HJU', 'sex': 'M', 'age': '34', 'yob': '', 'top_level': true}]
+      // var dataset = dataset = [{'name': '1', 'display_name': 'Shivani  ', 'sex': 'F', 'age': '45', 'mother': '3', 'father': '2', 'proband': true, 'level': 0, 'key': 'P'}, {'name': '2', 'display_name': 'S ', 'sex': 'M', 'age': '67', 'yob': '', 'mother': '18', 'father': '17', 'level': 1, 'key': 'PP'}, {'name': '3', 'display_name': 'N S', 'sex': 'F', 'age': '65', 'yob': '', 'mother': '16', 'father': '15', 'level': 1, 'key': 'PP'}, {'name': '4', 'display_name': 'Abortion', 'mother': '3', 'father': '2', 'termination': true, 'status': '1', 'key': 'PP', 'lost_pregnancies': 1, 'level': 0}, {'name': '5', 'display_name': 'R S', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '3', 'father': '2', 'level': 0, 'key': 'PS'}, {'name': '6', 'display_name': 'ri ', 'sex': 'F', 'age': '23', 'yob': '', 'mother': '3', 'father': '2', 'level': 0, 'key': 'PS'}, {'name': '7', 'display_name': 'b s', 'sex': 'M', 'age': '23', 'yob': '', 'mother': '3', 'father': '2', 'level': 0, 'key': 'PS'}, {'name': '8', 'display_name': 'dd s', 'sex': 'M', 'age': '24', 'yob': '', 'mother': '3', 'father': '2', 'level': 0, 'key': 'PS'}, {'name': '9', 'display_name': 'p', 'sex': 'M', 'mother': '16', 'father': '15', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '10', 'display_name': 'fg m', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '3', 'father': '9', 'key': 'PHS', 'level': 0}, {'name': '11', 'display_name': 'km', 'sex': 'F', 'mother': '18', 'father': '17', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '12', 'display_name': 'pp mm', 'sex': 'F', 'age': '34', 'yob': '', 'mother': '11', 'father': '2', 'key': 'PHS', 'level': 0}, {'name': '13', 'display_name': 'mm', 'sex': 'M', 'mother': '16', 'father': '15', 'noparents': true, 'level': 1, 'key': 'PHS'}, {'name': '14', 'display_name': 'mmllkj ', 'sex': 'M', 'age': '34', 'yob': '', 'mother': '3', 'father': '13', 'key': 'PHS', 'level': 0}, {'name': '15', 'display_name': 'ppp ', 'sex': 'M', 'age': '78', 'yob': '', 'status': '1', 'top_level': true, 'level': 2, 'key': 'PMG'}, {'name': '16', 'display_name': 'dsdd ', 'sex': 'F', 'age': '98', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PMG'}, {'name': '17', 'display_name': 'oo ', 'sex': 'M', 'age': '88', 'yob': '', 'status': '1', 'top_level': true, 'level': 2, 'key': 'PPG'}, {'name': '18', 'display_name': 'mndfmdjhf ', 'sex': 'F', 'age': '88', 'yob': '', 'top_level': true, 'level': 2, 'key': 'PPG'}, {'name': '19', 'display_name': 'llmm ', 'sex': 'M', 'age': '65', 'yob': '', 'mother': '18', 'father': '17', 'level': 1, 'key': 'PFS'}, {'name': '20', 'display_name': 'mm ', 'sex': 'F', 'noparents': true, 'key': 'PFS', 'mother': '18', 'father': '17', 'level': 1}, {'name': '21', 'display_name': 'bcvc ', 'sex': 'M', 'yob': '', 'age': '33', 'mother': '20', 'father': '19', 'key': 'PFS', 'level': 0}, {'name': '22', 'display_name': 'mmm ', 'sex': 'F', 'yob': '', 'age': '34', 'mother': '20', 'father': '19', 'key': 'PFS', 'level': 0}, {'name': '23', 'display_name': 'lpo ', 'sex': 'F', 'yob': '', 'age': '12', 'mother': '20', 'father': '19', 'key': 'PFS', 'level': 0}, {'name': '24', 'display_name': 'mnb ', 'sex': 'F', 'age': '45', 'yob': '', 'mother': '18', 'father': '17', 'level': 1, 'key': 'PFS'}, {'name': '25', 'display_name': 'mcfg ', 'sex': 'M', 'noparents': true, 'key': 'PFS', 'mother': '18', 'father': '17', 'level': 1}, {'name': '26', 'display_name': 'mmlopghfg ', 'sex': 'F', 'yob': '', 'age': '12', 'mother': '24', 'father': '25', 'key': 'PFS', 'level': 0}, {'name': '27', 'display_name': 'kjhl', 'sex': 'M', 'top_level': true, 'level': 2, 'key': 'PFHS'}, {'name': '28', 'display_name': 'troy ', 'sex': 'M', 'age': '76', 'yob': '', 'mother': '18', 'father': '27', 'status': '1', 'key': 'PFHS', 'level': 1}, {'name': '29', 'display_name': 'nmlkhgfftft None', 'sex': 'F', 'noparents': true, 'key': 'PFHS', 'mother': '18', 'father': '27', 'level': 1}, {'name': '30', 'display_name': 'ml ', 'sex': 'M', 'yob': '', 'age': '24', 'mother': '29', 'father': '28', 'key': 'PFHS', 'level': 0}, {'name': '31', 'display_name': 'kk ', 'sex': 'M', 'age': '54', 'yob': '', 'mother': '16', 'father': '15', 'level': 1, 'key': 'PMS'}, {'name': '32', 'display_name': 'mjkjk', 'sex': 'F', 'top_level': true, 'level': 2, 'key': 'PMHS'}, {'name': '33', 'display_name': 'llmnlop ', 'sex': 'M', 'age': '45', 'yob': '', 'mother': '32', 'father': '15', 'key': 'PMHS', 'level': 1}]
+
+      var opts = {
+        targetDiv: "ped",
+        btn_target: "history_ex1",
+        store_type: "session",
+        width: svg_width,
+        height: 700,
+        symbol_size: 35,
+        edit: true,
+        diseases: [{ type: "diabetes", colour: "#F68F35" }],
+        DEBUG:
+          pedigreejs.pedigreejs_utils.urlParam("debug") === null
+            ? false
+            : true,
+      };
+      $("#opts").append(JSON.stringify(opts, null, 4));
+      var local_dataset = pedigreejs.pedigreejs_pedcache.current(opts);
+      if (local_dataset !== undefined && local_dataset !== null) {
+        opts.dataset = local_dataset;
+      } else {
+        opts.dataset = dataset;
+      }
+      opts = pedigreejs.pedigreejs.build(opts);
+      $("#history_ex1").css("max-width", svg_width);
+      $("#history_ex1").css("margin", "auto");
+    });
+  </script>
 </head>
+
 <body>
+  <div class="text-center">
+    <h2>Example 1</h2>
+    <label class="btn">
+      <input id="load" type="file" style="display: none" />Load
+    </label>
+    <label class="btn">
+      <input id="save" type="button" style="display: none" />Save
+    </label>
+    <label class="btn">
+      <input id="print" type="button" style="display: none" />Print
+    </label>
+    <label class="btn">
+      <input id="svg_download" type="button" style="display: none" />SVG
+    </label>
+    <label class="btn">
+      <input id="png_download" type="button" style="display: none" />PNG
+    </label>
+    <div id="history_ex1"></div>
+    <div id="ped"></div>
+    <div id="node_properties"></div>
+  </div>
 
-<div class="text-center">
-	<h2>Example 1</h2>
-	<label class="btn">
-		<input id="load" type="file" style="display: none;"/>Load
-	</label>	
-	<label class="btn">
-		<input id="save" type="button" style="display: none;"/>Save
-	</label>
-	<label class="btn">
-		<input id="print" type="button" style="display: none;"/>Print
-	</label>
-	<label class="btn">
-		<input id="svg_download" type="button" style="display: none;"/>SVG
-	</label>
-	<label class="btn">
-		<input id="png_download" type="button" style="display: none;">PNG
-	</label>
-	<div id='history_ex1'></div>
-	<div id="ped"></div>
-	<div id="node_properties"></div>
-</div>
-
-<div class="container">
-<br>
-<p>This is an example of defining diabetes as the disease. It is using the browsers
-<a href="https://www.w3schools.com/html/html5_webstorage.asp">session storage</a> (if supported by the web-browser)
-to record the history and it stores for one session, <i>i.e.</i>data is lost when the browser tab is closed.
-These are the options used:</p> 
-<pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
-</div>
-
+  <div class="container">
+    <br />
+    <p>
+      This is an example of defining diabetes as the disease. It is using the
+      browsers
+      <a href="https://www.w3schools.com/html/html5_webstorage.asp">session storage</a>
+      (if supported by the web-browser) to record the history and it stores
+      for one session, <i>i.e.</i>data is lost when the browser tab is closed.
+      These are the options used:
+    </p>
+    <pre style="overflow: auto; word-wrap: normal" id="opts"></pre>
+  </div>
 </body>
+
+</html>
