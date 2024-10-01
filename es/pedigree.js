@@ -119,36 +119,10 @@ export function build(options) {
 	// the children including spouses (for whom noparents=true), therefore the nodes are placed at
 	// their midpoint
 	
-
-	function cleanRoot(root) {
-		// Create a custom replacer to handle circular references
-		const cache = new Set();
-		const jsonObj = JSON.stringify(root, function(key, value) {
-			// Skip functions, DOM elements, or other types that can't be serialized
-			if (typeof value === 'function' || value instanceof HTMLElement) {
-				return undefined;
-			}
-			
-			// Avoid circular references by checking if the value has been seen before
-			if (typeof value === 'object' && value !== null) {
-				if (cache.has(value)) {
-					return undefined; // Circular reference found, discard key
-				}
-				cache.add(value); // Store value in cache
-			}
-			return value;
-		});
-	
-		return jsonObj;
-	}
-
 	// Sort the root and log the sorted value
 	root.sort(function(a, b) {
     	return a.data.id - b.data.id;
 	});
-
-
-
 
 	// Pass the sorted root to the treemap
 	let nodes = treemap(root);
