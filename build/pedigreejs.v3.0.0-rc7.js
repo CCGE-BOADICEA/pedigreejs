@@ -1450,7 +1450,7 @@ var pedigreejs = (function (exports) {
 
 	//check if input has a value
 	function hasInput(id) {
-	  return $.trim($('#' + id).val()).length !== 0;
+	  return $('#' + id).val().trim().length !== 0;
 	}
 
 	//return true if the object is empty
@@ -4173,7 +4173,7 @@ var pedigreejs = (function (exports) {
 	    console.warn("No person defined");
 	    return;
 	  }
-	  if (!$.isArray(keys)) {
+	  if (!Array.isArray(keys)) {
 	    keys = [keys];
 	  }
 	  if (value) {
