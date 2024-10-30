@@ -51,7 +51,8 @@ export function get_non_anon_pedigree(dataset, meta, version=2, ethnicity=undefi
 
 //check if input has a value
 export function hasInput(id) {
-	return $('#'+id).val().trim().length !== 0;
+	const v = $('#'+id).val();
+	return v && v.trim().length !== 0;
 }
 
 //return true if the object is empty
