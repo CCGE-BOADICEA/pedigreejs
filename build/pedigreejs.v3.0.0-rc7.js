@@ -1450,7 +1450,8 @@ var pedigreejs = (function (exports) {
 
 	//check if input has a value
 	function hasInput(id) {
-	  return $('#' + id).val().trim().length !== 0;
+	  const v = $('#' + id).val();
+	  return v && v.trim().length !== 0;
 	}
 
 	//return true if the object is empty
