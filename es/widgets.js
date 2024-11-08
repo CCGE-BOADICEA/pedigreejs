@@ -666,8 +666,17 @@ export function addpartner(opts, dataset, name) {
 	let root = utils.roots[opts.targetDiv];
 	let flat_tree = utils.flatten(root);
 	let tree_node = utils.getNodeByName(flat_tree, name);
-
-	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
+	/*
+	Older logic - partner lhs or rhs (controlled via lhs argument of addsibling function) depends on gender, M or F, alone
+	New Logic - if partners exist, check their position, and place a new partner in the opposite direction. 
+	Use this condition to control lhs argument of addsibling
+	*/
+	let tree_partner = utils.get_partners(dataset, tree_node.data);
+	console.log(tree_partner);
+	let partner_node = utils.getNodeByName(flat_tree, tree_partner[0]);
+	console.log(partner_node);
+	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_partner.length > 0 ? tree_node.x < partner_node.x : tree_node.data.sex === 'F');
+	// let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 	partner.noparents = true;
 
 	let child = {"name": utils.makeid(4), "sex": "M"};

@@ -697,9 +697,27 @@ var pedigreejs = (function (exports) {
 	        // hidden nodes
 	        let father = getNodeByName(flattenNodes, node.data.father.name);
 	        let mother = getNodeByName(flattenNodes, node.data.mother.name);
-	        let xmid = (father.x + mother.x) / 2;
+	        let xReal = 0;
+	        let nReal = 0;
+	        node.children.forEach(child => {
+	          if (!child.data.hidden && !child.data.noparents) {
+	            xReal = xReal + child.x;
+	            nReal++;
+	          }
+	        });
+	        let xmid = xReal / nReal;
+	        let parentFirst = father.x < mother.x ? father : mother;
+	        let parentSecond = father.x > mother.x ? father : mother;
+	        let intersectionThreshold = 45;
+	        if (xmid <= parentFirst.x || xmid - parentFirst.x <= intersectionThreshold) {
+	          parentFirst.x = xmid - parentSecond.x + xmid;
+	        } else if (xmid >= parentSecond.x || parentSecond.x - xmid <= intersectionThreshold) {
+	          parentSecond.x = xmid - parentFirst.x + xmid;
+	        }
+
+	        // let xmid = (father.x + mother.x) / 2;
 	        if (!overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
-	          node.x = xmid; // centralise parent nodes
+	          node.x = xmid; // adjust parent nodes
 	          let diff = node.x - xmid;
 	          if (node.children.length === 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
 	            if (!(node.children[0].data.hidden && node.children[1].data.hidden)) {
@@ -717,6 +735,7 @@ var pedigreejs = (function (exports) {
 	                node.children[0].x = xmid;
 	              } else {
 	                let descendants = node.descendants();
+	                console.log('ADJUSTING ' + node.data.name + ' NO. DESCENDANTS ' + descendants.length + ' diff=' + diff);
 	                if (opts.DEBUG) console.log('ADJUSTING ' + node.data.name + ' NO. DESCENDANTS ' + descendants.length + ' diff=' + diff);
 	                for (let i = 0; i < descendants.length; i++) {
 	                  if (node.data.name !== descendants[i].data.name) descendants[i].x -= diff;
@@ -838,8 +857,14 @@ var pedigreejs = (function (exports) {
 	    if (generation[depth] > maxscore) maxscore = generation[depth];
 	  }
 	  let max_depth = Object.keys(generation).length * opts.symbol_size * 3.5;
+	  // let max_height = 1500;
 	  let tree_width = svg_dimensions.width - opts.symbol_size > maxscore * opts.symbol_size * 1.65 ? svg_dimensions.width - opts.symbol_size : maxscore * opts.symbol_size * 1.65;
 	  let tree_height = svg_dimensions.height - opts.symbol_size > max_depth ? svg_dimensions.height - opts.symbol_size : max_depth;
+
+	  // if(is_fullscreen() && tree_height > max_height){
+	  // 	tree_height = max_height
+	  // 	console.log("Resized");
+	  // }
 	  return {
 	    'width': tree_width,
 	    'height': tree_height
@@ -3343,7 +3368,12 @@ var pedigreejs = (function (exports) {
 	  let root = roots[opts.targetDiv];
 	  let flat_tree = flatten(root);
 	  let tree_node = getNodeByName(flat_tree, name);
-	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
+	  let tree_partner = get_partners(dataset, tree_node.data);
+	  console.log(tree_partner);
+	  let partner_node = getNodeByName(flat_tree, tree_partner[0]);
+	  console.log(partner_node);
+	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_partner.length > 0 ? tree_node.x < partner_node.x : tree_node.data.sex === 'F');
+	  // let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 	  partner.noparents = true;
 	  let child = {
 	    "name": makeid(4),
@@ -3752,9 +3782,19 @@ var pedigreejs = (function (exports) {
 	  if (opts.DEBUG) print_opts(opts);
 	  let svg_dimensions = get_svg_dimensions(opts);
 	  let svg = d3.select("#" + opts.targetDiv).append("svg:svg").attr("width", svg_dimensions.width).attr("height", svg_dimensions.height);
+
+	  // Defines the full scope of the svg, print targetDiv to know more
+
 	  svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).style("stroke", "darkgrey").style("fill", opts.background) // or none
 	  .style("stroke-width", 1);
+
+	  // Builds an initial rectangle in which we put the pedigree diagram
+
 	  let ped = svg.append("g").attr("class", "diagram");
+
+	  // Appends an  html group element <g> to this svg
+	  // This will eventually contain lines / nodes etc
+
 	  let top_level = $.map(opts.dataset, function (val, _i) {
 	    return 'top_level' in val && val.top_level ? val : null;
 	  });
@@ -3771,12 +3811,22 @@ var pedigreejs = (function (exports) {
 	  // / get score at each depth used to adjust node separation
 	  let tree_dimensions = get_tree_dimensions(opts);
 	  if (opts.DEBUG) console.log('opts.width=' + svg_dimensions.width + ' width=' + tree_dimensions.width + ' opts.height=' + svg_dimensions.height + ' height=' + tree_dimensions.height);
+
+	  // let horizontal_scaling = 0.5;
+	  // let vertical_scaling = 
 	  let treemap = d3.tree().separation(function (a, b) {
 	    return a.parent === b.parent || a.data.hidden || b.data.hidden ? 1.2 : 2.2;
 	  }).size([tree_dimensions.width, tree_dimensions.height]);
-	  let nodes = treemap(root.sort(function (a, b) {
+
+	  // Sort the root and log the sorted value
+	  root.sort(function (a, b) {
 	    return a.data.id - b.data.id;
-	  }));
+	  });
+
+	  // Pass the sorted root to the treemap
+	  let nodes = treemap(root);
+
+	  // let nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 	  let flattenNodes = nodes.descendants();
 
 	  // check the number of visible nodes equals the size of the pedigree dataset

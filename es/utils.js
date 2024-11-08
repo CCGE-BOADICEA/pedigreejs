@@ -604,9 +604,44 @@ export function adjust_coords(opts, root, flattenNodes) {
 			if(node.data.father !== undefined) { 	// hidden nodes
 				let father = getNodeByName(flattenNodes, node.data.father.name);
 				let mother = getNodeByName(flattenNodes, node.data.mother.name);
-				let xmid = (father.x + mother.x) /2;
+
+				/*
+				Previous Logic -> place hidden parent node at the midpoint of the two parents ie father.x + mother.x/2
+				Obviously, this doesn't take into account the positions of the children which leads to kinks and irregular connections.
+				We replace this logic with 
+				hidden parent node = midpoint of all the real children ie children with hidden false and noparents also false (or not existing)
+				*/
+				let xReal =  0;
+				let nReal = 0;
+				node.children.forEach((child) => {
+					if(!child.data.hidden && !child.data.noparents){
+						xReal = xReal + child.x;
+						nReal++;
+					}
+				});
+				let xmid = xReal/nReal;
+				/*
+				This logic handles the situation where the hidden parent coordinate lies
+				i) outside the two parents
+				ii) close to the two parents (leading to non-aesthetic lines)
+				To handle the first, we just compare the coordinates of xmid with those of the real parents.
+				To handle the second, we define a custom intersectionThreshold, which is minimum width between a parent and the hidden node
+				Then we move the parents themselves accordingly.
+				This leads to symmetric and clean figures.
+				To understand this more properly, make sure to run this code with breakpoints.
+				*/
+				let parentFirst = father.x < mother.x ? father : mother; 
+				let parentSecond = father.x > mother.x ? father : mother;
+				let intersectionThreshold = 45;
+				if(xmid <=parentFirst.x || xmid - parentFirst.x <=intersectionThreshold ){
+					parentFirst.x = xmid - parentSecond.x + xmid;
+				} else if (xmid >=parentSecond.x || parentSecond.x - xmid <=intersectionThreshold){
+					parentSecond.x = xmid - parentFirst.x + xmid;
+				}
+				
+				// let xmid = (father.x + mother.x) / 2;
 				if(!overlap(opts, root.descendants(), xmid, node.depth, [node.data.name])) {
-					node.x = xmid;   // centralise parent nodes
+					node.x = xmid;   // adjust parent nodes
 					let diff = node.x - xmid;
 					if(node.children.length === 2 && (node.children[0].data.hidden || node.children[1].data.hidden)) {
 						if(!(node.children[0].data.hidden && node.children[1].data.hidden)) {
@@ -626,6 +661,7 @@ export function adjust_coords(opts, root, flattenNodes) {
 								node.children[0].x = xmid;
 							} else {
 								let descendants = node.descendants();
+								console.log('ADJUSTING '+node.data.name+' NO. DESCENDANTS '+descendants.length+' diff='+diff);
 								if(opts.DEBUG)
 									console.log('ADJUSTING '+node.data.name+' NO. DESCENDANTS '+descendants.length+' diff='+diff);
 								for(let i=0; i<descendants.length; i++) {
@@ -766,10 +802,17 @@ export function get_tree_dimensions(opts) {
 	}
 
 	let max_depth = Object.keys(generation).length*opts.symbol_size*3.5;
+	// let max_height = 1500;
 	let tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
 					   svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
 	let tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
 					   svg_dimensions.height - opts.symbol_size : max_depth);
-	return {'width': tree_width, 'height': tree_height};
+		
+	// This part can be controlled to implement a max_height, which can help with the vertical scaling of the nodes. Current decision: not implement.
+	// if(is_fullscreen() && tree_height > max_height){
+	// 	tree_height = max_height
+	// 	console.log("Resized");
+	// }
+	return {'width': tree_width , 'height': tree_height};
 }
 

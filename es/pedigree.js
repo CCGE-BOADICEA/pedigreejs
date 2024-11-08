@@ -71,6 +71,8 @@ export function build(options) {
 				 .attr("width", svg_dimensions.width)
 				 .attr("height", svg_dimensions.height);
 
+	// Defines the full scope of the svg, print targetDiv to know more
+
 	svg.append("rect")
 		.attr("width", "100%")
 		.attr("height", "100%")
@@ -80,8 +82,14 @@ export function build(options) {
 		.style("fill", opts.background) // or none
 		.style("stroke-width", 1);
 
+	// Builds an initial rectangle in which we put the pedigree diagram
+
+
 	let ped = svg.append("g")
 			 .attr("class", "diagram");
+
+	// Appends an  html group element <g> to this svg
+	// This will eventually contain lines / nodes etc
 
 	let top_level = $.map(opts.dataset, function(val, _i){return 'top_level' in val && val.top_level ? val : null;});
 	let hidden_root = {
@@ -101,11 +109,25 @@ export function build(options) {
 		console.log('opts.width='+svg_dimensions.width+' width='+tree_dimensions.width+
 					' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
 
+	// let horizontal_scaling = 0.5;
+	// let vertical_scaling = 
 	let treemap = d3.tree().separation(function(a, b) {
-		return a.parent === b.parent || a.data.hidden || b.data.hidden ? 1.2 : 2.2;
+		return a.parent === b.parent ||  a.data.hidden || b.data.hidden  ? 1.2 : 2.2 ;
 	}).size([tree_dimensions.width, tree_dimensions.height]);
+	// d3 places a parent node at the midpoint of all its children nodes, in this case
+	// a parent node is the hidden node created between the parents and the children are all
+	// the children including spouses (for whom noparents=true), therefore the nodes are placed at
+	// their midpoint
+	
+	// Sort the root and log the sorted value
+	root.sort(function(a, b) {
+    	return a.data.id - b.data.id;
+	});
 
-	let nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
+	// Pass the sorted root to the treemap
+	let nodes = treemap(root);
+
+	// let nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
 	let flattenNodes = nodes.descendants();
 
 	// check the number of visible nodes equals the size of the pedigree dataset
@@ -179,6 +201,7 @@ export function build(options) {
 	   .enter()
 		.append("g");
 
+		
 	pienode.selectAll("path")
 		.data(d3.pie().value(function(d) {return d.cancer;}))
 		.enter().append("path")

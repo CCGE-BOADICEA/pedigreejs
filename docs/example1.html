@@ -1,135 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width,maximum-scale=2">
-	
-	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="../build/pedigreejs.v3.0.0-rc7.min.css" />
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,maximum-scale=2" />
 
-	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script> 
-	<script src="https://cdn.jsdelivr.net/npm/d3@7.8.2/dist/d3.min.js" integrity="sha256-yUdn/lyl/rHBn4bD4HkKmnR7S6Fj+tXIO0ozSay1Bik=" crossorigin="anonymous"></script>
-	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-	<script src="../build/pedigreejs.v3.0.0-rc7.min.js"></script>
+  <link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css"
+    media="all" />
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet"
+    type="text/css" media="all" />
+  <link rel="stylesheet" href="../build/pedigreejs.v3.0.0-rc7.min.css" />
 
-	<style>
-		body {
-		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-		    font-size: 14px;
-		    line-height: 1.42857143;
-		    color: #333;
-		    background-color: #fff;
-		}
-		.container {
-		    width: 90%;
-		    max-width: 1140px;
-		    margin-right: auto;
-		    margin-left: auto;
-		}
-		
-		#ped {text-align:center;}
-		.btn {
-		color: #333;
-		    background-color: #fff;
-		    border: 1px solid #ccc;
-		    display: inline-block;
-		    padding: 6px 12px;
-		    cursor: pointer;
-		    margin-left: 5px;
-		    border-radius: 4px;
-		}
-		#opts {
-			background-color: #F5F5F5;
-			padding: 10px;
-			border: 1px solid #ccc;
-			font-size: 13px;
-    		line-height: 1.42857143;
-			overflow: auto;word-wrap: normal;
-			border-radius: 4px;
-		}
-		#history_ex1 {
-			padding: 10px;
-		}
-		.text-center {
-			text-align: center;
-			padding: 0 20px;
-		}
-	</style>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.8.2/dist/d3.min.js"
+    integrity="sha256-yUdn/lyl/rHBn4bD4HkKmnR7S6Fj+tXIO0ozSay1Bik=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <script src="../build/pedigreejs.v3.0.0-rc7.min.js"></script>
 
-	<script type="text/javascript">
-	$( document ).ready(function() {
-		var parent_width = $('#ped').parent().width();
-		var margin = ($(window).width()-parent_width > 10 ? 100 : 30);
-		var svg_width = (parent_width > 750 ? (parent_width*8/12 - margin) : parent_width- margin);
+  <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.42857143;
+      color: #333;
+      background-color: #fff;
+    }
 
-		var dataset = [
-			{"name": "m11", "display_name": "John",  "sex": "M", "diabetes_diagnosis_age": 55, "top_level": true},
-			{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true},
-			{"name": "m12", "display_name": "Jack", "sex": "M", "top_level": true},
-			{"name": "f12", "display_name": "Jill", "sex": "F", "top_level": true},
-			{"name": "m21", "display_name": "Jim", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
-			{"name": "f21", "display_name": "Jan", "sex": "F", "mother": "f12", "father": "m12", "age": 63},
-			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
-		];
-		var opts = {
-			'targetDiv': 'ped',
-			'btn_target': 'history_ex1',
-			'store_type': 'session',
-			'width': svg_width,
-			'height': 500,
-			'symbol_size': 35,
-			'edit': true,
-			'diseases': [
-				{'type': 'diabetes', 'colour': '#F68F35'},
-			],
-			'DEBUG': (pedigreejs.pedigreejs_utils.urlParam('debug') === null ? false : true)
-		};
-		$('#opts').append(JSON.stringify(opts, null, 4));
-		var local_dataset = pedigreejs.pedigreejs_pedcache.current(opts);
-		if (local_dataset !== undefined && local_dataset !== null) {
-			opts.dataset = local_dataset;
-		} else {
-			opts.dataset = dataset;
-		}
-		opts= pedigreejs.pedigreejs.build(opts);
-		$('#history_ex1').css('max-width', svg_width);
-		$('#history_ex1').css('margin', 'auto');
-	});
-	</script>
+    .container {
+      width: 90%;
+      max-width: 1140px;
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    #ped {
+      text-align: center;
+    }
+
+    .btn {
+      color: #333;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      display: inline-block;
+      padding: 6px 12px;
+      cursor: pointer;
+      margin-left: 5px;
+      border-radius: 4px;
+    }
+
+    #opts {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+      line-height: 1.42857143;
+      overflow: auto;
+      word-wrap: normal;
+      border-radius: 4px;
+    }
+
+    #history_ex1 {
+      padding: 10px;
+    }
+
+    .text-center {
+      text-align: center;
+      padding: 0 20px;
+    }
+  </style>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+    var parent_width = $("#ped").parent().width();
+    var margin = $(window).width() - parent_width > 10 ? 100 : 30;
+    var svg_width = parent_width - margin;
+
+    // Function to load the JSON dataset from a file
+    fetch('data.json')
+      .then(response => response.json())
+      .then(dataset => {
+        // Now use the dynamically loaded dataset
+        var opts = {
+          targetDiv: "ped",
+          btn_target: "history_ex1",
+          store_type: "session",
+          width: svg_width,
+          height: 1068,
+          symbol_size: 35,
+          edit: true,
+          diseases: [{ type: "diabetes", colour: "#F68F35" }],
+          DEBUG:
+            pedigreejs.pedigreejs_utils.urlParam("debug") === null
+              ? false
+              : true,
+        };
+
+        $("#opts").append(JSON.stringify(opts, null, 4));
+        var local_dataset = pedigreejs.pedigreejs_pedcache.current(opts);
+        if (local_dataset !== undefined && local_dataset !== null) {
+          opts.dataset = local_dataset;
+        } else {
+          opts.dataset = dataset;
+        }
+
+        // Build the pedigree chart with the dynamically loaded dataset
+        opts = pedigreejs.pedigreejs.build(opts);
+        $("#history_ex1").css("max-width", svg_width);
+        $("#history_ex1").css("margin", "auto");
+      })
+      .catch(error => console.error('Error loading the dataset:', error));
+  });
+</script>
 </head>
+
 <body>
+  <div class="text-center">
+    <h2>Example 1</h2>
+    <label class="btn">
+      <input id="load" type="file" style="display: none" />Load
+    </label>
+    <label class="btn">
+      <input id="save" type="button" style="display: none" />Save
+    </label>
+    <label class="btn">
+      <input id="print" type="button" style="display: none" />Print
+    </label>
+    <label class="btn">
+      <input id="svg_download" type="button" style="display: none" />SVG
+    </label>
+    <label class="btn">
+      <input id="png_download" type="button" style="display: none" />PNG
+    </label>
+    <div id="history_ex1"></div>
+    <div id="ped"></div>
+    <div id="node_properties"></div>
+  </div>
 
-<div class="text-center">
-	<h2>Example 1</h2>
-	<label class="btn">
-		<input id="load" type="file" style="display: none;"/>Load
-	</label>	
-	<label class="btn">
-		<input id="save" type="button" style="display: none;"/>Save
-	</label>
-	<label class="btn">
-		<input id="print" type="button" style="display: none;"/>Print
-	</label>
-	<label class="btn">
-		<input id="svg_download" type="button" style="display: none;"/>SVG
-	</label>
-	<label class="btn">
-		<input id="png_download" type="button" style="display: none;">PNG
-	</label>
-	<div id='history_ex1'></div>
-	<div id="ped"></div>
-	<div id="node_properties"></div>
-</div>
-
-<div class="container">
-<br>
-<p>This is an example of defining diabetes as the disease. It is using the browsers
-<a href="https://www.w3schools.com/html/html5_webstorage.asp">session storage</a> (if supported by the web-browser)
-to record the history and it stores for one session, <i>i.e.</i>data is lost when the browser tab is closed.
-These are the options used:</p> 
-<pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
-</div>
-
+  <div class="container">
+    <br />
+    <p>
+      This is an example of defining diabetes as the disease. It is using the
+      browsers
+      <a href="https://www.w3schools.com/html/html5_webstorage.asp">session storage</a>
+      (if supported by the web-browser) to record the history and it stores
+      for one session, <i>i.e.</i>data is lost when the browser tab is closed.
+      These are the options used:
+    </p>
+    <pre style="overflow: auto; word-wrap: normal" id="opts"></pre>
+  </div>
 </body>
+
+</html>
