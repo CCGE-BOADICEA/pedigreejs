@@ -1,0 +1,391 @@
+[
+    {
+        "name": "1",
+        "display_name": "AAA",
+        "sex": "M",
+        "top_level": true,
+        "level": 2,
+        "key": "PMHS"
+    },
+    {
+        "name": "2",
+        "display_name": "JK ",
+        "sex": "M",
+        "age": "22",
+        "yob": "",
+        "mother": "7",
+        "father": "1",
+        "key": "PMHS",
+        "level": 1
+    },
+    {
+        "name": "3",
+        "display_name": "kio ",
+        "sex": "M",
+        "age": "23",
+        "yob": "",
+        "mother": "7",
+        "father": "1",
+        "key": "PMHS",
+        "level": 1
+    },
+    {
+        "name": "4",
+        "display_name": "mmmm ",
+        "sex": "M",
+        "yob": "",
+        "age": "1",
+        "mother": "6",
+        "father": "3",
+        "key": "PMHS",
+        "level": 0
+    },
+    {
+        "name": "5",
+        "display_name": "ddsdsd ",
+        "sex": "F",
+        "yob": "",
+        "age": "2",
+        "mother": "6",
+        "father": "3",
+        "key": "PMHS",
+        "level": 0
+    },
+    {
+        "name": "6",
+        "display_name": "lbdcldsa None",
+        "sex": "F",
+        "noparents": true,
+        "key": "PMHS",
+        "mother": "7",
+        "father": "21",
+        "level": 1
+    },
+    {
+        "name": "7",
+        "display_name": "dedede ",
+        "sex": "F",
+        "age": "32",
+        "yob": "",
+        "top_level": true,
+        "level": 2,
+        "key": "PMG"
+    },
+    {
+        "name": "8",
+        "display_name": "dldkdNL ",
+        "sex": "M",
+        "age": "2",
+        "yob": "",
+        "mother": "7",
+        "father": "21",
+        "level": 1,
+        "key": "PMS"
+    },
+    {
+        "name": "9",
+        "display_name": "v",
+        "sex": "M",
+        "mother": "7",
+        "father": "21",
+        "noparents": true,
+        "level": 1,
+        "key": "PHS"
+    },
+    {
+        "name": "10",
+        "display_name": "mkl ",
+        "sex": "M",
+        "age": "23",
+        "yob": "",
+        "mother": "11",
+        "father": "9",
+        "key": "PHS",
+        "level": 0
+    },
+    {
+        "name": "11",
+        "display_name": "dd ",
+        "sex": "F",
+        "age": "4",
+        "yob": "",
+        "mother": "7",
+        "father": "21",
+        "level": 1,
+        "key": "PP"
+    },
+    {
+        "name": "12",
+        "display_name": "StillBirth",
+        "mother": "11",
+        "father": "23",
+        "stillbirth": true,
+        "status": "1",
+        "key": "PP",
+        "lost_pregnancies": 1,
+        "level": 0
+    },
+    {
+        "name": "13",
+        "display_name": "pregnancy loss",
+        "mother": "11",
+        "father": "23",
+        "key": "PP",
+        "lost_pregnancies": 1,
+        "level": 0
+    },
+    {
+        "name": "14",
+        "display_name": "StillBirth",
+        "mother": "11",
+        "father": "23",
+        "stillbirth": true,
+        "status": "1",
+        "key": "PP",
+        "lost_pregnancies": 1,
+        "level": 0
+    },
+    {
+        "name": "15",
+        "display_name": "Miscarriage",
+        "mother": "11",
+        "father": "23",
+        "miscarriage": true,
+        "key": "PP",
+        "lost_pregnancies": 1,
+        "level": 0
+    },
+    {
+        "name": "16",
+        "display_name": "jki ",
+        "sex": "M",
+        "age": "23",
+        "yob": "",
+        "mother": "11",
+        "father": "23",
+        "level": 0,
+        "key": "PS"
+    },
+    {
+        "name": "17",
+        "display_name": "dddd ",
+        "sex": "F",
+        "age": "23",
+        "yob": "",
+        "mother": "11",
+        "father": "23",
+        "level": 0,
+        "key": "PS"
+    },
+    {
+        "name": "18",
+        "display_name": "kl ",
+        "sex": "F",
+        "age": "23",
+        "yob": "",
+        "mother": "11",
+        "father": "23",
+        "level": 0,
+        "key": "PPT",
+        "noparents": true
+    },
+    {
+        "name": "19",
+        "display_name": "iop ",
+        "sex": "M",
+        "yob": "",
+        "age": "2",
+        "mother": "18",
+        "father": "20",
+        "key": "PPT",
+        "level": -1
+    },
+    {
+        "name": "20",
+        "display_name": "sd ",
+        "sex": "M",
+        "age": "12",
+        "mother": "11",
+        "father": "23",
+        "proband": true,
+        "level": 0,
+        "key": "P"
+    },
+    {
+        "name": "21",
+        "display_name": "kk ",
+        "sex": "M",
+        "age": "12",
+        "yob": "",
+        "top_level": true,
+        "level": 2,
+        "key": "PMG"
+    },
+    {
+        "name": "22",
+        "display_name": "gfg ",
+        "sex": "M",
+        "age": "32",
+        "yob": "",
+        "top_level": true,
+        "level": 2,
+        "key": "PPG"
+    },
+    {
+        "name": "23",
+        "display_name": "jk ",
+        "sex": "M",
+        "age": "12",
+        "yob": "",
+        "mother": "36",
+        "father": "22",
+        "level": 1,
+        "key": "PP"
+    },
+    {
+        "name": "24",
+        "display_name": "ff ",
+        "sex": "M",
+        "age": "3",
+        "yob": "",
+        "mother": "25",
+        "father": "23",
+        "key": "PHS",
+        "level": 0
+    },
+    {
+        "name": "25",
+        "display_name": "g",
+        "sex": "F",
+        "mother": "36",
+        "father": "22",
+        "noparents": true,
+        "level": 1,
+        "key": "PHS"
+    },
+    {
+        "name": "26",
+        "display_name": "Miscarriage",
+        "mother": "36",
+        "father": "22",
+        "miscarriage": true,
+        "key": "PPG",
+        "lost_pregnancies": 1,
+        "level": 1
+    },
+    {
+        "name": "27",
+        "display_name": "StillBirth",
+        "mother": "36",
+        "father": "22",
+        "stillbirth": true,
+        "status": "1",
+        "key": "PPG",
+        "lost_pregnancies": 1,
+        "level": 1
+    },
+    {
+        "name": "28",
+        "display_name": "m ",
+        "sex": "F",
+        "noparents": true,
+        "key": "PFS",
+        "mother": "36",
+        "father": "22",
+        "level": 1
+    },
+    {
+        "name": "29",
+        "display_name": "kjiu ",
+        "sex": "M",
+        "yob": "",
+        "age": "4",
+        "mother": "28",
+        "father": "31",
+        "key": "PFS",
+        "level": 0
+    },
+    {
+        "name": "30",
+        "display_name": "ewewhliudew ",
+        "sex": "M",
+        "yob": "",
+        "age": "7",
+        "mother": "28",
+        "father": "31",
+        "key": "PFS",
+        "level": 0
+    },
+    {
+        "name": "31",
+        "display_name": "hffoirwjfoo ",
+        "sex": "M",
+        "age": "3",
+        "yob": "",
+        "mother": "36",
+        "father": "22",
+        "level": 1,
+        "key": "PFS"
+    },
+    {
+        "name": "32",
+        "display_name": "hui None",
+        "sex": "F",
+        "noparents": true,
+        "key": "PFHS",
+        "mother": "36",
+        "father": "22",
+        "level": 1
+    },
+    {
+        "name": "33",
+        "display_name": "fdfd ",
+        "sex": "F",
+        "yob": "",
+        "age": "34",
+        "mother": "32",
+        "father": "35",
+        "key": "PFHS",
+        "level": 0
+    },
+    {
+        "name": "34",
+        "display_name": "rrr ",
+        "sex": "M",
+        "yob": "",
+        "age": "33",
+        "mother": "32",
+        "father": "35",
+        "key": "PFHS",
+        "level": 0
+    },
+    {
+        "name": "35",
+        "display_name": "kio ",
+        "sex": "M",
+        "age": "22",
+        "yob": "",
+        "mother": "36",
+        "father": "37",
+        "key": "PFHS",
+        "level": 1
+    },
+    {
+        "name": "36",
+        "display_name": "ll ",
+        "sex": "F",
+        "age": "12",
+        "yob": "",
+        "top_level": true,
+        "level": 2,
+        "key": "PPG"
+    },
+    {
+        "name": "37",
+        "display_name": "mj",
+        "sex": "M",
+        "top_level": true,
+        "level": 2,
+        "key": "PFHS"
+    }
+]
