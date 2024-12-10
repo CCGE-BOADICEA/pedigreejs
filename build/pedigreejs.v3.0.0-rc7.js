@@ -1603,7 +1603,7 @@ var pedigreejs = (function (exports) {
 	          if (path_test[j] === 'N' || path_test[j] === 'P') indi[pathology_tests[j] + '_bc_pathology'] = path_test[j];else console.warn('UNRECOGNISED PATHOLOGY ON LINE ' + (i + 1) + ": " + pathology_tests[j] + " " + path_test[j]);
 	        }
 	      }
-	      ped.unshift(indi);
+	      ped.push(indi);
 	    }
 	  }
 
