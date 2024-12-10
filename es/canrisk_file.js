@@ -214,7 +214,7 @@ export function readCanRisk(boadicea_lines) {
 						console.warn('UNRECOGNISED PATHOLOGY ON LINE '+ (i+1) + ": " +pathology_tests[j] + " " +path_test[j]);
 				}
 			}
-			ped.unshift(indi);
+			ped.push(indi);
 		}
 	}
 
