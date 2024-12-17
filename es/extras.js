@@ -25,7 +25,7 @@ export function node_attr(opts, name, keys, value){
 		return;
 	}
 
-	if(!$.isArray(keys)) {
+	if(!Array.isArray(keys)) {
 		keys = [keys];
 	}
 

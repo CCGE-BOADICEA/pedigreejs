@@ -46,18 +46,23 @@ function getByName(arr, name) {
  */
 function copyStylesInline(destinationNode, sourceNode) {
 	let containerElements = ["svg","g"];
-	for (let cd = 0; cd < destinationNode.childNodes.length; cd++) {
-		let child = destinationNode.childNodes[cd];
+	let destChildNodes = destinationNode.childNodes;
+	let srcChildNodes = sourceNode.childNodes;
+	for (let cd = 0; cd < destChildNodes.length; cd++) {
+		let child = destChildNodes[cd];
 		if (containerElements.indexOf(child.tagName) !== -1) {
-			copyStylesInline(child, sourceNode.childNodes[cd]);
+			copyStylesInline(child, srcChildNodes[cd]);
 			continue;
 		}
 		try {
-			let style = sourceNode.childNodes[cd].currentStyle || window.getComputedStyle(sourceNode.childNodes[cd]);
+			let style = srcChildNodes[cd].currentStyle || window.getComputedStyle(srcChildNodes[cd]);
 			if (style === "undefined" || style === null) continue;
 
-			for (let st = 0; st < style.length; st++){
-				if(style[st].indexOf("text") > -1 || style[st].indexOf("font") > -1) child.style.setProperty(style[st], style.getPropertyValue(style[st]));
+			let styleLength = style.length;
+			let childStyle = child.style;
+			for (let st = 0; st < styleLength; st++){
+				let mySt = style[st];
+				if(mySt.indexOf("text-") > -1 || mySt.indexOf("font-") > -1) childStyle.setProperty(mySt, style.getPropertyValue(mySt));
 			}
 		} catch(err) { continue; }
    }
@@ -84,6 +89,18 @@ export function img_download(opts, resolution, img_type) {
 	});
 }
 
+/** Get SVG data URL from svg element */
+function get_svg_as_data_url(svg) {
+	let svgCopy = svg.get(0).cloneNode(true);
+	// remove unused elements
+	d3.select(svgCopy).selectAll("text").filter(function(){
+		 return d3.select(this).text().length === 0 || 
+		        d3.select(this), d3.select(this).attr('font-family') === "FontAwesome"
+	 }).remove();
+	copyStylesInline(svgCopy, svg.get(0));
+	let svgStr = (new XMLSerializer()).serializeToString(svgCopy);
+	return 'data:image/svg+xml;base64,'+ window.btoa(decodeURI(encodeURI(svgStr))); // convert SVG string to data URL
+}
 /**
  * Given a SVG document element convert to image (e.g. jpeg, png - default png).
  */
@@ -94,12 +111,8 @@ export function svg2img(svg, deferred_name, options) {
 		if(!(key in options)) {options[key] = value;}
 	});
 
-	let copy = svg.get(0).cloneNode(true);
-	copyStylesInline(copy, svg.get(0));
 	let deferred = $.Deferred();
-	let svgStr = (new XMLSerializer()).serializeToString(copy);
-
-	let imgsrc = 'data:image/svg+xml;base64,'+ window.btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
+	let imgsrc = get_svg_as_data_url(svg); // convert SVG string to data URL
 	let canvas = document.createElement("canvas");
 	canvas.width = svg.width()*options.resolution;
 	canvas.height = svg.height()*options.resolution;
@@ -124,42 +137,6 @@ export function svg2img(svg, deferred_name, options) {
 	return deferred.promise();
 }
 
-/** TODO ::: test the following
-export function svg2imgA(svgJQ, deferred_name, options) {
-	let defaults = {iscanvg: false, resolution: 1, img_type: "image/png"};
-	if(!options) options = defaults;
-	$.each(defaults, function(key, value) {
-		if(!(key in options)) {options[key] = value;}
-	});
-
-	let svg = svgJQ.get(0);
-	let deferred = $.Deferred();
-  	var copy = svg.cloneNode(true);
-	copyStylesInline(copy, svg);
-	var canvas = document.createElement("canvas");
-	canvas.width = svgJQ.width()*options.resolution;
-	canvas.height = svgJQ.height()*options.resolution;
-	var context = canvas.getContext("2d");
-	var data = (new XMLSerializer()).serializeToString(copy);
-	var DOMURL = window.URL || window.webkitURL || window;
-	var img = new Image();
-	var svgBlob = new Blob([data], {type: "image/svg+xml;charset=utf-8"});
-	var url = DOMURL.createObjectURL(svgBlob);
-	img.onload = function () {
-		context.drawImage(img, 0, 0, canvas.width, canvas.height);
-		console.log(deferred_name, options.img_type);
-		deferred.resolve(
-			{'name': deferred_name,
-			'resolution': options.resolution,
-			'img':canvas.toDataURL(options.img_type, 1),
-			'w':canvas.width,
-			'h':canvas.height})
-	};
-	img.src = url;
-	return deferred.promise();
-}
- */
-
 function getMatches(str, myRegexp) {
 	let matches = [];
 	let c = 0;
@@ -168,7 +145,7 @@ function getMatches(str, myRegexp) {
 	while (match) {
 		c++;
 		if(c > 400) {
-			console.error("getMatches: counter exceeded 800");
+			console.error("getMatches: counter exceeded 400");
 			return -1;
 		}
 		matches.push(match);
@@ -205,10 +182,9 @@ export function copy_svg(opts) {
 	let d3obj = d3.select(svg_node.get(0));
 
 	// remove unused elements
-	d3obj.selectAll(".popup_selection, .indi_rect, .addsibling, .addpartner, .addchild, .addparents, .delete, .line_drag_selection").remove();
 	d3obj.selectAll("text")
 	  .filter(function(){
-		 return d3.select(this).text().length === 0
+		return d3.select(this).text().length === 0 || d3.select(this), d3.select(this).attr('font-family') === "FontAwesome"
 	  }).remove();
 	return $(unique_urls(svg_node.html()));
 }
@@ -242,8 +218,8 @@ function get_printable_svg(opts) {
 
 // download the SVG to a file
 export function svg_download(svg){
-	let a	  = document.createElement('a');
-	a.href	 = 'data:image/svg+xml;base64,'+ btoa( unescape( encodeURIComponent( svg.html() ) ) );
+	let a	   = document.createElement('a');
+	a.href	   = get_svg_as_data_url(svg);
 	a.download = 'plot.svg';
 	a.target   = '_blank';
 	document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -393,10 +369,10 @@ function load(e, opts) {
 	if(f) {
 		let reader = new FileReader();
 		reader.onload = function(e) {
-			load_data(e.target.result, opts)
+			load_data(e.target.result, opts);
 		};
-		reader.onerror = function(event) {
-			utils.messages("File Error", "File could not be read! Code " + event.target.error.code);
+		reader.onerror = function() {
+			utils.messages("File Error", "File could not be read! Code " + reader.error);
 		};
 		reader.readAsText(f);
 	} else {

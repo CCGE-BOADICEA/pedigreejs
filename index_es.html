@@ -7,13 +7,14 @@
 
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="build/pedigreejs.v3.0.0-rc7.css" />
+
+	<link rel="stylesheet" href="build/pedigreejs.v3.0.0-rc8.css" />
 
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.8.2/dist/d3.min.js" integrity="sha256-yUdn/lyl/rHBn4bD4HkKmnR7S6Fj+tXIO0ozSay1Bik=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
-    <script type="module" src="es/pedigree.js"></script>
+	<script type="module" src="es/pedigree.js"></script>
 
 	<style>
 		a[href^="http://"][target=_blank]:after,
@@ -62,7 +63,7 @@
 		.row > div {
 			margin-right: 10px;
 		}
-		
+
 		.left {
 			width:140px;
 			font-weight: bold;
@@ -140,16 +141,12 @@
 		}
 	</style>
 
-
 	<script type="module">
 
 	import * as pedigree from '/es/pedigree.js';
 	import * as pedcache from '/es/pedcache.js';
 	import {urlParam, isIE} from '/es/utils.js';
-	
-	if(isIE()) {
-		document.write('<script src="https://cdn.jsdelivr.net/npm/canvg@2.0.0/dist/browser/canvg.min.js"><\/script>');
-	}
+	import * as canrisk_file from '/es/canrisk_file.js';
 
 	$( document ).ready(function() {
 		////////////////////
@@ -160,7 +157,7 @@
 			{"name": "f12", "sex": "F", "top_level": true, "breast_cancer_diagnosis_age":55},
 			{"name": "m21", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
 			{"name": "f21", "sex": "F", "mother": "f12", "father": "m12", "breast_cancer_diagnosis_age":55, "breast_cancer2_diagnosis_age": 60, "ovarian_cancer_diagnosis_age":58, "age": 63},
-			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25}
+			{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25, "yob": 1996}
 		];
 		$( "#pedigrees" ).append( $( "<div id='pedigree_history'></div>" ) );
 		$( "#pedigrees" ).append( $( "<div id='pedigree'></div>" ) );
@@ -197,6 +194,108 @@
 			opts.dataset = dataset;
 		}
 		opts = pedigree.build(opts);
+
+		/**
+		 * Funtion to get the pedigree data in BOADICEA v4 format
+		 */
+		function get_pedigree_bwa4(dataset) {
+			let msg = "BOADICEA import pedigree file format 4.0 ";
+			let famid = opts.dataset[0].famid;
+
+			// female risk factors
+			let probandIdx  = pedigreejs.pedigreejs_utils.getProbandIndex(dataset);
+			let sex = 'F';
+			if(probandIdx) {
+				sex = dataset[probandIdx].sex;
+			}
+
+			msg += "\nFamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob";
+			msg += "\t1stBrCa\t2ndBrCa\tOvCa\tProCa\tPanCa\tAshkn";
+			msg += "\tBRCA1t\tBRCA1r\tBRCA2t\tBRCA2r\tPALB2t\tPALB2r\tATMt\tATMr\tCHEK2t\tCHEK2r\tER\tPR\tHER2\tCK14\tCK56";
+
+			for(let i=0; i<dataset.length; i++) {
+				let p = dataset[i];
+
+				msg += '\n'+famid+'\t';												// max 13 chars
+				msg += (p.display_name ? p.display_name : "NA")+'\t';				// display_name 
+				msg += ('proband' in p ? '1' : 0)+'\t';
+				msg += p.name+'\t';													// max 7 chars
+				msg += ('father' in p && !('noparents' in p)? p.father : 0)+'\t';	// max 7 chars
+				msg += ('mother' in p && !('noparents' in p)? p.mother : 0)+'\t';	// max 7 chars
+				msg += p.sex+'\t';
+				msg += ('mztwin' in p ? p.mztwin : 0)+'\t'; 						// MZtwin
+				msg += ('status' in p ? p.status : 0)+'\t';							// current status: 0 = alive, 1 = dead
+				msg += ('age' in p ? p.age : 0)+'\t';								// Age at last follow up or 0 = unspecified
+				msg += ('yob' in p ? p.yob : 0)+'\t';								// YOB or 0 = unspecified
+
+				let cmsg = "";
+				$.each(canrisk_file.cancers, function(cancer, diagnosis_age) {
+					// Age at 1st cancer or 0 = unaffected, AU = unknown age at diagnosis (affected unknown)
+					if(diagnosis_age in p)
+						cmsg += (diagnosis_age in p ? p[diagnosis_age] : 'AU')+'\t';
+					else
+						cmsg += '0\t';
+				});
+				msg+=cmsg;
+
+				// Ashkenazi status, 0 = not Ashkenazi, 1 = Ashkenazi
+				msg += ('ashkenazi' in p ? p.ashkenazi : 0)+'\t';
+
+				let gt = ['brca1', 'brca2', 'palb2', 'atm', 'chek2'];
+				for(let j=0; j<gt.length; j++) {
+					if(gt[j]+'_gene_test' in p &&
+					   p[gt[j]+'_gene_test']['type'] !== '-' &&
+					   p[gt[j]+'_gene_test']['result'] !== '-') {
+						msg += p[gt[j]+'_gene_test']['type'] + '\t';
+						msg += p[gt[j]+'_gene_test']['result'] + '\t';
+					} else {
+						msg += '0\t0\t';		// type, 0=untested, S=mutation search, T=direct gene test
+												// result, 0=untested, P=positive, N=negative
+					}
+				}
+
+				let ptests = canrisk_file.pathology_tests;
+				for(let j=0; j<ptests.length; j++) {
+					// status, 0 = unspecified, N = negative, P = positive
+					if(ptests[j]+'_bc_pathology' in p) {
+						msg += p[ptests[j]+'_bc_pathology'];
+					} else {
+						msg += '0';
+					}
+					if(j<(ptests.length-1))
+						msg += "\t";
+				}
+			}
+			return msg;
+		}
+
+		function save(asCanRisk) {
+			let curr = pedcache.current(opts);
+			var content;
+			var filename;
+			if (asCanRisk){
+				content = canrisk_file.get_non_anon_pedigree(opts.dataset);
+				filename = "ped.canrisk";
+			} else {
+				content = get_pedigree_bwa4(opts.dataset);
+				filename = "ped.boadicea";
+			}
+
+			let file = new Blob([content], {type: "text/plain"});
+			let a = document.createElement("a");
+			let url = URL.createObjectURL(file);
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			setTimeout(function() {
+			   document.body.removeChild(a);
+			   window.URL.revokeObjectURL(url);
+			}, 0);
+		}
+		
+		$('#save-boadicea').click(function(_e) { save(false); });
+		$('#save-canrisk').click(function(_e)  { save(true); });
 	});
 	</script>
 </head>
@@ -223,6 +322,7 @@
 				<label class="btn">
 						<input id="save" type="button" style="display: none;"/>Save
 				</label>
+
 				<label class="btn">
 						<input id="print" type="button" style="display: none;"/>Print
 				</label>
@@ -235,6 +335,14 @@
 
 				<div id="pedigrees"></div>
 				<div id="node_properties"></div>
+
+				<br/>
+				<label class="btn">
+						<input id="save-boadicea" type="button" style="display: none;"/>Save (BOADICEA v4 format)
+				</label>
+				<label class="btn">
+						<input id="save-canrisk" type="button" style="display: none;"/>Save (CanRisk format)
+				</label>
 			</div>
 		</div>
 		<div>
@@ -302,24 +410,14 @@
 	</p>
 	<p>
 	There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i>,
-	'redo' <i class="fa fa-redo" aria-hidden="true"></i> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i>
+	'redo' <i class="fa fa-repeat" aria-hidden="true"></i> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i>
 	buttons at the top and a button to enable full screen editing <i class="fa fa-arrows-alt" aria-hidden="true"></i>.
 	</p>
 
 	<h2>Loading and Saving Pedigree Data</h2>
-	<p>The pedigree can be saved out and loaded back in. Preliminary support is given to loading basic
-	BOADICEA file format v4 (see the BOADICEA documentation
-	<a href="https://pluto.srl.cam.ac.uk/bd4/v4/docs/BWA_v4_Appendix_A.pdf" target="_blank">Appendix</a>).</p>
-
-	<p>Support for <a href="https://www.cog-genomics.org/plink/1.9/formats#ped">PED file format</a>
-	has been added, see <a href="docs/example4.html">example 4</a>.<p>
-
-	<h2>Future Development</h2>
-		<p>The following will be looked at:</p>
-		<ul>
-			<li>currently the maximum number of partners an individual can be represented to have is 2.</li>
-			<li><del>the ability to represent consanguineous partners between different levels in the tree.</del></li>
-		</ul>
+	<p>The pedigree can be saved out and loaded back in. Support is given to loading
+	<a href="https://canrisk.atlassian.net/wiki/x/QoCjAg" target="_blank">CanRisk files</a>,
+	and <a href="https://www.cog-genomics.org/plink/1.9/formats#ped">PED files</a> (see <a href="docs/example4.html">example 4</a>).<p>
 
 	<h2 id="config">Configuration and Integration Notes</h2>
 	<p>The following parameters can be used to configure pedigreejs.
@@ -329,7 +427,7 @@
 	drawing the pedigree. Default parameters are provided which are documented below.
 	There is a configuration parameter 'edit' which can take a function, so that a
 	customised editor can be written to view and edit an individual's attributes (e.g. name, sex).
-	Alternatively is 'edit' is set to true a default dialog will be displayed showing the
+	Alternatively if 'edit' is set to true a default dialog will be displayed showing the
 	individual's attributes.
 	</p>
 
@@ -422,6 +520,18 @@
 	<div class="row" id="zoomOut">
 		<div class="left">zoomOut</div>
 		<div>The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
+    </div>
+	<div class="row" id="zoomSrc">
+		<div class="left">zoomSrc</div>
+		<div>The source of zoom events, default ['wheel', 'button'] (zoom with mouse wheel and zoom buttons).</div>
+    </div>
+        <div class="row" id="dragNode">
+		<div class="left">dragNode</div>
+		<div>Enable dragging nodes, default true.</div>
+    </div>
+    <div class="row" id="showWidgets">
+		<div class="left">showWidgets</div>
+		<div>Show the widgets, default true.</div>
     </div>
 	<div class="row" id="edit">
 		<div class="left">edit</div>

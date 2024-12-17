@@ -129,10 +129,10 @@
 		<p>
 			Note: if the default editor is being used, then <a href="https://jqueryui.com/">jQuery UI</a> is also needed
 			and it requires an empty div with id set to node_properties.
-
-			<pre class="options">&lt;div id="node_properties"&gt;&lt;/div&gt;</pre>
-
 		</p>
+
+		<pre class="options">&lt;div id="node_properties"&gt;&lt;/div&gt;</pre>
+
 		<h3>Storing and Retrieving Pedigree Data</h3>
 		<p>
 		The <a href="../index.html#opts">‘store_type’</a> options in the configuration allows the data
@@ -179,12 +179,12 @@ MISSING FATHER FOR ch1</pre>
 		</p>
 		<h3>Test Suite</h3>
 		<p>
-		The <a href="https://jasmine.github.io/">Jasmine</a> test framework is used to provide tests for the
-		JavaScript. It can be installed and run from the root directory as follows:</p>
-<pre class="options">pip install jasmine
-jasmine server</pre>
+		The <a href="https://github.com/jasmine/jasmine-browser-runner">jasmine-browser-runner</a> runs your Jasmine specs and is used to provide tests for the
+		JavaScript. It can be installed and run as follows:</p>
+<pre class="options">npm install jasmine-browser-runner
+npx jasmine-browser-runner serve</pre>
 		<p>
-		Then visit 0.0.0.0:8888 in a web-browser to run the tests.
+		Then visit http://localhost:8888 in a web-browser to run the tests.
 		</p>
 	</div>
 </div>

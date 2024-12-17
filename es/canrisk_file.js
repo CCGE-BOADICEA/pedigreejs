@@ -51,7 +51,8 @@ export function get_non_anon_pedigree(dataset, meta, version=2, ethnicity=undefi
 
 //check if input has a value
 export function hasInput(id) {
-	return $.trim($('#'+id).val()).length !== 0;
+	const v = $('#'+id).val();
+	return v && v.trim().length !== 0;
 }
 
 //return true if the object is empty
@@ -213,7 +214,7 @@ export function readCanRisk(boadicea_lines) {
 						console.warn('UNRECOGNISED PATHOLOGY ON LINE '+ (i+1) + ": " +pathology_tests[j] + " " +path_test[j]);
 				}
 			}
-			ped.unshift(indi);
+			ped.push(indi);
 		}
 	}
 
