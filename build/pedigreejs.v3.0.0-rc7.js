@@ -1878,6 +1878,17 @@ var pedigreejs = (function (exports) {
 	  });
 	}
 
+	/** Get SVG data URL from svg element */
+	function get_svg_as_data_url(svg) {
+	  let svgCopy = svg.get(0).cloneNode(true);
+	  // remove unused elements
+	  d3.select(svgCopy).selectAll("text").filter(function () {
+	    return d3.select(this).text().length === 0 || d3.select(this), d3.select(this).attr('font-family') === "FontAwesome";
+	  }).remove();
+	  copyStylesInline(svgCopy, svg.get(0));
+	  let svgStr = new XMLSerializer().serializeToString(svgCopy);
+	  return 'data:image/svg+xml;base64,' + window.btoa(decodeURI(encodeURI(svgStr))); // convert SVG string to data URL
+	}
 	/**
 	 * Given a SVG document element convert to image (e.g. jpeg, png - default png).
 	 */
@@ -1893,11 +1904,8 @@ var pedigreejs = (function (exports) {
 	      options[key] = value;
 	    }
 	  });
-	  let copy = svg.get(0).cloneNode(true);
-	  copyStylesInline(copy, svg.get(0));
 	  let deferred = $.Deferred();
-	  let svgStr = new XMLSerializer().serializeToString(copy);
-	  let imgsrc = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
+	  let imgsrc = get_svg_as_data_url(svg); // convert SVG string to data URL
 	  let canvas = document.createElement("canvas");
 	  canvas.width = svg.width() * options.resolution;
 	  canvas.height = svg.height() * options.resolution;
@@ -1921,43 +1929,6 @@ var pedigreejs = (function (exports) {
 	  img.src = imgsrc;
 	  return deferred.promise();
 	}
-
-	/** TODO ::: test the following
-	export function svg2imgA(svgJQ, deferred_name, options) {
-		let defaults = {iscanvg: false, resolution: 1, img_type: "image/png"};
-		if(!options) options = defaults;
-		$.each(defaults, function(key, value) {
-			if(!(key in options)) {options[key] = value;}
-		});
-
-		let svg = svgJQ.get(0);
-		let deferred = $.Deferred();
-	  	var copy = svg.cloneNode(true);
-		copyStylesInline(copy, svg);
-		var canvas = document.createElement("canvas");
-		canvas.width = svgJQ.width()*options.resolution;
-		canvas.height = svgJQ.height()*options.resolution;
-		var context = canvas.getContext("2d");
-		var data = (new XMLSerializer()).serializeToString(copy);
-		var DOMURL = window.URL || window.webkitURL || window;
-		var img = new Image();
-		var svgBlob = new Blob([data], {type: "image/svg+xml;charset=utf-8"});
-		var url = DOMURL.createObjectURL(svgBlob);
-		img.onload = function () {
-			context.drawImage(img, 0, 0, canvas.width, canvas.height);
-			console.log(deferred_name, options.img_type);
-			deferred.resolve(
-				{'name': deferred_name,
-				'resolution': options.resolution,
-				'img':canvas.toDataURL(options.img_type, 1),
-				'w':canvas.width,
-				'h':canvas.height})
-		};
-		img.src = url;
-		return deferred.promise();
-	}
-	 */
-
 	function getMatches(str, myRegexp) {
 	  let matches = [];
 	  let c = 0;
@@ -1966,7 +1937,7 @@ var pedigreejs = (function (exports) {
 	  while (match) {
 	    c++;
 	    if (c > 400) {
-	      console.error("getMatches: counter exceeded 800");
+	      console.error("getMatches: counter exceeded 400");
 	      return -1;
 	    }
 	    matches.push(match);
@@ -2000,9 +1971,8 @@ var pedigreejs = (function (exports) {
 	  let d3obj = d3.select(svg_node.get(0));
 
 	  // remove unused elements
-	  d3obj.selectAll(".popup_selection, .indi_rect, .addsibling, .addpartner, .addchild, .addparents, .delete, .line_drag_selection").remove();
 	  d3obj.selectAll("text").filter(function () {
-	    return d3.select(this).text().length === 0;
+	    return d3.select(this).text().length === 0 || d3.select(this), d3.select(this).attr('font-family') === "FontAwesome";
 	  }).remove();
 	  return $(unique_urls(svg_node.html()));
 	}
@@ -2037,7 +2007,7 @@ var pedigreejs = (function (exports) {
 	// download the SVG to a file
 	function svg_download(svg) {
 	  let a = document.createElement('a');
-	  a.href = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg.html())));
+	  a.href = get_svg_as_data_url(svg);
 	  a.download = 'plot.svg';
 	  a.target = '_blank';
 	  document.body.appendChild(a);
@@ -2176,8 +2146,8 @@ var pedigreejs = (function (exports) {
 	    reader.onload = function (e) {
 	      load_data(e.target.result, opts);
 	    };
-	    reader.onerror = function (event) {
-	      messages("File Error", "File could not be read! Code " + event.target.error.code);
+	    reader.onerror = function () {
+	      messages("File Error", "File could not be read! Code " + reader.error);
 	    };
 	    reader.readAsText(f);
 	  } else {
