@@ -92,7 +92,7 @@ function addPbuttonEvents(opts) {
 	// undo/redo/reset
 	$( "#"+opts.btn_target ).on( "click", function(e) {
 		e.stopPropagation();
-		if($(e.target).hasClass("disabled"))
+		if($(e.target).hasClass("fg-grey"))
 			return false;
 
 		if($(e.target).hasClass('fa-undo')) {
@@ -183,12 +183,12 @@ export function updateButtons(opts) {
 	let nstore = pedcache.nstore(opts);
 	let id = "#"+opts.btn_target;
 	if(nstore <= current)
-		$(id+" .fa-redo").addClass('disabled');
+		$(id+" .fa-redo").addClass('fg-grey');
 	else
-		$(id+" .fa-redo").removeClass('disabled');
+		$(id+" .fa-redo").removeClass('fg-grey');
 
 	if(current > 1)
-		$(id+" .fa-undo").removeClass('disabled');
+		$(id+" .fa-undo").removeClass('fg-grey');
 	else
-		$(id+" .fa-undo").addClass('disabled');
+		$(id+" .fa-undo").addClass('fg-grey');
 }

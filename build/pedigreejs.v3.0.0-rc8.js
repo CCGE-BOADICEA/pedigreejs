@@ -1165,7 +1165,7 @@ var pedigreejs = (function (exports) {
 	  // undo/redo/reset
 	  $("#" + opts.btn_target).on("click", function (e) {
 	    e.stopPropagation();
-	    if ($(e.target).hasClass("disabled")) return false;
+	    if ($(e.target).hasClass("fg-grey")) return false;
 	    if ($(e.target).hasClass('fa-undo')) {
 	      opts.dataset = previous(opts);
 	      $("#" + opts.targetDiv).empty();
@@ -1393,8 +1393,8 @@ var pedigreejs = (function (exports) {
 	  let current = get_count(opts);
 	  let nstore$1 = nstore(opts);
 	  let id = "#" + opts.btn_target;
-	  if (nstore$1 <= current) $(id + " .fa-redo").addClass('disabled');else $(id + " .fa-redo").removeClass('disabled');
-	  if (current > 1) $(id + " .fa-undo").removeClass('disabled');else $(id + " .fa-undo").addClass('disabled');
+	  if (nstore$1 <= current) $(id + " .fa-redo").addClass('fg-grey');else $(id + " .fa-redo").removeClass('fg-grey');
+	  if (current > 1) $(id + " .fa-undo").removeClass('fg-grey');else $(id + " .fa-undo").addClass('fg-grey');
 	}
 
 	/**
