@@ -99,7 +99,7 @@ function get_svg_as_data_url(svg) {
 	 }).remove();
 	copyStylesInline(svgCopy, svg.get(0));
 	let svgStr = (new XMLSerializer()).serializeToString(svgCopy);
-	return 'data:image/svg+xml;base64,'+ window.btoa(decodeURI(encodeURI(svgStr))); // convert SVG string to data URL
+	return 'data:image/svg+xml;base64,'+ window.btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
 }
 /**
  * Given a SVG document element convert to image (e.g. jpeg, png - default png).
