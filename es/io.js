@@ -390,7 +390,7 @@ function load(e, opts) {
 //	4. Within-family ID of mother ('0' if mother isn't in dataset)
 //	5. Sex code ('1' = male, '2' = female, '0' = unknown)
 //	6. Phenotype value ('1' = control, '2' = case, '-9'/'0'/non-numeric = missing data if case/control)
-//  7. Genotypes (column 7 onwards);
+//	7. Genotypes (column 7 onwards);
 //	 columns 7 & 8 are allele calls for first variant ('0' = no call); colummns 9 & 10 are calls for second variant etc.
 export function readLinkage(boadicea_lines) {
 	let lines = boadicea_lines.trim().split('\n');
