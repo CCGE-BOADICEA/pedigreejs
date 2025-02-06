@@ -406,35 +406,38 @@ function openEditDialog(opts, d) {
 	    width: ($(window).width() > 400 ? 450 : $(window).width()- 30)
 	});
 
+	let current_year = new Date().getFullYear();
 	let table = "<table id='person_details' class='table'>";
 
-	table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
-	(d.data.name ? d.data.name : "")+"></td></tr>";
-	table += "<tr><td style='text-align:right'>Name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
+	table += "<tr><td style='text-align:right'>ID Unico</td><td><input class='form-control' type='text' id='id_name' name='name' value="+
+	(d.data.name ? d.data.name : "")+" disabled></td></tr>";
+	table += "<tr><td style='text-align:right'>Nome</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value="+
 			(d.data.display_name ? d.data.display_name : "")+"></td></tr>";
 
-	table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:7em' value="+
+	table += "<tr><td style='text-align:right'>Età</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:7em' value="+
 			(d.data.age ? d.data.age : "")+"></td></tr>";
 
-	table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value="+
+	table += `<tr><td style='text-align:right'>Anno di nascita</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='${current_year}' name='yob' style='width:7em' value=`+
 		(d.data.yob ? d.data.yob : "")+"></td></tr>";
+	// table += '<tr><td colspan="2" id="id_sex">' + '<label class="radio-inline"><input type="radio" name="sex" value="M" ' + (d.data.sex === 'M' ? "checked" : "") + '>Maschio</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="F" ' + (d.data.sex === 'F' ? "checked" : "") + '>Femmina</label>' + '<label class="radio-inline" style="display: none;"><input type="radio" name="sex" value="U" style="display: none;">Ignoto</label>' + '</td></tr>';
+	table += `<tr><td colspan="2" id="id_sex"> <label class="radio-inline"><input type="radio" name="sex" value="M" ${d.data.sex === 'M' ? "checked" : ""}>Maschio</label> <label class="radio-inline"><input type="radio" name="sex" value="F" ${d.data.sex === 'F' ? "checked" : ""}>Femmina</label> <label class="radio-inline" style="display: none;"><input type="radio" name="sex" value="U" style="display: none;">Ignoto</label> </td></tr>`;
 
 	table += '<tr><td colspan="2" id="id_sex">' +
-			 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
-			 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
+			 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Maschio</label>' +
+			 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Femmina</label>' +
 			 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
 			 '</td></tr>';
 
 	// alive status = 0; dead status = 1
 	table += '<tr><td colspan="2" id="id_status">' +
-			 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(parseInt(d.data.status) === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
-			 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(parseInt(d.data.status) === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
+			 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(parseInt(d.data.status) === 0 ? "checked" : "")+'>&thinsp;Vivo</label>' +
+			 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(parseInt(d.data.status) === 1 ? "checked" : "")+'>&thinsp;Deceduto</label>' +
 			 '</td></tr>';
 	$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
 	// switches
 	let switches = ["adopted_in", "adopted_out", "miscarriage", "stillbirth", "termination"];
-	table += '<tr><td colspan="2"><strong>Reproduction:</strong></td></tr>';
+	table += '<tr><td colspan="2"><strong>Riproduzione:</strong></td></tr>';
 	table += '<tr><td colspan="2">';
 	for(let iswitch=0; iswitch<switches.length; iswitch++){
 		let attr = switches[iswitch];
@@ -452,7 +455,7 @@ function openEditDialog(opts, d) {
 		           "level", "age", "sex", "status", "display_name", "mother", "father",
 		           "yob", "mztwin", "dztwin"];
 	$.merge(exclude, switches);
-	table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
+	table += '<tr><td colspan="2"><strong>Età alla diagnosi:</strong></td></tr>';
 	$.each(opts.diseases, function(k, v) {
 		exclude.push(v.type+"_diagnosis_age");
 
