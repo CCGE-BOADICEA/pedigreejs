@@ -119,7 +119,7 @@ function addPbuttonEvents(opts) {
 }
 
 // reset pedigree and clear the history
-function reset(opts) {
+export function reset(opts) {
 	let proband;
 	if(opts.keep_proband_on_reset) {
 		let local_dataset = pedcache.current(opts);
