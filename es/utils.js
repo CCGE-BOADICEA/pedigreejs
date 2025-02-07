@@ -169,7 +169,7 @@ export function messages(title, msg, onConfirm, opts, dataset) {
 					title: title,
 					width: 350,
 					buttons: {
-						"Yes": function () {
+						"Sì": function () {
 							$(this).dialog('close');
 							onConfirm(opts, dataset);
 						},

@@ -307,7 +307,7 @@ var pedigreejs = (function (exports) {
 	        title: title,
 	        width: 350,
 	        buttons: {
-	          "Yes": function () {
+	          "Sì": function () {
 	            $(this).dialog('close');
 	            onConfirm(opts, dataset);
 	          },
@@ -364,8 +364,8 @@ var pedigreejs = (function (exports) {
 	  return text;
 	}
 	function buildTree(opts, person, root, partnerLinks, id) {
-	  if (typeof person.children === typeof undefined) person.children = getChildren(opts.dataset, person);
-	  if (typeof partnerLinks === typeof undefined) {
+	  if (typeof person.children === "undefined") person.children = getChildren(opts.dataset, person);
+	  if (typeof partnerLinks === "undefined") {
 	    partnerLinks = [];
 	    id = 1;
 	  }
@@ -452,7 +452,7 @@ var pedigreejs = (function (exports) {
 	  return id;
 	}
 	function isProband(obj) {
-	  return typeof $(obj).attr('proband') !== typeof undefined && $(obj).attr('proband') !== false;
+	  return typeof $(obj).attr('proband') !== "undefined" && $(obj).attr('proband') !== false;
 	}
 	function setProband(dataset, name, is_proband) {
 	  $.each(dataset, function (_i, p) {
@@ -972,9 +972,9 @@ var pedigreejs = (function (exports) {
 	function get_bounds(opts) {
 	  let ped = d3.select("#" + opts.targetDiv).select(".diagram");
 	  let xmin = Number.MAX_VALUE;
-	  let xmax = -1000000;
+	  let xmax = -1e6;
 	  let ymin = Number.MAX_VALUE;
-	  let ymax = -1000000;
+	  let ymax = -1e6;
 	  let sym = opts.symbol_size;
 	  ped.selectAll('g').each(function (d, _i) {
 	    if (d.x && d.data.name !== 'hidden_root' && !d.data.hidden) {
@@ -1072,34 +1072,34 @@ var pedigreejs = (function (exports) {
 	  }, options);
 	  let btns = [{
 	    "fa": "fa-file-image",
-	    "title": "download PNG image"
+	    "title": "Scarica immagine PNG"
 	  }, {
 	    "fa": "fa-undo",
-	    "title": "undo"
+	    "title": "Indietro"
 	  }, {
 	    "fa": "fa-redo",
-	    "title": "redo"
+	    "title": "Avanti"
 	  }, {
 	    "fa": "fa-refresh",
-	    "title": "reset"
+	    "title": "Reimposta"
 	  }];
 	  btns.push({
 	    "fa": "fa-crosshairs",
-	    "title": "scale-to-fit"
+	    "title": "Centra e adatta"
 	  });
 	  if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
 	    if (opts.zoomOut !== 1) btns.push({
 	      "fa": "fa-minus-circle",
-	      "title": "zoom-out"
+	      "title": "Zoom out"
 	    });
 	    if (opts.zoomIn !== 1) btns.push({
 	      "fa": "fa-plus-circle",
-	      "title": "zoom-in"
+	      "title": "Zoom in"
 	    });
 	  }
 	  btns.push({
 	    "fa": "fa-arrows-alt",
-	    "title": "fullscreen"
+	    "title": "Schermo intero"
 	  });
 	  let lis = "";
 	  for (let i = 0; i < btns.length; i++) {
@@ -1175,7 +1175,7 @@ var pedigreejs = (function (exports) {
 	      $("#" + opts.targetDiv).empty();
 	      $(document).trigger('build', [opts]);
 	    } else if ($(e.target).hasClass('fa-refresh')) {
-	      messages("Pedigree Reset", "This may result in loss of some data. Reset now?", reset, opts);
+	      messages("Reimposta Pedigree", "Questo può provocare la perdita di alcuni dati. Sei sicuro?", reset, opts);
 	    } else if ($(e.target).hasClass('fa-crosshairs')) {
 	      scale_to_fit(opts);
 	    } else if ($(e.target).hasClass('fa-file-image')) {
@@ -1208,7 +1208,7 @@ var pedigreejs = (function (exports) {
 	      "father": "m21",
 	      "proband": true,
 	      "status": "0",
-	      "display_name": "me"
+	      "display_name": "Probando"
 	    };
 	    clear(opts); // clear all storage data
 	  }
@@ -1220,100 +1220,85 @@ var pedigreejs = (function (exports) {
 	      "name": "wZA",
 	      "sex": "M",
 	      "top_level": true,
-	      "status": "0",
-	      "display_name": "paternal grandfather"
+	      "status": "0"
 	    }, {
 	      "name": "MAk",
 	      "sex": "F",
 	      "top_level": true,
-	      "status": "0",
-	      "display_name": "paternal grandmother"
+	      "status": "0"
 	    }, {
 	      "name": "zwB",
 	      "sex": "M",
 	      "top_level": true,
-	      "status": "0",
-	      "display_name": "maternal grandfather"
+	      "status": "0"
 	    }, {
 	      "name": "dOH",
 	      "sex": "F",
 	      "top_level": true,
-	      "status": "0",
-	      "display_name": "maternal grandmother"
+	      "status": "0"
 	    }, {
 	      "name": "MKg",
 	      "sex": "F",
 	      "mother": "MAk",
 	      "father": "wZA",
-	      "status": "0",
-	      "display_name": "paternal aunt"
+	      "status": "0"
 	    }, {
 	      "name": "xsm",
 	      "sex": "M",
 	      "mother": "MAk",
 	      "father": "wZA",
-	      "status": "0",
-	      "display_name": "paternal uncle"
+	      "status": "0"
 	    }, {
 	      "name": "m21",
 	      "sex": "M",
 	      "mother": "MAk",
 	      "father": "wZA",
-	      "status": "0",
-	      "display_name": "father"
+	      "status": "0"
 	    }, {
 	      "name": "f21",
 	      "sex": "F",
 	      "mother": "dOH",
 	      "father": "zwB",
-	      "status": "0",
-	      "display_name": "mother"
+	      "status": "0"
 	    }, {
 	      "name": "aOH",
 	      "sex": "F",
 	      "mother": "f21",
 	      "father": "m21",
-	      "status": "0",
-	      "display_name": "sister"
+	      "status": "0"
 	    }, {
 	      "name": "Vha",
 	      "sex": "M",
 	      "mother": "f21",
 	      "father": "m21",
-	      "status": "0",
-	      "display_name": "brother"
+	      "status": "0"
 	    }, {
 	      "name": "Spj",
 	      "sex": "M",
 	      "mother": "f21",
 	      "father": "m21",
 	      "noparents": true,
-	      "status": "0",
-	      "display_name": "partner"
+	      "status": "0"
 	    }, proband, {
 	      "name": "zhk",
 	      "sex": "F",
 	      "mother": "ch1",
 	      "father": "Spj",
-	      "status": "0",
-	      "display_name": "daughter"
+	      "status": "0"
 	    }, {
 	      "name": "Knx",
-	      "display_name": "son",
 	      "sex": "M",
 	      "mother": "ch1",
 	      "father": "Spj",
 	      "status": "0"
 	    }, {
 	      "name": "uuc",
-	      "display_name": "maternal aunt",
 	      "sex": "F",
 	      "mother": "dOH",
 	      "father": "zwB",
 	      "status": "0"
 	    }, {
 	      "name": "xIw",
-	      "display_name": "maternal uncle",
 	      "sex": "M",
 	      "mother": "dOH",
 	      "father": "zwB",
@@ -1327,7 +1312,6 @@ var pedigreejs = (function (exports) {
 	      "mother": null,
 	      "father": null,
 	      "status": "0",
-	      "display_name": "father",
 	      "noparents": true
 	    }, {
 	      "name": "f21",
@@ -1335,40 +1319,34 @@ var pedigreejs = (function (exports) {
 	      "mother": null,
 	      "father": null,
 	      "status": "0",
-	      "display_name": "mother",
 	      "noparents": true
 	    }, {
 	      "name": "aOH",
 	      "sex": "F",
 	      "mother": "f21",
 	      "father": "m21",
-	      "status": "0",
-	      "display_name": "sister"
+	      "status": "0"
 	    }, {
 	      "name": "Vha",
 	      "sex": "M",
 	      "mother": "f21",
 	      "father": "m21",
-	      "status": "0",
-	      "display_name": "brother"
+	      "status": "0"
 	    }, {
 	      "name": "Spj",
 	      "sex": "M",
 	      "mother": "f21",
 	      "father": "m21",
 	      "noparents": true,
-	      "status": "0",
-	      "display_name": "partner"
+	      "status": "0"
 	    }, proband, {
 	      "name": "zhk",
 	      "sex": "F",
 	      "mother": "ch1",
 	      "father": "Spj",
-	      "status": "0",
-	      "display_name": "daughter"
+	      "status": "0"
 	    }, {
 	      "name": "Knx",
-	      "display_name": "son",
 	      "sex": "M",
 	      "mother": "ch1",
 	      "father": "Spj",
@@ -1377,17 +1355,16 @@ var pedigreejs = (function (exports) {
 	  } else {
 	    opts.dataset = [{
 	      "name": "m21",
-	      "display_name": "father",
 	      "sex": "M",
 	      "top_level": true
 	    }, {
 	      "name": "f21",
-	      "display_name": "mother",
 	      "sex": "F",
 	      "top_level": true
 	    }, proband];
 	  }
 	  $(document).trigger('rebuild', [opts]);
+	  scale_to_fit(opts);
 	}
 	function updateButtons(opts) {
 	  let current = get_count(opts);
@@ -1396,6 +1373,13 @@ var pedigreejs = (function (exports) {
 	  if (nstore$1 <= current) $(id + " .fa-redo").addClass('fg-grey');else $(id + " .fa-redo").removeClass('fg-grey');
 	  if (current > 1) $(id + " .fa-undo").removeClass('fg-grey');else $(id + " .fa-undo").addClass('fg-grey');
 	}
+
+	var pbuttons = /*#__PURE__*/Object.freeze({
+		__proto__: null,
+		addButtons: addButtons,
+		reset: reset,
+		updateButtons: updateButtons
+	});
 
 	/**
 	/* © 2023 University of Cambridge
@@ -2165,7 +2149,7 @@ var pedigreejs = (function (exports) {
 	//	4. Within-family ID of mother ('0' if mother isn't in dataset)
 	//	5. Sex code ('1' = male, '2' = female, '0' = unknown)
 	//	6. Phenotype value ('1' = control, '2' = case, '-9'/'0'/non-numeric = missing data if case/control)
-	//  7. Genotypes (column 7 onwards);
+	//	7. Genotypes (column 7 onwards);
 	//	 columns 7 & 8 are allele calls for first variant ('0' = no call); colummns 9 & 10 are calls for second variant etc.
 	function readLinkage(boadicea_lines) {
 	  let lines = boadicea_lines.trim().split('\n');
@@ -3106,20 +3090,23 @@ var pedigreejs = (function (exports) {
 	    title: d.data.display_name,
 	    width: $(window).width() > 400 ? 450 : $(window).width() - 30
 	  });
+	  let current_year = new Date().getFullYear();
 	  let table = "<table id='person_details' class='table'>";
-	  table += "<tr><td style='text-align:right'>Unique ID</td><td><input class='form-control' type='text' id='id_name' name='name' value=" + (d.data.name ? d.data.name : "") + "></td></tr>";
-	  table += "<tr><td style='text-align:right'>Name</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value=" + (d.data.display_name ? d.data.display_name : "") + "></td></tr>";
-	  table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:7em' value=" + (d.data.age ? d.data.age : "") + "></td></tr>";
-	  table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value=" + (d.data.yob ? d.data.yob : "") + "></td></tr>";
-	  table += '<tr><td colspan="2" id="id_sex">' + '<label class="radio-inline"><input type="radio" name="sex" value="M" ' + (d.data.sex === 'M' ? "checked" : "") + '>Male</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="F" ' + (d.data.sex === 'F' ? "checked" : "") + '>Female</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' + '</td></tr>';
+	  table += "<tr><td style='text-align:right'>ID Unico</td><td><input class='form-control' type='text' id='id_name' name='name' value=" + (d.data.name ? d.data.name : "") + " disabled></td></tr>";
+	  table += "<tr><td style='text-align:right'>Nome</td><td><input class='form-control' type='text' id='id_display_name' name='display_name' value=" + (d.data.display_name ? d.data.display_name : "") + "></td></tr>";
+	  table += "<tr><td style='text-align:right'>Età</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:7em' value=" + (d.data.age ? d.data.age : "") + "></td></tr>";
+	  table += `<tr><td style='text-align:right'>Anno di nascita</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='${current_year}' name='yob' style='width:7em' value=` + (d.data.yob ? d.data.yob : "") + "></td></tr>";
+	  // table += '<tr><td colspan="2" id="id_sex">' + '<label class="radio-inline"><input type="radio" name="sex" value="M" ' + (d.data.sex === 'M' ? "checked" : "") + '>Maschio</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="F" ' + (d.data.sex === 'F' ? "checked" : "") + '>Femmina</label>' + '<label class="radio-inline" style="display: none;"><input type="radio" name="sex" value="U" style="display: none;">Ignoto</label>' + '</td></tr>';
+	  table += `<tr><td colspan="2" id="id_sex"> <label class="radio-inline"><input type="radio" name="sex" value="M" ${d.data.sex === 'M' ? "checked" : ""}>Maschio</label> <label class="radio-inline"><input type="radio" name="sex" value="F" ${d.data.sex === 'F' ? "checked" : ""}>Femmina</label> <label class="radio-inline" style="display: none;"><input type="radio" name="sex" value="U" style="display: none;">Ignoto</label> </td></tr>`;
+	  table += '<tr><td colspan="2" id="id_sex">' + '<label class="radio-inline"><input type="radio" name="sex" value="M" ' + (d.data.sex === 'M' ? "checked" : "") + '>Maschio</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="F" ' + (d.data.sex === 'F' ? "checked" : "") + '>Femmina</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' + '</td></tr>';
 
 	  // alive status = 0; dead status = 1
-	  table += '<tr><td colspan="2" id="id_status">' + '<label class="checkbox-inline"><input type="radio" name="status" value="0" ' + (parseInt(d.data.status) === 0 ? "checked" : "") + '>&thinsp;Alive</label>' + '<label class="checkbox-inline"><input type="radio" name="status" value="1" ' + (parseInt(d.data.status) === 1 ? "checked" : "") + '>&thinsp;Deceased</label>' + '</td></tr>';
+	  table += '<tr><td colspan="2" id="id_status">' + '<label class="checkbox-inline"><input type="radio" name="status" value="0" ' + (parseInt(d.data.status) === 0 ? "checked" : "") + '>&thinsp;Vivo</label>' + '<label class="checkbox-inline"><input type="radio" name="status" value="1" ' + (parseInt(d.data.status) === 1 ? "checked" : "") + '>&thinsp;Deceduto</label>' + '</td></tr>';
 	  $("#id_status input[value='" + d.data.status + "']").prop('checked', true);
 
 	  // switches
 	  let switches = ["adopted_in", "adopted_out", "miscarriage", "stillbirth", "termination"];
-	  table += '<tr><td colspan="2"><strong>Reproduction:</strong></td></tr>';
+	  table += '<tr><td colspan="2"><strong>Riproduzione:</strong></td></tr>';
 	  table += '<tr><td colspan="2">';
 	  for (let iswitch = 0; iswitch < switches.length; iswitch++) {
 	    let attr = switches[iswitch];
@@ -3131,7 +3118,7 @@ var pedigreejs = (function (exports) {
 	  //
 	  let exclude = ["children", "name", "parent_node", "top_level", "id", "noparents", "level", "age", "sex", "status", "display_name", "mother", "father", "yob", "mztwin", "dztwin"];
 	  $.merge(exclude, switches);
-	  table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
+	  table += '<tr><td colspan="2"><strong>Età alla diagnosi:</strong></td></tr>';
 	  $.each(opts.diseases, function (k, v) {
 	    exclude.push(v.type + "_diagnosis_age");
 	    let disease_colour = '&thinsp;<span style="padding-left:5px;background:' + opts.diseases[k].colour + '"></span>';
@@ -3161,7 +3148,7 @@ var pedigreejs = (function (exports) {
 	// add children to a given node
 	function addchild(dataset, node, sex, nchild, twin_type) {
 	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
-	  if (typeof nchild === typeof undefined) nchild = 1;
+	  if (typeof nchild === "undefined") nchild = 1;
 	  let children = getAllChildren(dataset, node);
 	  let ptr_name, idx;
 	  if (children.length === 0) {
@@ -3663,17 +3650,15 @@ var pedigreejs = (function (exports) {
 	    targetDiv: 'pedigree_edit',
 	    dataset: [{
 	      "name": "m21",
-	      "display_name": "father",
 	      "sex": "M",
 	      "top_level": true
 	    }, {
 	      "name": "f21",
-	      "display_name": "mother",
 	      "sex": "F",
 	      "top_level": true
 	    }, {
 	      "name": "ch1",
-	      "display_name": "me",
+	      "display_name": "Probando",
 	      "sex": "F",
 	      "mother": "f21",
 	      "father": "m21",
@@ -4232,6 +4217,7 @@ var pedigreejs = (function (exports) {
 	exports.pedigreejs_canrisk_file = canrisk_file;
 	exports.pedigreejs_form = popup_form;
 	exports.pedigreejs_io = io;
+	exports.pedigreejs_pbuttons = pbuttons;
 	exports.pedigreejs_pedcache = pedcache;
 	exports.pedigreejs_utils = utils;
 	exports.pedigreejs_widgets = widgets;

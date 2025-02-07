@@ -14,5 +14,6 @@ export * as pedigreejs_widgets from './widgets.js';
 export * as pedigreejs_pedcache from './pedcache.js'; 
 export * as pedigreejs_io from './io.js';
 export * as pedigreejs_canrisk_file from './canrisk_file.js';
+export * as pedigreejs_pbuttons from './pbuttons.js';
 export * as pedigreejs_zooming from './zoom.js';
 export * as pedigreejs__extras from './extras.js';
