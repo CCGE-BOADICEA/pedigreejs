@@ -422,11 +422,11 @@ function openEditDialog(opts, d) {
 	// table += '<tr><td colspan="2" id="id_sex">' + '<label class="radio-inline"><input type="radio" name="sex" value="M" ' + (d.data.sex === 'M' ? "checked" : "") + '>Maschio</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="F" ' + (d.data.sex === 'F' ? "checked" : "") + '>Femmina</label>' + '<label class="radio-inline" style="display: none;"><input type="radio" name="sex" value="U" style="display: none;">Ignoto</label>' + '</td></tr>';
 	table += `<tr><td colspan="2" id="id_sex"> <label class="radio-inline"><input type="radio" name="sex" value="M" ${d.data.sex === 'M' ? "checked" : ""}>Maschio</label> <label class="radio-inline"><input type="radio" name="sex" value="F" ${d.data.sex === 'F' ? "checked" : ""}>Femmina</label> <label class="radio-inline" style="display: none;"><input type="radio" name="sex" value="U" style="display: none;">Ignoto</label> </td></tr>`;
 
-	table += '<tr><td colspan="2" id="id_sex">' +
-			 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Maschio</label>' +
-			 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Femmina</label>' +
-			 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
-			 '</td></tr>';
+	// table += '<tr><td colspan="2" id="id_sex">' +
+	// 		 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Maschio</label>' +
+	// 		 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Femmina</label>' +
+	// 		 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
+	// 		 '</td></tr>';
 
 	// alive status = 0; dead status = 1
 	table += '<tr><td colspan="2" id="id_status">' +
