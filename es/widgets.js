@@ -430,8 +430,8 @@ function openEditDialog(opts, d) {
 
 	// alive status = 0; dead status = 1
 	table += '<tr><td colspan="2" id="id_status">' +
-			 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(parseInt(d.data.status) === 0 ? "checked" : "")+'>&thinsp;Vivo</label>' +
-			 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(parseInt(d.data.status) === 1 ? "checked" : "")+'>&thinsp;Deceduto</label>' +
+			 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(parseInt(d.data.status) === 0 ? "checked" : "")+'>&thinsp;Vivo&thinsp;</label>' +
+			 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(parseInt(d.data.status) === 1 ? "checked" : "")+'>&thinsp;Deceduto&thinsp;</label>' +
 			 '</td></tr>';
 	$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
@@ -446,7 +446,7 @@ function openEditDialog(opts, d) {
 		table +=
 		 '<label class="checkbox-inline"><input type="checkbox" id="id_'+attr +
 		    '" name="'+attr+'" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;' +
-		    capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
+		    capitaliseFirstLetter(attr.replace('_', ' '))+'&thinsp;</label>'
 	}
 	table += '</td></tr>';
 
