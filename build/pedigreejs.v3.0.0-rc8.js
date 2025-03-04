@@ -3098,7 +3098,12 @@ var pedigreejs = (function (exports) {
 	  table += `<tr><td style='text-align:right'>Anno di nascita</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='${current_year}' name='yob' style='width:7em' value=` + (d.data.yob ? d.data.yob : "") + "></td></tr>";
 	  // table += '<tr><td colspan="2" id="id_sex">' + '<label class="radio-inline"><input type="radio" name="sex" value="M" ' + (d.data.sex === 'M' ? "checked" : "") + '>Maschio</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="F" ' + (d.data.sex === 'F' ? "checked" : "") + '>Femmina</label>' + '<label class="radio-inline" style="display: none;"><input type="radio" name="sex" value="U" style="display: none;">Ignoto</label>' + '</td></tr>';
 	  table += `<tr><td colspan="2" id="id_sex"> <label class="radio-inline"><input type="radio" name="sex" value="M" ${d.data.sex === 'M' ? "checked" : ""}>Maschio</label> <label class="radio-inline"><input type="radio" name="sex" value="F" ${d.data.sex === 'F' ? "checked" : ""}>Femmina</label> <label class="radio-inline" style="display: none;"><input type="radio" name="sex" value="U" style="display: none;">Ignoto</label> </td></tr>`;
-	  table += '<tr><td colspan="2" id="id_sex">' + '<label class="radio-inline"><input type="radio" name="sex" value="M" ' + (d.data.sex === 'M' ? "checked" : "") + '>Maschio</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="F" ' + (d.data.sex === 'F' ? "checked" : "") + '>Femmina</label>' + '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' + '</td></tr>';
+
+	  // table += '<tr><td colspan="2" id="id_sex">' +
+	  // 		 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Maschio</label>' +
+	  // 		 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Femmina</label>' +
+	  // 		 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
+	  // 		 '</td></tr>';
 
 	  // alive status = 0; dead status = 1
 	  table += '<tr><td colspan="2" id="id_status">' + '<label class="checkbox-inline"><input type="radio" name="status" value="0" ' + (parseInt(d.data.status) === 0 ? "checked" : "") + '>&thinsp;Vivo</label>' + '<label class="checkbox-inline"><input type="radio" name="status" value="1" ' + (parseInt(d.data.status) === 1 ? "checked" : "") + '>&thinsp;Deceduto</label>' + '</td></tr>';
@@ -3412,14 +3417,14 @@ var pedigreejs = (function (exports) {
 	    // check if pedigree is split
 	    uc = unconnected(dataset);
 	  } catch (err) {
-	    messages('Warning', 'Deletion of this pedigree member is disallowed.');
+	    messages('Attenzione', 'Eliminazione di questo membro del pedigree non è consentita.');
 	    throw err;
 	  }
 	  if (uc.length > 0) {
 	    // check & warn only if this is a new split
 	    if (unconnected(opts.dataset).length === 0) {
-	      console.error("individuals unconnected to pedigree ", uc);
-	      messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
+	      console.error("individui sconnessi dal pedigree ", uc);
+	      messages("Attenzione", "L'eliminazione dividerà il pedigree. Vuoi procedere?", onDone, opts, dataset);
 	      return;
 	    }
 	  }

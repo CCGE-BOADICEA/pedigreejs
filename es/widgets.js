@@ -781,14 +781,14 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		// check if pedigree is split
 		uc = utils.unconnected(dataset);
 	} catch(err) {
-		utils.messages('Warning', 'Deletion of this pedigree member is disallowed.')
+		utils.messages('Attenzione', 'Eliminazione di questo membro del pedigree non è consentita.')
 		throw err;
 	}
 	if(uc.length > 0) {
 		// check & warn only if this is a new split
 		if(utils.unconnected(opts.dataset).length === 0) {
-			console.error("individuals unconnected to pedigree ", uc);
-			utils.messages("Warning", "Deleting this will split the pedigree. Continue?", onDone, opts, dataset);
+			console.error("individui sconnessi dal pedigree ", uc);
+			utils.messages("Attenzione", "L'eliminazione dividerà il pedigree. Vuoi procedere?", onDone, opts, dataset);
 			return;
 		}
 	}
