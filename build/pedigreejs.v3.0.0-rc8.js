@@ -364,8 +364,8 @@ var pedigreejs = (function (exports) {
 	  return text;
 	}
 	function buildTree(opts, person, root, partnerLinks, id) {
-	  if (typeof person.children === typeof undefined) person.children = getChildren(opts.dataset, person);
-	  if (typeof partnerLinks === typeof undefined) {
+	  if (typeof person.children === "undefined") person.children = getChildren(opts.dataset, person);
+	  if (typeof partnerLinks === "undefined") {
 	    partnerLinks = [];
 	    id = 1;
 	  }
@@ -452,7 +452,7 @@ var pedigreejs = (function (exports) {
 	  return id;
 	}
 	function isProband(obj) {
-	  return typeof $(obj).attr('proband') !== typeof undefined && $(obj).attr('proband') !== false;
+	  return typeof $(obj).attr('proband') !== "undefined" && $(obj).attr('proband') !== false;
 	}
 	function setProband(dataset, name, is_proband) {
 	  $.each(dataset, function (_i, p) {
@@ -972,9 +972,9 @@ var pedigreejs = (function (exports) {
 	function get_bounds(opts) {
 	  let ped = d3.select("#" + opts.targetDiv).select(".diagram");
 	  let xmin = Number.MAX_VALUE;
-	  let xmax = -1000000;
+	  let xmax = -1e6;
 	  let ymin = Number.MAX_VALUE;
-	  let ymax = -1000000;
+	  let ymax = -1e6;
 	  let sym = opts.symbol_size;
 	  ped.selectAll('g').each(function (d, _i) {
 	    if (d.x && d.data.name !== 'hidden_root' && !d.data.hidden) {
@@ -1797,19 +1797,19 @@ var pedigreejs = (function (exports) {
 	**/
 
 	function addIO(opts) {
-	  $('#load').change(function (e) {
+	  $('#load').on('change', function (e) {
 	    load(e, opts);
 	  });
-	  $('#save').click(function (_e) {
+	  $('#save').on('click', function () {
 	    save$1(opts);
 	  });
-	  $('#print').click(function (_e) {
+	  $('#print').on('click', function () {
 	    print(get_printable_svg(opts));
 	  });
-	  $('#svg_download').click(function (_e) {
+	  $('#svg_download').on('click', function () {
 	    svg_download(get_printable_svg(opts));
 	  });
-	  $('#png_download, .fa-file-image').click(function (_e) {
+	  $('#png_download, .fa-file-image').on('click', function () {
 	    let resolution = 4;
 	    img_download(opts, resolution, "image/png");
 	  });
@@ -1872,7 +1872,7 @@ var pedigreejs = (function (exports) {
 	      a.download = 'plot.png';
 	      a.target = '_blank';
 	      document.body.appendChild(a);
-	      a.click();
+	      a.trigger("click");
 	      document.body.removeChild(a);
 	    }
 	  });
@@ -2011,7 +2011,7 @@ var pedigreejs = (function (exports) {
 	  a.download = 'plot.svg';
 	  a.target = '_blank';
 	  document.body.appendChild(a);
-	  a.click();
+	  a.trigger("click");
 	  document.body.removeChild(a);
 	}
 
@@ -2058,7 +2058,7 @@ var pedigreejs = (function (exports) {
 	    a.href = url;
 	    a.download = filename;
 	    document.body.appendChild(a);
-	    a.click();
+	    a.trigger("click");
 	    setTimeout(function () {
 	      document.body.removeChild(a);
 	      window.URL.revokeObjectURL(url);
@@ -3152,7 +3152,7 @@ var pedigreejs = (function (exports) {
 	  table += "</table>";
 	  $('#node_properties').html(table);
 	  $('#node_properties').dialog('open');
-	  $('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function () {
+	  $('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').on('change', function () {
 	    save(opts);
 	  });
 	  return;
@@ -3161,7 +3161,7 @@ var pedigreejs = (function (exports) {
 	// add children to a given node
 	function addchild(dataset, node, sex, nchild, twin_type) {
 	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
-	  if (typeof nchild === typeof undefined) nchild = 1;
+	  if (typeof nchild === "undefined") nchild = 1;
 	  let children = getAllChildren(dataset, node);
 	  let ptr_name, idx;
 	  if (children.length === 0) {
