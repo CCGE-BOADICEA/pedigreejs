@@ -12,23 +12,23 @@ import {get_bounds} from './zoom.js';
 
 
 export function addIO(opts) {
-	$('#load').change(function(e) {
+	$('#load').on('change', function(e) {
 		load(e, opts);
 	});
 
-	$('#save').click(function(_e) {
+	$('#save').on('click', function() {
 		save(opts);
 	});
 
-	$('#print').click(function(_e) {
+	$('#print').on('click', function() {
 		print(get_printable_svg(opts));
 	});
 
-	$('#svg_download').click(function(_e) {
+	$('#svg_download').on('click', function() {
 		svg_download(get_printable_svg(opts));
 	});
 
-	$('#png_download, .fa-file-image').click(function(_e) {
+	$('#png_download, .fa-file-image').on('click', function() {
 		let resolution = 4;
 		img_download(opts, resolution, "image/png");
 	});
@@ -84,7 +84,7 @@ export function img_download(opts, resolution, img_type) {
 			a.href	 = obj.img;
 			a.download = 'plot.png';
 			a.target   = '_blank';
-			document.body.appendChild(a); a.click(); document.body.removeChild(a);
+			document.body.appendChild(a); a.trigger( "click" ); document.body.removeChild(a);
 		}
 	});
 }
@@ -222,7 +222,7 @@ export function svg_download(svg){
 	a.href	   = get_svg_as_data_url(svg);
 	a.download = 'plot.svg';
 	a.target   = '_blank';
-	document.body.appendChild(a); a.click(); document.body.removeChild(a);
+	document.body.appendChild(a); a.trigger( "click" ); document.body.removeChild(a);
 }
 
 // open print window for a given element
@@ -278,7 +278,7 @@ export function save_file(opts, content, filename, type){
 	   a.href = url;
 	   a.download = filename;
 	   document.body.appendChild(a);
-	   a.click();
+	   a.trigger( "click" );
 	   setTimeout(function() {
 		   document.body.removeChild(a);
 		   window.URL.revokeObjectURL(url);

@@ -485,7 +485,7 @@ function openEditDialog(opts, d) {
 	$('#node_properties').html(table);
 	$('#node_properties').dialog('open');
 
-	$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').change(function() {
+	$('#node_properties input[type=radio], #node_properties input[type=checkbox], #node_properties input[type=text], #node_properties input[type=number]').on('change', function() {
 		save(opts);
     });
 	return;
