@@ -84,7 +84,7 @@ export function img_download(opts, resolution, img_type) {
 			a.href	 = obj.img;
 			a.download = 'plot.png';
 			a.target   = '_blank';
-			document.body.appendChild(a); a.trigger( "click" ); document.body.removeChild(a);
+			document.body.appendChild(a); a.click(); document.body.removeChild(a);
 		}
 	});
 }
@@ -222,7 +222,7 @@ export function svg_download(svg){
 	a.href	   = get_svg_as_data_url(svg);
 	a.download = 'plot.svg';
 	a.target   = '_blank';
-	document.body.appendChild(a); a.trigger( "click" ); document.body.removeChild(a);
+	document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 // open print window for a given element
@@ -278,7 +278,7 @@ export function save_file(opts, content, filename, type){
 	   a.href = url;
 	   a.download = filename;
 	   document.body.appendChild(a);
-	   a.trigger( "click" );
+	   a.click();
 	   setTimeout(function() {
 		   document.body.removeChild(a);
 		   window.URL.revokeObjectURL(url);
