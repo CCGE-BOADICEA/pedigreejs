@@ -1872,7 +1872,7 @@ var pedigreejs = (function (exports) {
 	      a.download = 'plot.png';
 	      a.target = '_blank';
 	      document.body.appendChild(a);
-	      a.trigger("click");
+	      a.click();
 	      document.body.removeChild(a);
 	    }
 	  });
@@ -2011,7 +2011,7 @@ var pedigreejs = (function (exports) {
 	  a.download = 'plot.svg';
 	  a.target = '_blank';
 	  document.body.appendChild(a);
-	  a.trigger("click");
+	  a.click();
 	  document.body.removeChild(a);
 	}
 
@@ -2058,7 +2058,7 @@ var pedigreejs = (function (exports) {
 	    a.href = url;
 	    a.download = filename;
 	    document.body.appendChild(a);
-	    a.trigger("click");
+	    a.click();
 	    setTimeout(function () {
 	      document.body.removeChild(a);
 	      window.URL.revokeObjectURL(url);
