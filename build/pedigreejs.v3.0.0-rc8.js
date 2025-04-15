@@ -1214,178 +1214,143 @@ var pedigreejs = (function (exports) {
 	  }
 	  delete opts.dataset;
 	  let selected = $("input[name='default_fam']:checked");
-	  if (selected.length > 0 && selected.val() === 'extended2') {
-	    // secondary relatives
-	    opts.dataset = [{
-	      "name": "wZA",
-	      "sex": "M",
-	      "top_level": true,
-	      "status": "0",
-	      "display_name": "paternal grandfather"
-	    }, {
-	      "name": "MAk",
-	      "sex": "F",
-	      "top_level": true,
-	      "status": "0",
-	      "display_name": "paternal grandmother"
-	    }, {
-	      "name": "zwB",
-	      "sex": "M",
-	      "top_level": true,
-	      "status": "0",
-	      "display_name": "maternal grandfather"
-	    }, {
-	      "name": "dOH",
-	      "sex": "F",
-	      "top_level": true,
-	      "status": "0",
-	      "display_name": "maternal grandmother"
-	    }, {
-	      "name": "MKg",
-	      "sex": "F",
-	      "mother": "MAk",
-	      "father": "wZA",
-	      "status": "0",
-	      "display_name": "paternal aunt"
-	    }, {
-	      "name": "xsm",
-	      "sex": "M",
-	      "mother": "MAk",
-	      "father": "wZA",
-	      "status": "0",
-	      "display_name": "paternal uncle"
-	    }, {
-	      "name": "m21",
-	      "sex": "M",
-	      "mother": "MAk",
-	      "father": "wZA",
-	      "status": "0",
-	      "display_name": "father"
-	    }, {
+	  let mother = {
+	    "name": "f21",
+	    "sex": "F",
+	    "top_level": true
+	  };
+	  let father = {
+	    "name": "m21",
+	    "sex": "M",
+	    "top_level": true
+	  };
+	  opts.dataset = [mother, father, proband];
+	  if (selected.length > 0 && selected.val().startsWith('extended')) {
+	    // primary relatives
+	    let mother = {
 	      "name": "f21",
 	      "sex": "F",
-	      "mother": "dOH",
-	      "father": "zwB",
+	      "mother": null,
+	      "father": null,
 	      "status": "0",
-	      "display_name": "mother"
-	    }, {
-	      "name": "aOH",
-	      "sex": "F",
-	      "mother": "f21",
-	      "father": "m21",
-	      "status": "0",
-	      "display_name": "sister"
-	    }, {
-	      "name": "Vha",
+	      "noparents": true
+	    };
+	    let father = {
+	      "name": "m21",
 	      "sex": "M",
-	      "mother": "f21",
-	      "father": "m21",
+	      "mother": null,
+	      "father": null,
 	      "status": "0",
-	      "display_name": "brother"
-	    }, {
+	      "noparents": true
+	    };
+	    let partner = {
 	      "name": "Spj",
 	      "sex": "M",
 	      "mother": "f21",
 	      "father": "m21",
 	      "noparents": true,
-	      "status": "0",
-	      "display_name": "partner"
-	    }, proband, {
+	      "status": "0"
+	    };
+	    let daughter = {
 	      "name": "zhk",
 	      "sex": "F",
 	      "mother": "ch1",
 	      "father": "Spj",
-	      "status": "0",
-	      "display_name": "daughter"
-	    }, {
+	      "status": "0"
+	    };
+	    let son = {
 	      "name": "Knx",
-	      "display_name": "son",
 	      "sex": "M",
 	      "mother": "ch1",
 	      "father": "Spj",
 	      "status": "0"
+	    };
+	    if (proband.sex === 'M') {
+	      partner.sex = 'F';
+	      daughter.mother = partner.name;
+	      daughter.father = proband.name;
+	      son.mother = partner.name;
+	      son.father = proband.name;
+	    }
+	    opts.dataset[0] = mother;
+	    opts.dataset[1] = father;
+	    opts.dataset.push(...[{
+	      "name": "aOH",
+	      "sex": "F",
+	      "mother": "f21",
+	      "father": "m21",
+	      "status": "0"
+	    }, {
+	      "name": "Vha",
+	      "sex": "M",
+	      "mother": "f21",
+	      "father": "m21",
+	      "status": "0"
+	    }, partner, daughter, son]);
+	  }
+	  if (selected.length > 0 && selected.val() === 'extended2') {
+	    // secondary relatives
+	    let mother = {
+	      "name": "f21",
+	      "sex": "F",
+	      "mother": "dOH",
+	      "father": "zwB",
+	      "status": "0"
+	    };
+	    let father = {
+	      "name": "m21",
+	      "sex": "M",
+	      "mother": "MAk",
+	      "father": "wZA",
+	      "status": "0"
+	    };
+	    opts.dataset[0] = mother;
+	    opts.dataset[1] = father;
+	    opts.dataset.push(...[{
+	      "name": "wZA",
+	      "sex": "M",
+	      "top_level": true,
+	      "status": "0"
+	    }, {
+	      "name": "MAk",
+	      "sex": "F",
+	      "top_level": true,
+	      "status": "0"
+	    }, {
+	      "name": "zwB",
+	      "sex": "M",
+	      "top_level": true,
+	      "status": "0"
+	    }, {
+	      "name": "dOH",
+	      "sex": "F",
+	      "top_level": true,
+	      "status": "0"
+	    }, {
+	      "name": "MKg",
+	      "sex": "F",
+	      "mother": "MAk",
+	      "father": "wZA",
+	      "status": "0"
+	    }, {
+	      "name": "xsm",
+	      "sex": "M",
+	      "mother": "MAk",
+	      "father": "wZA",
+	      "status": "0"
 	    }, {
 	      "name": "uuc",
-	      "display_name": "maternal aunt",
 	      "sex": "F",
 	      "mother": "dOH",
 	      "father": "zwB",
 	      "status": "0"
 	    }, {
 	      "name": "xIw",
-	      "display_name": "maternal uncle",
 	      "sex": "M",
 	      "mother": "dOH",
 	      "father": "zwB",
 	      "status": "0"
-	    }];
-	  } else if (selected.length > 0 && selected.val() === 'extended1') {
-	    // primary relatives
-	    opts.dataset = [{
-	      "name": "m21",
-	      "sex": "M",
-	      "mother": null,
-	      "father": null,
-	      "status": "0",
-	      "display_name": "father",
-	      "noparents": true
-	    }, {
-	      "name": "f21",
-	      "sex": "F",
-	      "mother": null,
-	      "father": null,
-	      "status": "0",
-	      "display_name": "mother",
-	      "noparents": true
-	    }, {
-	      "name": "aOH",
-	      "sex": "F",
-	      "mother": "f21",
-	      "father": "m21",
-	      "status": "0",
-	      "display_name": "sister"
-	    }, {
-	      "name": "Vha",
-	      "sex": "M",
-	      "mother": "f21",
-	      "father": "m21",
-	      "status": "0",
-	      "display_name": "brother"
-	    }, {
-	      "name": "Spj",
-	      "sex": "M",
-	      "mother": "f21",
-	      "father": "m21",
-	      "noparents": true,
-	      "status": "0",
-	      "display_name": "partner"
-	    }, proband, {
-	      "name": "zhk",
-	      "sex": "F",
-	      "mother": "ch1",
-	      "father": "Spj",
-	      "status": "0",
-	      "display_name": "daughter"
-	    }, {
-	      "name": "Knx",
-	      "display_name": "son",
-	      "sex": "M",
-	      "mother": "ch1",
-	      "father": "Spj",
-	      "status": "0"
-	    }];
-	  } else {
-	    opts.dataset = [{
-	      "name": "m21",
-	      "display_name": "father",
-	      "sex": "M",
-	      "top_level": true
-	    }, {
-	      "name": "f21",
-	      "display_name": "mother",
-	      "sex": "F",
-	      "top_level": true
-	    }, proband];
+	    }]);
 	  }
 	  $(document).trigger('rebuild', [opts]);
 	}
