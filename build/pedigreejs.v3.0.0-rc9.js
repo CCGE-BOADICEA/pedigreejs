@@ -1214,9 +1214,41 @@ var pedigreejs = (function (exports) {
 	  }
 	  delete opts.dataset;
 	  let selected = $("input[name='default_fam']:checked");
+	  if (selected.length > 0 && selected.val().indexOf("extended") > -1) {
+	    let partner = {
+	      "name": "Spj",
+	      "mother": "f21",
+	      "father": "m21",
+	      "noparents": true,
+	      "status": "0",
+	      "display_name": "partner"
+	    };
+	    let daugter = {
+	      "name": "zhk",
+	      "sex": "F",
+	      "mother": "ch1",
+	      "father": "Spj",
+	      "status": "0",
+	      "display_name": "daughter"
+	    };
+	    let son = {
+	      "name": "Knx",
+	      "sex": "M",
+	      "mother": "ch1",
+	      "father": "Spj",
+	      "status": "0",
+	      "display_name": "son"
+	    };
+	    partner.sex = proband.sex === "F" ? "M" : "F";
+	    daugter.mother = proband.sex === "F" ? proband.name : partner.name;
+	    daugter.father = proband.sex === "F" ? partner.name : proband.name;
+	    son.mother = proband.sex === "F" ? proband.name : partner.name;
+	    son.father = proband.sex === "F" ? partner.name : proband.name;
+	    opts.dataset = [proband, partner, daugter, son];
+	  }
 	  if (selected.length > 0 && selected.val() === 'extended2') {
 	    // secondary relatives
-	    opts.dataset = [{
+	    opts.dataset.push({
 	      "name": "wZA",
 	      "sex": "M",
 	      "top_level": true,
@@ -1283,28 +1315,6 @@ var pedigreejs = (function (exports) {
 	      "status": "0",
 	      "display_name": "brother"
 	    }, {
-	      "name": "Spj",
-	      "sex": "M",
-	      "mother": "f21",
-	      "father": "m21",
-	      "noparents": true,
-	      "status": "0",
-	      "display_name": "partner"
-	    }, proband, {
-	      "name": "zhk",
-	      "sex": "F",
-	      "mother": "ch1",
-	      "father": "Spj",
-	      "status": "0",
-	      "display_name": "daughter"
-	    }, {
-	      "name": "Knx",
-	      "display_name": "son",
-	      "sex": "M",
-	      "mother": "ch1",
-	      "father": "Spj",
-	      "status": "0"
-	    }, {
 	      "name": "uuc",
 	      "display_name": "maternal aunt",
 	      "sex": "F",
@@ -1318,10 +1328,10 @@ var pedigreejs = (function (exports) {
 	      "mother": "dOH",
 	      "father": "zwB",
 	      "status": "0"
-	    }];
+	    });
 	  } else if (selected.length > 0 && selected.val() === 'extended1') {
 	    // primary relatives
-	    opts.dataset = [{
+	    opts.dataset.push({
 	      "name": "m21",
 	      "sex": "M",
 	      "mother": null,
@@ -1359,21 +1369,7 @@ var pedigreejs = (function (exports) {
 	      "noparents": true,
 	      "status": "0",
 	      "display_name": "partner"
-	    }, proband, {
-	      "name": "zhk",
-	      "sex": "F",
-	      "mother": "ch1",
-	      "father": "Spj",
-	      "status": "0",
-	      "display_name": "daughter"
-	    }, {
-	      "name": "Knx",
-	      "display_name": "son",
-	      "sex": "M",
-	      "mother": "ch1",
-	      "father": "Spj",
-	      "status": "0"
-	    }];
+	    });
 	  } else {
 	    opts.dataset = [{
 	      "name": "m21",
@@ -3711,7 +3707,8 @@ var pedigreejs = (function (exports) {
 	    background: "#FAFAFA",
 	    node_background: '#fdfdfd',
 	    validate: true,
-	    DEBUG: false
+	    DEBUG: false,
+	    VERBOSE: false
 	  }, options);
 	  if ($("#fullscreen").length === 0) {
 	    // add undo, redo, fullscreen buttons and event listeners once
@@ -3725,7 +3722,7 @@ var pedigreejs = (function (exports) {
 	  validate_pedigree(opts);
 	  // group top level nodes by partners
 	  opts.dataset = group_top_level(opts.dataset);
-	  if (opts.DEBUG) print_opts(opts);
+	  if (opts.VERBOSE) print_opts(opts);
 	  let svg_dimensions = get_svg_dimensions(opts);
 	  let svg = d3.select("#" + opts.targetDiv).append("svg:svg").attr("width", svg_dimensions.width).attr("height", svg_dimensions.height);
 	  svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).style("stroke", "darkgrey").style("fill", opts.background) // or none

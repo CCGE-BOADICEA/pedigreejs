@@ -45,7 +45,8 @@ export function build(options) {
 		background: "#FAFAFA",
 		node_background: '#fdfdfd',
 		validate: true,
-		DEBUG: false}, options );
+		DEBUG: false,
+		VERBOSE: false}, options );
 
 	if ( $( "#fullscreen" ).length === 0 ) {
 		// add undo, redo, fullscreen buttons and event listeners once
@@ -63,7 +64,7 @@ export function build(options) {
 	// group top level nodes by partners
 	opts.dataset = group_top_level(opts.dataset);
 
-	if(opts.DEBUG)
+	if(opts.VERBOSE)
 		utils.print_opts(opts);
 	let svg_dimensions = utils.get_svg_dimensions(opts);
 	let svg = d3.select("#"+opts.targetDiv)
