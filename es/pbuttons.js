@@ -137,12 +137,23 @@ function reset(opts) {
 		};
 		pedcache.clear(opts); // clear all storage data
 	}
-
 	delete opts.dataset;
 
 	let selected = $("input[name='default_fam']:checked");
+	if(selected.length > 0 && selected.val().indexOf("extended") > -1) {
+		let partner = {"name":"Spj","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"};
+		let daugter = {"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"};
+		let son     = {"name":"Knx","sex":"M","mother":"ch1","father":"Spj","status":"0","display_name":"son"};
+		partner.sex    = (proband.sex === "F" ?"M":"F");
+		daugter.mother = (proband.sex === "F" ? proband.name: partner.name);
+		daugter.father = (proband.sex === "F" ? partner.name: proband.name);
+		son.mother     = (proband.sex === "F" ? proband.name: partner.name);
+		son.father     = (proband.sex === "F" ? partner.name: proband.name);
+		opts.dataset   = [proband, partner, daugter, son];
+	}
+
 	if(selected.length > 0 && selected.val() === 'extended2') {    // secondary relatives
-		opts.dataset = [
+		opts.dataset.push(
 			{"name":"wZA","sex":"M","top_level":true,"status":"0","display_name":"paternal grandfather"},
 			{"name":"MAk","sex":"F","top_level":true,"status":"0","display_name":"paternal grandmother"},
 			{"name":"zwB","sex":"M","top_level":true,"status":"0","display_name":"maternal grandfather"},
@@ -153,22 +164,15 @@ function reset(opts) {
 			{"name":"f21","sex":"F","mother":"dOH","father":"zwB","status":"0","display_name":"mother"},
 			{"name":"aOH","sex":"F","mother":"f21","father":"m21","status":"0","display_name":"sister"},
 			{"name":"Vha","sex":"M","mother":"f21","father":"m21","status":"0","display_name":"brother"},
-			{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
-			proband,
-			{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
-			{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"},
 			{"name":"uuc","display_name":"maternal aunt","sex":"F","mother":"dOH","father":"zwB","status":"0"},
-			{"name":"xIw","display_name":"maternal uncle","sex":"M","mother":"dOH","father":"zwB","status":"0"}];
+			{"name":"xIw","display_name":"maternal uncle","sex":"M","mother":"dOH","father":"zwB","status":"0"});
 	} else if(selected.length > 0 && selected.val() === 'extended1') {    // primary relatives
-		opts.dataset = [
+		opts.dataset.push(
 			{"name":"m21","sex":"M","mother":null,"father":null,"status":"0","display_name":"father","noparents":true},
 			{"name":"f21","sex":"F","mother":null,"father":null,"status":"0","display_name":"mother","noparents":true},
 			{"name":"aOH","sex":"F","mother":"f21","father":"m21","status":"0","display_name":"sister"},
 			{"name":"Vha","sex":"M","mother":"f21","father":"m21","status":"0","display_name":"brother"},
-			{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"},
-			proband,
-			{"name":"zhk","sex":"F","mother":"ch1","father":"Spj","status":"0","display_name":"daughter"},
-			{"name":"Knx","display_name":"son","sex":"M","mother":"ch1","father":"Spj","status":"0"}];
+			{"name":"Spj","sex":"M","mother":"f21","father":"m21","noparents":true,"status":"0","display_name":"partner"});
 	} else {
 		opts.dataset = [
 			{"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
