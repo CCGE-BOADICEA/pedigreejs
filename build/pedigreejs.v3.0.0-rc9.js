@@ -1223,7 +1223,7 @@ var pedigreejs = (function (exports) {
 	      "status": "0",
 	      "display_name": "partner"
 	    };
-	    let daugter = {
+	    let daughter = {
 	      "name": "zhk",
 	      "sex": "F",
 	      "mother": "ch1",
@@ -1240,11 +1240,11 @@ var pedigreejs = (function (exports) {
 	      "display_name": "son"
 	    };
 	    partner.sex = proband.sex === "F" ? "M" : "F";
-	    daugter.mother = proband.sex === "F" ? proband.name : partner.name;
-	    daugter.father = proband.sex === "F" ? partner.name : proband.name;
+	    daughter.mother = proband.sex === "F" ? proband.name : partner.name;
+	    daughter.father = proband.sex === "F" ? partner.name : proband.name;
 	    son.mother = proband.sex === "F" ? proband.name : partner.name;
 	    son.father = proband.sex === "F" ? partner.name : proband.name;
-	    opts.dataset = [proband, partner, daugter, son];
+	    opts.dataset = [proband, partner, daughter, son];
 	  }
 	  if (selected.length > 0 && selected.val() === 'extended2') {
 	    // secondary relatives
@@ -1361,14 +1361,6 @@ var pedigreejs = (function (exports) {
 	      "father": "m21",
 	      "status": "0",
 	      "display_name": "brother"
-	    }, {
-	      "name": "Spj",
-	      "sex": "M",
-	      "mother": "f21",
-	      "father": "m21",
-	      "noparents": true,
-	      "status": "0",
-	      "display_name": "partner"
 	    });
 	  } else {
 	    opts.dataset = [{
