@@ -1572,7 +1572,7 @@ var pedigreejs = (function (exports) {
 	      for (let j = 0; j < gt.length; j++) {
 	        let gene_test = attr[idx].split(":");
 	        if (gene_test[0] !== '0') {
-	          if ((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N')) indi[gt[j] + '_gene_test'] = {
+	          if ((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N' || gene_test[1] === 'HOM' || gene_test[1] === 'HET')) indi[gt[j] + '_gene_test'] = {
 	            'type': gene_test[0],
 	            'result': gene_test[1]
 	          };else console.warn('UNRECOGNISED GENE TEST ON LINE ' + (i + 1) + ": " + gene_test[0] + " " + gene_test[1]);
