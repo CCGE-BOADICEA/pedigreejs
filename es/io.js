@@ -124,7 +124,7 @@ export function svg2img(svg, deferred_name, options) {
 	let img = document.createElement("img");
 	img.onload = function() {
 		context.drawImage(img, 0, 0, canvas.width, canvas.height);
-		console.log(deferred_name, options.img_type);
+		// console.log(deferred_name, options.img_type);
 		deferred.resolve(
 			{'name': deferred_name,
 			'resolution': options.resolution,
