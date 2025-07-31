@@ -203,8 +203,12 @@ export function save(opts) {
 
 		if($(this).val()) {
 			let val = $(this).val();
-			if(name.indexOf("_diagnosis_age") > -1 && $("#id_approx").is(':checked'))
+			if(name.indexOf("_diagnosis_age") > -1 && $("#id_approx").is(':checked')) {
 				val = round5(val);
+				// check if approximate diagnosis age val is greater than age by 5 or less
+				let age = parseInt($("#id_age").val());
+				if(val > age && (val - age) <= 5) val = age;
+			}
 			person[name] = val;
 		} else {
 			delete person[name];

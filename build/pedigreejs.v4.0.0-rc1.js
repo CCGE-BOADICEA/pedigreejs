@@ -1904,7 +1904,7 @@ var pedigreejs = (function (exports) {
 	  let img = document.createElement("img");
 	  img.onload = function () {
 	    context.drawImage(img, 0, 0, canvas.width, canvas.height);
-	    console.log(deferred_name, options.img_type);
+	    // console.log(deferred_name, options.img_type);
 	    deferred.resolve({
 	      'name': deferred_name,
 	      'resolution': options.resolution,
@@ -2685,7 +2685,12 @@ var pedigreejs = (function (exports) {
 	    let name = this.name.indexOf("_diagnosis_age") > -1 ? this.name.substring(0, this.name.length - 2) : this.name;
 	    if ($(this).val()) {
 	      let val = $(this).val();
-	      if (name.indexOf("_diagnosis_age") > -1 && $("#id_approx").is(':checked')) val = round5(val);
+	      if (name.indexOf("_diagnosis_age") > -1 && $("#id_approx").is(':checked')) {
+	        val = round5(val);
+	        // check if approximate diagnosis age val is greater than age by 5 or less
+	        let age = parseInt($("#id_age").val());
+	        if (val > age && val - age <= 5) val = age;
+	      }
 	      person[name] = val;
 	    } else {
 	      delete person[name];
