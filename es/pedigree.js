@@ -77,9 +77,9 @@ export function build(options) {
 		.attr("height", "100%")
 		.attr("rx", 6)
 		.attr("ry", 6)
-		.style("stroke", "darkgrey")
-		.style("fill", opts.background) // or none
-		.style("stroke-width", 1);
+		.attr("stroke", "darkgrey")
+		.attr("fill", opts.background) // or none
+		.attr("stroke-width", 1);
 
 	let ped = svg.append("g")
 			 .attr("class", "diagram");
@@ -138,14 +138,14 @@ export function build(options) {
 					if(d.data.miscarriage || d.data.termination)
 						return d3.symbolTriangle;
 					return d.data.sex === "F" ? d3.symbolCircle : d3.symbolSquare;}))
-		.style("stroke", function (d) {
+		.attr("stroke", function (d) {
 			return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 		})
-		.style("stroke-width", function (d) {
+		.attr("stroke-width", function (d) {
 			return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
 		})
-		.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
-		.style("fill", "none");
+		.attr("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
+		.attr("fill", "none");
 
 	// set a clippath
 	node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);})
@@ -186,7 +186,7 @@ export function build(options) {
 			.attr("clip-path", function(d) {return "url(#"+d.data.id+")";}) // clip the rectangle
 			.attr("class", "pienode")
 			.attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
-			.style("fill", function(d, i) {
+			.attr("fill", function(d, i) {
 				if(d.data.exclude)
 					return 'lightgrey';
 				if(d.data.ncancers === 0) {
@@ -206,20 +206,20 @@ export function build(options) {
 			let indent = opts.symbol_size/4;
 			return get_bracket(dx, dy, indent, opts)+get_bracket(-dx, dy, -indent, opts);
 			})
-		.style("stroke", function (d) {
+		.attr("stroke", function (d) {
 			return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
 		})
-		.style("stroke-width", function (_d) {
+		.attr("stroke-width", function (_d) {
 			return ".1em";
 		})
-		.style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
-		.style("fill", "none");
+		.attr("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
+		.attr("fill", "none");
 
 
 	// alive status = 0; dead status = 1
 	node.filter(function (d) {return d.data.status === "1" || d.data.status === 1;})
 		.append('line')
-			.style("stroke", "black")
+			.attr("stroke", "black")
 			.attr("x1", function(_d, _i) {return -0.6*opts.symbol_size;})
 			.attr("y1", function(_d, _i) {return 0.6*opts.symbol_size;})
 			.attr("x2", function(_d, _i) {return 0.6*opts.symbol_size;})
@@ -433,7 +433,7 @@ export function build(options) {
 			.attr("orient", "auto")
 			.append("path")
 			.attr("d", "M 0 0 12 6 0 12 3 6")
-			.style("fill", "black");
+			.attr("fill", "black");
 
 		ped.append("line")
 			.attr("x1", probandNode.x-(opts.symbol_size/0.7))
