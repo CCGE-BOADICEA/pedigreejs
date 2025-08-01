@@ -24,16 +24,16 @@ export function addWidgets(opts, node) {
 							.attr("rx", 6)
 							.attr("ry", 6)
 							.attr("transform", "translate(-1000,-100)")
-							.style("opacity", 0)
+							.attr("opacity", 0)
 							.attr("width",  font_size*7.9)
 							.attr("height", font_size*2)
-							.style("stroke", "darkgrey")
+							.attr("stroke", "darkgrey")
 							.attr("fill", "white");
 
 	let square = popup_selection.append("text")  // male
 		.attr('font-family', 'FontAwesome')
-		.style("opacity", 0)
-		.style("font-size", "1.1em")
+		.attr("opacity", 0)
+		.attr("font-size", "1.1em")
 		.attr("class", "popup_selection fa-square persontype")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("x", font_size/3)
@@ -43,8 +43,8 @@ export function addWidgets(opts, node) {
 
 	let circle = popup_selection.append("text")  // female
 		.attr('font-family', 'FontAwesome')
-		.style("opacity", 0)
-		.style("font-size", "1.1em")
+		.attr("opacity", 0)
+		.attr("font-size", "1.1em")
 		.attr("class", "popup_selection fa-circle persontype")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("x", font_size*1.71)
@@ -54,8 +54,8 @@ export function addWidgets(opts, node) {
 
 	let unspecified = popup_selection.append("text")  // unspecified
 		.attr('font-family', 'FontAwesome')
-		.style("opacity", 0)
-		.style("font-size", "1.1em")
+		.attr("opacity", 0)
+		.attr("font-size", "1.1em")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("x", font_size*0.065)
 		.attr("y", -font_size*0.065)
@@ -65,8 +65,8 @@ export function addWidgets(opts, node) {
 
 	let dztwin = popup_selection.append("text")  // dizygotic twins
 		.attr('font-family', 'FontAwesome')
-		.style("opacity", 0)
-		.style("font-size", "1.6em")
+		.attr("opacity", 0)
+		.attr("font-size", "1.6em")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("class", "popup_selection fa-angle-up persontype dztwin")
 		.attr("x", font_size*4.62)
@@ -76,8 +76,8 @@ export function addWidgets(opts, node) {
 
 	let mztwin = popup_selection.append("text")  // monozygotic twins
 	.attr('font-family', 'FontAwesome')
-	.style("opacity", 0)
-	.style("font-size", "1.6em")
+	.attr("opacity", 0)
+	.attr("font-size", "1.6em")
 	.attr("transform", "translate(-1000,-100)")
 	.attr("class", "popup_selection fa-caret-up persontype mztwin")
 	.attr("x", font_size*6.4)
@@ -109,13 +109,13 @@ export function addWidgets(opts, node) {
 			return;
 		opts.dataset = newdataset;
 		$(document).trigger('rebuild', [opts]);
-		d3.selectAll('.popup_selection').style("opacity", 0);
+		d3.selectAll('.popup_selection').attr("opacity", 0);
 		add_person = {};
 	  })
 	  .on("mouseover", function() {
 		  if(add_person.node)
-			  add_person.node.select('rect').style("opacity", 0.2);
-		  d3.selectAll('.popup_selection').style("opacity", 1);
+			  add_person.node.select('rect').attr("opacity", 0.2);
+		  d3.selectAll('.popup_selection').attr("opacity", 1);
 		  // add tooltips to font awesome widgets
 		  if(add_person.type === 'addsibling'){
 			 if(d3.select(this).classed("fa-square"))
@@ -134,8 +134,8 @@ export function addWidgets(opts, node) {
 	d3.selectAll(".popup_selection").on("mouseout", function () {
 		// hide rect and popup selection
 		if(add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) === -1)
-			add_person.node.select('rect').style("opacity", 0);
-		d3.selectAll('.popup_selection').style("opacity", 0);
+			add_person.node.select('rect').attr("opacity", 0);
+		d3.selectAll('.popup_selection').attr("opacity", 0);
 	});
 
 
@@ -154,9 +154,9 @@ export function addWidgets(opts, node) {
 		.attr("y", function(_d) { return - opts.symbol_size; })
 		.attr("width",  (1.5 * opts.symbol_size)+'px')
 		.attr("height", (2 * opts.symbol_size)+'px')
-		.style("stroke", "black")
-		.style("stroke-width", 0.7)
-		.style("opacity", 0)
+		.attr("stroke", "black")
+		.attr("stroke-width", 0.7)
+		.attr("opacity", 0)
 		.attr("fill", "lightgrey");
 
 	// widgets
@@ -194,7 +194,7 @@ export function addWidgets(opts, node) {
 			})
 			.append("text")
 			.attr("class", key)
-			.style("opacity", 0)
+			.attr("opacity", 0)
 			.attr('font-family', 'FontAwesome')
 			.attr("xx", function(d){return d.x;})
 			.attr("yy", function(d){return d.y;})
@@ -216,7 +216,7 @@ export function addWidgets(opts, node) {
 	d3.selectAll(".addsibling, .addchild")
 	  .on("mouseover", function () {
 		  let type = d3.select(this).attr('class');
-		  d3.selectAll('.popup_selection').style("opacity", 1);
+		  d3.selectAll('.popup_selection').attr("opacity", 1);
 		  add_person = {'node': d3.select(this.parentNode), 'type': type};
 
 		  //let translate = getTranslation(d3.select('.diagram').attr("transform"));
@@ -277,8 +277,8 @@ export function addWidgets(opts, node) {
 
 		if('nodeclick' in opts) {
 			opts.nodeclick(d.data);
-			d3.selectAll(".indi_rect").style("opacity", 0);
-			d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) !== -1;}).style("opacity", 0.5);
+			d3.selectAll(".indi_rect").attr("opacity", 0);
+			d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) !== -1;}).attr("opacity", 0.5);
 		}
 	})
 	.on("mouseover", function(e, d){
@@ -287,13 +287,13 @@ export function addWidgets(opts, node) {
 		if(dragging) {
 			if(dragging.data.name !== last_mouseover.data.name &&
 			   dragging.data.sex !== last_mouseover.data.sex) {
-				d3.select(this).select('rect').style("opacity", 0.2);
+				d3.select(this).select('rect').attr("opacity", 0.2);
 			}
 			return;
 		}
-		d3.select(this).select('rect').style("opacity", 0.2);
-		d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
-		d3.select(this).selectAll('.indi_details').style("opacity", 0);
+		d3.select(this).select('rect').attr("opacity", 0.2);
+		d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').attr("opacity", 1);
+		d3.select(this).selectAll('.indi_details').attr("opacity", 0);
 
 		setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
 	})
@@ -301,15 +301,15 @@ export function addWidgets(opts, node) {
 		if(dragging)
 			return;
 
-		d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
+		d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').attr("opacity", 0);
 		if(highlight.indexOf(d) === -1)
-			d3.select(this).select('rect').style("opacity", 0);
-		d3.select(this).selectAll('.indi_details').style("opacity", 1);
+			d3.select(this).select('rect').attr("opacity", 0);
+		d3.select(this).selectAll('.indi_details').attr("opacity", 1);
 		// hide popup if it looks like the mouse is moving north
 		let xcoord = d3.pointer(d)[0];
 		let ycoord = d3.pointer(d)[1];
 		if(ycoord < 0.8*opts.symbol_size)
-			d3.selectAll('.popup_selection').style("opacity", 0);
+			d3.selectAll('.popup_selection').attr("opacity", 0);
 		if(!dragging) {
 			// hide popup if it looks like the mouse is moving north, south or west
 			if( Math.abs(ycoord) > 0.25*opts.symbol_size ||
@@ -332,7 +332,7 @@ function drag_handle(opts) {
 	let line_drag_selection = d3.select('.diagram');
 	let dline = line_drag_selection.append("line").attr("class", 'line_drag_selection')
         .attr("stroke-width", 6)
-        .style("stroke-dasharray", ("2, 1"))
+        .attr("stroke-dasharray", ("2, 1"))
         .attr("stroke","black")
         .call(d3.drag()
                 .on("start", dragstart)

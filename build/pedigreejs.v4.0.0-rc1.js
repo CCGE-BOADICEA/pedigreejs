@@ -2808,21 +2808,21 @@ var pedigreejs = (function (exports) {
 	  // popup gender selection box
 	  let font_size = parseInt($("body").css('font-size'));
 	  let popup_selection = d3.select('.diagram');
-	  popup_selection.append("rect").attr("class", "popup_selection").attr("rx", 6).attr("ry", 6).attr("transform", "translate(-1000,-100)").style("opacity", 0).attr("width", font_size * 7.9).attr("height", font_size * 2).style("stroke", "darkgrey").attr("fill", "white");
+	  popup_selection.append("rect").attr("class", "popup_selection").attr("rx", 6).attr("ry", 6).attr("transform", "translate(-1000,-100)").attr("opacity", 0).attr("width", font_size * 7.9).attr("height", font_size * 2).attr("stroke", "darkgrey").attr("fill", "white");
 	  let square = popup_selection.append("text") // male
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.1em").attr("class", "popup_selection fa-square persontype").attr("transform", "translate(-1000,-100)").attr("x", font_size / 3).attr("y", font_size * 1.5).text("\uf096 ");
+	  .attr('font-family', 'FontAwesome').attr("opacity", 0).attr("font-size", "1.1em").attr("class", "popup_selection fa-square persontype").attr("transform", "translate(-1000,-100)").attr("x", font_size / 3).attr("y", font_size * 1.5).text("\uf096 ");
 	  let square_title = square.append("svg:title").text("add male");
 	  let circle = popup_selection.append("text") // female
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.1em").attr("class", "popup_selection fa-circle persontype").attr("transform", "translate(-1000,-100)").attr("x", font_size * 1.71).attr("y", font_size * 1.5).text("\uf10c ");
+	  .attr('font-family', 'FontAwesome').attr("opacity", 0).attr("font-size", "1.1em").attr("class", "popup_selection fa-circle persontype").attr("transform", "translate(-1000,-100)").attr("x", font_size * 1.71).attr("y", font_size * 1.5).text("\uf10c ");
 	  let circle_title = circle.append("svg:title").text("add female");
 	  let unspecified = popup_selection.append("text") // unspecified
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.1em").attr("transform", "translate(-1000,-100)").attr("x", font_size * 0.065).attr("y", -font_size * 0.065).attr("class", "popup_selection fa-unspecified popup_selection_rotate45 persontype").text("\uf096 ");
+	  .attr('font-family', 'FontAwesome').attr("opacity", 0).attr("font-size", "1.1em").attr("transform", "translate(-1000,-100)").attr("x", font_size * 0.065).attr("y", -font_size * 0.065).attr("class", "popup_selection fa-unspecified popup_selection_rotate45 persontype").text("\uf096 ");
 	  unspecified.append("svg:title").text("add unspecified");
 	  let dztwin = popup_selection.append("text") // dizygotic twins
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.6em").attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-angle-up persontype dztwin").attr("x", font_size * 4.62).attr("y", font_size * 1.5).text("\uf106 ");
+	  .attr('font-family', 'FontAwesome').attr("opacity", 0).attr("font-size", "1.6em").attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-angle-up persontype dztwin").attr("x", font_size * 4.62).attr("y", font_size * 1.5).text("\uf106 ");
 	  dztwin.append("svg:title").text("add dizygotic/fraternal twins");
 	  let mztwin = popup_selection.append("text") // monozygotic twins
-	  .attr('font-family', 'FontAwesome').style("opacity", 0).style("font-size", "1.6em").attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-caret-up persontype mztwin").attr("x", font_size * 6.4).attr("y", font_size * 1.5).text("\uf0d8 ");
+	  .attr('font-family', 'FontAwesome').attr("opacity", 0).attr("font-size", "1.6em").attr("transform", "translate(-1000,-100)").attr("class", "popup_selection fa-caret-up persontype mztwin").attr("x", font_size * 6.4).attr("y", font_size * 1.5).text("\uf0d8 ");
 	  mztwin.append("svg:title").text("add monozygotic/identical twins");
 	  let add_person = {};
 	  // click the person type selection
@@ -2841,11 +2841,11 @@ var pedigreejs = (function (exports) {
 	    if (add_person.type === 'addsibling') addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);else if (add_person.type === 'addchild') addchild(newdataset, add_person.node.datum().data, twin_type ? 'U' : sex, twin_type ? 2 : 1, twin_type);else return;
 	    opts.dataset = newdataset;
 	    $(document).trigger('rebuild', [opts]);
-	    d3.selectAll('.popup_selection').style("opacity", 0);
+	    d3.selectAll('.popup_selection').attr("opacity", 0);
 	    add_person = {};
 	  }).on("mouseover", function () {
-	    if (add_person.node) add_person.node.select('rect').style("opacity", 0.2);
-	    d3.selectAll('.popup_selection').style("opacity", 1);
+	    if (add_person.node) add_person.node.select('rect').attr("opacity", 0.2);
+	    d3.selectAll('.popup_selection').attr("opacity", 1);
 	    // add tooltips to font awesome widgets
 	    if (add_person.type === 'addsibling') {
 	      if (d3.select(this).classed("fa-square")) square_title.text("add brother");else circle_title.text("add sister");
@@ -2857,8 +2857,8 @@ var pedigreejs = (function (exports) {
 	  // handle mouse out of popup selection
 	  d3.selectAll(".popup_selection").on("mouseout", function () {
 	    // hide rect and popup selection
-	    if (add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) === -1) add_person.node.select('rect').style("opacity", 0);
-	    d3.selectAll('.popup_selection').style("opacity", 0);
+	    if (add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) === -1) add_person.node.select('rect').attr("opacity", 0);
+	    d3.selectAll('.popup_selection').attr("opacity", 0);
 	  });
 
 	  // drag line between nodes to create partners
@@ -2871,7 +2871,7 @@ var pedigreejs = (function (exports) {
 	    return -0.75 * opts.symbol_size;
 	  }).attr("y", function (_d) {
 	    return -opts.symbol_size;
-	  }).attr("width", 1.5 * opts.symbol_size + 'px').attr("height", 2 * opts.symbol_size + 'px').style("stroke", "black").style("stroke-width", 0.7).style("opacity", 0).attr("fill", "lightgrey");
+	  }).attr("width", 1.5 * opts.symbol_size + 'px').attr("height", 2 * opts.symbol_size + 'px').attr("stroke", "black").attr("stroke-width", 0.7).attr("opacity", 0).attr("fill", "lightgrey");
 
 	  // widgets
 	  let fx = function (_d) {
@@ -2927,7 +2927,7 @@ var pedigreejs = (function (exports) {
 	  for (let key in widgets) {
 	    let widget = node.filter(function (d) {
 	      return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') && !(d.data.parent_node === undefined && key === 'addchild') && !(d.data.noparents === undefined && d.data.top_level === undefined && key === 'addparents');
-	    }).append("text").attr("class", key).style("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
+	    }).append("text").attr("class", key).attr("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
 	      return d.x;
 	    }).attr("yy", function (d) {
 	      return d.y;
@@ -2942,7 +2942,7 @@ var pedigreejs = (function (exports) {
 	  // add sibling or child
 	  d3.selectAll(".addsibling, .addchild").on("mouseover", function () {
 	    let type = d3.select(this).attr('class');
-	    d3.selectAll('.popup_selection').style("opacity", 1);
+	    d3.selectAll('.popup_selection').attr("opacity", 1);
 	    add_person = {
 	      'node': d3.select(this.parentNode),
 	      'type': type
@@ -2998,33 +2998,33 @@ var pedigreejs = (function (exports) {
 	    } else highlight = [d];
 	    if ('nodeclick' in opts) {
 	      opts.nodeclick(d.data);
-	      d3.selectAll(".indi_rect").style("opacity", 0);
+	      d3.selectAll(".indi_rect").attr("opacity", 0);
 	      d3.selectAll('.indi_rect').filter(function (d) {
 	        return highlight.indexOf(d) !== -1;
-	      }).style("opacity", 0.5);
+	      }).attr("opacity", 0.5);
 	    }
 	  }).on("mouseover", function (e, d) {
 	    e.stopPropagation();
 	    last_mouseover = d;
 	    if (dragging) {
 	      if (dragging.data.name !== last_mouseover.data.name && dragging.data.sex !== last_mouseover.data.sex) {
-	        d3.select(this).select('rect').style("opacity", 0.2);
+	        d3.select(this).select('rect').attr("opacity", 0.2);
 	      }
 	      return;
 	    }
-	    d3.select(this).select('rect').style("opacity", 0.2);
-	    d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
-	    d3.select(this).selectAll('.indi_details').style("opacity", 0);
+	    d3.select(this).select('rect').attr("opacity", 0.2);
+	    d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').attr("opacity", 1);
+	    d3.select(this).selectAll('.indi_details').attr("opacity", 0);
 	    setLineDragPosition(opts.symbol_size - 10, 0, opts.symbol_size - 2, 0, d.x + "," + (d.y + 2));
 	  }).on("mouseout", function (d) {
 	    if (dragging) return;
-	    d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
-	    if (highlight.indexOf(d) === -1) d3.select(this).select('rect').style("opacity", 0);
-	    d3.select(this).selectAll('.indi_details').style("opacity", 1);
+	    d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').attr("opacity", 0);
+	    if (highlight.indexOf(d) === -1) d3.select(this).select('rect').attr("opacity", 0);
+	    d3.select(this).selectAll('.indi_details').attr("opacity", 1);
 	    // hide popup if it looks like the mouse is moving north
 	    let xcoord = d3.pointer(d)[0];
 	    let ycoord = d3.pointer(d)[1];
-	    if (ycoord < 0.8 * opts.symbol_size) d3.selectAll('.popup_selection').style("opacity", 0);
+	    if (ycoord < 0.8 * opts.symbol_size) d3.selectAll('.popup_selection').attr("opacity", 0);
 	    if (!dragging) {
 	      // hide popup if it looks like the mouse is moving north, south or west
 	      if (Math.abs(ycoord) > 0.25 * opts.symbol_size || Math.abs(ycoord) < -0.25 * opts.symbol_size || xcoord < 0.2 * opts.symbol_size) {
@@ -3042,7 +3042,7 @@ var pedigreejs = (function (exports) {
 	// drag line between nodes to create partners
 	function drag_handle(opts) {
 	  let line_drag_selection = d3.select('.diagram');
-	  let dline = line_drag_selection.append("line").attr("class", 'line_drag_selection').attr("stroke-width", 6).style("stroke-dasharray", "2, 1").attr("stroke", "black").call(d3.drag().on("start", dragstart).on("drag", drag).on("end", dragstop));
+	  let dline = line_drag_selection.append("line").attr("class", 'line_drag_selection').attr("stroke-width", 6).attr("stroke-dasharray", "2, 1").attr("stroke", "black").call(d3.drag().on("start", dragstart).on("drag", drag).on("end", dragstop));
 	  dline.append("svg:title").text("drag to create consanguineous partners");
 	  setLineDragPosition(0, 0, 0, 0);
 	  function dragstart() {
@@ -3722,8 +3722,8 @@ var pedigreejs = (function (exports) {
 	  if (opts.VERBOSE) print_opts(opts);
 	  let svg_dimensions = get_svg_dimensions(opts);
 	  let svg = d3.select("#" + opts.targetDiv).append("svg:svg").attr("width", svg_dimensions.width).attr("height", svg_dimensions.height);
-	  svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).style("stroke", "darkgrey").style("fill", opts.background) // or none
-	  .style("stroke-width", 1);
+	  svg.append("rect").attr("width", "100%").attr("height", "100%").attr("rx", 6).attr("ry", 6).attr("stroke", "darkgrey").attr("fill", opts.background) // or none
+	  .attr("stroke-width", 1);
 	  let ped = svg.append("g").attr("class", "diagram");
 	  let top_level = $.map(opts.dataset, function (val, _i) {
 	    return 'top_level' in val && val.top_level ? val : null;
@@ -3774,13 +3774,13 @@ var pedigreejs = (function (exports) {
 	  }).type(function (d) {
 	    if (d.data.miscarriage || d.data.termination) return d3.symbolTriangle;
 	    return d.data.sex === "F" ? d3.symbolCircle : d3.symbolSquare;
-	  })).style("stroke", function (d) {
+	  })).attr("stroke", function (d) {
 	    return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
-	  }).style("stroke-width", function (d) {
+	  }).attr("stroke-width", function (d) {
 	    return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
-	  }).style("stroke-dasharray", function (d) {
+	  }).attr("stroke-dasharray", function (d) {
 	    return !d.data.exclude ? null : "3, 3";
-	  }).style("fill", "none");
+	  }).attr("fill", "none");
 
 	  // set a clippath
 	  node.filter(function (d) {
@@ -3828,7 +3828,7 @@ var pedigreejs = (function (exports) {
 	  })).enter().append("path").attr("clip-path", function (d) {
 	    return "url(#" + d.data.id + ")";
 	  }) // clip the rectangle
-	  .attr("class", "pienode").attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size)).style("fill", function (d, i) {
+	  .attr("class", "pienode").attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size)).attr("fill", function (d, i) {
 	    if (d.data.exclude) return 'lightgrey';
 	    if (d.data.ncancers === 0) {
 	      if (d.data.affected) return 'darkgrey';
@@ -3845,18 +3845,18 @@ var pedigreejs = (function (exports) {
 	    let dy = -(opts.symbol_size * 0.64);
 	    let indent = opts.symbol_size / 4;
 	    return get_bracket(dx, dy, indent, opts) + get_bracket(-dx, dy, -indent, opts);
-	  }).style("stroke", function (d) {
+	  }).attr("stroke", function (d) {
 	    return d.data.age && d.data.yob && !d.data.exclude ? "#303030" : "grey";
-	  }).style("stroke-width", function (_d) {
+	  }).attr("stroke-width", function (_d) {
 	    return ".1em";
-	  }).style("stroke-dasharray", function (d) {
+	  }).attr("stroke-dasharray", function (d) {
 	    return !d.data.exclude ? null : "3, 3";
-	  }).style("fill", "none");
+	  }).attr("fill", "none");
 
 	  // alive status = 0; dead status = 1
 	  node.filter(function (d) {
 	    return d.data.status === "1" || d.data.status === 1;
-	  }).append('line').style("stroke", "black").attr("x1", function (_d, _i) {
+	  }).append('line').attr("stroke", "black").attr("x1", function (_d, _i) {
 	    return -0.6 * opts.symbol_size;
 	  }).attr("y1", function (_d, _i) {
 	    return 0.6 * opts.symbol_size;
@@ -4011,7 +4011,7 @@ var pedigreejs = (function (exports) {
 	    let probandNode = getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
 	    let triid = "triangle" + makeid(3);
 	    ped.append("svg:defs").append("svg:marker") // arrow head
-	    .attr("id", triid).attr("refX", 6).attr("refY", 6).attr("markerWidth", 20).attr("markerHeight", 20).attr("orient", "auto").append("path").attr("d", "M 0 0 12 6 0 12 3 6").style("fill", "black");
+	    .attr("id", triid).attr("refX", 6).attr("refY", 6).attr("markerWidth", 20).attr("markerHeight", 20).attr("orient", "auto").append("path").attr("d", "M 0 0 12 6 0 12 3 6").attr("fill", "black");
 	    ped.append("line").attr("x1", probandNode.x - opts.symbol_size / 0.7).attr("y1", probandNode.y + opts.symbol_size / 1.4).attr("x2", probandNode.x - opts.symbol_size / 1.4).attr("y2", probandNode.y + opts.symbol_size / 4).attr("stroke-width", 1).attr("stroke", "black").attr("marker-end", "url(#" + triid + ")");
 	  }
 
