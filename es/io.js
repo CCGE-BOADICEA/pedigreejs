@@ -185,7 +185,9 @@ export function copy_svg(opts) {
 	d3obj.selectAll("text")
 	  .filter(function(){
 		return d3.select(this).text().length === 0 || d3.select(this), d3.select(this).attr('font-family') === "FontAwesome"
-	  }).remove();
+	}).remove();
+	// remove inline styles
+	d3obj.selectAll('[style]').attr("style", null);
 	return $(unique_urls(svg_node.html()));
 }
 
@@ -234,7 +236,7 @@ export function print(el, id){
 	let height = $(window).height()-10;
 	let cssFiles = [
 		'/static/css/canrisk.css',
-		'https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css'
+		'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css'
 	];
 	let printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
 	let headContent = '';
