@@ -1430,9 +1430,7 @@ var pedigreejs = (function (exports) {
 	}
 
 	// return a non-anonimised pedigree format
-	function get_non_anon_pedigree(dataset, meta) {
-	  let version = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 2;
-	  let ethnicity = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
+	function get_non_anon_pedigree(dataset, meta, version = 2, ethnicity = undefined) {
 	  return get_pedigree(dataset, undefined, meta, false, version, ethnicity);
 	}
 
@@ -1617,9 +1615,7 @@ var pedigreejs = (function (exports) {
 	/**
 	 * Get CanRisk formated pedigree.
 	 */
-	function get_pedigree(dataset, famid, meta, isanon) {
-	  let version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 3;
-	  let ethnicity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
+	function get_pedigree(dataset, famid, meta, isanon, version = 3, ethnicity = undefined) {
 	  let v = Number.isInteger(version) ? version + ".0" : version.toString();
 	  let msg = "##CanRisk " + v;
 	  if (!famid) {
@@ -1962,6 +1958,8 @@ var pedigreejs = (function (exports) {
 	  d3obj.selectAll("text").filter(function () {
 	    return d3.select(this).text().length === 0 || d3.select(this), d3.select(this).attr('font-family') === "FontAwesome";
 	  }).remove();
+	  // remove inline styles
+	  d3obj.selectAll('[style]').attr("style", null);
 	  return $(unique_urls(svg_node.html()));
 	}
 
@@ -2008,7 +2006,7 @@ var pedigreejs = (function (exports) {
 	  if (el.constructor !== Array) el = [el];
 	  let width = $(window).width() * 0.9;
 	  let height = $(window).height() - 10;
-	  let cssFiles = ['/static/css/canrisk.css', 'https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css'];
+	  let cssFiles = ['/static/css/canrisk.css', 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css'];
 	  let printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
 	  let headContent = '';
 	  for (let i = 0; i < cssFiles.length; i++) headContent += '<link href="' + cssFiles[i] + '" rel="stylesheet" type="text/css" media="all">';
