@@ -234,7 +234,7 @@ export function print(el, id){
 	let height = $(window).height()-10;
 	let cssFiles = [
 		'/static/css/canrisk.css',
-		'https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css'
+		'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css'
 	];
 	let printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
 	let headContent = '';
