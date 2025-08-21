@@ -185,7 +185,9 @@ export function copy_svg(opts) {
 	d3obj.selectAll("text")
 	  .filter(function(){
 		return d3.select(this).text().length === 0 || d3.select(this), d3.select(this).attr('font-family') === "FontAwesome"
-	  }).remove();
+	}).remove();
+	// remove inline styles
+	d3obj.selectAll('[style]').attr("style", null);
 	return $(unique_urls(svg_node.html()));
 }
 
