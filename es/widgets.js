@@ -419,10 +419,14 @@ function openEditDialog(opts, d) {
 	table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value="+
 		(d.data.yob ? d.data.yob : "")+"></td></tr>";
 
+	// check if person has a partner
+	const hasPartner = d.data.parent_node && d.data.sex !== 'U';
+	const disableInp = (hasPartner ? "disabled" : "")
+	const label = '<label class="radio-inline"><input type="radio" name="sex" ';
 	table += '<tr><td colspan="2" id="id_sex">' +
-			 '<label class="radio-inline"><input type="radio" name="sex" value="M" '+(d.data.sex === 'M' ? "checked" : "")+'>Male</label>' +
-			 '<label class="radio-inline"><input type="radio" name="sex" value="F" '+(d.data.sex === 'F' ? "checked" : "")+'>Female</label>' +
-			 '<label class="radio-inline"><input type="radio" name="sex" value="U">Unknown</label>' +
+			 label+'value="M" '+(d.data.sex === 'M' ? "checked " : " ")+disableInp+'>Male</label>' +
+			 label+'value="F" '+(d.data.sex === 'F' ? "checked " : " ")+disableInp+'>Female</label>' +
+			 label+'value="U" '+disableInp+'>Unknown</label>' +
 			 '</td></tr>';
 
 	// alive status = 0; dead status = 1
