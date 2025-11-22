@@ -189,7 +189,7 @@ export function addWidgets(opts, node) {
 				return  (d.data.hidden && !opts.DEBUG ? false : true) &&
 						!((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
 						!(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
-						!(d.data.parent_node === undefined && key === 'addchild') &&
+						!((d.data.parent_node === undefined || d.data.parent_node.length > 1) && key === 'addchild') &&
 						!((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
 			})
 			.append("text")
@@ -286,7 +286,7 @@ export function addWidgets(opts, node) {
 		last_mouseover = d;
 		if(dragging) {
 			if(dragging.data.name !== last_mouseover.data.name &&
-			   dragging.data.sex !== last_mouseover.data.sex) {
+			   dragging.data.sex !== last_mouseover.data.sex && last_mouseover.data.sex != "U" && dragging.data.sex != "U") {
 				d3.select(this).select('rect').attr("opacity", 0.2);
 			}
 			return;
@@ -349,7 +349,9 @@ function drag_handle(opts) {
 	}
 
 	function dragstop(_d) {
-		if(last_mouseover &&
+		if ((dragging && dragging.data && dragging.data.sex == 'U') || (last_mouseover && last_mouseover.data && last_mouseover.data.sex == "U"))
+			utils.messages("Warning", "Unable to create partner from/to someone with unknown sex");
+		else if(last_mouseover &&
 		   dragging.data.name !== last_mouseover.data.name &&
 		   dragging.data.sex  !== last_mouseover.data.sex) {
 			// make partners
@@ -426,7 +428,7 @@ function openEditDialog(opts, d) {
 	table += '<tr><td colspan="2" id="id_sex">' +
 			 label+'value="M" '+(d.data.sex === 'M' ? "checked " : " ")+disableInp+'>Male</label>' +
 			 label+'value="F" '+(d.data.sex === 'F' ? "checked " : " ")+disableInp+'>Female</label>' +
-			 label+'value="U" '+disableInp+'>Unknown</label>' +
+			 label+'value="U" '+(d.data.sex === 'U' ? "checked " : " ")+disableInp+'>Unknown</label>' +
 			 '</td></tr>';
 
 	// alive status = 0; dead status = 1
