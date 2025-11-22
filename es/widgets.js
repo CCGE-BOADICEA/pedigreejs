@@ -186,11 +186,43 @@ export function addWidgets(opts, node) {
 
 	for(let key in widgets) {
 		let widget = node.filter(function (d) {
-				return  (d.data.hidden && !opts.DEBUG ? false : true) &&
-						!((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
-						!(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
-						!((d.data.parent_node === undefined || d.data.parent_node.length > 1) && key === 'addchild') &&
-						!((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
+				let mother = opts.dataset.find(item => item.name === (typeof d.data.mother === 'string' || d.data.mother === undefined? d.data.mother: d.data.mother.name));
+				let father = opts.dataset.find(item => item.name === (typeof d.data.father === 'string' || d.data.father === undefined? d.data.father: d.data.father.name));
+				if (d.data.hidden && !opts.DEBUG)
+					return false;
+				if (key == 'addchild'){
+					// Do not create child for single parent
+					if (d.data.parent_node === undefined)
+						return false;
+					// Do not create child from a parent having several partners because of the ambiguity
+					else if (d.data.parent_node.length > 1)
+						return false;
+				}
+				else if (key === 'addpartner'){
+					// Do not create partner if already has several partners
+					if (d.data.parent_node !== undefined && d.data.parent_node.length > 1)
+						return false;
+					// Do not create partner of someone with no family link
+					else if (d.data.top_level !== true && (d.data.noparents === true || mother === undefined || father === undefined))
+						return false;
+				}
+				else if (key === 'addparents'){
+					// Do not create parents for people already having parents or being top_level
+					if (d.data.noparents === undefined && d.data.top_level === undefined)
+						return false;
+				}
+				else if (key == 'addsibling')
+				{
+					// Do not create sibling for child without declared mother nor parents
+					if (mother === undefined || d.data.noparents)
+						return false;
+					// Do not create sibling for child having a parent with several partners
+					else if (mother && mother.parent_node.length > 1)
+						return false;
+					else if (father && father.parent_node && father.parent_node.length > 1)
+						return false;
+				}
+				return true;
 			})
 			.append("text")
 			.attr("class", key)
