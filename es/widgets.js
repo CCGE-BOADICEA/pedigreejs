@@ -202,6 +202,9 @@ export function addWidgets(opts, node) {
 					// Do not create partner if already has several partners
 					if (d.data.parent_node !== undefined && d.data.parent_node.length > 1)
 						return false;
+					// Do not create partners for unknown sex people
+					else if (d.data.sex == 'U')
+						return false;
 					// Do not create partner of someone with no family link
 					else if (d.data.top_level !== true && (d.data.noparents === true || mother === undefined || father === undefined))
 						return false;
