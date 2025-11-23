@@ -708,7 +708,7 @@ export function addpartner(opts, dataset, name) {
 	let flat_tree = utils.flatten(root);
 	let tree_node = utils.getNodeByName(flat_tree, name);
 
-	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
+	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F' ^ tree_node.data.parent_node.length >0 );
 	partner.noparents = true;
 
 	let child = {"name": utils.makeid(4), "sex": "M"};
