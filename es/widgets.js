@@ -219,11 +219,6 @@ export function addWidgets(opts, node) {
 					// Do not create sibling for child without declared mother nor parents
 					if (mother === undefined || d.data.noparents)
 						return false;
-					// Do not create sibling for child having a parent with several partners
-					else if (mother && mother.parent_node.length > 1)
-						return false;
-					else if (father && father.parent_node && father.parent_node.length > 1)
-						return false;
 				}
 				return true;
 			})
