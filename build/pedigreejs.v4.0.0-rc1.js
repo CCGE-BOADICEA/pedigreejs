@@ -2006,7 +2006,7 @@ var pedigreejs = (function (exports) {
 	  if (el.constructor !== Array) el = [el];
 	  let width = $(window).width() * 0.9;
 	  let height = $(window).height() - 10;
-	  let cssFiles = ['/static/css/canrisk.css', 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css'];
+	  let cssFiles = ['/static/css/canrisk.css', 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css'];
 	  let printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
 	  let headContent = '';
 	  for (let i = 0; i < cssFiles.length; i++) headContent += '<link href="' + cssFiles[i] + '" rel="stylesheet" type="text/css" media="all">';
@@ -2866,16 +2866,16 @@ var pedigreejs = (function (exports) {
 	  node.filter(function (d) {
 	    return d.data.hidden && !opts.DEBUG ? false : true;
 	  }).append("rect").attr("class", 'indi_rect').attr("rx", 6).attr("ry", 6).attr("x", function (_d) {
-	    return -0.75 * opts.symbol_size;
+	    return -0.8 * opts.symbol_size;
 	  }).attr("y", function (_d) {
-	    return -opts.symbol_size;
-	  }).attr("width", 1.5 * opts.symbol_size + 'px').attr("height", 2 * opts.symbol_size + 'px').attr("stroke", "black").attr("stroke-width", 0.7).attr("opacity", 0).attr("fill", "lightgrey");
+	    return -1.1 * opts.symbol_size;
+	  }).attr("width", 1.6 * opts.symbol_size + 'px').attr("height", 2.2 * opts.symbol_size + 'px').attr("stroke", "black").attr("stroke-width", 0.7).attr("opacity", 0).attr("fill", "lightgrey");
 
 	  // widgets
 	  let fx = function (_d) {
 	    return off - 0.75 * opts.symbol_size;
 	  };
-	  let fy = opts.symbol_size - 2;
+	  let fy = opts.symbol_size;
 	  let off = 0;
 	  let widgets = {
 	    'addchild': {
@@ -2887,30 +2887,28 @@ var pedigreejs = (function (exports) {
 	    'addsibling': {
 	      'text': '\uf234',
 	      'title': 'add sibling',
-	      'fx': fx,
+	      'fx': -font_size / 2,
 	      'fy': fy
 	    },
 	    'addpartner': {
 	      'text': '\uf0c1',
 	      'title': 'add partner',
-	      'fx': fx,
+	      'fx': opts.symbol_size / 2 - 4,
 	      'fy': fy
 	    },
 	    'addparents': {
 	      'text': '\uf062',
 	      'title': 'add parents',
 	      'fx': -0.75 * opts.symbol_size,
-	      'fy': -opts.symbol_size + 11
+	      'fy': -opts.symbol_size + 10
 	    },
 	    'delete': {
-	      'text': 'X',
+	      'text': '\uf00d',
 	      'title': 'delete',
-	      'fx': opts.symbol_size / 2 - 1,
-	      'fy': -opts.symbol_size + 12,
+	      'fx': opts.symbol_size / 2 - 3,
+	      'fy': -opts.symbol_size + 10,
 	      'styles': {
-	        "font-weight": "bold",
-	        "fill": "darkred",
-	        "font-family": "monospace"
+	        "fill": "darkred"
 	      }
 	    }
 	  };
@@ -2918,8 +2916,9 @@ var pedigreejs = (function (exports) {
 	    widgets.settings = {
 	      'text': '\uf013',
 	      'title': 'settings',
-	      'fx': -font_size / 2 + 2,
-	      'fy': -opts.symbol_size + 11
+	      'fx': -font_size / 2 + 1,
+	      'fy': -opts.symbol_size + 9,
+	      'fontSize': '0.8em'
 	    };
 	  }
 	  for (let key in widgets) {
@@ -2929,7 +2928,7 @@ var pedigreejs = (function (exports) {
 	      return d.x;
 	    }).attr("yy", function (d) {
 	      return d.y;
-	    }).attr("x", widgets[key].fx).attr("y", widgets[key].fy).attr('font-size', '0.85em').text(widgets[key].text);
+	    }).attr("x", widgets[key].fx).attr("y", widgets[key].fy).attr('font-size', widgets[key].fontSize ? widgets[key].fontSize : '0.85em').text(widgets[key].text);
 	    if ('styles' in widgets[key]) for (let style in widgets[key].styles) {
 	      widget.attr(style, widgets[key].styles[style]);
 	    }

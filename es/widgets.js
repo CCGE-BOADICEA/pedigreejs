@@ -150,10 +150,10 @@ export function addWidgets(opts, node) {
 		.attr("class", 'indi_rect')
 		.attr("rx", 6)
 		.attr("ry", 6)
-		.attr("x", function(_d) { return - 0.75*opts.symbol_size; })
-		.attr("y", function(_d) { return - opts.symbol_size; })
-		.attr("width",  (1.5 * opts.symbol_size)+'px')
-		.attr("height", (2 * opts.symbol_size)+'px')
+		.attr("x", function(_d) { return - 0.8*opts.symbol_size; })
+		.attr("y", function(_d) { return - 1.1*opts.symbol_size; })
+		.attr("width",  (1.6 * opts.symbol_size)+'px')
+		.attr("height", (2.2 * opts.symbol_size)+'px')
 		.attr("stroke", "black")
 		.attr("stroke-width", 0.7)
 		.attr("opacity", 0)
@@ -161,27 +161,27 @@ export function addWidgets(opts, node) {
 
 	// widgets
 	let fx = function(_d) {return off - (0.75*opts.symbol_size);};
-	let fy = opts.symbol_size -2;
+	let fy = opts.symbol_size;
 	let off = 0;
 	let widgets = {
 		'addchild':   {'text': '\uf063', 'title': 'add child',   'fx': fx, 'fy': fy},
-		'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': fx, 'fy': fy},
-		'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': fx, 'fy': fy},
+		'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': (-font_size/2), 'fy': fy},
+		'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': (opts.symbol_size/2) - 4, 'fy': fy},
 		'addparents': {
 			'text': '\uf062', 'title': 'add parents',
 			'fx': - 0.75*opts.symbol_size,
-			'fy': - opts.symbol_size + 11
+			'fy': - opts.symbol_size + 10
 		},
 		'delete': {
-			'text': 'X', 'title': 'delete',
-			'fx': (opts.symbol_size/2) - 1,
-			'fy': - opts.symbol_size + 12,
-			'styles': {"font-weight": "bold", "fill": "darkred", "font-family": "monospace"}
+			'text': '\uf00d', 'title': 'delete',
+			'fx': (opts.symbol_size/2) - 3,
+			'fy': - opts.symbol_size + 10,
+			'styles': {"fill": "darkred"}
 		}
 	};
 
 	if(opts.edit) {
-		widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': (-font_size/2)+2, 'fy': -opts.symbol_size + 11};
+		widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': (-font_size/2)+1, 'fy': -opts.symbol_size + 9, 'fontSize': '0.8em'};
 	}
 
 	for(let key in widgets) {
@@ -200,7 +200,7 @@ export function addWidgets(opts, node) {
 			.attr("yy", function(d){return d.y;})
 			.attr("x", widgets[key].fx)
 			.attr("y", widgets[key].fy)
-			.attr('font-size', '0.85em' )
+			.attr('font-size', widgets[key].fontSize ? widgets[key].fontSize : '0.85em')
 			.text(widgets[key].text);
 
 		if('styles' in widgets[key])
