@@ -6,8 +6,7 @@
 	<meta name="viewport" content="width=device-width,maximum-scale=2">
 
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
-
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
 	<link rel="stylesheet" href="css/pedigreejs.css" />
 
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
@@ -145,9 +144,22 @@
 
 	import * as pedigree from '/es/pedigree.js';
 	import * as pedcache from '/es/pedcache.js';
+	import * as pedigree_util from '/es/utils.js';
 	import {urlParam, isIE} from '/es/utils.js';
 	import * as canrisk_file from '/es/canrisk_file.js';
 
+	function get_svg_wid() {
+    	var w = window.innerWidth;
+		var m = 140;
+		return (w >= 768 ? (w*8/12 - m) : w- m);
+    }
+
+	function get_svg_hgt() {
+    	var w = window.innerWidth;
+    	return (w >= 768 ? 525 : 450);
+    }
+
+	let opts;
 	$( document ).ready(function() {
 		////////////////////
 		var dataset = [
@@ -162,13 +174,13 @@
 		$( "#pedigrees" ).append( $( "<div id='pedigree_history'></div>" ) );
 		$( "#pedigrees" ).append( $( "<div id='pedigree'></div>" ) );
 
-		var opts = {
+		opts = {
 				'targetDiv': 'pedigree',
 				'btn_target': 'pedigree_history',
 			//	'nodeclick': pedigree_form.nodeclick,
-				'width': ($(window).width() > 450 ? 1000 : $(window).width()- 30),
-				'height': 580,
-				'symbol_size': 30,
+				'width': get_svg_wid(),
+				'height': get_svg_hgt(),
+			//	'symbol_size': 35,
 				'edit': true,
 				'zoomSrc': ['button'],
 				'zoomIn': .05,
@@ -296,6 +308,34 @@
 		
 		$('#save-boadicea').click(function(_e) { save(false); });
 		$('#save-canrisk').click(function(_e)  { save(true); });
+	});
+
+
+	// resize pedigreejs
+	var rtime;
+	var delta = 250;
+	function resize() {
+		var now = new Date().getTime();
+		if (now - rtime < delta)
+	       	return;
+		opts.width = get_svg_wid();
+		opts.height = get_svg_hgt();
+
+		var local_dataset = pedcache.current(opts);
+		var newdataset =  pedigree_util.copy_dataset(local_dataset);
+		opts.dataset = newdataset;
+
+		pedigree.rebuild(opts);
+		rtime = new Date().getTime();
+	}
+
+	// browser resize trigger pedigreejs resize
+	var resizeTimer;
+	$(window).on('resize', function(e) {
+		clearTimeout(resizeTimer);
+		resizeTimer = setTimeout(function() {
+	        resize();
+		}, delta);
 	});
 	</script>
 </head>
