@@ -166,7 +166,7 @@ export function addWidgets(opts, node) {
 	let widgets = {
 		'addchild':   {'text': '\uf063', 'title': 'add child',   'fx': fx, 'fy': fy},
 		'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': (-font_size/2), 'fy': fy},
-		'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': (opts.symbol_size/2) - 4, 'fy': fy},
+		'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': (opts.symbol_size/2) - 5, 'fy': fy},
 		'addparents': {
 			'text': '\uf062', 'title': 'add parents',
 			'fx': - 0.75*opts.symbol_size,

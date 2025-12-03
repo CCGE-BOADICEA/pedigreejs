@@ -2893,7 +2893,7 @@ var pedigreejs = (function (exports) {
 	    'addpartner': {
 	      'text': '\uf0c1',
 	      'title': 'add partner',
-	      'fx': opts.symbol_size / 2 - 4,
+	      'fx': opts.symbol_size / 2 - 5,
 	      'fy': fy
 	    },
 	    'addparents': {
