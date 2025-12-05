@@ -9,4 +9,6 @@
 	cursor: default;
 }
 .pe-2 { padding-right: 0.75em; }
+.me-1 { margin-right: 0.5em; }
+.btnm { margin-right: 0.75em; margin-left: 0.75em;}
 svg {overflow:hidden}

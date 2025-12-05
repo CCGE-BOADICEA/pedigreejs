@@ -1070,7 +1070,7 @@ var pedigreejs = (function (exports) {
 	    // defaults
 	    btn_target: 'pedigree_history'
 	  }, options);
-	  let btns = [{
+	  let btns1 = [{
 	    "fa": "fa-file-image",
 	    "title": "download PNG image"
 	  }, {
@@ -1083,28 +1083,34 @@ var pedigreejs = (function (exports) {
 	    "fa": "fa-refresh",
 	    "title": "reset"
 	  }];
-	  btns.push({
+	  let btns2 = [{
 	    "fa": "fa-crosshairs",
 	    "title": "scale-to-fit"
-	  });
+	  }];
 	  if (opts.zoomSrc && opts.zoomSrc.indexOf('button') > -1) {
-	    if (opts.zoomOut !== 1) btns.push({
+	    if (opts.zoomOut !== 1) btns2.push({
 	      "fa": "fa-minus-circle",
 	      "title": "zoom-out"
 	    });
-	    if (opts.zoomIn !== 1) btns.push({
+	    if (opts.zoomIn !== 1) btns2.push({
 	      "fa": "fa-plus-circle",
 	      "title": "zoom-in"
 	    });
 	  }
-	  btns.push({
+	  btns2.push({
 	    "fa": "fa-arrows-alt",
 	    "title": "fullscreen"
 	  });
+	  let btns = [btns1, btns2];
 	  let lis = "";
 	  for (let i = 0; i < btns.length; i++) {
-	    lis += '<span>';
-	    lis += '<i class="fa fa-lg ' + btns[i].fa + ' pe-2" aria-hidden="true" title="' + btns[i].title + '"' + (btns[i].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') + '></i>';
+	    let b = btns[i];
+	    lis += '<span class="btnm">';
+	    for (let j = 0; j < b.length; j++) {
+	      lis += '<span>';
+	      lis += '<i class="fa fa-lg ' + b[j].fa + ' me-1" aria-hidden="true" title="' + b[j].title + '"' + (b[j].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') + '></i>';
+	      lis += '</span>';
+	    }
 	    lis += '</span>';
 	  }
 	  $("#" + opts.btn_target).append(lis);
