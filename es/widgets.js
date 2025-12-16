@@ -205,9 +205,6 @@ export function addWidgets(opts, node) {
 					// Do not create partners for unknown sex people
 					else if (d.data.sex == 'U')
 						return false;
-					// Do not create partner of someone with no family link
-					else if (d.data.top_level !== true && (d.data.noparents === true || mother === undefined || father === undefined))
-						return false;
 				}
 				else if (key === 'addparents'){
 					// Do not create parents for people already having parents or being top_level
