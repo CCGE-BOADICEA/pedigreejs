@@ -187,7 +187,6 @@ export function addWidgets(opts, node) {
 	for(let key in widgets) {
 		let widget = node.filter(function (d) {
 				let mother = opts.dataset.find(item => item.name === (typeof d.data.mother === 'string' || d.data.mother === undefined? d.data.mother: d.data.mother.name));
-				let father = opts.dataset.find(item => item.name === (typeof d.data.father === 'string' || d.data.father === undefined? d.data.father: d.data.father.name));
 				if (d.data.hidden && !opts.DEBUG)
 					return false;
 				if (key == 'addchild'){
