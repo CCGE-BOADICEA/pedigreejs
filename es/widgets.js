@@ -189,7 +189,7 @@ export function addWidgets(opts, node) {
 				let mother = opts.dataset.find(item => item.name === (typeof d.data.mother === 'string' || d.data.mother === undefined? d.data.mother: d.data.mother.name));
 				if (d.data.hidden && !opts.DEBUG)
 					return false;
-				if (key == 'addchild'){
+				if (key === 'addchild'){
 					// Do not create child for single parent
 					if (d.data.parent_node === undefined)
 						return false;
@@ -202,7 +202,7 @@ export function addWidgets(opts, node) {
 					if (d.data.parent_node !== undefined && d.data.parent_node.length > 1)
 						return false;
 					// Do not create partners for unknown sex people
-					else if (d.data.sex == 'U')
+					else if (d.data.sex === 'U')
 						return false;
 				}
 				else if (key === 'addparents'){
@@ -210,7 +210,7 @@ export function addWidgets(opts, node) {
 					if (d.data.noparents === undefined && d.data.top_level === undefined)
 						return false;
 				}
-				else if (key == 'addsibling')
+				else if (key === 'addsibling')
 				{
 					// Do not create sibling for child without declared mother nor parents
 					if (mother === undefined || d.data.noparents)
@@ -312,7 +312,7 @@ export function addWidgets(opts, node) {
 		last_mouseover = d;
 		if(dragging) {
 			if(dragging.data.name !== last_mouseover.data.name &&
-			   dragging.data.sex !== last_mouseover.data.sex && last_mouseover.data.sex != "U" && dragging.data.sex != "U") {
+			   dragging.data.sex !== last_mouseover.data.sex && last_mouseover.data.sex !== "U" && dragging.data.sex !== "U") {
 				d3.select(this).select('rect').attr("opacity", 0.2);
 			}
 			return;
@@ -375,7 +375,7 @@ function drag_handle(opts) {
 	}
 
 	function dragstop(_d) {
-		if ((dragging && dragging.data && dragging.data.sex == 'U') || (last_mouseover && last_mouseover.data && last_mouseover.data.sex == "U"))
+		if ((dragging && dragging.data && dragging.data.sex === 'U') || (last_mouseover && last_mouseover.data && last_mouseover.data.sex === "U"))
 			utils.messages("Warning", "Unable to create partner from/to someone with unknown sex");
 		else if(last_mouseover &&
 		   dragging.data.name !== last_mouseover.data.name &&

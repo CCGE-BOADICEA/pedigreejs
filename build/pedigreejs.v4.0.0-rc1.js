@@ -2730,7 +2730,7 @@ var pedigreejs = (function (exports) {
 
 	  // record HOXB13 genetic test
 	  let hoxb13_result = $('#person_details select[name="hoxb13_gene_test_result"]').val();
-	  if (hoxb13_result !== undefined && hoxb13_result !== '-') {
+	  if (hoxb13_result !== undefined && hoxb13_result !== '-' && hoxb13_result !== '0') {
 	    person["hoxb13_gene_test"] = {
 	      'type': 'T',
 	      'result': hoxb13_result
@@ -2929,7 +2929,26 @@ var pedigreejs = (function (exports) {
 	  }
 	  for (let key in widgets) {
 	    let widget = node.filter(function (d) {
-	      return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') && !(d.data.parent_node === undefined && key === 'addchild') && !(d.data.noparents === undefined && d.data.top_level === undefined && key === 'addparents');
+	      let mother = opts.dataset.find(item => item.name === (typeof d.data.mother === 'string' || d.data.mother === undefined ? d.data.mother : d.data.mother.name));
+	      if (d.data.hidden && !opts.DEBUG) return false;
+	      if (key === 'addchild') {
+	        // Do not create child for single parent
+	        if (d.data.parent_node === undefined) return false;
+	        // Do not create child from a parent having several partners because of the ambiguity
+	        else if (d.data.parent_node.length > 1) return false;
+	      } else if (key === 'addpartner') {
+	        // Do not create partner if already has several partners
+	        if (d.data.parent_node !== undefined && d.data.parent_node.length > 1) return false;
+	        // Do not create partners for unknown sex people
+	        else if (d.data.sex === 'U') return false;
+	      } else if (key === 'addparents') {
+	        // Do not create parents for people already having parents or being top_level
+	        if (d.data.noparents === undefined && d.data.top_level === undefined) return false;
+	      } else if (key === 'addsibling') {
+	        // Do not create sibling for child without declared mother nor parents
+	        if (mother === undefined || d.data.noparents) return false;
+	      }
+	      return true;
 	    }).append("text").attr("class", key).attr("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
 	      return d.x;
 	    }).attr("yy", function (d) {
@@ -3010,7 +3029,7 @@ var pedigreejs = (function (exports) {
 	    e.stopPropagation();
 	    last_mouseover = d;
 	    if (dragging) {
-	      if (dragging.data.name !== last_mouseover.data.name && dragging.data.sex !== last_mouseover.data.sex) {
+	      if (dragging.data.name !== last_mouseover.data.name && dragging.data.sex !== last_mouseover.data.sex && last_mouseover.data.sex !== "U" && dragging.data.sex !== "U") {
 	        d3.select(this).select('rect').attr("opacity", 0.2);
 	      }
 	      return;
@@ -3053,7 +3072,7 @@ var pedigreejs = (function (exports) {
 	    d3.selectAll('.line_drag_selection').attr("stroke", "darkred");
 	  }
 	  function dragstop(_d) {
-	    if (last_mouseover && dragging.data.name !== last_mouseover.data.name && dragging.data.sex !== last_mouseover.data.sex) {
+	    if (dragging && dragging.data && dragging.data.sex === 'U' || last_mouseover && last_mouseover.data && last_mouseover.data.sex === "U") messages("Warning", "Unable to create partner from/to someone with unknown sex");else if (last_mouseover && dragging.data.name !== last_mouseover.data.name && dragging.data.sex !== last_mouseover.data.sex) {
 	      // make partners
 	      let child = {
 	        "name": makeid(4),
@@ -3112,7 +3131,7 @@ var pedigreejs = (function (exports) {
 	  const hasPartner = d.data.parent_node && d.data.sex !== 'U';
 	  const disableInp = hasPartner ? "disabled" : "";
 	  const label = '<label class="radio-inline"><input type="radio" name="sex" ';
-	  table += '<tr><td colspan="2" id="id_sex">' + label + 'value="M" ' + (d.data.sex === 'M' ? "checked " : " ") + disableInp + '>Male</label>' + label + 'value="F" ' + (d.data.sex === 'F' ? "checked " : " ") + disableInp + '>Female</label>' + label + 'value="U" ' + disableInp + '>Unknown</label>' + '</td></tr>';
+	  table += '<tr><td colspan="2" id="id_sex">' + label + 'value="M" ' + (d.data.sex === 'M' ? "checked " : " ") + disableInp + '>Male</label>' + label + 'value="F" ' + (d.data.sex === 'F' ? "checked " : " ") + disableInp + '>Female</label>' + label + 'value="U" ' + (d.data.sex === 'U' ? "checked " : " ") + disableInp + '>Unknown</label>' + '</td></tr>';
 
 	  // alive status = 0; dead status = 1
 	  table += '<tr><td colspan="2" id="id_status">' + '<label class="checkbox-inline"><input type="radio" name="status" value="0" ' + (parseInt(d.data.status) === 0 ? "checked" : "") + '>&thinsp;Alive</label>' + '<label class="checkbox-inline"><input type="radio" name="status" value="1" ' + (parseInt(d.data.status) === 1 ? "checked" : "") + '>&thinsp;Deceased</label>' + '</td></tr>';
@@ -3320,7 +3339,7 @@ var pedigreejs = (function (exports) {
 	  let root = roots[opts.targetDiv];
 	  let flat_tree = flatten(root);
 	  let tree_node = getNodeByName(flat_tree, name);
-	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
+	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F' ^ (tree_node.data.parent_node && tree_node.data.parent_node.length > 0));
 	  partner.noparents = true;
 	  let child = {
 	    "name": makeid(4),

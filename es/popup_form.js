@@ -244,7 +244,7 @@ export function save(opts) {
 
 	// record HOXB13 genetic test
 	let hoxb13_result = $('#person_details select[name="hoxb13_gene_test_result"]').val();
-	if(hoxb13_result !== undefined && hoxb13_result !== '-') {
+	if(hoxb13_result !== undefined && hoxb13_result !== '-' && hoxb13_result !== '0') {
 		person["hoxb13_gene_test"] = {'type': 'T', 'result': hoxb13_result};	// assume direct test
 	} else {
 		delete person["hoxb13_gene_test"];
