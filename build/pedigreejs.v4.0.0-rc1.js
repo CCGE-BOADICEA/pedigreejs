@@ -2730,7 +2730,6 @@ var pedigreejs = (function (exports) {
 
 	  // record HOXB13 genetic test
 	  let hoxb13_result = $('#person_details select[name="hoxb13_gene_test_result"]').val();
-	  console.log("hoxb13_result", hoxb13_result);
 	  if (hoxb13_result !== undefined && hoxb13_result !== '-' && hoxb13_result !== '0') {
 	    person["hoxb13_gene_test"] = {
 	      'type': 'T',
