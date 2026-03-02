@@ -5,6 +5,7 @@
 **/
 
 import {prefixInObj} from './utils.js';
+import $ from 'jquery';
 
 export function addLabels(opts, node) {
 	// names of individuals

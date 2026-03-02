@@ -5,6 +5,7 @@
 **/
 
 import * as pedigree_util from './utils.js';
+import $ from 'jquery';
 
 // cancers, genetic & pathology tests
 export let cancers = {

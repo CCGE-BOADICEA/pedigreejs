@@ -9,6 +9,8 @@ import * as utils from './utils.js';
 import {save} from './popup_form.js';
 import {current as pedcache_current} from './pedcache.js';
 import {getUniqueTwinID, setMzTwin, checkTwins} from './twins.js';
+import $ from 'jquery';
+import * as d3 from 'd3';
 
 
 let dragging;

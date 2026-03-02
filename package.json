@@ -1,57 +1,63 @@
 {
-	"name": "pedigreejs",
-	"version": "v4.0.0-rc1",
-	"description": "pedigreejs is a javascript module for graphically building pedigree data in the web-browser.",
-	"browser": "es/pedigree.js",
-	"files": [
-		"es/*.js"
-	],
-	"directories": {
-		"doc": "docs"
-	},
-	"scripts": {
-		"build": "rollup -c rollup.config.js --bundleConfigAsCjs",
-		"build-es": "rollup -c rollup.config.es.js --bundleConfigAsCjs",
-		"server": "python -m http.server 8001",
-		"browserlist": "npx browserslist@latest --update-db",
-		"test": "npx jasmine-browser-runner serve",
-		"check-updates": "npm-check-updates",
-		"update": "ncu -u"
-	},
-	"babel": {
-		"presets": [
-			"@babel/env"
-		]
-	},
-	"browserslist": [
-		"defaults"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+ssh://git@github.com/CCGE-BOADICEA/pedigreejs.git"
-	},
-	"author": "",
-	"license": "GPL-3.0",
-	"bugs": {
-		"url": "https://github.com/CCGE-BOADICEA/pedigreejs/issues"
-	},
-	"homepage": "https://ccge-boadicea.github.io/pedigreejs/",
-	"devDependencies": {
-		"@babel/core": "^7.26.10",
-		"@babel/eslint-parser": "^7.26.10",
-		"@babel/preset-env": "^7.26.9",
-		"@rollup/plugin-babel": "^6.0.4",
-		"@rollup/plugin-terser": "^0.4.4",
-		"jasmine-browser-runner": "^3.0.0",
-		"jasmine-core": "^5.6.0",
-		"npm-check-updates": "^17.1.15",
-		"rollup": "^4.36.0",
-		"rollup-plugin-eslint": "^7.0.0",
-		"rollup-plugin-postcss": "^4.0.2",
-		"rollup-plugin-sourcemaps": "^0.6.3"
-	},
-	"dependencies": {
-		"@rollup/pluginutils": "^5.1.4",
-		"postcss": "^8.5.3"
-	}
+  "name": "pedigreejs",
+  "version": "5.0.0",
+  "description": "A JavaScript module for building and visualizing pedigree data in the browser.",
+  "license": "GPL-3.0",
+  "author": "CCGE-BOADICEA",
+  "homepage": "https://ccge-boadicea.github.io/pedigreejs/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CCGE-BOADICEA/pedigreejs.git"
+  },
+  "exports": {
+    ".": {
+      "import": "./build/pedigreejs.es.js",
+      "require": "./build/pedigreejs.cjs.js"
+    }
+  },
+  "files": [
+    "build/"
+  ],
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "build:min": "rollup -c --environment MIN:true",
+    "build:es": "rollup -c --environment FORMAT:es,MIN:true",
+    "dev": "python -m http.server 8001",
+    "test": "jasmine-browser-runner serve",
+    "check-updates": "ncu",
+    "update": "ncu -u",
+    "browserslist:update": "npx browserslist@latest --update-db"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "modules": false
+        }
+      ]
+    ]
+  },
+  "browserslist": [
+    "defaults"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/eslint-parser": "^7.28.6",
+    "@babel/preset-env": "^7.29.0",
+    "@rollup/plugin-babel": "^6.1.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "jasmine-browser-runner": "^4.0.0",
+    "jasmine-core": "^6.1.0",
+    "npm-check-updates": "^19.6.2",
+    "postcss": "^8.5.6",
+    "rollup": "^4.59.0",
+    "rollup-plugin-eslint": "^7.0.0",
+    "rollup-plugin-postcss": "^4.0.2"
+  }
 }

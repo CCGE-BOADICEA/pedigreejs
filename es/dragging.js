@@ -1,5 +1,7 @@
 import  * as utils from './utils.js';
 import {current as pedcache_current} from './pedcache.js';
+import $ from 'jquery';
+import * as d3 from 'd3';
 
 
 // initialise node dragging - SHIFT + DRAG
