@@ -13,6 +13,8 @@ import {addWidgets} from './widgets.js';
 import {init_zoom} from './zoom.js';
 import {addLabels} from './labels.js';
 import {init_dragging} from './dragging.js';
+import $ from 'jquery';
+import * as d3 from 'd3';
 
 
 export function build(options) {

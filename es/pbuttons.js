@@ -8,6 +8,7 @@
 import * as pedcache from './pedcache.js';
 import {btn_zoom, scale_to_fit} from './zoom.js';
 import {copy_dataset, getProbandIndex, is_fullscreen, messages} from './utils.js';
+import $ from 'jquery';
 
 export function addButtons(options) {
 	let opts = $.extend({

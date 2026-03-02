@@ -6,6 +6,7 @@
 
 // Pedigree Tree Utils
 import * as pedcache from './pedcache.js';
+import $ from 'jquery';
 
 
 export let roots = {};

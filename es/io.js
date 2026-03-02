@@ -9,6 +9,8 @@ import * as utils from './utils.js';
 import * as pedcache from './pedcache.js';
 import {readCanRisk, cancers, genetic_test1, pathology_tests} from './canrisk_file.js';
 import {get_bounds} from './zoom.js';
+import $ from 'jquery';
+import * as d3 from 'd3';
 
 
 export function addIO(opts) {

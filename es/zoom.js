@@ -5,6 +5,8 @@
 **/
 
 import {getposition, setposition} from './pedcache.js';
+import $ from 'jquery';
+import * as d3 from 'd3';
 
 let zm;
 
