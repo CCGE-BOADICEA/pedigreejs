@@ -117,7 +117,7 @@ export function nodeclick(node) {
 
 	try {
 		$('#person_details').find('form').valid();
-	} catch(err) {
+	} catch(_err) {
 		console.warn('valid() not found');
 	}
 }
@@ -253,7 +253,7 @@ export function save(opts) {
 
 	try {
 		$('#person_details').find('form').valid();
-	} catch(err) {
+	} catch(_err) {
 		console.warn('valid() not found');
 	}
 

@@ -189,7 +189,7 @@ export function messages(title, msg, onConfirm, opts, dataset) {
 				}]
 			});
 		}
-	} catch(err) {
+	} catch(_err) {
 		showDialog(title, msg, onConfirm, opts, dataset);
 	}
 }

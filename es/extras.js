@@ -39,7 +39,7 @@ export function node_attr(opts, name, keys, value){
 				try {
 				   if(JSON.stringify(node[k]) === JSON.stringify(value))
 					   return;
-				} catch(e){
+				} catch(_e){
 					// continue regardless of error
 				}
 			}

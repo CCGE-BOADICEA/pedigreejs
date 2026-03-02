@@ -22,7 +22,7 @@ function has_browser_storage(opts) {
 		localStorage.setItem(mod, mod);
 		localStorage.removeItem(mod);
 		return true;
-	} catch(e) {
+	} catch(_e) {
 		return false;
 	}
 }

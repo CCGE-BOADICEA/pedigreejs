@@ -66,7 +66,7 @@ function copyStylesInline(destinationNode, sourceNode) {
 				let mySt = style[st];
 				if(mySt.indexOf("text-") > -1 || mySt.indexOf("font-") > -1) childStyle.setProperty(mySt, style.getPropertyValue(mySt));
 			}
-		} catch(err) { continue; }
+		} catch(_err) { continue; }
    }
 }
 
@@ -336,7 +336,7 @@ export function load_data(d, opts) {
 					}
 				}
 				opts.dataset = (to_process ? process_ped(ped) : ped);
-			} catch(err) {
+			} catch(_err) {
 				opts.dataset = readLinkage(d);
 			}
 		}
@@ -360,7 +360,7 @@ export function load_data(d, opts) {
 			acc_FamHist_ticked();				// eslint-disable-line no-undef
 			acc_FamHist_Leave();				// eslint-disable-line no-undef
 			RESULT.FLAG_FAMILY_MODAL = true;	// eslint-disable-line no-undef
-		} catch(err3) {
+		} catch(_err3) {
 			// ignore error
 		}
 	} catch(err2) {
