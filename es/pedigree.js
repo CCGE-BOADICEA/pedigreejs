@@ -548,7 +548,7 @@ export function rebuild(opts) {
 
 	try {
 		templates.update(opts);		// eslint-disable-line no-undef
-	} catch(e) {
+	} catch(_e) {
 		// templates not declared
 	}
 }

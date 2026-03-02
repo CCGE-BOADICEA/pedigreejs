@@ -1,7 +1,6 @@
 // rollup.config.cjs
 const { babel } = require('@rollup/plugin-babel');
 const terser = require('@rollup/plugin-terser');
-const { eslint } = require('rollup-plugin-eslint');
 const postcss = require('rollup-plugin-postcss');
 const nodeResolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
@@ -60,9 +59,6 @@ module.exports = {
   plugins: [
     nodeResolve({ browser: true }),
     commonjs(),
-
-    ...(format === 'iife' && !isMin ? [eslint({ include: 'es/**' })] : []),
-
     babel({ babelHelpers: 'bundled', sourceMap: true }),
     postcss({ extract: true, minimize: true }),
     ...(isMin ? [terser()] : [])

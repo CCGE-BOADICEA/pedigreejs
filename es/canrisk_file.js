@@ -41,7 +41,7 @@ export function get_meta() {
 		if(prs.prostate_cancer_prs && prs.prostate_cancer_prs.alpha !== 0 && prs.prostate_cancer_prs.zscore !== 0) {
 			meta += "\n##PRS_PC=alpha="+prs.prostate_cancer_prs.alpha+",zscore="+prs.prostate_cancer_prs.zscore;
 		}
-	} catch(err) { console.warn("PRS", prs); }
+	} catch(_err) { console.warn("PRS", prs); }
 	return meta;
 }
 
