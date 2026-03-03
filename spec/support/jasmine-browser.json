@@ -4,7 +4,7 @@
     "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js",
     "https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.js",
     "https://cdn.jsdelivr.net/npm/jquery-ui-dist@1.12.1/jquery-ui.min.js",
-    "**/pedigreejs*.js"
+    "**/pedigreejs.v5.0.0.min.js"
   ],
   "specDir": "spec/javascripts",
   "specFiles": [
