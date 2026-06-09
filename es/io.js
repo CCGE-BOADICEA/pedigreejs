@@ -96,9 +96,9 @@ function get_svg_as_data_url(svg) {
 	let svgCopy = svg.get(0).cloneNode(true);
 	// remove unused elements
 	d3.select(svgCopy).selectAll("text").filter(function(){
-		 return d3.select(this).text().length === 0 || 
-		        d3.select(this), d3.select(this).attr('font-family') === "FontAwesome"
-	 }).remove();
+		return  d3.select(this).text().length === 0 || 
+				d3.select(this), d3.select(this).attr('font-family') === "FontAwesome"
+	}).remove();
 	copyStylesInline(svgCopy, svg.get(0));
 	let svgStr = (new XMLSerializer()).serializeToString(svgCopy);
 	return 'data:image/svg+xml;base64,'+ window.btoa(unescape(encodeURIComponent(svgStr))); // convert SVG string to data URL
@@ -185,8 +185,8 @@ export function copy_svg(opts) {
 
 	// remove unused elements
 	d3obj.selectAll("text")
-	  .filter(function(){
-		return d3.select(this).text().length === 0 || d3.select(this), d3.select(this).attr('font-family') === "FontAwesome"
+		.filter(function(){
+			return d3.select(this).text().length === 0 || d3.select(this), d3.select(this).attr('font-family') === "FontAwesome"
 	}).remove();
 	// remove inline styles
 	d3obj.selectAll('[style]').attr("style", null);
@@ -273,19 +273,19 @@ export function save_file(opts, content, filename, type){
 	if(!filename) filename = "ped.txt";
 	if(!type) type = "text/plain";
 
-   let file = new Blob([content], {type: type});
-   if (window.navigator.msSaveOrOpenBlob) 	// IE10+
-	   window.navigator.msSaveOrOpenBlob(file, filename);
-   else { 									// other browsers
-	   let a = document.createElement("a");
-	   let url = URL.createObjectURL(file);
-	   a.href = url;
-	   a.download = filename;
-	   document.body.appendChild(a);
-	   a.click();
-	   setTimeout(function() {
-		   document.body.removeChild(a);
-		   window.URL.revokeObjectURL(url);
+	let file = new Blob([content], {type: type});
+	if (window.navigator.msSaveOrOpenBlob) 	// IE10+
+		window.navigator.msSaveOrOpenBlob(file, filename);
+	else { 									// other browsers
+		let a = document.createElement("a");
+		let url = URL.createObjectURL(file);
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		setTimeout(function() {
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
 		}, 0);
 	}
 }
@@ -300,8 +300,8 @@ function canrisk_validation(opts) {
 		if(!p.hidden && p.sex === 'M' && !utils.isProband(p)) {
 			if(p[cancers['breast_cancer2']]) {
 				let msg = 'Male family member ('+p.display_name+') with contralateral breast cancer found. '+
-						  'Please note that as the risk models do not take this into account the second '+
-						  'breast cancer is ignored.'
+							'Please note that as the risk models do not take this into account the second '+
+							'breast cancer is ignored.'
 				console.error(msg);
 				delete p[cancers['breast_cancer2']];
 				utils.messages("Warning", msg);
@@ -401,11 +401,11 @@ export function readLinkage(boadicea_lines) {
 	let ped = [];
 	let famid;
 	for(let i = 0;i < lines.length;i++){
-	   let attr = $.map(lines[i].trim().split(/\s+/), function(val, _i){return val.trim();});
-	   if(attr.length < 5)
-		   throw new Error('unknown format');
-	   let sex = (attr[4] === '1' ? 'M' : (attr[4] === '2' ? 'F' : 'U'));
-	   let indi = {
+		let attr = $.map(lines[i].trim().split(/\s+/), function(val, _i){return val.trim();});
+		if(attr.length < 5)
+			throw new Error('unknown format');
+		let sex = (attr[4] === '1' ? 'M' : (attr[4] === '2' ? 'F' : 'U'));
+		let indi = {
 			'famid': attr[0],
 			'display_name': attr[1],
 			'name':	attr[1],
@@ -449,7 +449,7 @@ export function readBoadiceaV4(boadicea_lines, version) {
 	let ped = [];
 	// assumes two line header
 	for(let i = 2;i < lines.length;i++){
-	   let attr = $.map(lines[i].trim().split(/\s+/), function(val, _i){return val.trim();});
+		let attr = $.map(lines[i].trim().split(/\s+/), function(val, _i){return val.trim();});
 		if(attr.length > 1) {
 			let indi = {
 				'famid': attr[0],

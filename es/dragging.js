@@ -8,7 +8,7 @@ import * as d3 from 'd3';
 export function init_dragging(opts, node) {
 	// add drag
 	node.filter(function (d) {return !d.data.hidden;})
-	    .call(d3.drag()
+		.call(d3.drag()
 				.filter(function filter(event) {
 					return !event.ctrlKey && !event.button && event.shiftKey; 	// shift and drag
 				})

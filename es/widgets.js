@@ -90,47 +90,47 @@ export function addWidgets(opts, node) {
 	let add_person = {};
 	// click the person type selection
 	d3.selectAll(".persontype")
-	  .on("click", function () {
-		let newdataset = utils.copy_dataset(pedcache_current(opts));
-		let mztwin = d3.select(this).classed("mztwin");
-		let dztwin = d3.select(this).classed("dztwin");
-		let twin_type;
-		let sex;
-		if(mztwin || dztwin) {
-			sex = add_person.node.datum().data.sex;
-			twin_type = (mztwin ? "mztwin" : "dztwin");
-		} else {
-			sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
-		}
+		.on("click", function () {
+			let newdataset = utils.copy_dataset(pedcache_current(opts));
+			let mztwin = d3.select(this).classed("mztwin");
+			let dztwin = d3.select(this).classed("dztwin");
+			let twin_type;
+			let sex;
+			if(mztwin || dztwin) {
+				sex = add_person.node.datum().data.sex;
+				twin_type = (mztwin ? "mztwin" : "dztwin");
+			} else {
+				sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
+			}
 
-		if(add_person.type === 'addsibling')
-			addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);
-		else if(add_person.type === 'addchild')
-			addchild(newdataset, add_person.node.datum().data, (twin_type ? 'U' : sex), (twin_type ? 2 : 1), twin_type);
-		else
-			return;
-		opts.dataset = newdataset;
-		$(document).trigger('rebuild', [opts]);
-		d3.selectAll('.popup_selection').attr("opacity", 0);
-		add_person = {};
-	  })
-	  .on("mouseover", function() {
-		  if(add_person.node)
-			  add_person.node.select('rect').attr("opacity", 0.2);
-		  d3.selectAll('.popup_selection').attr("opacity", 1);
-		  // add tooltips to font awesome widgets
-		  if(add_person.type === 'addsibling'){
-			 if(d3.select(this).classed("fa-square"))
-				  square_title.text("add brother");
-			  else
-				  circle_title.text("add sister");
-		  } else if(add_person.type === 'addchild'){
-			  if(d3.select(this).classed("fa-square"))
-				  square_title.text("add son");
-			  else
-				  circle_title.text("add daughter");
-		  }
-	  });
+			if(add_person.type === 'addsibling')
+				addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);
+			else if(add_person.type === 'addchild')
+				addchild(newdataset, add_person.node.datum().data, (twin_type ? 'U' : sex), (twin_type ? 2 : 1), twin_type);
+			else
+				return;
+			opts.dataset = newdataset;
+			$(document).trigger('rebuild', [opts]);
+			d3.selectAll('.popup_selection').attr("opacity", 0);
+			add_person = {};
+		})
+		.on("mouseover", function() {
+			if(add_person.node)
+				add_person.node.select('rect').attr("opacity", 0.2);
+			d3.selectAll('.popup_selection').attr("opacity", 1);
+			// add tooltips to font awesome widgets
+			if(add_person.type === 'addsibling'){
+				if(d3.select(this).classed("fa-square"))
+					square_title.text("add brother");
+				else
+					circle_title.text("add sister");
+			} else if(add_person.type === 'addchild'){
+				if(d3.select(this).classed("fa-square"))
+					square_title.text("add son");
+				else
+					circle_title.text("add daughter");
+			}
+		});
 
 	// handle mouse out of popup selection
 	d3.selectAll(".popup_selection").on("mouseout", function () {
@@ -146,7 +146,7 @@ export function addWidgets(opts, node) {
 
 	// rectangle used to highlight on mouse over
 	node.filter(function (d) {
-		    return d.data.hidden && !opts.DEBUG ? false : true;
+			return d.data.hidden && !opts.DEBUG ? false : true;
 		})
 		.append("rect")
 		.attr("class", 'indi_rect')
@@ -243,23 +243,23 @@ export function addWidgets(opts, node) {
 
 	// add sibling or child
 	d3.selectAll(".addsibling, .addchild")
-	  .on("mouseover", function () {
-		  let type = d3.select(this).attr('class');
-		  d3.selectAll('.popup_selection').attr("opacity", 1);
-		  add_person = {'node': d3.select(this.parentNode), 'type': type};
+		.on("mouseover", function () {
+			let type = d3.select(this).attr('class');
+			d3.selectAll('.popup_selection').attr("opacity", 1);
+			add_person = {'node': d3.select(this.parentNode), 'type': type};
 
-		  //let translate = getTranslation(d3.select('.diagram').attr("transform"));
-		  let x = parseInt(d3.select(this).attr("xx")) + parseInt(d3.select(this).attr("x"));
-		  let y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y"));
-		  d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
-		  d3.selectAll('.popup_selection_rotate45')
-			.attr("transform", "translate("+(x+(3*font_size))+","+(y+(font_size*1.2))+") rotate(45)");
-	  });
+			//let translate = getTranslation(d3.select('.diagram').attr("transform"));
+			let x = parseInt(d3.select(this).attr("xx")) + parseInt(d3.select(this).attr("x"));
+			let y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y"));
+			d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
+			d3.selectAll('.popup_selection_rotate45')
+				.attr("transform", "translate("+(x+(3*font_size))+","+(y+(font_size*1.2))+") rotate(45)");
+		});
 
 	// handle widget clicks
 	d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
-	  .on("click", function (e) {
-		  e.stopPropagation();
+		.on("click", function (e) {
+			e.stopPropagation();
 		let opt = d3.select(this).attr('class');
 		let d = d3.select(this.parentNode).datum();
 		if(opts.DEBUG) {
@@ -314,8 +314,8 @@ export function addWidgets(opts, node) {
 		e.stopPropagation();
 		last_mouseover = d;
 		if(dragging) {
-			if(dragging.data.name !== last_mouseover.data.name &&
-			   dragging.data.sex !== last_mouseover.data.sex && last_mouseover.data.sex !== "U" && dragging.data.sex !== "U") {
+			if( dragging.data.name !== last_mouseover.data.name &&
+				dragging.data.sex !== last_mouseover.data.sex && last_mouseover.data.sex !== "U" && dragging.data.sex !== "U") {
 				d3.select(this).select('rect').attr("opacity", 0.2);
 			}
 			return;
@@ -381,12 +381,12 @@ function drag_handle(opts) {
 		if ((dragging && dragging.data && dragging.data.sex === 'U') || (last_mouseover && last_mouseover.data && last_mouseover.data.sex === "U"))
 			utils.messages("Warning", "Unable to create partner from/to someone with unknown sex");
 		else if(last_mouseover &&
-		   dragging.data.name !== last_mouseover.data.name &&
-		   dragging.data.sex  !== last_mouseover.data.sex) {
+				dragging.data.name !== last_mouseover.data.name &&
+				dragging.data.sex  !== last_mouseover.data.sex) {
 			// make partners
 			let child = {"name": utils.makeid(4), "sex": 'U',
-				     "mother": (dragging.data.sex === 'F' ? dragging.data.name : last_mouseover.data.name),
-			         "father": (dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name)};
+						"mother": (dragging.data.sex === 'F' ? dragging.data.name : last_mouseover.data.name),
+						"father": (dragging.data.sex === 'F' ? last_mouseover.data.name : dragging.data.name)};
 			let newdataset = utils.copy_dataset(opts.dataset);
 			opts.dataset = newdataset;
 
@@ -432,9 +432,9 @@ function capitaliseFirstLetter(string) {
 // if opt.edit is set true (rather than given a function) this is called to edit node attributes
 function openEditDialog(opts, d) {
 	$('#node_properties').dialog({
-	    autoOpen: false,
-	    title: d.data.display_name,
-	    width: ($(window).width() > 400 ? 450 : $(window).width()- 30)
+		autoOpen: false,
+		title: d.data.display_name,
+		width: ($(window).width() > 400 ? 450 : $(window).width()- 30)
 	});
 
 	let table = "<table id='person_details' class='table'>";
@@ -455,16 +455,16 @@ function openEditDialog(opts, d) {
 	const disableInp = (hasPartner ? "disabled" : "")
 	const label = '<label class="radio-inline"><input type="radio" name="sex" ';
 	table += '<tr><td colspan="2" id="id_sex">' +
-			 label+'value="M" '+(d.data.sex === 'M' ? "checked " : " ")+disableInp+'>Male</label>' +
-			 label+'value="F" '+(d.data.sex === 'F' ? "checked " : " ")+disableInp+'>Female</label>' +
-			 label+'value="U" '+(d.data.sex === 'U' ? "checked " : " ")+disableInp+'>Unknown</label>' +
-			 '</td></tr>';
+				label+'value="M" '+(d.data.sex === 'M' ? "checked " : " ")+disableInp+'>Male</label>' +
+				label+'value="F" '+(d.data.sex === 'F' ? "checked " : " ")+disableInp+'>Female</label>' +
+				label+'value="U" '+(d.data.sex === 'U' ? "checked " : " ")+disableInp+'>Unknown</label>' +
+			'</td></tr>';
 
 	// alive status = 0; dead status = 1
 	table += '<tr><td colspan="2" id="id_status">' +
-			 '<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(parseInt(d.data.status) === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
-			 '<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(parseInt(d.data.status) === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
-			 '</td></tr>';
+				'<label class="checkbox-inline"><input type="radio" name="status" value="0" '+(parseInt(d.data.status) === 0 ? "checked" : "")+'>&thinsp;Alive</label>' +
+				'<label class="checkbox-inline"><input type="radio" name="status" value="1" '+(parseInt(d.data.status) === 1 ? "checked" : "")+'>&thinsp;Deceased</label>' +
+				'</td></tr>';
 	$("#id_status input[value='"+d.data.status+"']").prop('checked', true);
 
 	// switches
@@ -476,16 +476,16 @@ function openEditDialog(opts, d) {
 		if(iswitch === 2)
 			table += '</td></tr><tr><td colspan="2">';
 		table +=
-		 '<label class="checkbox-inline"><input type="checkbox" id="id_'+attr +
-		    '" name="'+attr+'" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;' +
-		    capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
+			'<label class="checkbox-inline"><input type="checkbox" id="id_'+attr +
+				'" name="'+attr+'" value="0" '+(d.data[attr] ? "checked" : "")+'>&thinsp;' +
+				capitaliseFirstLetter(attr.replace('_', ' '))+'</label>'
 	}
 	table += '</td></tr>';
 
 	//
-	let exclude = ["children", "name", "parent_node", "top_level", "id", "noparents",
-		           "level", "age", "sex", "status", "display_name", "mother", "father",
-		           "yob", "mztwin", "dztwin"];
+	let exclude = [ "children", "name", "parent_node", "top_level", "id", "noparents",
+					"level", "age", "sex", "status", "display_name", "mother", "father",
+					"yob", "mztwin", "dztwin"];
 	$.merge(exclude, switches);
 	table += '<tr><td colspan="2"><strong>Age of Diagnosis:</strong></td></tr>';
 	$.each(opts.diseases, function(k, v) {
@@ -553,9 +553,9 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 		twin_id = getUniqueTwinID(dataset, twin_type);
 	let newchildren = [];
 	for (let i = 0; i < nchild; i++) {
-		let child = {"name": utils.makeid(4), "sex": sex,
-					 "mother": (node.sex === 'F' ? node.name : ptr_name),
-					 "father": (node.sex === 'F' ? ptr_name : node.name)};
+		let child = {   "name": utils.makeid(4), "sex": sex,
+						"mother": (node.sex === 'F' ? node.name : ptr_name),
+						"father": (node.sex === 'F' ? ptr_name : node.name)};
 		dataset.splice(idx, 0, child);
 
 		if(twin_type)
@@ -616,8 +616,8 @@ export function addparents(opts, dataset, name) {
 		dataset.splice(0, 0, father);
 
 		for(i=0; i<dataset.length; i++){
-			if( (dataset[i].top_level || utils.getDepth(dataset, dataset[i].name) === 2) && 
-			     dataset[i].name !== mother.name && dataset[i].name !== father.name){
+			if ( (  dataset[i].top_level || utils.getDepth(dataset, dataset[i].name) === 2) && 
+					dataset[i].name !== mother.name && dataset[i].name !== father.name){
 				delete dataset[i].top_level;
 				dataset[i].noparents = true;
 				dataset[i].mother = mother.name;
@@ -705,7 +705,7 @@ export function addpartner(opts, dataset, name) {
 	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F' ^ (tree_node.data.parent_node && tree_node.data.parent_node.length >0) );
 	partner.noparents = true;
 
-	let child = {"name": utils.makeid(4), "sex": "M"};
+	let child = {"name": utils.makeid(4), "sex": "F"};
 	child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
 	child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
@@ -743,8 +743,8 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 	if(node.parent_node) {
 		for(i=0; i<node.parent_node.length; i++){
 			let parent = node.parent_node[i];
-			let ps = [utils.getNodeByName(dataset, parent.mother.name),
-					  utils.getNodeByName(dataset, parent.father.name)];
+			let ps = [  utils.getNodeByName(dataset, parent.mother.name),
+						utils.getNodeByName(dataset, parent.father.name) ];
 			// delete parents
 			for(j=0; j<ps.length; j++) {
 				if(ps[j].name === node.name || ps[j].noparents !== undefined || ps[j].top_level) {

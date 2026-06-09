@@ -12,13 +12,13 @@ import $ from 'jquery';
 export let roots = {};
 
 export function isIE() {
-	 let ua = navigator.userAgent;
-	 /* MSIE used to detect old browsers and Trident used to newer ones*/
-	 return ua.indexOf("MSIE ") > -1 || ua.indexOf("Trident/") > -1;
+	let ua = navigator.userAgent;
+	/* MSIE used to detect old browsers and Trident used to newer ones*/
+	return ua.indexOf("MSIE ") > -1 || ua.indexOf("Trident/") > -1;
 }
 
 export function isEdge() {
-	 return navigator.userAgent.match(/Edge/g);
+	return navigator.userAgent.match(/Edge/g);
 }
 
 export function create_err(err) {
@@ -56,10 +56,10 @@ export function validate_pedigree(opts){
 					let fidx = getIdxByName(opts.dataset, father);
 					if(midx === -1)
 						throw create_err('The mother (IndivID: '+mother+') of family member '+
-										 display_name+' is missing from the pedigree.');
+											display_name+' is missing from the pedigree.');
 					if(fidx === -1)
 						throw create_err('The father (IndivID: '+father+') of family member '+
-										 display_name+' is missing from the pedigree.');
+											display_name+' is missing from the pedigree.');
 					if(opts.dataset[midx].sex !== "F")
 						throw create_err("The mother of family member "+display_name+
 								" is not specified as female. All mothers in the pedigree must have sex specified as 'F'.");
@@ -414,8 +414,8 @@ export function unconnected(dataset){
 						connected.push(p.father);
 				}
 			} else if( !p.noparents &&
-					  ((p.mother && $.inArray( p.mother, connected ) !== -1) ||
-					   (p.father && $.inArray( p.father, connected ) !== -1))){
+						((p.mother && $.inArray( p.mother, connected ) !== -1) ||
+						(p.father && $.inArray( p.father, connected ) !== -1))){
 				connected.push(p.name);
 			}
 			// include any children
@@ -478,8 +478,8 @@ export function getSiblings(dataset, person, sex) {
 
 	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&
-			   (p.mother === person.mother && p.father === person.father) &&
-			   (!sex || p.sex === sex) ? p : null;
+				(p.mother === person.mother && p.father === person.father) &&
+				(!sex || p.sex === sex) ? p : null;
 	});
 }
 
@@ -488,8 +488,8 @@ export function getSiblings(dataset, person, sex) {
 export function getAllSiblings(dataset, person, sex) {
 	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && !('noparents' in p) && p.mother &&
-			   (p.mother === person.mother && p.father === person.father) &&
-			   (!sex || p.sex === sex) ? p : null;
+				(p.mother === person.mother && p.father === person.father) &&
+				(!sex || p.sex === sex) ? p : null;
 	});
 }
 
@@ -497,15 +497,15 @@ export function getAllSiblings(dataset, person, sex) {
 export function getAdoptedSiblings(dataset, person) {
 	return $.map(dataset, function(p, _i){
 		return  p.name !== person.name && 'noparents' in p &&
-			   (p.mother === person.mother && p.father === person.father) ? p : null;
+				(p.mother === person.mother && p.father === person.father) ? p : null;
 	});
 }
 
 export function getAllChildren(dataset, person, sex) {
 	return $.map(dataset, function(p, _i){
 		return !('noparents' in p) &&
-			   (p.mother === person.name || p.father === person.name) &&
-			   (!sex || p.sex === sex) ? p : null;
+				(p.mother === person.name || p.father === person.name) &&
+				(!sex || p.sex === sex) ? p : null;
 	});
 }
 
@@ -686,10 +686,10 @@ export function getNodeByName(nodes, name) {
 // given the name of a url param get the value
 export function urlParam(name){
 	let results = new RegExp('[?&]' + name + '=([^&#]*)').exec(window.location.href);
-	if (results===null)
-	   return null;
+	if(results===null)
+		return null;
 	else
-	   return results[1] || 0;
+		return results[1] || 0;
 }
 
 // get grandparents index
@@ -697,7 +697,7 @@ function get_grandparents_idx(dataset, midx, fidx) {
 	let gmidx = midx;
 	let gfidx = fidx;
 	while(  'mother' in dataset[gmidx] && 'mother' in dataset[gfidx] &&
-		  !('noparents' in dataset[gmidx]) && !('noparents' in dataset[gfidx])){
+			!('noparents' in dataset[gmidx]) && !('noparents' in dataset[gfidx])){
 		gmidx = getIdxByName(dataset, dataset[gmidx].mother);
 		gfidx = getIdxByName(dataset, dataset[gfidx].mother);
 	}
@@ -767,10 +767,10 @@ export function get_tree_dimensions(opts) {
 	}
 
 	let max_depth = Object.keys(generation).length*opts.symbol_size*3.5;
-	let tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
-					   svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
-	let tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
-					   svg_dimensions.height - opts.symbol_size : max_depth);
+	let tree_width =  ( svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
+						svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
+	let tree_height = ( svg_dimensions.height - opts.symbol_size > max_depth ?
+						svg_dimensions.height - opts.symbol_size : max_depth);
 	return {'width': tree_width, 'height': tree_height};
 }
 

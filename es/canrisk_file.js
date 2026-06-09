@@ -196,7 +196,7 @@ export function readCanRisk(boadicea_lines) {
 				let gene_test = attr[idx].split(":");
 				if(gene_test[0] !== '0') {
 					if((gene_test[0] === 'S' || gene_test[0] === 'T') && (gene_test[1] === 'P' || gene_test[1] === 'N' ||
-					    gene_test[1] === 'HOM' || gene_test[1] === 'HET'))
+						gene_test[1] === 'HOM' || gene_test[1] === 'HET'))
 						indi[gt[j] + '_gene_test'] = {'type': gene_test[0], 'result': gene_test[1]};
 					else
 						console.warn('UNRECOGNISED GENE TEST ON LINE '+ (i+1) + ": " + gene_test[0] + " " + gene_test[1]);
@@ -361,8 +361,9 @@ export function get_pedigree(dataset, famid, meta, isanon, version=3, ethnicity=
 
 		for(let j=0; j<gt.length; j++) {
 			if(gt[j]+'_gene_test' in p &&
-			   p[gt[j]+'_gene_test']['type'] !== '-' &&
-			   p[gt[j]+'_gene_test']['result'] !== '-') {
+				p[gt[j]+'_gene_test']['type'] !== '-' &&
+				p[gt[j]+'_gene_test']['result'] !== '-') 
+			{
 				msg += p[gt[j]+'_gene_test']['type'] + ':';
 				msg += p[gt[j]+'_gene_test']['result'] + '\t';
 			} else {
@@ -414,5 +415,5 @@ export function remove_risk_factor(risk_factor_name) {
 // prefix risk factor name with the app/page name
 export function store_name(risk_factor_name) {
 	return window.location.pathname.split('/').filter(function(el){ return !!el; }).pop() +
-	       '::' + risk_factor_name;
+			'::' + risk_factor_name;
 }

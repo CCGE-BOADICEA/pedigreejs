@@ -17,14 +17,14 @@ export function init_zoom(opts, svg) {
 	let yi = -opts.symbol_size*2.5;
 
 	zm = d3.zoom()
-	  .scaleExtent([opts.zoomIn, opts.zoomOut])
-	  .filter(function(e) {
+		.scaleExtent([opts.zoomIn, opts.zoomOut])
+		.filter(function(e) {
 			if(!opts.zoomSrc || opts.zoomSrc.indexOf('wheel') === -1) {
 				if(e.type && e.type === 'wheel') return false
 			}
 			// ignore dblclick & secondary mouse buttons
 			return (e.type !== 'dblclick') && !e.button})
-	  .on('zoom', function(e) { zooming(e, opts); });
+		.on('zoom', function(e) { zooming(e, opts); });
 	svg.call(zm);
 
 	// set initial position & scale
@@ -134,17 +134,17 @@ function getNodeSize(opts, g_elm, sym) {
  * Calculate width and height of text
  */
 function getTextSize(txt, font, fontSize) {
-	  let o = $('<div></div>')
-	            .text(txt)
-	            .css(
+	let o = $('<div></div>')
+				.text(txt)
+				.css(
 					{'position': 'absolute',
-					 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden',
-					 'font': font || 'Helvetica',
-					 'fontSize': fontSize || '1em'})
-	            .appendTo($('body'));
-	  let s = {w: o.width(), h:o.height()};
-	  o.remove();
-	  return s;
+					'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden',
+					'font': font || 'Helvetica',
+					'fontSize': fontSize || '1em'})
+				.appendTo($('body'));
+	let s = {w: o.width(), h:o.height()};
+	o.remove();
+	return s;
 }
 
 function get_svg_size(svg) {

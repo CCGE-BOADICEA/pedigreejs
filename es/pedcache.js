@@ -209,8 +209,8 @@ export function setposition(opts, x, y, zoom) {
 
 export function getposition(opts) {
 	if(!has_browser_storage(opts) ||
-		(localStorage.getItem(get_prefix(opts)+'_X') === null &&
-		 sessionStorage.getItem(get_prefix(opts)+'_X') === null))
+		(   localStorage.getItem(get_prefix(opts)+'_X') === null &&
+			sessionStorage.getItem(get_prefix(opts)+'_X') === null))
 		return [null, null];
 	let pos = [ parseInt(get_browser_store(opts, get_prefix(opts)+'_X')),
 				parseInt(get_browser_store(opts, get_prefix(opts)+'_Y')) ];

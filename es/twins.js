@@ -44,7 +44,7 @@ export function syncTwins(dataset, d1) {
 		let d2 = dataset[i];
 		if(d2[twin_type] && d1[twin_type] === d2[twin_type] && d2.name !== d1.name) {
 			if(twin_type === "mztwin")
-			  d2.sex = d1.sex;
+				d2.sex = d1.sex;
 			if(d1.yob)
 				d2.yob = d1.yob;
 			if(d1.age && (d1.status === 0 || !d1.status))

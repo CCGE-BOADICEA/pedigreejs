@@ -20,9 +20,9 @@ import * as d3 from 'd3';
 export function build(options) {
 	let opts = $.extend({ // defaults
 		targetDiv: 'pedigree_edit',
-		dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
-				   {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
-				   {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
+		dataset: [  {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
+					{"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
+					{"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
 		width: 600,
 		height: 400,
 		symbol_size: 35,
@@ -31,15 +31,16 @@ export function build(options) {
 		zoomOut: 1.0,
 		dragNode: true,
 		showWidgets: true,
-		diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35'},
-					{'type': 'breast_cancer2', 'colour': 'pink'},
-					{'type': 'ovarian_cancer', 'colour': '#306430'},
-					{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-					{'type': 'prostate_cancer', 'colour': '#D5494A'}],
-		labels: ['stillbirth', ['age', 'yob'], 'alleles',
-							   ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'],
-							   ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test', 'hoxb13_gene_test'],
-							   ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
+		diseases: [	{'type': 'breast_cancer', 'colour': '#F68F35', 'label': 'breast'},
+					{'type': 'breast_cancer2', 'colour': 'pink', 'label': 'breast 2'},
+					{'type': 'ovarian_cancer', 'colour': '#306430', 'label': 'ovarian'},
+					{'type': 'pancreatic_cancer', 'colour': '#4289BA', 'label': 'pancreatic'},
+					{'type': 'prostate_cancer', 'colour': '#D5494A', 'label': 'prostate'}],
+		labels: ['stillbirth',  ['age', 'yob'], 'alleles',
+								['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'],
+								['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test', 'hoxb13_gene_test'],
+								['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
+		age_suffix: 'y',
 		keep_proband_on_reset: false,
 		font_size: '.75em',
 		font_family: 'Helvetica',
@@ -70,9 +71,9 @@ export function build(options) {
 		utils.print_opts(opts);
 	let svg_dimensions = utils.get_svg_dimensions(opts);
 	let svg = d3.select("#"+opts.targetDiv)
-				 .append("svg:svg")
-				 .attr("width", svg_dimensions.width)
-				 .attr("height", svg_dimensions.height);
+				.append("svg:svg")
+				.attr("width", svg_dimensions.width)
+				.attr("height", svg_dimensions.height);
 
 	svg.append("rect")
 		.attr("width", "100%")
@@ -84,7 +85,7 @@ export function build(options) {
 		.attr("stroke-width", 1);
 
 	let ped = svg.append("g")
-			 .attr("class", "diagram");
+				.attr("class", "diagram");
 
 	let top_level = $.map(opts.dataset, function(val, _i){return 'top_level' in val && val.top_level ? val : null;});
 	let hidden_root = {
@@ -123,12 +124,12 @@ export function build(options) {
 	check_ptr_links(opts, ptrLinkNodes);   // check for crossing of partner lines
 
 	let node = ped.selectAll(".node")
-				  .data(nodes.descendants())
-				  .enter()
-				  .append("g")
-					.attr("transform", function(d, _i) {
-						return "translate(" + d.x + "," + d.y + ")";
-					});
+				.data(nodes.descendants())
+				.enter()
+				.append("g")
+				.attr("transform", function(d, _i) {
+					return "translate(" + d.x + "," + d.y + ")";
+				});
 
 	// provide a border to the node
 	node.filter(function (d) {return !d.data.hidden;})
@@ -167,19 +168,19 @@ export function build(options) {
 
 	// pie plots for disease colours
 	let pienode = node.filter(function (d) {return !(d.data.hidden && !opts.DEBUG);}).selectAll("pienode")
-	   .data(function(d) {	 		// set the disease data for the pie plot
-		   let ncancers = 0;
-		   let cancers = $.map(opts.diseases, function(_val, i){
-			   if(utils.prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
-		   });
-		   if(ncancers === 0) cancers = [1];
-		   return [$.map(cancers, function(val, _i){
-			   return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
+		.data(function(d) {	 		// set the disease data for the pie plot
+			let ncancers = 0;
+			let cancers = $.map(opts.diseases, function(_val, i){
+				if(utils.prefixInObj(opts.diseases[i].type, d.data)) {ncancers++; return 1;} else return 0;
+			});
+			if(ncancers === 0) cancers = [1];
+			return [$.map(cancers, function(val, _i){
+				return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
 						'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
 						'affected': d.data.affected,
 						'exclude': d.data.exclude};})];
-	   })
-	   .enter()
+		})
+		.enter()
 		.append("g");
 
 	pienode.selectAll("path")
@@ -242,11 +243,9 @@ export function build(options) {
 
 	// get path looping over node(s)
 	let draw_path = function(clash, dx, dy1, dy2, parent_node, cshift) {
-		let extend = function(i, l) {
-			if(i+1 < l)   // && Math.abs(clash[i] - clash[i+1]) < (opts.symbol_size*1.25)
-				return extend(++i);
-			return i;
-		};
+		let extend = function extend(i, l) {
+			return i + 1 < l ? extend(i + 1, l) : i;
+		}
 		let path = "";
 		for(let j=0; j<clash.length; j++) {
 			let k = extend(j, clash.length);
@@ -264,8 +263,7 @@ export function build(options) {
 		return path;
 	}
 
-
-	partners = ped.selectAll(".partner")
+	ped.selectAll(".partner")
 		.data(ptrLinkNodes)
 		.enter()
 			.insert("path", "g")
@@ -299,7 +297,7 @@ export function build(options) {
 					let parent_node_name = parent_nodes[0];
 					for(let ii=0; ii<parent_nodes.length; ii++) {
 						if(parent_nodes[ii].father.name === d.father.data.name &&
-						   parent_nodes[ii].mother.name === d.mother.data.name)
+							parent_nodes[ii].mother.name === d.mother.data.name)
 							parent_node_name = parent_nodes[ii].name;
 					}
 					parent_node = utils.getNodeByName(flattenNodes, parent_node_name);
@@ -312,10 +310,10 @@ export function build(options) {
 
 				let divorce_path = "";
 				if(divorced && !clash)
-					divorce_path = "M" + (x1+((x2-x1)*.66)+6) + "," + (dy1-6) +
-								   "L"+  (x1+((x2-x1)*.66)-6) + "," + (dy1+6) +
-								   "M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
-								   "L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
+					divorce_path =  "M" + (x1+((x2-x1)*.66)+6) + "," + (dy1-6) +
+									"L"+  (x1+((x2-x1)*.66)-6) + "," + (dy1+6) +
+									"M" + (x1+((x2-x1)*.66)+10) + "," + (dy1-6) +
+									"L"+  (x1+((x2-x1)*.66)-2)  + "," + (dy1+6);
 				if(consanguity) {  // consanguinous, draw double line between partners
 					dy1 = (d.mother.x < d.father.x ? d.mother.y : d.father.y);
 					dy2 = (d.mother.x < d.father.x ? d.father.y : d.mother.y);
@@ -396,11 +394,11 @@ export function build(options) {
 									"L" + (xmid + (xmid-xx)) + " " + yy;
 						}
 
-						return "M" + (d.source.x) + "," + (d.source.y ) +
-							   "V" + ymid +
-							   "H" + xmid +
-							   "L" + (d.target.x) + " " + (d.target.y-(opts.symbol_size/2)) +
-							   xhbar;
+						return  "M" + (d.source.x) + "," + (d.source.y ) +
+								"V" + ymid +
+								"H" + xmid +
+								"L" + (d.target.x) + " " + (d.target.y-(opts.symbol_size/2)) +
+								xhbar;
 					}
 				}
 
@@ -409,16 +407,16 @@ export function build(options) {
 					let pa = utils.getNodeByName(flattenNodes, d.source.data.father.name);
 
 					if(ma.depth !== pa.depth) {
-						return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
-							   "H" + (d.target.x) +
-							   "V" + (d.target.y);
+						return  "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +
+								"H" + (d.target.x) +
+								"V" + (d.target.y);
 					}
 				}
 
-				return "M" + (d.source.x) + "," + (d.source.y ) +
-					   "V" + ((d.source.y + d.target.y) / 2) +
-					   "H" + (d.target.x) +
-					   "V" + (d.target.y);
+				return  "M" + (d.source.x) + "," + (d.source.y ) +
+						"V" + ((d.source.y + d.target.y) / 2) +
+						"H" + (d.target.x) +
+						"V" + (d.target.y);
 			});
 
 	// draw proband arrow

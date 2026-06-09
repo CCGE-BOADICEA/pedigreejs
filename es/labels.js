@@ -23,18 +23,20 @@ export function addLabels(opts, node) {
 		if(arr.indexOf('age') > -1 || arr.indexOf('yob') > -1) {
 			addLabel(opts, node, -opts.symbol_size,
 				function(d) { return ypos(d, arr, font_size); },
-				function(d) { return get_text(d, arr); }, 'indi_details', arr);
+				function(d) { return get_text(d, arr, opts); }, 'indi_details', arr);
 		}
 	}
 
 	// individuals disease details
 	for(let i=0;i<opts.diseases.length; i++) {
 		let disease = opts.diseases[i].type;
+		let disp = opts.diseases[i].label;
 		addLabel(opts, node, -opts.symbol_size,
 				function(d) { return ypos(d, [disease], font_size); },
 				function(d) {
-					let dis = disease.replace('_', ' ').replace('cancer', 'ca.');
-					return disease+'_diagnosis_age' in d.data ? dis +": "+ d.data[disease+'_diagnosis_age'] : '';
+					if(!disp)
+						disp = disease.replace('_', ' ').replace('cancer', 'ca.');
+					return disease+'_diagnosis_age' in d.data ? disp +": "+ d.data[disease+'_diagnosis_age'] : '';
 				}, 'indi_details', [disease]);
 	}
 
@@ -45,12 +47,12 @@ export function addLabels(opts, node) {
 		if(arr.indexOf('age') === -1 && arr.indexOf('yob') === -1) {
 			addLabel(opts, node, -opts.symbol_size,
 				function(d) { return ypos(d, arr, font_size); },
-				function(d) { return get_text(d, arr); }, 'indi_details', arr);
+				function(d) { return get_text(d, arr, opts); }, 'indi_details', arr);
 		}
 	}
 }
 
-function get_text(d, arr) {
+function get_text(d, arr, opts) {
 	let txt = "";
 	for(let l=0; l<arr.length; l++) {
 		let this_label = arr[l];
@@ -61,7 +63,8 @@ function get_text(d, arr) {
 					if(vars[ivar] !== "") txt += vars[ivar] + ';';
 				}
 			} else if(this_label === 'age') {
-				txt += d.data[this_label] +'y ';
+				const age_suffix = (opts.age_suffix ? opts.age_suffix : 'y');
+				txt += d.data[this_label] + age_suffix + ' ';
 			} else if(this_label === 'stillbirth') {
 				txt += "SB";
 			} else if(this_label.match("_gene_test$") && 'result' in d.data[this_label]) {
@@ -76,7 +79,7 @@ function get_text(d, arr) {
 				txt += this_label.replace('_bc_pathology', '').toUpperCase()
 				txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' '));
 			} else {
-			  txt += d.data[this_label];
+				txt += d.data[this_label];
 			}
 		}
 	}

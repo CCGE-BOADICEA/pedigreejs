@@ -16,10 +16,10 @@ export function addButtons(options) {
 		btn_target: 'pedigree_history'
     }, options );
 
-	let btns1 = [{"fa": "fa-file-image", "title": "download PNG image"},
-				 {"fa": "fa-undo", "title": "undo"},
-				 {"fa": "fa-redo", "title": "redo"},
-				 {"fa": "fa-refresh", "title": "reset"}];
+	let btns1 = [   {"fa": "fa-file-image", "title": "download PNG image"},
+					{"fa": "fa-undo", "title": "undo"},
+					{"fa": "fa-redo", "title": "redo"},
+					{"fa": "fa-refresh", "title": "reset"}];
 	let btns2 = [{"fa": "fa-crosshairs", "title": "scale-to-fit"}];
 
 	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
@@ -90,9 +90,9 @@ function addPbuttonEvents(opts) {
 	function zoomIn() {btn_zoom(opts, 1.05);}
 	function zoomOut() {btn_zoom(opts, 0.95);}
 	$('.fa-plus-circle, .fa-minus-circle').on('mousedown', function() {
-	    timeoutId = setInterval(($( this ).hasClass( "fa-plus-circle" ) ? zoomIn : zoomOut), 50);
+		timeoutId = setInterval(($( this ).hasClass( "fa-plus-circle" ) ? zoomIn : zoomOut), 50);
 	}).on('mouseup mouseleave', function() {
-	    clearInterval(timeoutId);
+		clearInterval(timeoutId);
 	});
 
 	// undo/redo/reset
@@ -111,8 +111,8 @@ function addPbuttonEvents(opts) {
 			$(document).trigger('build', [opts]);
 		} else if ($(e.target).hasClass('fa-refresh')) {
 			messages("Pedigree Reset",
-			         "This may result in loss of some data. Reset now?",
-			         reset, opts);
+					"This may result in loss of some data. Reset now?",
+					reset, opts);
 		} else if ($(e.target).hasClass('fa-crosshairs')) {
 			scale_to_fit(opts);
 		} else if ($(e.target).hasClass('fa-file-image')) {

@@ -8,13 +8,13 @@
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
 
-	<link rel="stylesheet" href="build/pedigreejs.v5.0.0.min.css" />
+	<link rel="stylesheet" href="build/pedigreejs.v5.0.1.min.css" />
 
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" integrity="sha256-8glLv2FBs1lyLE/kVOtsSw8OQswQzHr5IfwVj864ZTk=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
- 	<script src="build/pedigreejs.v5.0.0.min.js"></script>
+ 	<script src="build/pedigreejs.v5.0.1.min.js"></script>
 
 	<style>
 		a[href^="http://"][target=_blank]:after,
@@ -173,11 +173,7 @@
 				'zoomIn': .5,
 				'zoomOut': 1.5,
 				'font_size': '0.75em',
-	        	'diseases': [{'type': 'breast_cancer', 'colour': '#F68F35'},
-	        				 {'type': 'breast_cancer2', 'colour': 'pink'},
-							 {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-							 {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-							 {'type': 'prostate_cancer', 'colour': '#D5494A'}],
+	        	'age_suffix': 'yr',
 				'DEBUG': (pedigreejs.pedigreejs_utils.urlParam('debug') === null ? false : true)};
 		var local_dataset = pedigreejs.pedigreejs_pedcache.current(opts);
 		if (local_dataset !== undefined && local_dataset !== null) {
