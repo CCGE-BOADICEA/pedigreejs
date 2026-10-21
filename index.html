@@ -65,7 +65,7 @@
 		}
 
 		.left {
-			width:140px;
+			width:180px;
 			font-weight: bold;
 			text-align: right;
 			flex-shrink: 0;
@@ -428,11 +428,12 @@
 		'symbol_size': 35,
 		'store_type': 'array',
 		'diseases': [
-			{'type': 'breast_cancer', 'colour': '#F68F35'},
-			{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-			{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-			{'type': 'prostate_cancer', 'colour': '#D5494A'}],
+			{'type': 'breast_cancer', 'colour': '#F68F35', 'label': 'breast'},
+			{'type': 'ovarian_cancer', 'colour': '#306430', 'label': 'ovarian'},
+			{'type': 'pancreatic_cancer', 'colour': '#4289BA', 'label': 'pancreatic'},
+			{'type': 'prostate_cancer', 'colour': '#D5494A', 'label': 'prostate'}],
 		labels: ['age', 'yob'],
+		age_suffix: 'y',
 		font_size: '.75em',
 		font_family: 'Helvetica',
 		font_weight: 700,
@@ -444,7 +445,7 @@
 	} else {
 		opts.dataset = dataset;
 	}
-	opts= ptree.build(opts);
+	opts = pedigreejs.pedigreejs.build(opts);
 </pre>
 
 	<h2>Options</h2>
@@ -468,6 +469,10 @@
 	<div class="row" id="labels">
 		<div class="left">labels</div>
 		<div>Array of attributes to display under the individual's symbol, <i>e.g.</i> labels: ['age', 'yob', 'alleles'].</div>
+	</div>
+	<div class="row" id="age_suffix">
+		<div class="left">age_suffix</div>
+		<div>Text appended to the age label, <i>e.g.</i> 'y' displays '56y'. Default 'y'.</div>
 	</div>
 	<div class="row" id="font_size">
 		<div class="left">font_size</div>
@@ -521,19 +526,25 @@
 		<div class="left">showWidgets</div>
 		<div>Show the widgets, default true.</div>
     </div>
+	<div class="row" id="keep_proband_on_reset">
+		<div class="left">keep_proband_on_reset</div>
+		<div>Keep the proband's details when the pedigree is reset, default false.</div>
+	</div>
 	<div class="row" id="edit">
 		<div class="left">edit</div>
 		<div>Set to true for a button to display an individual's details (<i>e.g.</i> age, sex) in a dialog or provide a funtion to handle editing.</div>
     </div>
 	<div class="row" id="diseases">
 		<div class="left">diseases</div>
-		<div>Diseases and their colour representation, <i>e.g.</i>
+		<div>Diseases, their colour representation and the label displayed before the
+		diagnosis age (<i>e.g.</i> 'breast: 55'). If 'label' is not given it is derived from
+		the 'type' (<i>e.g.</i> 'breast ca.: 55'). Default:
 <pre class="options">
-[{'type': 'breast_cancer', 'colour': '#F68F35'},
- {'type': 'breast_cancer2', 'colour': 'pink'},
- {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
- {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
- {'type': 'prostate_cancer', 'colour': '#D5494A'}]</pre>
+[{'type': 'breast_cancer', 'colour': '#F68F35', 'label': 'breast'},
+ {'type': 'breast_cancer2', 'colour': 'pink', 'label': 'breast 2'},
+ {'type': 'ovarian_cancer', 'colour': '#306430', 'label': 'ovarian'},
+ {'type': 'pancreatic_cancer', 'colour': '#4289BA', 'label': 'pancreatic'},
+ {'type': 'prostate_cancer', 'colour': '#D5494A', 'label': 'prostate'}]</pre>
 		</div>
 	</div>
 	<div class="row" id="background">
