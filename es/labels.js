@@ -8,12 +8,15 @@ import {prefixInObj} from './utils.js';
 import $ from 'jquery';
 
 export function addLabels(opts, node) {
-	// names of individuals
-	addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
+	// names of individuals, truncated to max_name_length
+	let name_label = addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
 			function(d) {
 				if(opts.DEBUG)
-					return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
-				return 'display_name' in d.data ? d.data.display_name : '';}, undefined, ['display_name']);
+					return ('display_name' in d.data ? truncate(d.data.display_name, opts.max_name_length) : d.data.name) + '  ' + d.data.id;
+				return 'display_name' in d.data ? truncate(d.data.display_name, opts.max_name_length) : '';}, undefined, ['display_name']);
+	// show full name on hover for truncated names
+	name_label.filter(function(d) { return is_truncated(d.data.display_name, opts.max_name_length); })
+			.append("svg:title").text(function(d) { return d.data.display_name; });
 
 	let font_size = parseInt(getPx(opts)) + 4;
 	// display age/yob label first
@@ -50,6 +53,14 @@ export function addLabels(opts, node) {
 				function(d) { return get_text(d, arr, opts); }, 'indi_details', arr);
 		}
 	}
+}
+
+function is_truncated(name, max_len) {
+	return !!(max_len && name && String(name).length > max_len);
+}
+
+function truncate(name, max_len) {
+	return (is_truncated(name, max_len) ? String(name).substring(0, max_len-1) + '…' : name);
 }
 
 function get_text(d, arr, opts) {
@@ -101,7 +112,7 @@ function node_has_label(d, labels) {
 
 // add label to node
 function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
-	node.filter(function (d) {
+	return node.filter(function (d) {
 		return !d.data.hidden && (!labels || node_has_label(d, labels));
 	}).append("text")
 	.attr("class", (class_label ? class_label + ' ped_label' : 'ped_label'))

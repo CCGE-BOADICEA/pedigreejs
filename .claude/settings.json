@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "defaultMode": "plan",
+    "deny": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git reset *)",
+      "Bash(git checkout *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/*)",
+      "Bash(rm -rf /*)"
+
+    ],
+    "ask": [
+      "Bash(rm *)",
+      "Bash(chmod *)",
+      "Bash(wget *)",
+      "Bash(curl *)"
+    ]
+  }
+}

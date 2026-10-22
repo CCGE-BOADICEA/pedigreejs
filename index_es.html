@@ -6,17 +6,17 @@
 	<meta name="viewport" content="width=device-width,maximum-scale=2">
 
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css">
 	<link rel="stylesheet" href="css/pedigreejs.css" />
 
-	<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.9/dist/jquery.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" integrity="sha256-8glLv2FBs1lyLE/kVOtsSw8OQswQzHr5IfwVj864ZTk=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
 	<script type="importmap">
 	{
 		"imports": {
-			"jquery": "https://cdn.jsdelivr.net/npm/jquery@3.7.1/+esm",
+			"jquery": "https://cdn.jsdelivr.net/npm/jquery@3.7.9/+esm",
 			"d3": "https://cdn.jsdelivr.net/npm/d3@7/+esm"
 		}
 	}
@@ -486,6 +486,7 @@
 			{'type': 'prostate_cancer', 'colour': '#D5494A', 'label': 'prostate'}],
 		labels: ['age', 'yob'],
 		age_suffix: 'y',
+		max_name_length: 15,
 		font_size: '.75em',
 		font_family: 'Helvetica',
 		font_weight: 700,
@@ -525,6 +526,10 @@
 	<div class="row" id="age_suffix">
 		<div class="left">age_suffix</div>
 		<div>Text appended to the age label, <i>e.g.</i> 'y' displays '56y'. Default 'y'.</div>
+	</div>
+	<div class="row" id="max_name_length">
+		<div class="left">max_name_length</div>
+		<div>Maximum number of characters of an individual's name to display. Longer names are truncated with '&hellip;' and the full name is shown on hover. Default 15, set to 0 for no limit.</div>
 	</div>
 	<div class="row" id="font_size">
 		<div class="left">font_size</div>
