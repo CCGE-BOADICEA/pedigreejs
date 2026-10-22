@@ -1,6 +1,6 @@
 /*!
  * © 2026 University of Cambridge
- * pedigreejs v5.0.1
+ * pedigreejs v5.0.2
  * https://ccge-boadicea.github.io/pedigreejs/
  * License: GPL-3.0
  */
@@ -2037,7 +2037,7 @@ var pedigreejs = (function (exports, $, d3) {
 	  if (el.constructor !== Array) el = [el];
 	  let width = $(window).width() * 0.9;
 	  let height = $(window).height() - 10;
-	  let cssFiles = ['/static/css/canrisk.css', 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css'];
+	  let cssFiles = ['/static/css/canrisk.css', 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css'];
 	  let printWindow = window.open('', 'PrintMap', 'width=' + width + ',height=' + height);
 	  let headContent = '';
 	  for (let i = 0; i < cssFiles.length; i++) headContent += '<link href="' + cssFiles[i] + '" rel="stylesheet" type="text/css" media="all">';
@@ -3505,11 +3505,17 @@ var pedigreejs = (function (exports, $, d3) {
 	**/
 
 	function addLabels(opts, node) {
-	  // names of individuals
-	  addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size), function (d) {
-	    if (opts.DEBUG) return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
-	    return 'display_name' in d.data ? d.data.display_name : '';
+	  // names of individuals, truncated to max_name_length
+	  let name_label = addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size), function (d) {
+	    if (opts.DEBUG) return ('display_name' in d.data ? truncate(d.data.display_name, opts.max_name_length) : d.data.name) + '  ' + d.data.id;
+	    return 'display_name' in d.data ? truncate(d.data.display_name, opts.max_name_length) : '';
 	  }, undefined, ['display_name']);
+	  // show full name on hover for truncated names
+	  name_label.filter(function (d) {
+	    return is_truncated(d.data.display_name, opts.max_name_length);
+	  }).append("svg:title").text(function (d) {
+	    return d.data.display_name;
+	  });
 	  let font_size = parseInt(getPx(opts)) + 4;
 	  // display age/yob label first
 	  for (let ilab = 0; ilab < opts.labels.length; ilab++) {
@@ -3548,6 +3554,12 @@ var pedigreejs = (function (exports, $, d3) {
 	      }, 'indi_details', arr);
 	    }
 	  }
+	}
+	function is_truncated(name, max_len) {
+	  return !!(max_len && name && String(name).length > max_len);
+	}
+	function truncate(name, max_len) {
+	  return is_truncated(name, max_len) ? String(name).substring(0, max_len - 1) + '…' : name;
 	}
 	function get_text(d, arr, opts) {
 	  let txt = "";
@@ -3596,7 +3608,7 @@ var pedigreejs = (function (exports, $, d3) {
 
 	// add label to node
 	function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
-	  node.filter(function (d) {
+	  return node.filter(function (d) {
 	    return !d.data.hidden && (!labels || node_has_label(d, labels));
 	  }).append("text").attr("class", class_label ? class_label + ' ped_label' : 'ped_label').attr("x", fx).attr("y", fy).attr("font-family", opts.font_family).attr("font-size", opts.font_size).attr("font-weight", opts.font_weight).text(ftext);
 	}
@@ -3758,6 +3770,7 @@ var pedigreejs = (function (exports, $, d3) {
 	    }],
 	    labels: ['stillbirth', ['age', 'yob'], 'alleles', ['brca1_gene_test', 'brca2_gene_test', 'palb2_gene_test', 'chek2_gene_test', 'atm_gene_test'], ['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test', 'hoxb13_gene_test'], ['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
 	    age_suffix: 'y',
+	    max_name_length: 15,
 	    keep_proband_on_reset: false,
 	    font_size: '.75em',
 	    font_family: 'Helvetica',
@@ -4292,4 +4305,4 @@ var pedigreejs = (function (exports, $, d3) {
 	return exports;
 
 })({}, $, d3);
-//# sourceMappingURL=pedigreejs.v5.0.1.js.map
+//# sourceMappingURL=pedigreejs.v5.0.2.js.map

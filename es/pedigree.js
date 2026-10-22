@@ -41,6 +41,7 @@ export function build(options) {
 								['rad51d_gene_test', 'rad51c_gene_test', 'brip1_gene_test', 'hoxb13_gene_test'],
 								['er_bc_pathology', 'pr_bc_pathology', 'her2_bc_pathology', 'ck14_bc_pathology', 'ck56_bc_pathology']],
 		age_suffix: 'y',
+		max_name_length: 15,
 		keep_proband_on_reset: false,
 		font_size: '.75em',
 		font_family: 'Helvetica',

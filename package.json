@@ -1,6 +1,6 @@
 {
   "name": "pedigreejs",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "A JavaScript module for building and visualizing pedigree data in the browser.",
   "license": "GPL-3.0",
   "author": "CCGE-BOADICEA",
